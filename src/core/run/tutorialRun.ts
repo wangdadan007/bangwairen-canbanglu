@@ -1,4 +1,6 @@
 import type {
+  CardDefinition,
+  CardId,
   EncounterDefinition,
   EncounterId,
   TutorialRunSettlementRecord,
@@ -8,6 +10,8 @@ import type {
   UnlockState,
   VictorySettlement,
 } from '../../types'
+import { DEFAULT_STARTER_DECK_IDS } from '../battle/battleState'
+import { createTutorialRewardOffer } from './rewardResolver'
 
 export const TUTORIAL_ENCOUNTER_IDS: readonly EncounterId[] = [
   'encounter_tutorial_paper_wraith',
@@ -18,6 +22,7 @@ export const TUTORIAL_ENCOUNTER_IDS: readonly EncounterId[] = [
 export function createInitialTutorialRunState(
   tutorialUnlocks: readonly TutorialUnlockDefinition[],
   encounterIds: readonly EncounterId[] = TUTORIAL_ENCOUNTER_IDS,
+  deckDefinitionIds: readonly CardId[] = DEFAULT_STARTER_DECK_IDS,
 ): TutorialRunState {
   return {
     status: 'active',
@@ -25,7 +30,9 @@ export function createInitialTutorialRunState(
     encounterIds,
     completedEncounterIds: [],
     settlements: [],
+    deckDefinitionIds,
     unlocks: createUnlockState(['stage_core'], tutorialUnlocks),
+    rewards: [],
   }
 }
 
@@ -46,9 +53,14 @@ export function advanceTutorialRun(
   encounters: readonly EncounterDefinition[],
   tutorialUnlocks: readonly TutorialUnlockDefinition[],
   settlement: VictorySettlement,
+  cardDefinitions?: readonly CardDefinition[],
 ): TutorialRunState {
   if (run.status === 'complete') {
     return run
+  }
+
+  if (run.pendingReward) {
+    throw new Error('Resolve pending tutorial reward before advancing the run')
   }
 
   const currentEncounter = getCurrentTutorialEncounter(run, encounters)
@@ -80,6 +92,14 @@ export function advanceTutorialRun(
     completedEncounterIds: nextCompletedEncounterIds,
     settlements: nextSettlements,
     unlocks: nextUnlocks,
+    pendingReward: cardDefinitions
+      ? createTutorialRewardOffer({
+          encounter: currentEncounter,
+          settlement,
+          unlocks: nextUnlocks,
+          cardDefinitions,
+        })
+      : undefined,
   }
 }
 

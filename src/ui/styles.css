@@ -314,6 +314,72 @@ button:disabled {
   font-size: 12px;
 }
 
+.run-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.run-summary-row span {
+  border: 1px solid rgba(92, 161, 138, 0.36);
+  border-radius: 999px;
+  padding: 3px 8px;
+  color: #c5efe0;
+  background: rgba(24, 77, 67, 0.26);
+  font-size: 12px;
+}
+
+.reward-page {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(178, 139, 82, 0.36);
+  border-left: 4px solid #caa76a;
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(33, 28, 23, 0.88);
+}
+
+.reward-page.high {
+  border-left-color: #c94f3d;
+  background: rgba(72, 30, 27, 0.45);
+}
+
+.reward-page.ordinary {
+  border-left-color: #b28b52;
+}
+
+.reward-copy {
+  margin: 0;
+  color: #d9ccb8;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.reward-options {
+  display: grid;
+  gap: 10px;
+}
+
+.reward-card {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  min-height: 112px;
+  padding: 12px;
+  color: #eadfca;
+  background: rgba(47, 37, 31, 0.86);
+  text-align: left;
+}
+
+.reward-card:hover {
+  background: rgba(66, 48, 38, 0.96);
+}
+
+.reward-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .enemy-panel,
 .hud-section {
   border-top: 1px solid rgba(178, 139, 82, 0.26);

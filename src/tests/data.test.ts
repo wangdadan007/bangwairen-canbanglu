@@ -5,7 +5,7 @@ describe('initial game data', () => {
   it('loads starter cards, tutorial enemy, unlocks, and localization', () => {
     const data = loadGameData()
 
-    expect(data.cards).toHaveLength(7)
+    expect(data.cards).toHaveLength(12)
     expect(data.enemies).toHaveLength(3)
     expect(data.encounters).toHaveLength(3)
     expect(data.tutorialUnlocks).toHaveLength(3)
@@ -42,6 +42,15 @@ describe('initial game data', () => {
     ])
     expect(getCardDefinition('card_order_scroll', data)?.effects[0].type).toBe('DRAW')
     expect(getCardDefinition('card_quiet_incense', data)?.effects[0].type).toBe('GAIN_INCENSE')
+    expect(getCardDefinition('card_split_form_talisman', data)?.tags).toContain('reward')
+    expect(getCardDefinition('card_trace_name_slip', data)?.tags).toContain('catalogue_reward')
+    expect(getCardDefinition('card_press_door_charm', data)?.unlockStage).toBe(
+      'stage_abnormal_boundary',
+    )
+    expect(getCardDefinition('card_watch_incense_line', data)?.tags).toContain('abnormal_move')
+    expect(getCardDefinition('card_red_ink_trial', data)?.unlockStage).toBe(
+      'stage_red_ink_preview',
+    )
 
     const paperWraith = getEnemyDefinition('enemy_paper_wraith', data)
     expect(paperWraith?.maxForm).toBe(18)

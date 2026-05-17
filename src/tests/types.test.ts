@@ -72,10 +72,12 @@ describe('core type contracts', () => {
       encounterIds: [encounter.id],
       completedEncounterIds: [],
       settlements: [],
+      deckDefinitionIds: ['card_zhu_fu'],
       unlocks: {
         stages: ['stage_core'],
         keywords: ['break_form'],
       },
+      rewards: [],
     } satisfies TutorialRunState
 
     expect(run.encounterIds[0]).toBe(encounter.id)

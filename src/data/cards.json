@@ -138,5 +138,105 @@
         "amount": 1
       }
     ]
+  },
+  {
+    "id": "card_split_form_talisman",
+    "nameKey": "card.split_form_talisman.name",
+    "descriptionKey": "card.split_form_talisman.description",
+    "rulesTextKey": "card.split_form_talisman.rules",
+    "cost": 1,
+    "type": "talisman",
+    "unlockStage": "stage_core",
+    "tags": ["reward", "break_form"],
+    "effects": [
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 6
+      }
+    ]
+  },
+  {
+    "id": "card_trace_name_slip",
+    "nameKey": "card.trace_name_slip.name",
+    "descriptionKey": "card.trace_name_slip.description",
+    "rulesTextKey": "card.trace_name_slip.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_core",
+    "tags": ["reward", "catalogue_reward", "ask_name", "draw"],
+    "effects": [
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "card_press_door_charm",
+    "nameKey": "card.press_door_charm.name",
+    "descriptionKey": "card.press_door_charm.description",
+    "rulesTextKey": "card.press_door_charm.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_abnormal_boundary",
+    "tags": ["reward", "seal_momentum", "incoming_force"],
+    "effects": [
+      {
+        "type": "SEAL_MOMENTUM",
+        "target": "selected_enemy",
+        "amount": 5
+      }
+    ]
+  },
+  {
+    "id": "card_watch_incense_line",
+    "nameKey": "card.watch_incense_line.name",
+    "descriptionKey": "card.watch_incense_line.description",
+    "rulesTextKey": "card.watch_incense_line.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_abnormal_boundary",
+    "tags": ["reward", "counter_abnormal_move", "abnormal_move", "gain_incense"],
+    "effects": [
+      {
+        "type": "COUNTER_ABNORMAL_MOVE",
+        "target": "selected_enemy",
+        "moveType": "steal_incense"
+      },
+      {
+        "type": "GAIN_INCENSE",
+        "target": "self",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "card_red_ink_trial",
+    "nameKey": "card.red_ink_trial.name",
+    "descriptionKey": "card.red_ink_trial.description",
+    "rulesTextKey": "card.red_ink_trial.rules",
+    "cost": 0,
+    "type": "ritual",
+    "unlockStage": "stage_red_ink_preview",
+    "tags": ["reward", "red_ink_preview", "draw", "gain_incense", "exhaust"],
+    "effects": [
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
+      },
+      {
+        "type": "GAIN_INCENSE",
+        "target": "self",
+        "amount": 1
+      }
+    ]
   }
 ]

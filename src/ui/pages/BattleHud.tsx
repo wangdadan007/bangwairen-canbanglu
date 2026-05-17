@@ -5,9 +5,11 @@ import {
   createInitialTutorialRunState,
   getCurrentTutorialEncounter,
   reduceBattleState,
+  resolveTutorialReward,
   type BattleReducerContext,
 } from '../../core'
 import { gameData } from '../../data'
+import { RewardPage } from './RewardPage'
 import type {
   ActionLogEntry,
   AbnormalMoveDefinition,
@@ -47,11 +49,16 @@ const encounterDefinitionsById = new Map(
   gameData.encounters.map((encounter) => [encounter.id, encounter]),
 )
 
-function createBattle(enemyDefinition: EnemyDefinition, unlocks: UnlockState) {
+function createBattle(
+  enemyDefinition: EnemyDefinition,
+  unlocks: UnlockState,
+  deckDefinitionIds?: readonly string[],
+) {
   return createInitialBattleState({
     cardDefinitions: gameData.cards,
     enemyDefinition,
     unlocks,
+    deckDefinitionIds,
   })
 }
 
@@ -68,7 +75,10 @@ export function BattleHud() {
   )
   const latestLog = battle.actionLog.slice(-14).reverse()
   const canAct =
-    run.status === 'active' && battle.phase === 'player_turn' && battle.result.status === 'ongoing'
+    !run.pendingReward &&
+    run.status === 'active' &&
+    battle.phase === 'player_turn' &&
+    battle.result.status === 'ongoing'
 
   function playCard(card: CardInstance) {
     setViewState((current) => {
@@ -76,6 +86,7 @@ export function BattleHud() {
 
       if (
         !currentEnemy ||
+        current.run.pendingReward ||
         current.run.status !== 'active' ||
         current.battle.phase !== 'player_turn' ||
         current.battle.result.status !== 'ongoing'
@@ -101,6 +112,7 @@ export function BattleHud() {
   function endTurn() {
     setViewState((current) => {
       if (
+        current.run.pendingReward ||
         current.run.status !== 'active' ||
         current.battle.phase !== 'player_turn' ||
         current.battle.result.status !== 'ongoing'
@@ -123,6 +135,10 @@ export function BattleHud() {
 
   function restartCurrentBattle() {
     setViewState((current) => {
+      if (current.run.pendingReward) {
+        return current
+      }
+
       const encounter = getCurrentTutorialEncounter(current.run, gameData.encounters)
 
       if (!encounter) {
@@ -131,7 +147,11 @@ export function BattleHud() {
 
       return {
         ...current,
-        battle: createBattleForEncounter(encounter, current.run.unlocks),
+        battle: createBattleForEncounter(
+          encounter,
+          current.run.unlocks,
+          current.run.deckDefinitionIds,
+        ),
       }
     })
   }
@@ -142,7 +162,11 @@ export function BattleHud() {
 
   function advanceAfterVictory() {
     setViewState((current) => {
-      if (current.run.status !== 'active' || current.battle.result.status !== 'victory') {
+      if (
+        current.run.pendingReward ||
+        current.run.status !== 'active' ||
+        current.battle.result.status !== 'victory'
+      ) {
         return current
       }
 
@@ -151,13 +175,29 @@ export function BattleHud() {
         gameData.encounters,
         gameData.tutorialUnlocks,
         current.battle.result.settlement,
+        gameData.cards,
       )
+
+      return {
+        run: nextRun,
+        battle: current.battle,
+      }
+    })
+  }
+
+  function chooseReward(cardDefinitionId?: string) {
+    setViewState((current) => {
+      const nextRun = resolveTutorialReward(current.run, cardDefinitionId)
       const nextEncounter = getCurrentTutorialEncounter(nextRun, gameData.encounters)
 
       return {
         run: nextRun,
         battle: nextEncounter
-          ? createBattleForEncounter(nextEncounter, nextRun.unlocks)
+          ? createBattleForEncounter(
+              nextEncounter,
+              nextRun.unlocks,
+              nextRun.deckDefinitionIds,
+            )
           : current.battle,
       }
     })
@@ -167,7 +207,7 @@ export function BattleHud() {
     <aside className="battle-hud" aria-label="前三场教学战">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">教学纵切 / T09</p>
+          <p className="panel-kicker">教学纵切 / T10</p>
           <h2>{currentEncounter ? t(currentEncounter.nameKey) : '前三战完成'}</h2>
         </div>
         <div className="dev-controls">
@@ -186,24 +226,34 @@ export function BattleHud() {
 
       <TutorialRunPanel run={run} currentEncounter={currentEncounter} />
 
-      {battle.result.status === 'victory' && run.status === 'active' ? (
+      {battle.result.status === 'victory' && run.status === 'active' && !run.pendingReward ? (
         <section className="result-banner" aria-live="polite">
           <span>{getSettlementLabel(battle.result.settlement)}</span>
           <strong>{getSettlementText(battle.result.settlement)}</strong>
           <p>{currentEncounter ? t(currentEncounter.completionKey) : '本轮教学战已完成。'}</p>
           <div className="result-actions">
             <button type="button" onClick={advanceAfterVictory}>
-              {isFinalEncounter(run) ? '完成教学纵切' : '进入下一战'}
+              {isFinalEncounter(run) ? '查看收束奖励' : '查看战后奖励'}
             </button>
           </div>
         </section>
       ) : null}
 
-      {run.status === 'complete' ? (
+      {run.pendingReward ? (
+        <RewardPage
+          cardDefinitionsById={cardDefinitionsById}
+          offer={run.pendingReward}
+          t={t}
+          onChooseCard={chooseReward}
+          onSkip={() => chooseReward()}
+        />
+      ) : null}
+
+      {run.status === 'complete' && !run.pendingReward ? (
         <section className="result-banner run-complete" aria-live="polite">
           <span>教学纵切完成</span>
           <strong>前三场固定教学战已跑通。</strong>
-          <p>批改卡牌（朱批）的入口已经显现，下一阶段可以进入简易奖励与机制解锁。</p>
+          <p>简易奖励已接入，后续可以进入批改卡牌（朱批）的最小实现。</p>
           <div className="result-actions">
             <button type="button" onClick={restartTutorialRun}>
               重开教学纵切
@@ -341,6 +391,11 @@ function TutorialRunPanel({
         {run.unlocks.stages.map((stageId) => (
           <span key={stageId}>{getUnlockStageName(stageId)}</span>
         ))}
+      </div>
+      <div className="run-summary-row" aria-label="牌组与奖励记录">
+        <span>牌组 {run.deckDefinitionIds.length} 张</span>
+        <span>已领奖励 {run.rewards.length} 次</span>
+        {run.pendingReward ? <span>待选奖励</span> : null}
       </div>
     </section>
   )
@@ -490,12 +545,16 @@ function createInitialTutorialBattleView(): TutorialBattleViewState {
 
   return {
     run,
-    battle: createBattleForEncounter(encounter, run.unlocks),
+    battle: createBattleForEncounter(encounter, run.unlocks, run.deckDefinitionIds),
   }
 }
 
-function createBattleForEncounter(encounter: EncounterDefinition, unlocks: UnlockState) {
-  return createBattle(getEnemyDefinition(encounter.enemyDefinitionId), unlocks)
+function createBattleForEncounter(
+  encounter: EncounterDefinition,
+  unlocks: UnlockState,
+  deckDefinitionIds: readonly string[],
+) {
+  return createBattle(getEnemyDefinition(encounter.enemyDefinitionId), unlocks, deckDefinitionIds)
 }
 
 function getEncounterDefinition(encounterId: string) {
