@@ -10,5 +10,21 @@
       "draw",
       "gain_incense"
     ]
+  },
+  {
+    "id": "stage_abnormal_boundary",
+    "nameKey": "unlock.stage_abnormal_boundary.name",
+    "keywords": [
+      "incoming_force",
+      "abnormal_move",
+      "counter_abnormal_move"
+    ]
+  },
+  {
+    "id": "stage_red_ink_preview",
+    "nameKey": "unlock.stage_red_ink_preview.name",
+    "keywords": [
+      "red_ink_preview"
+    ]
   }
 ]

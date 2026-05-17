@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
 import {
+  advanceTutorialRun,
   createInitialBattleState,
+  createInitialTutorialRunState,
+  getCurrentTutorialEncounter,
   reduceBattleState,
   type BattleReducerContext,
 } from '../../core'
@@ -11,8 +14,12 @@ import type {
   CardDefinition,
   CardInstance,
   CombatState,
+  EncounterDefinition,
+  EnemyDefinition,
   EnemyState,
   JsonValue,
+  TutorialRunState,
+  UnlockState,
   VictorySettlement,
 } from '../../types'
 
@@ -25,24 +32,33 @@ interface PressureFeedback {
   readonly detail: string
 }
 
+interface TutorialBattleViewState {
+  readonly run: TutorialRunState
+  readonly battle: CombatState
+}
+
 const battleContext: BattleReducerContext = {
   cardDefinitions: gameData.cards,
   enemyDefinitions: gameData.enemies,
 }
 
 const enemyDefinitionsById = new Map(gameData.enemies.map((enemy) => [enemy.id, enemy]))
-const startingEnemy = getStartingEnemy()
+const encounterDefinitionsById = new Map(
+  gameData.encounters.map((encounter) => [encounter.id, encounter]),
+)
 
-function createBattle(enemyDefinition = startingEnemy) {
+function createBattle(enemyDefinition: EnemyDefinition, unlocks: UnlockState) {
   return createInitialBattleState({
     cardDefinitions: gameData.cards,
     enemyDefinition,
+    unlocks,
   })
 }
 
 export function BattleHud() {
-  const [selectedEnemyId, setSelectedEnemyId] = useState(startingEnemy.id)
-  const [battle, setBattle] = useState(() => createBattle(startingEnemy))
+  const [viewState, setViewState] = useState(createInitialTutorialBattleView)
+  const { battle, run } = viewState
+  const currentEncounter = getCurrentTutorialEncounter(run, gameData.encounters)
   const enemy = battle.enemies[0]
   const cardDefinitionsById = useMemo(() => createCardDefinitionMap(gameData.cards), [])
   const allCardsByInstanceId = useMemo(() => createCardInstanceMap(battle.player.deck), [battle])
@@ -51,84 +67,148 @@ export function BattleHud() {
     [allCardsByInstanceId, battle, cardDefinitionsById],
   )
   const latestLog = battle.actionLog.slice(-14).reverse()
-  const canAct = battle.phase === 'player_turn' && battle.result.status === 'ongoing'
+  const canAct =
+    run.status === 'active' && battle.phase === 'player_turn' && battle.result.status === 'ongoing'
 
   function playCard(card: CardInstance) {
-    if (!enemy || !canAct) {
-      return
-    }
+    setViewState((current) => {
+      const currentEnemy = current.battle.enemies[0]
 
-    setBattle((current) =>
-      reduceBattleState(
-        current,
-        {
-          type: 'PLAY_CARD',
-          cardInstanceId: card.instanceId,
-          targetEnemyInstanceId: enemy.instanceId,
-        },
-        battleContext,
-      ),
-    )
+      if (
+        !currentEnemy ||
+        current.run.status !== 'active' ||
+        current.battle.phase !== 'player_turn' ||
+        current.battle.result.status !== 'ongoing'
+      ) {
+        return current
+      }
+
+      return {
+        ...current,
+        battle: reduceBattleState(
+          current.battle,
+          {
+            type: 'PLAY_CARD',
+            cardInstanceId: card.instanceId,
+            targetEnemyInstanceId: currentEnemy.instanceId,
+          },
+          battleContext,
+        ),
+      }
+    })
   }
 
   function endTurn() {
-    if (!canAct) {
-      return
-    }
+    setViewState((current) => {
+      if (
+        current.run.status !== 'active' ||
+        current.battle.phase !== 'player_turn' ||
+        current.battle.result.status !== 'ongoing'
+      ) {
+        return current
+      }
 
-    setBattle((current) =>
-      reduceBattleState(
-        current,
-        {
-          type: 'END_TURN',
-        },
-        battleContext,
-      ),
-    )
+      return {
+        ...current,
+        battle: reduceBattleState(
+          current.battle,
+          {
+            type: 'END_TURN',
+          },
+          battleContext,
+        ),
+      }
+    })
   }
 
-  function restartBattle() {
-    setBattle(createBattle(getEnemyDefinition(selectedEnemyId)))
+  function restartCurrentBattle() {
+    setViewState((current) => {
+      const encounter = getCurrentTutorialEncounter(current.run, gameData.encounters)
+
+      if (!encounter) {
+        return createInitialTutorialBattleView()
+      }
+
+      return {
+        ...current,
+        battle: createBattleForEncounter(encounter, current.run.unlocks),
+      }
+    })
   }
 
-  function changeEnemy(enemyDefinitionId: string) {
-    const enemyDefinition = getEnemyDefinition(enemyDefinitionId)
+  function restartTutorialRun() {
+    setViewState(createInitialTutorialBattleView())
+  }
 
-    setSelectedEnemyId(enemyDefinition.id)
-    setBattle(createBattle(enemyDefinition))
+  function advanceAfterVictory() {
+    setViewState((current) => {
+      if (current.run.status !== 'active' || current.battle.result.status !== 'victory') {
+        return current
+      }
+
+      const nextRun = advanceTutorialRun(
+        current.run,
+        gameData.encounters,
+        gameData.tutorialUnlocks,
+        current.battle.result.settlement,
+      )
+      const nextEncounter = getCurrentTutorialEncounter(nextRun, gameData.encounters)
+
+      return {
+        run: nextRun,
+        battle: nextEncounter
+          ? createBattleForEncounter(nextEncounter, nextRun.unlocks)
+          : current.battle,
+      }
+    })
   }
 
   return (
-    <aside className="battle-hud" aria-label="测试战斗">
+    <aside className="battle-hud" aria-label="前三场教学战">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">残榜试战</p>
-          <h2>{getEnemyDefinitionName(selectedEnemyId)}</h2>
+          <p className="panel-kicker">教学纵切 / T09</p>
+          <h2>{currentEncounter ? t(currentEncounter.nameKey) : '前三战完成'}</h2>
         </div>
         <div className="dev-controls">
-          <label>
-            <span>测试敌人</span>
-            <select
-              value={selectedEnemyId}
-              onChange={(event) => changeEnemy(event.currentTarget.value)}
-            >
-              {gameData.enemies.map((definition) => (
-                <option key={definition.id} value={definition.id}>
-                  {t(definition.nameKey)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button className="ghost-button" type="button" onClick={restartBattle}>
-            新开测试战斗
+          <button
+            className="ghost-button"
+            type="button"
+            onClick={restartCurrentBattle}
+          >
+            重开当前战斗
+          </button>
+          <button className="ghost-button" type="button" onClick={restartTutorialRun}>
+            重开教学纵切
           </button>
         </div>
       </header>
 
-      {battle.result.status === 'victory' ? (
+      <TutorialRunPanel run={run} currentEncounter={currentEncounter} />
+
+      {battle.result.status === 'victory' && run.status === 'active' ? (
         <section className="result-banner" aria-live="polite">
           <span>{getSettlementLabel(battle.result.settlement)}</span>
           <strong>{getSettlementText(battle.result.settlement)}</strong>
+          <p>{currentEncounter ? t(currentEncounter.completionKey) : '本轮教学战已完成。'}</p>
+          <div className="result-actions">
+            <button type="button" onClick={advanceAfterVictory}>
+              {isFinalEncounter(run) ? '完成教学纵切' : '进入下一战'}
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {run.status === 'complete' ? (
+        <section className="result-banner run-complete" aria-live="polite">
+          <span>教学纵切完成</span>
+          <strong>前三场固定教学战已跑通。</strong>
+          <p>批改卡牌（朱批）的入口已经显现，下一阶段可以进入简易奖励与机制解锁。</p>
+          <div className="result-actions">
+            <button type="button" onClick={restartTutorialRun}>
+              重开教学纵切
+            </button>
+          </div>
         </section>
       ) : null}
 
@@ -214,6 +294,55 @@ export function BattleHud() {
         </ol>
       </section>
     </aside>
+  )
+}
+
+function TutorialRunPanel({
+  run,
+  currentEncounter,
+}: {
+  readonly run: TutorialRunState
+  readonly currentEncounter?: EncounterDefinition
+}) {
+  return (
+    <section className="tutorial-run-panel" aria-label="教学战进度">
+      <div className="section-title-row">
+        <h3>前三场教学战</h3>
+        <span>{run.status === 'complete' ? '已完成' : `第 ${run.currentEncounterIndex + 1} / ${run.encounterIds.length} 场`}</span>
+      </div>
+      <ol className="tutorial-steps">
+        {run.encounterIds.map((encounterId, index) => {
+          const encounter = getEncounterDefinition(encounterId)
+          const settlement = run.settlements.find((record) => record.encounterId === encounterId)
+          const isCurrent = currentEncounter?.id === encounterId
+          const isDone = run.completedEncounterIds.includes(encounterId)
+
+          return (
+            <li
+              className={isDone ? 'done' : isCurrent ? 'current' : 'locked'}
+              key={encounterId}
+            >
+              <span>{index + 1}</span>
+              <div>
+                <strong>{t(encounter.nameKey)}</strong>
+                <small>
+                  {settlement
+                    ? getSettlementLabel(settlement.settlement)
+                    : isCurrent
+                      ? t(encounter.lessonKey)
+                      : '待进入'}
+                </small>
+              </div>
+            </li>
+          )
+        })}
+      </ol>
+      <div className="unlock-row" aria-label="已解锁机制">
+        {run.unlocks.stages.map((stageId) => (
+          <span key={stageId}>{getUnlockStageName(stageId)}</span>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -351,14 +480,32 @@ function createCardInstanceMap(cards: readonly CardInstance[]) {
   return new Map(cards.map((card) => [card.instanceId, card]))
 }
 
-function getStartingEnemy() {
-  const enemy = gameData.enemies.find((candidate) => candidate.id === 'enemy_paper_wraith')
+function createInitialTutorialBattleView(): TutorialBattleViewState {
+  const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
+  const encounter = getCurrentTutorialEncounter(run, gameData.encounters)
 
-  if (!enemy) {
-    throw new Error('Missing T05 starting enemy: enemy_paper_wraith')
+  if (!encounter) {
+    throw new Error('Missing first tutorial encounter')
   }
 
-  return enemy
+  return {
+    run,
+    battle: createBattleForEncounter(encounter, run.unlocks),
+  }
+}
+
+function createBattleForEncounter(encounter: EncounterDefinition, unlocks: UnlockState) {
+  return createBattle(getEnemyDefinition(encounter.enemyDefinitionId), unlocks)
+}
+
+function getEncounterDefinition(encounterId: string) {
+  const encounter = encounterDefinitionsById.get(encounterId)
+
+  if (!encounter) {
+    throw new Error(`Missing encounter definition: ${encounterId}`)
+  }
+
+  return encounter
 }
 
 function getEnemyDefinition(definitionId: string) {
@@ -369,6 +516,16 @@ function getEnemyDefinition(definitionId: string) {
   }
 
   return enemy
+}
+
+function getUnlockStageName(stageId: string) {
+  const stage = gameData.tutorialUnlocks.find((candidate) => candidate.id === stageId)
+
+  return stage ? t(stage.nameKey) : stageId
+}
+
+function isFinalEncounter(run: TutorialRunState) {
+  return run.currentEncounterIndex >= run.encounterIds.length - 1
 }
 
 function getCurrentAbnormalMove(enemy: EnemyState): AbnormalMoveDefinition | undefined {

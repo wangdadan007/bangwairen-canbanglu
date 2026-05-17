@@ -1,35 +1,40 @@
 import rawCards from './cards.json'
 import rawEnemies from './enemies.json'
+import rawEncounters from './encounters.json'
 import rawTutorialUnlocks from './tutorial_unlocks.json'
 import rawZhCn from './localization/zh-CN.json'
-import type { CardDefinition, EnemyDefinition, LocalizationKey } from '../types'
-
-export interface TutorialUnlockDefinition {
-  readonly id: string
-  readonly nameKey: LocalizationKey
-  readonly keywords: readonly string[]
-}
+import type {
+  CardDefinition,
+  EncounterDefinition,
+  EnemyDefinition,
+  LocalizationKey,
+  TutorialUnlockDefinition,
+} from '../types'
 
 export interface GameData {
   readonly cards: readonly CardDefinition[]
   readonly enemies: readonly EnemyDefinition[]
+  readonly encounters: readonly EncounterDefinition[]
   readonly tutorialUnlocks: readonly TutorialUnlockDefinition[]
   readonly localization: Readonly<Record<LocalizationKey, string>>
 }
 
 const cards = rawCards as readonly CardDefinition[]
 const enemies = rawEnemies as readonly EnemyDefinition[]
+const encounters = rawEncounters as readonly EncounterDefinition[]
 const tutorialUnlocks = rawTutorialUnlocks as readonly TutorialUnlockDefinition[]
 const zhCn = rawZhCn as Readonly<Record<LocalizationKey, string>>
 
 export function loadGameData(): GameData {
   assertUniqueIds(cards, 'card')
   assertUniqueIds(enemies, 'enemy')
+  assertUniqueIds(encounters, 'encounter')
   assertUniqueIds(tutorialUnlocks, 'tutorial unlock')
 
   return {
     cards,
     enemies,
+    encounters,
     tutorialUnlocks,
     localization: zhCn,
   }
@@ -41,6 +46,10 @@ export function getCardDefinition(id: string, data: GameData = loadGameData()) {
 
 export function getEnemyDefinition(id: string, data: GameData = loadGameData()) {
   return data.enemies.find((enemy) => enemy.id === id)
+}
+
+export function getEncounterDefinition(id: string, data: GameData = loadGameData()) {
+  return data.encounters.find((encounter) => encounter.id === id)
 }
 
 function assertUniqueIds(items: readonly { readonly id: string }[], label: string) {

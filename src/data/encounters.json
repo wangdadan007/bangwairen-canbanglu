@@ -1,0 +1,29 @@
+[
+  {
+    "id": "encounter_tutorial_paper_wraith",
+    "nameKey": "encounter.tutorial.paper_wraith.name",
+    "enemyDefinitionId": "enemy_paper_wraith",
+    "tutorialOrder": 1,
+    "lessonKey": "encounter.tutorial.paper_wraith.lesson",
+    "completionKey": "encounter.tutorial.paper_wraith.completion",
+    "unlocksOnVictory": ["stage_abnormal_boundary"]
+  },
+  {
+    "id": "encounter_tutorial_incense_thief_mouse",
+    "nameKey": "encounter.tutorial.incense_thief_mouse.name",
+    "enemyDefinitionId": "enemy_incense_thief_mouse",
+    "tutorialOrder": 2,
+    "lessonKey": "encounter.tutorial.incense_thief_mouse.lesson",
+    "completionKey": "encounter.tutorial.incense_thief_mouse.completion",
+    "unlocksOnVictory": ["stage_red_ink_preview"]
+  },
+  {
+    "id": "encounter_tutorial_bronze_bell_patrol",
+    "nameKey": "encounter.tutorial.bronze_bell_patrol.name",
+    "enemyDefinitionId": "enemy_bronze_bell_patrol",
+    "tutorialOrder": 3,
+    "lessonKey": "encounter.tutorial.bronze_bell_patrol.lesson",
+    "completionKey": "encounter.tutorial.bronze_bell_patrol.completion",
+    "unlocksOnVictory": []
+  }
+]

@@ -200,6 +200,120 @@ button:disabled {
   line-height: 1.5;
 }
 
+.result-banner p {
+  margin: 0;
+  color: #d9ccb8;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.result-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.run-complete {
+  border-left-color: #5ca18a;
+  background: rgba(24, 77, 67, 0.34);
+}
+
+.tutorial-run-panel {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid rgba(178, 139, 82, 0.26);
+  padding-top: 16px;
+}
+
+.tutorial-steps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tutorial-steps li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(178, 139, 82, 0.24);
+  border-radius: 6px;
+  padding: 9px;
+  background: rgba(14, 20, 19, 0.34);
+}
+
+.tutorial-steps li > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgba(178, 139, 82, 0.38);
+  border-radius: 50%;
+  color: #d8c2a0;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.tutorial-steps strong,
+.tutorial-steps small {
+  display: block;
+}
+
+.tutorial-steps strong {
+  color: #f0e2ca;
+  font-size: 14px;
+}
+
+.tutorial-steps small {
+  margin-top: 2px;
+  color: #bfae91;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.tutorial-steps li.current {
+  border-color: rgba(224, 180, 93, 0.58);
+  background: rgba(75, 58, 32, 0.32);
+}
+
+.tutorial-steps li.current > span {
+  border-color: rgba(224, 180, 93, 0.72);
+  color: #f3d482;
+  background: rgba(107, 75, 34, 0.44);
+}
+
+.tutorial-steps li.done {
+  border-color: rgba(92, 161, 138, 0.6);
+  background: rgba(24, 77, 67, 0.28);
+}
+
+.tutorial-steps li.done > span {
+  border-color: rgba(92, 161, 138, 0.72);
+  color: #c5efe0;
+  background: rgba(28, 86, 74, 0.45);
+}
+
+.tutorial-steps li.locked {
+  opacity: 0.72;
+}
+
+.unlock-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.unlock-row span {
+  border: 1px solid rgba(178, 139, 82, 0.32);
+  border-radius: 999px;
+  padding: 3px 8px;
+  color: #f0d28d;
+  background: rgba(13, 26, 25, 0.44);
+  font-size: 12px;
+}
+
 .enemy-panel,
 .hud-section {
   border-top: 1px solid rgba(178, 139, 82, 0.26);

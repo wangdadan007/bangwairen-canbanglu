@@ -4,7 +4,9 @@ import type {
   CardDefinition,
   CardInstance,
   CombatState,
+  EncounterDefinition,
   EnemyDefinition,
+  TutorialRunState,
 } from '../types'
 
 describe('core type contracts', () => {
@@ -51,6 +53,32 @@ describe('core type contracts', () => {
 
     expect(card.effects[0].type).toBe('BREAK_SHAPE')
     expect(enemy.maxForm).toBe(18)
+  })
+
+  it('accepts the tutorial encounter and run contracts', () => {
+    const encounter = {
+      id: 'encounter_tutorial_paper_wraith',
+      nameKey: 'encounter.tutorial.paper_wraith.name',
+      enemyDefinitionId: 'enemy_paper_wraith',
+      tutorialOrder: 1,
+      lessonKey: 'encounter.tutorial.paper_wraith.lesson',
+      completionKey: 'encounter.tutorial.paper_wraith.completion',
+      unlocksOnVictory: ['stage_abnormal_boundary'],
+    } satisfies EncounterDefinition
+
+    const run = {
+      status: 'active',
+      currentEncounterIndex: 0,
+      encounterIds: [encounter.id],
+      completedEncounterIds: [],
+      settlements: [],
+      unlocks: {
+        stages: ['stage_core'],
+        keywords: ['break_form'],
+      },
+    } satisfies TutorialRunState
+
+    expect(run.encounterIds[0]).toBe(encounter.id)
   })
 
   it('accepts the first combat state contract', () => {

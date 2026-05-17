@@ -95,5 +95,59 @@
         "descriptionKey": "enemy.incense_thief_mouse.reward.catalogue"
       }
     ]
+  },
+  {
+    "id": "enemy_bronze_bell_patrol",
+    "nameKey": "enemy.bronze_bell_patrol.name",
+    "maxForm": 20,
+    "nameSlots": 2,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.bronze_bell_patrol.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.bronze_bell_patrol.name_slot.1"
+      }
+    ],
+    "tier": "normal",
+    "traits": ["tutorial", "incoming_force", "red_ink_preview"],
+    "intents": [
+      {
+        "id": "intent_bronze_bell_patrol_sweep",
+        "nameKey": "enemy.bronze_bell_patrol.intent.sweep",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 6
+          }
+        ]
+      },
+      {
+        "id": "intent_bronze_bell_patrol_toll",
+        "nameKey": "enemy.bronze_bell_patrol.intent.toll",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 4
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_bronze_bell_patrol_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.bronze_bell_patrol.reward.vanquish"
+      },
+      {
+        "id": "reward_bronze_bell_patrol_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.bronze_bell_patrol.reward.catalogue"
+      }
+    ]
   }
 ]

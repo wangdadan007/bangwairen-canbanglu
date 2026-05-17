@@ -6,8 +6,9 @@ describe('initial game data', () => {
     const data = loadGameData()
 
     expect(data.cards).toHaveLength(7)
-    expect(data.enemies).toHaveLength(2)
-    expect(data.tutorialUnlocks).toHaveLength(1)
+    expect(data.enemies).toHaveLength(3)
+    expect(data.encounters).toHaveLength(3)
+    expect(data.tutorialUnlocks).toHaveLength(3)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
   })
 
@@ -16,6 +17,9 @@ describe('initial game data', () => {
 
     expect(new Set(data.cards.map((card) => card.id)).size).toBe(data.cards.length)
     expect(new Set(data.enemies.map((enemy) => enemy.id)).size).toBe(data.enemies.length)
+    expect(new Set(data.encounters.map((encounter) => encounter.id)).size).toBe(
+      data.encounters.length,
+    )
     expect(new Set(data.tutorialUnlocks.map((unlock) => unlock.id)).size).toBe(
       data.tutorialUnlocks.length,
     )
@@ -47,6 +51,15 @@ describe('initial game data', () => {
     const incenseThiefMouse = getEnemyDefinition('enemy_incense_thief_mouse', data)
     expect(incenseThiefMouse?.intents[0].kind).toBe('abnormal_move')
     expect(incenseThiefMouse?.intents[0].effects[0].type).toBe('ABNORMAL_MOVE')
+
+    const bronzeBellPatrol = getEnemyDefinition('enemy_bronze_bell_patrol', data)
+    expect(bronzeBellPatrol?.intents.every((intent) => intent.kind === 'incoming_force')).toBe(true)
+
+    expect(data.encounters.map((encounter) => encounter.enemyDefinitionId)).toEqual([
+      'enemy_paper_wraith',
+      'enemy_incense_thief_mouse',
+      'enemy_bronze_bell_patrol',
+    ])
   })
 
   it('keeps logical object keys ASCII-only while allowing localized values', () => {
@@ -54,6 +67,7 @@ describe('initial game data', () => {
 
     expect(hasNonAsciiKey(data.cards)).toBe(false)
     expect(hasNonAsciiKey(data.enemies)).toBe(false)
+    expect(hasNonAsciiKey(data.encounters)).toBe(false)
     expect(hasNonAsciiKey(data.tutorialUnlocks)).toBe(false)
   })
 })

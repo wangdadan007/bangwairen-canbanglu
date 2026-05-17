@@ -1,0 +1,95 @@
+import { describe, expect, it } from 'vitest'
+import {
+  advanceTutorialRun,
+  createInitialTutorialRunState,
+  getCurrentTutorialEncounter,
+} from '../core'
+import { gameData } from '../data'
+
+describe('T09 tutorial run sequence', () => {
+  it('starts at the paper wraith tutorial battle with core unlocks', () => {
+    const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const encounter = getCurrentTutorialEncounter(run, gameData.encounters)
+
+    expect(run.status).toBe('active')
+    expect(run.currentEncounterIndex).toBe(0)
+    expect(encounter?.id).toBe('encounter_tutorial_paper_wraith')
+    expect(encounter?.enemyDefinitionId).toBe('enemy_paper_wraith')
+    expect(run.unlocks.stages).toContain('stage_core')
+    expect(run.unlocks.keywords).toEqual(
+      expect.arrayContaining(['break_form', 'ask_name', 'seal_momentum']),
+    )
+  })
+
+  it('advances through the three fixed tutorial encounters and records settlements', () => {
+    const firstRun = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const secondRun = advanceTutorialRun(
+      firstRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'catalogue',
+    )
+    const thirdRun = advanceTutorialRun(
+      secondRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+
+    expect(getCurrentTutorialEncounter(secondRun, gameData.encounters)?.id).toBe(
+      'encounter_tutorial_incense_thief_mouse',
+    )
+    expect(secondRun.completedEncounterIds).toEqual(['encounter_tutorial_paper_wraith'])
+    expect(secondRun.settlements).toEqual([
+      {
+        encounterId: 'encounter_tutorial_paper_wraith',
+        settlement: 'catalogue',
+      },
+    ])
+    expect(secondRun.unlocks.stages).toContain('stage_abnormal_boundary')
+
+    expect(getCurrentTutorialEncounter(thirdRun, gameData.encounters)?.id).toBe(
+      'encounter_tutorial_bronze_bell_patrol',
+    )
+    expect(thirdRun.completedEncounterIds).toEqual([
+      'encounter_tutorial_paper_wraith',
+      'encounter_tutorial_incense_thief_mouse',
+    ])
+    expect(thirdRun.unlocks.stages).toContain('stage_red_ink_preview')
+  })
+
+  it('marks the tutorial run complete after the bronze bell patrol battle', () => {
+    const firstRun = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const secondRun = advanceTutorialRun(
+      firstRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+    const thirdRun = advanceTutorialRun(
+      secondRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'catalogue',
+    )
+    const completedRun = advanceTutorialRun(
+      thirdRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'catalogue',
+    )
+
+    expect(completedRun.status).toBe('complete')
+    expect(getCurrentTutorialEncounter(completedRun, gameData.encounters)).toBeUndefined()
+    expect(completedRun.completedEncounterIds).toEqual([
+      'encounter_tutorial_paper_wraith',
+      'encounter_tutorial_incense_thief_mouse',
+      'encounter_tutorial_bronze_bell_patrol',
+    ])
+    expect(completedRun.settlements.map((record) => record.settlement)).toEqual([
+      'vanquish',
+      'catalogue',
+      'catalogue',
+    ])
+  })
+})
