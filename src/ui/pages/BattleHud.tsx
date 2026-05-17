@@ -10,6 +10,7 @@ import {
   failTutorialRun,
   getAvailableEventOptions,
   getAvailableRestOptions,
+  getAvailableShopItems,
   getCurrentRouteEvent,
   getCurrentRouteEncounter,
   getCurrentRouteFlowKind,
@@ -20,6 +21,7 @@ import {
   resolveTutorialRedInk,
   resolveTutorialRest,
   resolveTutorialReward,
+  resolveTutorialShopPurchase,
   resolveTutorialVerdict,
   type BattleReducerContext,
   type RouteFlowKind,
@@ -32,6 +34,7 @@ import { RestPage } from './RestPage'
 import { RewardPage } from './RewardPage'
 import { RoutePage } from './RoutePage'
 import { RunSummaryPage } from './RunSummaryPage'
+import { ShopPage } from './ShopPage'
 import { VerdictPage } from './VerdictPage'
 import type {
   ActionLogEntry,
@@ -115,10 +118,16 @@ export function BattleHud() {
     : []
   const currentRestOptions =
     currentRouteFlowKind === 'rest' ? getAvailableRestOptions(run) : []
+  const currentShopItems =
+    currentRouteFlowKind === 'shop'
+      ? getAvailableShopItems(run, gameData.shopItems, gameData.cards)
+      : []
   const currentHeading = currentEncounter
     ? t(currentEncounter.nameKey)
     : currentRouteEvent
       ? t(currentRouteEvent.nameKey)
+      : currentRouteFlowKind === 'shop' && currentRouteNode
+        ? t(currentRouteNode.nameKey)
       : currentRouteFlowKind === 'rest' && currentRouteNode
         ? t(currentRouteNode.nameKey)
       : getRunHeadline(run.status)
@@ -388,6 +397,57 @@ export function BattleHud() {
     })
   }
 
+  function buyShopItem(itemId: string, deckCardId?: RunDeckCardId) {
+    setViewState((current) => {
+      if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
+        return current
+      }
+
+      const node = getCurrentRouteNode(tutorialRoute, current.route)
+
+      if (node?.type !== 'shop' || node.isPlaceholder) {
+        return current
+      }
+
+      return {
+        ...current,
+        run: resolveTutorialShopPurchase(
+          current.run,
+          {
+            itemId,
+            deckCardId,
+            routeNodeId: node.id,
+          },
+          gameData.shopItems,
+          gameData.cards,
+        ),
+      }
+    })
+  }
+
+  function leaveShop() {
+    setViewState((current) => {
+      if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
+        return current
+      }
+
+      const node = getCurrentRouteNode(tutorialRoute, current.route)
+
+      if (node?.type !== 'shop' || node.isPlaceholder) {
+        return current
+      }
+
+      const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
+      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
+
+      return {
+        ...current,
+        route: nextRoute,
+        battle: nextEncounter ? createBattleForEncounter(nextEncounter, current.run) : current.battle,
+      }
+    })
+  }
+
   function advancePlaceholderNode() {
     setViewState((current) => {
       if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
@@ -409,7 +469,7 @@ export function BattleHud() {
     <aside className="battle-hud" aria-label="第一章路线纵切">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">路线纵切 / T21</p>
+          <p className="panel-kicker">路线纵切 / T22</p>
           <h2>{currentHeading}</h2>
         </div>
         <div className="dev-controls">
@@ -523,6 +583,21 @@ export function BattleHud() {
       ) : null}
 
       {!currentEncounter &&
+      currentRouteFlowKind === 'shop' &&
+      !hasPendingRunChoice(run) &&
+      run.status === 'active' ? (
+        <ShopPage
+          cardDefinitionsById={cardDefinitionsById}
+          deckCards={run.deckCards}
+          items={currentShopItems}
+          run={run}
+          t={t}
+          onBuy={buyShopItem}
+          onLeave={leaveShop}
+        />
+      ) : null}
+
+      {!currentEncounter &&
       currentRouteFlowKind === 'rest' &&
       !hasPendingRunChoice(run) &&
       run.status === 'active' ? (
@@ -541,6 +616,7 @@ export function BattleHud() {
       currentRouteNode &&
       currentRouteFlowKind !== 'complete' &&
       (currentRouteFlowKind !== 'event' || !currentRouteEvent) &&
+      currentRouteFlowKind !== 'shop' &&
       currentRouteFlowKind !== 'rest' &&
       !hasPendingRunChoice(run) &&
       run.status === 'active' ? (
@@ -730,6 +806,7 @@ function TutorialRunPanel({
       </div>
       <div className="run-summary-row" aria-label="牌组与奖励记录">
         <span>牌组 {run.deckCards.length} 张</span>
+        <span>香火钱 {run.currency.incenseMoney}</span>
         <span>榜裂 {run.verdict.fracture}</span>
         <span>登簿 {run.verdict.registerEntries.length}</span>
         <span>裁定 {run.verdict.records.length} 次</span>
@@ -739,6 +816,7 @@ function TutorialRunPanel({
         </span>
         <span>已领奖励 {run.rewards.length} 次</span>
         <span>事件 {run.events.records.length} 次</span>
+        <span>商店 {run.shops.records.length} 次</span>
         <span>休整 {run.rests.records.length} 次</span>
         <span>朱批 {run.redInkRecords.filter((record) => !record.skipped).length} 次</span>
         {run.pendingVerdict ? <span>待裁定</span> : null}
@@ -1365,6 +1443,10 @@ function getRouteFlowLabel(flowKind: RouteFlowKind) {
 
   if (flowKind === 'rest') {
     return '休整节点'
+  }
+
+  if (flowKind === 'shop') {
+    return '商店节点'
   }
 
   if (flowKind === 'event_placeholder') {

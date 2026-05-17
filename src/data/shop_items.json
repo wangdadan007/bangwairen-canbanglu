@@ -1,0 +1,50 @@
+[
+  {
+    "id": "shop_card_trace_name_slip",
+    "kind": "card",
+    "nameKey": "shop.item.trace_name_slip.name",
+    "descriptionKey": "shop.item.trace_name_slip.description",
+    "cost": 35,
+    "currency": "incense_money",
+    "cardDefinitionId": "card_trace_name_slip"
+  },
+  {
+    "id": "shop_card_press_door_charm",
+    "kind": "card",
+    "nameKey": "shop.item.press_door_charm.name",
+    "descriptionKey": "shop.item.press_door_charm.description",
+    "cost": 40,
+    "currency": "incense_money",
+    "cardDefinitionId": "card_press_door_charm",
+    "requiredUnlockStages": ["stage_abnormal_boundary"]
+  },
+  {
+    "id": "shop_card_red_ink_trial",
+    "kind": "card",
+    "nameKey": "shop.item.red_ink_trial.name",
+    "descriptionKey": "shop.item.red_ink_trial.description",
+    "cost": 45,
+    "currency": "incense_money",
+    "cardDefinitionId": "card_red_ink_trial",
+    "requiredUnlockStages": ["stage_red_ink_preview"]
+  },
+  {
+    "id": "shop_remove_card",
+    "kind": "remove_card",
+    "nameKey": "shop.item.remove_card.name",
+    "descriptionKey": "shop.item.remove_card.description",
+    "cost": 30,
+    "currency": "incense_money",
+    "repeatable": true
+  },
+  {
+    "id": "shop_red_ink_service",
+    "kind": "red_ink_service",
+    "nameKey": "shop.item.red_ink_service.name",
+    "descriptionKey": "shop.item.red_ink_service.description",
+    "cost": 60,
+    "currency": "incense_money",
+    "requiredUnlockStages": ["stage_red_ink_preview"],
+    "repeatable": true
+  }
+]

@@ -27,6 +27,10 @@ import {
 } from './verdictResolver'
 import { createInitialTutorialEventState } from './eventResolver'
 import { createInitialTutorialRestState } from './restResolver'
+import {
+  createInitialTutorialCurrencyState,
+  createInitialTutorialShopState,
+} from './shopResolver'
 
 export const TUTORIAL_ENCOUNTER_IDS: readonly EncounterId[] = [
   'encounter_tutorial_paper_wraith',
@@ -49,10 +53,12 @@ export function createInitialTutorialRunState(
     deckDefinitionIds,
     deckCards: createRunDeckCards(deckDefinitionIds),
     artifacts: createInitialArtifactCollection(artifactDefinitions),
+    currency: createInitialTutorialCurrencyState(),
     unlocks: createUnlockState(['stage_core'], tutorialUnlocks),
     verdict: createInitialTutorialVerdictState(),
     events: createInitialTutorialEventState(),
     rests: createInitialTutorialRestState(),
+    shops: createInitialTutorialShopState(),
     rewards: [],
     redInkRecords: [],
   }

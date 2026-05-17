@@ -11,6 +11,7 @@ describe('initial game data', () => {
     expect(data.encounters).toHaveLength(6)
     expect(data.events).toHaveLength(3)
     expect(data.routes).toHaveLength(1)
+    expect(data.shopItems).toHaveLength(5)
     expect(data.tutorialUnlocks).toHaveLength(3)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
   })
@@ -26,6 +27,7 @@ describe('initial game data', () => {
     )
     expect(new Set(data.events.map((event) => event.id)).size).toBe(data.events.length)
     expect(new Set(data.routes.map((route) => route.id)).size).toBe(data.routes.length)
+    expect(new Set(data.shopItems.map((item) => item.id)).size).toBe(data.shopItems.length)
     for (const route of data.routes) {
       expect(new Set(route.nodes.map((node) => node.id)).size).toBe(route.nodes.length)
     }
@@ -181,7 +183,7 @@ describe('initial game data', () => {
     ])
   })
 
-  it('keeps encounter enemy, event card, and route references valid', () => {
+  it('keeps encounter enemy, event card, shop card, and route references valid', () => {
     const data = loadGameData()
     const enemyIds = new Set(data.enemies.map((enemy) => enemy.id))
     const encounterIds = new Set(data.encounters.map((encounter) => encounter.id))
@@ -209,6 +211,9 @@ describe('initial game data', () => {
       ),
     ).toBe(true)
     expect(
+      data.shopItems.every((item) => !item.cardDefinitionId || cardIds.has(item.cardDefinitionId)),
+    ).toBe(true)
+    expect(
       data.routes.every((route) =>
         route.nodes.every(
           (node) =>
@@ -219,7 +224,7 @@ describe('initial game data', () => {
     ).toBe(true)
   })
 
-  it('contains the route skeleton with T21 event and rest wiring', () => {
+  it('contains the route skeleton with T22 event, shop, and rest wiring', () => {
     const data = loadGameData()
     const route = data.routes[0]
 
@@ -231,6 +236,7 @@ describe('initial game data', () => {
       'normal_battle',
       'normal_battle',
       'event',
+      'shop',
       'rest',
       'elite',
     ])
@@ -239,6 +245,12 @@ describe('initial game data', () => {
       'event_abandoned_registry_desk',
       'event_ash_altar_lamp',
       'event_cinnabar_scribe',
+    ])
+    expect(route.nodes.find((node) => node.type === 'event')?.nextNodeIds).toEqual([
+      'route_node_first_shop',
+    ])
+    expect(route.nodes.find((node) => node.type === 'shop')?.nextNodeIds).toEqual([
+      'route_node_rest_site',
     ])
     expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
       'encounter_tutorial_paper_wraith',
@@ -362,6 +374,16 @@ describe('initial game data', () => {
     ])
 
     expect(eventLocalizationKeys.every((key) => data.localization[key])).toBe(true)
+  })
+
+  it('keeps every shop item display key covered by localization', () => {
+    const data = loadGameData()
+    const shopLocalizationKeys = data.shopItems.flatMap((item) => [
+      item.nameKey,
+      item.descriptionKey,
+    ])
+
+    expect(shopLocalizationKeys.every((key) => data.localization[key])).toBe(true)
   })
 
   it('keeps every route display key covered by localization', () => {

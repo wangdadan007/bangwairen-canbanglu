@@ -47,6 +47,13 @@
           "event_ash_altar_lamp",
           "event_cinnabar_scribe"
         ],
+        "nextNodeIds": ["route_node_first_shop"]
+      },
+      {
+        "id": "route_node_first_shop",
+        "type": "shop",
+        "nameKey": "route.node.first_shop.name",
+        "descriptionKey": "route.node.first_shop.description",
         "nextNodeIds": ["route_node_rest_site"]
       },
       {

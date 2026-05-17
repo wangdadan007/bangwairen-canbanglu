@@ -423,6 +423,11 @@ button:disabled {
   background: rgba(69, 53, 30, 0.42);
 }
 
+.route-node-list li.shop .route-node-mark {
+  color: #ffd1bb;
+  background: rgba(91, 48, 30, 0.42);
+}
+
 .route-node-list li.elite .route-node-mark {
   color: #f3b7a7;
   background: rgba(91, 33, 30, 0.42);
@@ -619,6 +624,16 @@ button:disabled {
   background: rgba(44, 38, 28, 0.72);
 }
 
+.shop-page {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(178, 139, 82, 0.46);
+  border-left: 4px solid #d5794e;
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(48, 35, 25, 0.76);
+}
+
 .red-ink-page {
   display: grid;
   gap: 12px;
@@ -807,15 +822,24 @@ button:disabled {
   line-height: 1.55;
 }
 
+.shop-copy {
+  margin: 0;
+  color: #d9ccb8;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .event-state-row,
-.rest-state-row {
+.rest-state-row,
+.shop-state-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
 .event-state-row span,
-.rest-state-row span {
+.rest-state-row span,
+.shop-state-row span {
   border: 1px solid rgba(92, 161, 138, 0.36);
   border-radius: 999px;
   padding: 3px 8px;
@@ -830,13 +854,21 @@ button:disabled {
   gap: 10px;
 }
 
-.rest-column {
+.shop-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+  gap: 10px;
+}
+
+.rest-column,
+.shop-column {
   display: grid;
   align-content: start;
   gap: 8px;
 }
 
-.rest-column h4 {
+.rest-column h4,
+.shop-column h4 {
   margin: 0;
   color: #f0d28d;
   font-size: 13px;
@@ -844,13 +876,17 @@ button:disabled {
 
 .rest-deck-list,
 .rest-artifact-list,
-.rest-options {
+.rest-options,
+.shop-deck-list,
+.shop-item-list {
   display: grid;
   gap: 8px;
 }
 
 .rest-deck-card,
-.rest-option {
+.rest-option,
+.shop-deck-card,
+.shop-item {
   display: grid;
   gap: 6px;
   width: 100%;
@@ -864,19 +900,27 @@ button:disabled {
   min-height: 62px;
 }
 
-.rest-deck-card.selected {
+.shop-deck-card {
+  min-height: 62px;
+}
+
+.rest-deck-card.selected,
+.shop-deck-card.selected {
   border-color: rgba(240, 199, 116, 0.78);
   background: rgba(67, 50, 35, 0.95);
 }
 
 .rest-deck-card span,
-.rest-deck-card small {
+.rest-deck-card small,
+.shop-deck-card span,
+.shop-deck-card small {
   color: #d9ccb8;
   font-size: 12px;
   line-height: 1.45;
 }
 
-.rest-deck-card span {
+.rest-deck-card span,
+.shop-deck-card span {
   color: #f2ddac;
   font-weight: 800;
 }
@@ -909,7 +953,12 @@ button:disabled {
   min-height: 116px;
 }
 
-.rest-option:hover {
+.shop-item {
+  min-height: 108px;
+}
+
+.rest-option:hover,
+.shop-item:hover {
   background: rgba(66, 48, 38, 0.96);
 }
 
@@ -918,7 +967,13 @@ button:disabled {
   background: rgba(72, 30, 27, 0.42);
 }
 
-.rest-option-copy {
+.shop-item.red-ink {
+  border-color: rgba(201, 79, 61, 0.55);
+  background: rgba(72, 30, 27, 0.42);
+}
+
+.rest-option-copy,
+.shop-item-copy {
   color: #d9ccb8;
   font-size: 13px;
   line-height: 1.45;
@@ -1468,7 +1523,8 @@ button:disabled {
   }
 
   .red-ink-grid,
-  .rest-layout {
+  .rest-layout,
+  .shop-layout {
     grid-template-columns: 1fr;
   }
 

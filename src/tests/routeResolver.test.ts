@@ -12,7 +12,7 @@ import { gameData } from '../data'
 
 const route = gameData.routes[0]
 
-describe('T21 route skeleton', () => {
+describe('T22 route skeleton', () => {
   it('starts at the first tutorial battle node', () => {
     const state = createInitialRouteState(route)
     const currentNode = getCurrentRouteNode(route, state)
@@ -26,7 +26,7 @@ describe('T21 route skeleton', () => {
     expect(getRouteNodeStatus(state, 'route_node_tutorial_incense_thief_mouse')).toBe('locked')
   })
 
-  it('advances through fixed battle nodes into the event and rest nodes', () => {
+  it('advances through fixed battle nodes into the event, shop, and rest nodes', () => {
     const first = createInitialRouteState(route)
     const second = completeCurrentRouteNode(route, first)
     const third = completeCurrentRouteNode(route, second)
@@ -59,16 +59,19 @@ describe('T21 route skeleton', () => {
     ])
   })
 
-  it('supports the event and rest nodes before entering the first elite encounter', () => {
+  it('supports the event, shop, and rest nodes before entering the first elite encounter', () => {
     const firstBattleDone = completeCurrentRouteNode(route, createInitialRouteState(route))
     const secondBattleDone = completeCurrentRouteNode(route, firstBattleDone)
     const thirdBattleDone = completeCurrentRouteNode(route, secondBattleDone)
     const stateAfterFourthBattle = completeCurrentRouteNode(route, thirdBattleDone)
-    const restState = completeCurrentRouteNode(route, stateAfterFourthBattle)
+    const shopState = completeCurrentRouteNode(route, stateAfterFourthBattle)
+    const restState = completeCurrentRouteNode(route, shopState)
     const eliteState = completeCurrentRouteNode(route, restState)
 
     expect(getCurrentRouteNode(route, stateAfterFourthBattle)?.type).toBe('event')
     expect(getCurrentRouteNode(route, stateAfterFourthBattle)?.isPlaceholder).toBeUndefined()
+    expect(getCurrentRouteNode(route, shopState)?.type).toBe('shop')
+    expect(getCurrentRouteNode(route, shopState)?.isPlaceholder).toBeUndefined()
     expect(getCurrentRouteNode(route, restState)?.type).toBe('rest')
     expect(getCurrentRouteNode(route, restState)?.isPlaceholder).toBeUndefined()
     expect(getCurrentRouteNode(route, eliteState)?.type).toBe('elite')
@@ -82,7 +85,8 @@ describe('T21 route skeleton', () => {
     const third = completeCurrentRouteNode(route, second)
     const fourth = completeCurrentRouteNode(route, third)
     const eventState = completeCurrentRouteNode(route, fourth)
-    const restState = completeCurrentRouteNode(route, eventState)
+    const shopState = completeCurrentRouteNode(route, eventState)
+    const restState = completeCurrentRouteNode(route, shopState)
     const eliteState = completeCurrentRouteNode(route, restState)
 
     expect(getRouteBattleEncounterIds(route)).toEqual([
@@ -98,6 +102,7 @@ describe('T21 route skeleton', () => {
     )
     expect(getCurrentRouteFlowKind(route, eventState)).toBe('event')
     expect(getCurrentRouteEncounter(route, eventState, gameData.encounters)).toBeUndefined()
+    expect(getCurrentRouteFlowKind(route, shopState)).toBe('shop')
     expect(getCurrentRouteFlowKind(route, restState)).toBe('rest')
     expect(getCurrentRouteFlowKind(route, eliteState)).toBe('battle')
   })

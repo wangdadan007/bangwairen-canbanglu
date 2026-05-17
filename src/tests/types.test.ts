@@ -12,6 +12,7 @@ import type {
   RouteDefinition,
   RouteState,
   TutorialRestOption,
+  TutorialShopItemDefinition,
   TutorialRunState,
 } from '../types'
 
@@ -147,6 +148,9 @@ describe('core type contracts', () => {
       artifacts: {
         artifacts: [],
       },
+      currency: {
+        incenseMoney: 100,
+      },
       unlocks: {
         stages: ['stage_core'],
         keywords: ['break_form'],
@@ -162,6 +166,10 @@ describe('core type contracts', () => {
         records: [],
       },
       rests: {
+        records: [],
+      },
+      shops: {
+        purchasedItemIds: [],
         records: [],
       },
       rewards: [],
@@ -225,6 +233,21 @@ describe('core type contracts', () => {
     } satisfies TutorialRestOption
 
     expect(restOption.id).toBe('remove_card')
+  })
+
+  it('accepts shop item contracts', () => {
+    const shopItem = {
+      id: 'shop_card_trace_name_slip',
+      kind: 'card',
+      nameKey: 'shop.item.trace_name_slip.name',
+      descriptionKey: 'shop.item.trace_name_slip.description',
+      cost: 35,
+      currency: 'incense_money',
+      cardDefinitionId: 'card_trace_name_slip',
+      requiredUnlockStages: ['stage_core'],
+    } satisfies TutorialShopItemDefinition
+
+    expect(shopItem.currency).toBe('incense_money')
   })
 
   it('accepts the route definition and state contracts', () => {

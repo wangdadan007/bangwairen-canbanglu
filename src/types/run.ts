@@ -3,6 +3,7 @@ import type { CardId, EncounterId, EventId, LocalizationKey } from './common'
 import type { CardAnnotation } from './card'
 import type { UnlockState, VictorySettlement } from './battle'
 import type { TutorialRestState } from './rest'
+import type { TutorialCurrencyState, TutorialShopState } from './shop'
 import type { TutorialVerdictOffer, TutorialVerdictState } from './verdict'
 
 export type TutorialRunStatus = 'active' | 'complete' | 'failed'
@@ -91,10 +92,12 @@ export interface TutorialRunState {
   readonly deckDefinitionIds: readonly CardId[]
   readonly deckCards: readonly RunDeckCard[]
   readonly artifacts: ArtifactCollectionState
+  readonly currency: TutorialCurrencyState
   readonly unlocks: UnlockState
   readonly verdict: TutorialVerdictState
   readonly events: TutorialEventState
   readonly rests: TutorialRestState
+  readonly shops: TutorialShopState
   readonly pendingVerdict?: TutorialVerdictOffer
   readonly pendingReward?: TutorialRewardOffer
   readonly pendingRedInk?: TutorialRedInkOffer
@@ -117,6 +120,8 @@ export interface TutorialRunSummary {
   readonly verdictRedInkCount: number
   readonly verdictEraseCount: number
   readonly restCount: number
+  readonly shopPurchaseCount: number
+  readonly incenseMoney: number
   readonly fracture: number
   readonly deckSize: number
   readonly artifactCount: number

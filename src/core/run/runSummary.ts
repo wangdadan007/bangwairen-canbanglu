@@ -18,6 +18,8 @@ export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSumm
       .length,
     verdictEraseCount: run.verdict.records.filter((record) => record.choiceId === 'erase').length,
     restCount: run.rests.records.length,
+    shopPurchaseCount: run.shops.records.length,
+    incenseMoney: run.currency.incenseMoney,
     fracture: run.verdict.fracture,
     deckSize: run.deckCards.length,
     artifactCount: run.artifacts.artifacts.length,
