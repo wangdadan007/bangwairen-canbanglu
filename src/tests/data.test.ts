@@ -6,7 +6,7 @@ describe('initial game data', () => {
     const data = loadGameData()
 
     expect(data.cards).toHaveLength(12)
-    expect(data.enemies).toHaveLength(3)
+    expect(data.enemies).toHaveLength(5)
     expect(data.encounters).toHaveLength(3)
     expect(data.tutorialUnlocks).toHaveLength(3)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
@@ -64,6 +64,22 @@ describe('initial game data', () => {
     const bronzeBellPatrol = getEnemyDefinition('enemy_bronze_bell_patrol', data)
     expect(bronzeBellPatrol?.intents.every((intent) => intent.kind === 'incoming_force')).toBe(true)
 
+    const namelessPaperImp = getEnemyDefinition('enemy_nameless_paper_imp', data)
+    expect(namelessPaperImp?.tier).toBe('minion')
+    expect(namelessPaperImp?.nameSlots).toBe(0)
+    expect(namelessPaperImp?.intents[0].effects[0]).toEqual({
+      type: 'INCOMING_FORCE',
+      amount: 3,
+    })
+
+    const incenseAshLouse = getEnemyDefinition('enemy_incense_ash_louse', data)
+    expect(incenseAshLouse?.tier).toBe('minion')
+    expect(incenseAshLouse?.nameSlots).toBe(0)
+    expect(incenseAshLouse?.intents.map((intent) => intent.kind)).toEqual([
+      'incoming_force',
+      'abnormal_move',
+    ])
+
     expect(data.encounters.map((encounter) => encounter.enemyDefinitionId)).toEqual([
       'enemy_paper_wraith',
       'enemy_incense_thief_mouse',
@@ -78,6 +94,23 @@ describe('initial game data', () => {
     expect(hasNonAsciiKey(data.enemies)).toBe(false)
     expect(hasNonAsciiKey(data.encounters)).toBe(false)
     expect(hasNonAsciiKey(data.tutorialUnlocks)).toBe(false)
+  })
+
+  it('keeps every enemy display key covered by localization', () => {
+    const data = loadGameData()
+    const enemyLocalizationKeys = data.enemies.flatMap((enemy) => [
+      enemy.nameKey,
+      ...(enemy.nameSlotDefinitions?.map((slot) => slot.nameKey) ?? []),
+      ...enemy.intents.flatMap((intent) => [
+        intent.nameKey,
+        ...intent.effects.flatMap((effect) =>
+          effect.type === 'ABNORMAL_MOVE' ? [effect.move.descriptionKey] : [],
+        ),
+      ]),
+      ...(enemy.rewards?.map((reward) => reward.descriptionKey) ?? []),
+    ])
+
+    expect(enemyLocalizationKeys.every((key) => data.localization[key])).toBe(true)
   })
 })
 

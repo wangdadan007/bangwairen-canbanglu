@@ -149,5 +149,62 @@
         "descriptionKey": "enemy.bronze_bell_patrol.reward.catalogue"
       }
     ]
+  },
+  {
+    "id": "enemy_nameless_paper_imp",
+    "nameKey": "enemy.nameless_paper_imp.name",
+    "maxForm": 10,
+    "nameSlots": 0,
+    "tier": "minion",
+    "traits": ["chapter_one", "nameless", "paper", "low_cost"],
+    "intents": [
+      {
+        "id": "intent_nameless_paper_imp_flit",
+        "nameKey": "enemy.nameless_paper_imp.intent.flit",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy_incense_ash_louse",
+    "nameKey": "enemy.incense_ash_louse.name",
+    "maxForm": 12,
+    "nameSlots": 0,
+    "tier": "minion",
+    "traits": ["chapter_one", "nameless", "abnormal_move", "steal_incense", "low_cost"],
+    "intents": [
+      {
+        "id": "intent_incense_ash_louse_swarm",
+        "nameKey": "enemy.incense_ash_louse.intent.swarm",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "intent_incense_ash_louse_siphon",
+        "nameKey": "enemy.incense_ash_louse.intent.siphon",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "steal_incense",
+              "amount": 1,
+              "descriptionKey": "enemy.incense_ash_louse.intent.siphon.description"
+            }
+          }
+        ]
+      }
+    ]
   }
 ]
