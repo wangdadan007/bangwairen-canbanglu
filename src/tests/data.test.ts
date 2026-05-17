@@ -5,7 +5,7 @@ describe('initial game data', () => {
   it('loads starter cards, tutorial enemy, unlocks, and localization', () => {
     const data = loadGameData()
 
-    expect(data.cards).toHaveLength(12)
+    expect(data.cards).toHaveLength(18)
     expect(data.enemies).toHaveLength(5)
     expect(data.encounters).toHaveLength(3)
     expect(data.tutorialUnlocks).toHaveLength(3)
@@ -44,9 +44,37 @@ describe('initial game data', () => {
     expect(getCardDefinition('card_quiet_incense', data)?.effects[0].type).toBe('GAIN_INCENSE')
     expect(getCardDefinition('card_split_form_talisman', data)?.tags).toContain('reward')
     expect(getCardDefinition('card_trace_name_slip', data)?.tags).toContain('catalogue_reward')
+    expect(getCardDefinition('card_thunder_splinter', data)?.effects[0]).toEqual({
+      type: 'BREAK_SHAPE',
+      target: 'selected_enemy',
+      amount: 8,
+    })
+    expect(getCardDefinition('card_name_hook_charm', data)?.effects.map((effect) => effect.type)).toEqual([
+      'ASK_NAME',
+      'BREAK_SHAPE',
+      'DRAW',
+    ])
+    expect(getCardDefinition('card_heavy_edict', data)?.effects[1]).toEqual({
+      type: 'DRAW',
+      target: 'self',
+      count: 1,
+      condition: {
+        type: 'THIS_TURN_NAMED_ENEMY',
+      },
+    })
+    expect(getCardDefinition('card_mirror_slip', data)?.tags).toContain('catalogue_reward')
     expect(getCardDefinition('card_press_door_charm', data)?.unlockStage).toBe(
       'stage_abnormal_boundary',
     )
+    expect(getCardDefinition('card_counterforce_talisman', data)?.effects.map((effect) => effect.type)).toEqual([
+      'SEAL_MOMENTUM',
+      'BREAK_SHAPE',
+    ])
+    expect(getCardDefinition('card_joint_seal_tablet', data)?.effects[0]).toEqual({
+      type: 'SEAL_MOMENTUM',
+      target: 'all_enemies',
+      amount: 3,
+    })
     expect(getCardDefinition('card_watch_incense_line', data)?.tags).toContain('abnormal_move')
     expect(getCardDefinition('card_red_ink_trial', data)?.unlockStage).toBe(
       'stage_red_ink_preview',
@@ -87,6 +115,38 @@ describe('initial game data', () => {
     ])
   })
 
+  it('expands the early card pool across break form, ask name, and seal momentum', () => {
+    const data = loadGameData()
+    const cardsByDirection = {
+      breakForm: data.cards.filter((card) => card.tags.includes('break_form')),
+      askName: data.cards.filter((card) => card.tags.includes('ask_name')),
+      sealMomentum: data.cards.filter((card) => card.tags.includes('seal_momentum')),
+    }
+
+    expect(cardsByDirection.breakForm).toHaveLength(7)
+    expect(cardsByDirection.askName).toHaveLength(5)
+    expect(cardsByDirection.sealMomentum).toHaveLength(4)
+    expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(11)
+  })
+
+  it('keeps early chapter reward numbers within the current enemy curve', () => {
+    const data = loadGameData()
+    const rewardCards = data.cards.filter((card) => card.tags.includes('reward'))
+    const directBreakAmounts = rewardCards.flatMap((card) =>
+      card.effects
+        .filter((effect) => effect.type === 'BREAK_SHAPE')
+        .map((effect) => effect.amount),
+    )
+    const sealMomentumAmounts = rewardCards.flatMap((card) =>
+      card.effects
+        .filter((effect) => effect.type === 'SEAL_MOMENTUM')
+        .map((effect) => effect.amount),
+    )
+
+    expect(Math.max(...directBreakAmounts)).toBeLessThanOrEqual(8)
+    expect(Math.max(...sealMomentumAmounts)).toBeLessThanOrEqual(5)
+  })
+
   it('keeps logical object keys ASCII-only while allowing localized values', () => {
     const data = loadGameData()
 
@@ -94,6 +154,17 @@ describe('initial game data', () => {
     expect(hasNonAsciiKey(data.enemies)).toBe(false)
     expect(hasNonAsciiKey(data.encounters)).toBe(false)
     expect(hasNonAsciiKey(data.tutorialUnlocks)).toBe(false)
+  })
+
+  it('keeps every card display key covered by localization', () => {
+    const data = loadGameData()
+    const cardLocalizationKeys = data.cards.flatMap((card) => [
+      card.nameKey,
+      card.descriptionKey,
+      card.rulesTextKey,
+    ])
+
+    expect(cardLocalizationKeys.every((key) => data.localization[key])).toBe(true)
   })
 
   it('keeps every enemy display key covered by localization', () => {

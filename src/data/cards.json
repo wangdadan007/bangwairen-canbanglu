@@ -179,6 +179,98 @@
     ]
   },
   {
+    "id": "card_thunder_splinter",
+    "nameKey": "card.thunder_splinter.name",
+    "descriptionKey": "card.thunder_splinter.description",
+    "rulesTextKey": "card.thunder_splinter.rules",
+    "cost": 2,
+    "type": "talisman",
+    "unlockStage": "stage_core",
+    "tags": ["reward", "break_form"],
+    "effects": [
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 8
+      }
+    ]
+  },
+  {
+    "id": "card_name_hook_charm",
+    "nameKey": "card.name_hook_charm.name",
+    "descriptionKey": "card.name_hook_charm.description",
+    "rulesTextKey": "card.name_hook_charm.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_core",
+    "tags": ["reward", "ask_name", "break_form"],
+    "effects": [
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      },
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 1,
+        "condition": {
+          "type": "TARGET_HAS_REVEALED_NAME_SLOT"
+        }
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1,
+        "condition": {
+          "type": "THIS_TURN_NAMED_ENEMY"
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_heavy_edict",
+    "nameKey": "card.heavy_edict.name",
+    "descriptionKey": "card.heavy_edict.description",
+    "rulesTextKey": "card.heavy_edict.rules",
+    "cost": 2,
+    "type": "edict",
+    "unlockStage": "stage_core",
+    "tags": ["reward", "break_form", "draw"],
+    "effects": [
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 6
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1,
+        "condition": {
+          "type": "THIS_TURN_NAMED_ENEMY"
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_mirror_slip",
+    "nameKey": "card.mirror_slip.name",
+    "descriptionKey": "card.mirror_slip.description",
+    "rulesTextKey": "card.mirror_slip.rules",
+    "cost": 0,
+    "type": "edict",
+    "unlockStage": "stage_core",
+    "tags": ["reward", "catalogue_reward", "ask_name", "exhaust"],
+    "effects": [
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      }
+    ]
+  },
+  {
     "id": "card_press_door_charm",
     "nameKey": "card.press_door_charm.name",
     "descriptionKey": "card.press_door_charm.description",
@@ -192,6 +284,45 @@
         "type": "SEAL_MOMENTUM",
         "target": "selected_enemy",
         "amount": 5
+      }
+    ]
+  },
+  {
+    "id": "card_counterforce_talisman",
+    "nameKey": "card.counterforce_talisman.name",
+    "descriptionKey": "card.counterforce_talisman.description",
+    "rulesTextKey": "card.counterforce_talisman.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_abnormal_boundary",
+    "tags": ["reward", "seal_momentum", "incoming_force", "break_form"],
+    "effects": [
+      {
+        "type": "SEAL_MOMENTUM",
+        "target": "selected_enemy",
+        "amount": 2
+      },
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "card_joint_seal_tablet",
+    "nameKey": "card.joint_seal_tablet.name",
+    "descriptionKey": "card.joint_seal_tablet.description",
+    "rulesTextKey": "card.joint_seal_tablet.rules",
+    "cost": 2,
+    "type": "counter",
+    "unlockStage": "stage_abnormal_boundary",
+    "tags": ["reward", "seal_momentum", "incoming_force"],
+    "effects": [
+      {
+        "type": "SEAL_MOMENTUM",
+        "target": "all_enemies",
+        "amount": 3
       }
     ]
   },

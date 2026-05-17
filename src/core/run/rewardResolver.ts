@@ -142,7 +142,10 @@ function selectRewardOptions({
     : []
   const highQualityCards =
     quality === 'high' ? cards.filter((card) => card.tags.includes('catalogue_reward')) : []
-  const orderedCards = uniqueCards([...latestStageCards, ...highQualityCards, ...cards])
+  const orderedCards =
+    quality === 'high'
+      ? uniqueCards([...highQualityCards, ...latestStageCards, ...cards])
+      : uniqueCards([...latestStageCards, ...cards])
   const optionCount = quality === 'high' ? 3 : 2
 
   return orderedCards.slice(0, optionCount).map((card, index) => ({

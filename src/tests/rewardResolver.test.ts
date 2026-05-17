@@ -70,6 +70,42 @@ describe('T10 tutorial rewards', () => {
     expect(afterRedInk.map((card) => card.id)).toContain('card_red_ink_trial')
   })
 
+  it('keeps the expanded T15 card pool gated by tutorial unlocks', () => {
+    const coreUnlocks = createUnlockState(['stage_core'], gameData.tutorialUnlocks)
+    const abnormalUnlocks = createUnlockState(
+      ['stage_core', 'stage_abnormal_boundary'],
+      gameData.tutorialUnlocks,
+    )
+    const coreHighRewardIds = getAvailableTutorialRewardCards(
+      gameData.cards,
+      coreUnlocks,
+      'high',
+    ).map((card) => card.id)
+    const coreOrdinaryRewardIds = getAvailableTutorialRewardCards(
+      gameData.cards,
+      coreUnlocks,
+      'ordinary',
+    ).map((card) => card.id)
+    const abnormalRewardIds = getAvailableTutorialRewardCards(
+      gameData.cards,
+      abnormalUnlocks,
+      'ordinary',
+    ).map((card) => card.id)
+
+    expect(coreHighRewardIds).toEqual(
+      expect.arrayContaining([
+        'card_thunder_splinter',
+        'card_name_hook_charm',
+        'card_heavy_edict',
+        'card_mirror_slip',
+      ]),
+    )
+    expect(coreOrdinaryRewardIds).not.toContain('card_mirror_slip')
+    expect(abnormalRewardIds).toEqual(
+      expect.arrayContaining(['card_counterforce_talisman', 'card_joint_seal_tablet']),
+    )
+  })
+
   it('adds the selected reward card to the persistent tutorial deck', () => {
     const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
     const advancedRun = advanceTutorialRun(
