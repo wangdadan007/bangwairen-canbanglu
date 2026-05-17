@@ -60,7 +60,7 @@ describe('T12 verdict MVP', () => {
 
     expect(nextRun.pendingVerdict).toBeUndefined()
     expect(nextRun.verdict.maxIncenseBonus).toBe(1)
-    expect(nextRun.verdict.fracture).toBe(0)
+    expect(nextRun.resources.fracture).toBe(0)
     expect(nextRun.verdict.registerEntries).toEqual([
       expect.objectContaining({
         encounterId: 'encounter_tutorial_paper_wraith',
@@ -99,7 +99,7 @@ describe('T12 verdict MVP', () => {
     const nextRun = resolveTutorialVerdict(run, 'erase')
 
     expect(nextRun.pendingVerdict).toBeUndefined()
-    expect(nextRun.verdict.fracture).toBe(1)
+    expect(nextRun.resources.fracture).toBe(1)
     expect(nextRun.deckDefinitionIds.slice(-1)).toEqual(['card_split_form_talisman'])
     expect(nextRun.deckCards[nextRun.deckCards.length - 1]?.definitionId).toBe(
       'card_split_form_talisman',

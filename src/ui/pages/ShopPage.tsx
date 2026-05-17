@@ -45,7 +45,9 @@ export function ShopPage({
         <span>香火钱 {run.currency.incenseMoney}</span>
         <span>牌组 {deckCards.length} 张</span>
         <span>已购 {run.shops.records.length} 次</span>
-        <span>榜裂 {run.verdict.fracture}</span>
+        <span>墨 {run.resources.ink}</span>
+        <span>劫数 {run.resources.doom}</span>
+        <span>榜裂 {run.resources.fracture}</span>
         <span>朱批 {run.redInkRecords.filter((record) => !record.skipped).length} 次</span>
       </div>
 

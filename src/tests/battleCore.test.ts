@@ -168,6 +168,50 @@ describe('battle core loop', () => {
     const lastLog = nextState.actionLog[nextState.actionLog.length - 1]
     expect(lastLog?.type).toBe('VICTORY_SETTLED')
   })
+
+  it('tracks T23 ink and doom resource card effects in battle state and action log', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: paperWraith,
+      deckDefinitionIds: ['card_ink_rubbing_slip', 'card_borrowed_doom_talisman'],
+      unlocks: {
+        stages: ['stage_core', 'stage_run_resources'],
+        keywords: ['ask_name', 'ink', 'doom', 'gain_incense'],
+      },
+    })
+    const inkCard = state.hand.find((card) => card.definitionId === 'card_ink_rubbing_slip')
+    const doomCard = state.hand.find((card) => card.definitionId === 'card_borrowed_doom_talisman')
+
+    if (!inkCard || !doomCard) {
+      throw new Error('Expected T23 resource cards in opening hand')
+    }
+
+    const afterInk = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: inkCard.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      context,
+    )
+    const afterDoom = reduceBattleState(
+      afterInk,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: doomCard.instanceId,
+        targetEnemyInstanceId: afterInk.enemies[0].instanceId,
+      },
+      context,
+    )
+
+    expect(afterInk.resources.ink).toBe(1)
+    expect(afterDoom.resources.doom).toBe(1)
+    expect(afterDoom.player.incense).toBe(4)
+    expect(afterDoom.actionLog.map((entry) => entry.type)).toEqual(
+      expect.arrayContaining(['INK_GAINED', 'DOOM_GAINED']),
+    )
+  })
 })
 
 function withPlayerIncense(state: CombatState, incense: number): CombatState {

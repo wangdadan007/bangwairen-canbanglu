@@ -37,6 +37,8 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
         <SummaryMetric label="休整" value={summary.restCount} />
         <SummaryMetric label="商店" value={summary.shopPurchaseCount} />
         <SummaryMetric label="香火钱" value={summary.incenseMoney} />
+        <SummaryMetric label="墨" value={summary.ink} />
+        <SummaryMetric label="劫数" value={summary.doom} />
         <SummaryMetric label="榜裂" value={summary.fracture} />
         <SummaryMetric label="牌组" value={summary.deckSize} />
         <SummaryMetric label="法宝" value={summary.artifactCount} />

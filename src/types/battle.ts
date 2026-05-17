@@ -1,6 +1,9 @@
+import type { AltarState } from './altar'
+import type { ArtifactCollectionState } from './artifact'
 import type { CardInstance } from './card'
-import type { CardInstanceId, GameEntityId, JsonValue, UnlockStageId } from './common'
+import type { ArtifactId, CardInstanceId, GameEntityId, JsonValue, UnlockStageId } from './common'
 import type { EnemyState } from './enemy'
+import type { TutorialResourceState } from './resource'
 
 export type BattlePhase =
   | 'setup'
@@ -63,6 +66,13 @@ export type ActionLogType =
   | 'PILE_SHUFFLED'
   | 'INCENSE_GAINED'
   | 'INCENSE_SPENT'
+  | 'INK_GAINED'
+  | 'DOOM_GAINED'
+  | 'ALTAR_PLACED'
+  | 'ALTAR_TRIGGERED'
+  | 'ALTAR_EXPIRED'
+  | 'ARTIFACT_TRIGGERED'
+  | 'ARTIFACT_BACKLASH_TRIGGERED'
   | 'FORM_BROKEN'
   | 'NAME_ASKED'
   | 'NAME_SLOT_REVEALED'
@@ -75,6 +85,11 @@ export type ActionLogType =
   | 'VICTORY_SETTLED'
   | 'DEBUG'
 
+export interface PendingArtifactBreakShapeBonus {
+  readonly artifactId: ArtifactId
+  readonly amount: number
+}
+
 export interface CombatState {
   readonly turn: number
   readonly phase: BattlePhase
@@ -85,6 +100,12 @@ export interface CombatState {
   readonly discardPile: readonly CardInstance[]
   readonly exhaustPile: readonly CardInstance[]
   readonly nextTurnIncensePenalty: number
+  readonly resources: TutorialResourceState
+  readonly temporaryResourceDelta: TutorialResourceState
+  readonly altars: readonly AltarState[]
+  readonly artifacts: ArtifactCollectionState
+  readonly pendingArtifactBreakShapeBonus?: PendingArtifactBreakShapeBonus
+  readonly triggeredArtifactIds: readonly ArtifactId[]
   readonly actionLog: readonly ActionLogEntry[]
   readonly result: BattleResult
 }

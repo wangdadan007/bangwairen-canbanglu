@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import {
   advanceTutorialRun,
+  type ArtifactBacklashRecord,
   type ArtifactBattleProgressInput,
   completeCurrentRouteNode,
   createInitialBattleState,
@@ -17,6 +18,7 @@ import {
   getCurrentRouteNode,
   getRouteBattleEncounterIds,
   reduceBattleState,
+  resolveArtifactBacklashesAtBattleStart,
   resolveTutorialEvent,
   resolveTutorialRedInk,
   resolveTutorialRest,
@@ -39,8 +41,9 @@ import { VerdictPage } from './VerdictPage'
 import type {
   ActionLogEntry,
   AbnormalMoveDefinition,
-  ArtifactDefinition,
+  AltarState,
   CardDefinition,
+  CardId,
   CardInstance,
   CombatState,
   EncounterDefinition,
@@ -94,6 +97,19 @@ function createBattle(
   unlocks: UnlockState,
   deckCards?: readonly RunDeckCard[],
   maxIncenseBonus = 0,
+  resources = {
+    ink: 0,
+    doom: 0,
+    fracture: 0,
+  },
+  temporaryResourceDelta = {
+    ink: 0,
+    doom: 0,
+    fracture: 0,
+  },
+  artifacts?: TutorialRunState['artifacts'],
+  extraHandDefinitionIds: readonly CardId[] = [],
+  artifactBacklashRecords: readonly ArtifactBacklashRecord[] = [],
 ) {
   return createInitialBattleState({
     cardDefinitions: gameData.cards,
@@ -101,6 +117,11 @@ function createBattle(
     unlocks,
     deckCards,
     maxIncenseBonus,
+    resources,
+    temporaryResourceDelta,
+    artifacts,
+    extraHandDefinitionIds,
+    artifactBacklashRecords,
   })
 }
 
@@ -134,7 +155,16 @@ export function BattleHud() {
   const enemy = currentEncounter ? battle.enemies[0] : undefined
   const runSummary = useMemo(() => createTutorialRunSummary(run), [run])
   const cardDefinitionsById = useMemo(() => createCardDefinitionMap(gameData.cards), [])
-  const allCardsByInstanceId = useMemo(() => createCardInstanceMap(battle.player.deck), [battle])
+  const allCardsByInstanceId = useMemo(
+    () =>
+      createCardInstanceMap([
+        ...battle.player.deck,
+        ...battle.hand,
+        ...battle.discardPile,
+        ...battle.exhaustPile,
+      ]),
+    [battle],
+  )
   const pressureFeedback = useMemo(
     () => createPressureFeedback(battle, cardDefinitionsById, allCardsByInstanceId),
     [allCardsByInstanceId, battle, cardDefinitionsById],
@@ -218,9 +248,12 @@ export function BattleHud() {
         return createInitialTutorialBattleView()
       }
 
+      const nextBattleView = createBattleForEncounter(encounter, current.run)
+
       return {
         ...current,
-        battle: createBattleForEncounter(encounter, current.run),
+        run: nextBattleView.run,
+        battle: nextBattleView.battle,
       }
     })
   }
@@ -279,6 +312,7 @@ export function BattleHud() {
             }
           : undefined,
         defeatedEnemy ? createArtifactBattleProgress(current.battle, defeatedEnemy) : undefined,
+        getPersistentBattleResources(current.battle),
       )
       const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
 
@@ -294,13 +328,15 @@ export function BattleHud() {
     setViewState((current) => {
       const nextRun = resolveTutorialReward(current.run, cardDefinitionId)
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
+      const nextBattleView =
+        nextEncounter && !hasPendingRunChoice(nextRun)
+          ? createBattleForEncounter(nextEncounter, nextRun)
+          : undefined
 
       return {
         ...current,
-        run: nextRun,
-        battle: nextEncounter && !hasPendingRunChoice(nextRun)
-          ? createBattleForEncounter(nextEncounter, nextRun)
-          : current.battle,
+        run: nextBattleView?.run ?? nextRun,
+        battle: nextBattleView?.battle ?? current.battle,
       }
     })
   }
@@ -309,13 +345,15 @@ export function BattleHud() {
     setViewState((current) => {
       const nextRun = resolveTutorialVerdict(current.run, choiceId)
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
+      const nextBattleView =
+        nextEncounter && !hasPendingRunChoice(nextRun)
+          ? createBattleForEncounter(nextEncounter, nextRun)
+          : undefined
 
       return {
         ...current,
-        run: nextRun,
-        battle: nextEncounter && !hasPendingRunChoice(nextRun)
-          ? createBattleForEncounter(nextEncounter, nextRun)
-          : current.battle,
+        run: nextBattleView?.run ?? nextRun,
+        battle: nextBattleView?.battle ?? current.battle,
       }
     })
   }
@@ -327,13 +365,15 @@ export function BattleHud() {
           ? resolveTutorialRedInk(current.run, { deckCardId, annotationId })
           : resolveTutorialRedInk(current.run)
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
+      const nextBattleView =
+        nextEncounter && !hasPendingRunChoice(nextRun)
+          ? createBattleForEncounter(nextEncounter, nextRun)
+          : undefined
 
       return {
         ...current,
-        run: nextRun,
-        battle: nextEncounter && !hasPendingRunChoice(nextRun)
-          ? createBattleForEncounter(nextEncounter, nextRun)
-          : current.battle,
+        run: nextBattleView?.run ?? nextRun,
+        battle: nextBattleView?.battle ?? current.battle,
       }
     })
   }
@@ -354,14 +394,15 @@ export function BattleHud() {
       const nextRun = resolveTutorialEvent(current.run, event, optionId)
       const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
+      const nextBattleView =
+        nextEncounter && !hasPendingRunChoice(nextRun)
+          ? createBattleForEncounter(nextEncounter, nextRun)
+          : undefined
 
       return {
-        run: nextRun,
+        run: nextBattleView?.run ?? nextRun,
         route: nextRoute,
-        battle:
-          nextEncounter && !hasPendingRunChoice(nextRun)
-            ? createBattleForEncounter(nextEncounter, nextRun)
-            : current.battle,
+        battle: nextBattleView?.battle ?? current.battle,
       }
     })
   }
@@ -385,14 +426,15 @@ export function BattleHud() {
       })
       const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
+      const nextBattleView =
+        nextEncounter && !hasPendingRunChoice(nextRun)
+          ? createBattleForEncounter(nextEncounter, nextRun)
+          : undefined
 
       return {
-        run: nextRun,
+        run: nextBattleView?.run ?? nextRun,
         route: nextRoute,
-        battle:
-          nextEncounter && !hasPendingRunChoice(nextRun)
-            ? createBattleForEncounter(nextEncounter, nextRun)
-            : current.battle,
+        battle: nextBattleView?.battle ?? current.battle,
       }
     })
   }
@@ -439,11 +481,15 @@ export function BattleHud() {
 
       const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
+      const nextBattleView = nextEncounter
+        ? createBattleForEncounter(nextEncounter, current.run)
+        : undefined
 
       return {
         ...current,
         route: nextRoute,
-        battle: nextEncounter ? createBattleForEncounter(nextEncounter, current.run) : current.battle,
+        run: nextBattleView?.run ?? current.run,
+        battle: nextBattleView?.battle ?? current.battle,
       }
     })
   }
@@ -456,11 +502,15 @@ export function BattleHud() {
 
       const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
+      const nextBattleView = nextEncounter
+        ? createBattleForEncounter(nextEncounter, current.run)
+        : undefined
 
       return {
         ...current,
         route: nextRoute,
-        battle: nextEncounter ? createBattleForEncounter(nextEncounter, current.run) : current.battle,
+        run: nextBattleView?.run ?? current.run,
+        battle: nextBattleView?.battle ?? current.battle,
       }
     })
   }
@@ -469,7 +519,7 @@ export function BattleHud() {
     <aside className="battle-hud" aria-label="第一章路线纵切">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">路线纵切 / T22</p>
+          <p className="panel-kicker">路线纵切 / T23</p>
           <h2>{currentHeading}</h2>
         </div>
         <div className="dev-controls">
@@ -541,6 +591,7 @@ export function BattleHud() {
         <VerdictPage
           offer={run.pendingVerdict}
           t={t}
+          resources={run.resources}
           verdict={run.verdict}
           onChoose={chooseVerdict}
         />
@@ -645,10 +696,14 @@ export function BattleHud() {
         </div>
         <div className="resource-grid" aria-label="玩家资源">
           <Metric label="香火" value={`${battle.player.incense} / ${battle.player.maxIncense}`} />
+          <Metric label="墨" value={battle.resources.ink.toString()} />
+          <Metric label="劫数" value={battle.resources.doom.toString()} />
+          <Metric label="榜裂" value={battle.resources.fracture.toString()} />
           <Metric label="抽牌堆" value={battle.drawPile.length.toString()} />
           <Metric label="弃牌堆" value={battle.discardPile.length.toString()} />
           <Metric label="消耗区" value={battle.exhaustPile.length.toString()} />
         </div>
+        <AltarPanel altars={battle.altars} cardDefinitionsById={cardDefinitionsById} />
       </section>
       ) : null}
 
@@ -807,7 +862,9 @@ function TutorialRunPanel({
       <div className="run-summary-row" aria-label="牌组与奖励记录">
         <span>牌组 {run.deckCards.length} 张</span>
         <span>香火钱 {run.currency.incenseMoney}</span>
-        <span>榜裂 {run.verdict.fracture}</span>
+        <span>墨 {run.resources.ink}</span>
+        <span>劫数 {run.resources.doom}</span>
+        <span>榜裂 {run.resources.fracture}</span>
         <span>登簿 {run.verdict.registerEntries.length}</span>
         <span>裁定 {run.verdict.records.length} 次</span>
         <span>法宝 {run.artifacts.artifacts.length} 件</span>
@@ -953,6 +1010,33 @@ function Metric({ label, value }: { readonly label: string; readonly value: stri
   )
 }
 
+function AltarPanel({
+  altars,
+  cardDefinitionsById,
+}: {
+  readonly altars: readonly AltarState[]
+  readonly cardDefinitionsById: ReadonlyMap<string, CardDefinition>
+}) {
+  const altarSlots: readonly AltarState['slot'][] = ['human', 'earth', 'heaven']
+
+  return (
+    <div className="altar-grid" aria-label="奉坛状态">
+      {altarSlots.map((slot) => {
+        const altar = altars.find((candidate) => candidate.slot === slot)
+        const sourceCard = altar ? cardDefinitionsById.get(altar.sourceCardDefinitionId) : undefined
+
+        return (
+          <div className={altar ? 'altar-slot active' : 'altar-slot'} key={slot}>
+            <span>{getAltarSlotLabel(slot)}</span>
+            <strong>{altar ? getAltarEffectLabel(altar) : '未奉坛'}</strong>
+            <small>{sourceCard ? t(sourceCard.nameKey) : '空位'}</small>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function createCardDefinitionMap(cards: readonly CardDefinition[]) {
   return new Map(cards.map((card) => [card.id, card]))
 }
@@ -975,9 +1059,11 @@ function createInitialTutorialBattleView(): TutorialBattleViewState {
     throw new Error('Missing first route encounter')
   }
 
+  const battleView = createBattleForEncounter(encounter, run)
+
   return {
-    run,
-    battle: createBattleForEncounter(encounter, run),
+    run: battleView.run,
+    battle: battleView.battle,
     route,
   }
 }
@@ -996,12 +1082,26 @@ function createBattleForEncounter(
   encounter: EncounterDefinition,
   run: TutorialRunState,
 ) {
-  return createBattle(
-    getEnemyDefinition(encounter.enemyDefinitionId),
-    run.unlocks,
-    run.deckCards,
-    run.verdict.maxIncenseBonus,
-  )
+  const backlashResolution = resolveArtifactBacklashesAtBattleStart(run.artifacts, run.resources)
+  const nextRun = {
+    ...run,
+    artifacts: backlashResolution.artifacts,
+  }
+
+  return {
+    run: nextRun,
+    battle: createBattle(
+      getEnemyDefinition(encounter.enemyDefinitionId),
+      nextRun.unlocks,
+      nextRun.deckCards,
+      nextRun.verdict.maxIncenseBonus,
+      backlashResolution.resources,
+      backlashResolution.temporaryResourceDelta,
+      nextRun.artifacts,
+      backlashResolution.extraHandDefinitionIds,
+      backlashResolution.records,
+    ),
+  }
 }
 
 function createArtifactBattleProgress(
@@ -1019,6 +1119,14 @@ function createArtifactBattleProgress(
     catalogueNamedEnemyCount: settlement === 'catalogue' && isNamedEnemy ? 1 : 0,
     vanquishNamedEnemyBeforeNamedCount:
       settlement === 'vanquish' && isNamedEnemy && !defeatedEnemy.isNamed ? 1 : 0,
+  }
+}
+
+function getPersistentBattleResources(battle: CombatState) {
+  return {
+    ink: battle.resources.ink - battle.temporaryResourceDelta.ink,
+    doom: battle.resources.doom - battle.temporaryResourceDelta.doom,
+    fracture: battle.resources.fracture - battle.temporaryResourceDelta.fracture,
   }
 }
 
@@ -1240,6 +1348,92 @@ function formatLogEntry(
     }。`
   }
 
+  if (entry.type === 'INK_GAINED') {
+    return `墨 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
+      getPayloadNumber(entry.payload.currentInk) ?? 0
+    }。`
+  }
+
+  if (entry.type === 'DOOM_GAINED') {
+    return `劫数 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
+      getPayloadNumber(entry.payload.currentDoom) ?? 0
+    }。`
+  }
+
+  if (entry.type === 'ALTAR_PLACED') {
+    const sourceDefinitionId = getPayloadString(entry.payload.sourceCardDefinitionId)
+    const sourceDefinition = sourceDefinitionId
+      ? cardDefinitionsById.get(sourceDefinitionId)
+      : undefined
+
+    return `奉坛：${getAltarSlotLabel(getPayloadString(entry.payload.slot))}置入${
+      sourceDefinition ? t(sourceDefinition.nameKey) : '符诏'
+    }。`
+  }
+
+  if (entry.type === 'ALTAR_TRIGGERED') {
+    const slotLabel = getAltarSlotLabel(getPayloadString(entry.payload.slot))
+    const result = getPayloadString(entry.payload.result)
+
+    if (result === 'gain_ink') {
+      return `${slotLabel}触发：墨 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
+        getPayloadNumber(entry.payload.currentInk) ?? 0
+      }。`
+    }
+
+    if (result === 'counter_abnormal') {
+      return `${slotLabel}触发：准备断异动 ${getMoveLabel(
+        getPayloadString(entry.payload.moveType),
+      )}。`
+    }
+
+    if (result === 'ask_name') {
+      return `${slotLabel}触发：问名 ${getPayloadNumber(entry.payload.amount) ?? 0}。`
+    }
+
+    return `${slotLabel}未触发。`
+  }
+
+  if (entry.type === 'ALTAR_EXPIRED') {
+    return `${getAltarSlotLabel(getPayloadString(entry.payload.slot))}归寂。`
+  }
+
+  if (entry.type === 'ARTIFACT_TRIGGERED') {
+    const artifactName = getArtifactName(entry.sourceId)
+    const result = getPayloadString(entry.payload.result)
+
+    if (result === 'prepared') {
+      return `${artifactName}触发：下一次破形额外 +${
+        getPayloadNumber(entry.payload.amount) ?? 0
+      }。`
+    }
+
+    if (result === 'consumed') {
+      return `${artifactName}借势：本次破形额外 +${
+        getPayloadNumber(entry.payload.amount) ?? 0
+      }。`
+    }
+
+    return `${artifactName}触发。`
+  }
+
+  if (entry.type === 'ARTIFACT_BACKLASH_TRIGGERED') {
+    const artifactName = getArtifactName(entry.sourceId)
+    const cardDefinitionId = getPayloadString(entry.payload.cardDefinitionId)
+    const cardDefinition = cardDefinitionId ? cardDefinitionsById.get(cardDefinitionId) : undefined
+    const fractureDelta = getPayloadNumber(entry.payload.fractureDelta) ?? 0
+
+    if (cardDefinition) {
+      return `${artifactName}反噬：${t(cardDefinition.nameKey)}临时入手。`
+    }
+
+    if (fractureDelta > 0) {
+      return `${artifactName}反噬：本场开始时榜裂 +${fractureDelta}。`
+    }
+
+    return `${artifactName}反噬已结算。`
+  }
+
   if (entry.type === 'FORM_BROKEN') {
     return `${sourceCardName ?? '符诏'}破形 ${getPayloadNumber(entry.payload.amount) ?? 0}，${
       targetEnemyName ?? '敌方'
@@ -1350,6 +1544,12 @@ function sourceEnemyName(sourceId: string | undefined, battle: CombatState) {
   return getEnemyName(sourceId, battle)
 }
 
+function getArtifactName(sourceId: string | undefined) {
+  const artifact = sourceId ? artifactDefinitionsById.get(sourceId) : undefined
+
+  return artifact ? t(artifact.nameKey) : '法宝'
+}
+
 function getPayloadNumber(value: JsonValue | undefined) {
   return typeof value === 'number' ? value : undefined
 }
@@ -1387,7 +1587,19 @@ function getCardEffectLabels(definition: CardDefinition, card?: CardInstance) {
           return '抽牌'
         }
 
-        return '香火'
+        if (effect.type === 'GAIN_INCENSE') {
+          return '香火'
+        }
+
+        if (effect.type === 'GAIN_INK') {
+          return '墨'
+        }
+
+        if (effect.type === 'GAIN_DOOM') {
+          return '劫数'
+        }
+
+        return '奉坛'
       }),
     ),
   )
@@ -1418,7 +1630,14 @@ function getLogEntryClassName(entry: ActionLogEntry) {
     entry.type === 'NAME_ASKED' ||
     entry.type === 'NAME_SLOT_REVEALED' ||
     entry.type === 'ENEMY_NAMED' ||
-    entry.type === 'CARD_ANNOTATION_TRIGGERED'
+    entry.type === 'CARD_ANNOTATION_TRIGGERED' ||
+    entry.type === 'INK_GAINED' ||
+    entry.type === 'DOOM_GAINED' ||
+    entry.type === 'ALTAR_PLACED' ||
+    entry.type === 'ALTAR_TRIGGERED' ||
+    entry.type === 'ALTAR_EXPIRED' ||
+    entry.type === 'ARTIFACT_TRIGGERED' ||
+    entry.type === 'ARTIFACT_BACKLASH_TRIGGERED'
   ) {
     return 'log-entry name'
   }
@@ -1478,6 +1697,34 @@ function getMoveLabel(moveType: string | undefined) {
   }
 
   return moveType ?? '异动'
+}
+
+function getAltarSlotLabel(slot: string | undefined) {
+  if (slot === 'human') {
+    return '人坛'
+  }
+
+  if (slot === 'earth') {
+    return '地坛'
+  }
+
+  if (slot === 'heaven') {
+    return '天坛'
+  }
+
+  return '坛位'
+}
+
+function getAltarEffectLabel(altar: AltarState) {
+  if (altar.effect.type === 'gain_ink_for_name_progress') {
+    return '回合末问名得墨'
+  }
+
+  if (altar.effect.type === 'counter_abnormal_or_gain_ink') {
+    return '敌方回合断异动'
+  }
+
+  return '下回合问名得墨'
 }
 
 function getEnemyDefinitionName(definitionId: string) {

@@ -8,6 +8,7 @@ import type {
   TutorialRunFailureReason,
   TutorialRunState,
   TutorialUnlockDefinition,
+  TutorialResourceState,
   UnlockStageId,
   UnlockState,
   VictorySettlement,
@@ -31,6 +32,7 @@ import {
   createInitialTutorialCurrencyState,
   createInitialTutorialShopState,
 } from './shopResolver'
+import { createInitialTutorialResourceState } from './resourceResolver'
 
 export const TUTORIAL_ENCOUNTER_IDS: readonly EncounterId[] = [
   'encounter_tutorial_paper_wraith',
@@ -54,6 +56,7 @@ export function createInitialTutorialRunState(
     deckCards: createRunDeckCards(deckDefinitionIds),
     artifacts: createInitialArtifactCollection(artifactDefinitions),
     currency: createInitialTutorialCurrencyState(),
+    resources: createInitialTutorialResourceState(),
     unlocks: createUnlockState(['stage_core'], tutorialUnlocks),
     verdict: createInitialTutorialVerdictState(),
     events: createInitialTutorialEventState(),
@@ -84,6 +87,7 @@ export function advanceTutorialRun(
   cardDefinitions?: readonly CardDefinition[],
   verdictContext?: TutorialVerdictContext,
   artifactProgress?: ArtifactBattleProgressInput,
+  resources?: TutorialResourceState,
 ): TutorialRunState {
   if (run.status !== 'active') {
     return run
@@ -122,6 +126,7 @@ export function advanceTutorialRun(
     completedEncounterIds: nextCompletedEncounterIds,
     settlements: nextSettlements,
     artifacts: advanceArtifactsAfterBattle(run.artifacts, artifactProgress),
+    resources: resources ?? run.resources,
     unlocks: nextUnlocks,
     pendingVerdict: verdictContext
       ? createTutorialVerdictOffer({

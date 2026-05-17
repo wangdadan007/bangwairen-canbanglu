@@ -12,9 +12,14 @@ import type {
   TutorialVerdictState,
   VictorySettlement,
 } from '../../types'
-import { advanceArtifactProgress } from './artifactResolver'
+import {
+  advanceArtifactProgress,
+  getEraseRewardBonusCount,
+  markArtifactOverloads,
+} from './artifactResolver'
 import { appendRunDeckCard } from './deckResolver'
 import { RED_INK_OPTIONS } from './redInkResolver'
+import { applyTutorialResourceDelta } from './resourceResolver'
 
 export const VERDICT_ERASE_REWARD_CARD_ID: CardId = 'card_split_form_talisman'
 export const VERDICT_REGISTER_INCENSE_BONUS = 1
@@ -51,7 +56,6 @@ export interface CreateTutorialVerdictOfferInput extends TutorialVerdictContext 
 
 export function createInitialTutorialVerdictState(): TutorialVerdictState {
   return {
-    fracture: 0,
     maxIncenseBonus: 0,
     registerEntries: [],
     records: [],
@@ -127,22 +131,49 @@ export function resolveTutorialVerdict(
     }
   }
 
+  const eraseRewardBonusCount = getEraseRewardBonusCount(run.artifacts)
+  const addedEraseRewardCardIds = Array.from(
+    { length: 1 + eraseRewardBonusCount },
+    () => VERDICT_ERASE_REWARD_CARD_ID,
+  )
+  const isConsecutiveErase =
+    run.verdict.records[run.verdict.records.length - 1]?.choiceId === 'erase'
+  const progressedArtifacts = advanceArtifactProgress(run.artifacts, [
+    {
+      kind: 'erase_verdict',
+    },
+  ])
+
   return {
     ...run,
-    deckDefinitionIds: [...run.deckDefinitionIds, VERDICT_ERASE_REWARD_CARD_ID],
-    deckCards: appendRunDeckCard(run.deckCards, VERDICT_ERASE_REWARD_CARD_ID),
-    artifacts: advanceArtifactProgress(run.artifacts, [
-      {
-        kind: 'erase_verdict',
-      },
-    ]),
+    deckDefinitionIds: [...run.deckDefinitionIds, ...addedEraseRewardCardIds],
+    deckCards: appendRunDeckCards(run.deckCards, addedEraseRewardCardIds),
+    artifacts: isConsecutiveErase
+      ? markArtifactOverloads(progressedArtifacts, [
+          {
+            kind: 'consecutive_erase_verdicts',
+          },
+        ])
+      : progressedArtifacts,
+    resources: applyTutorialResourceDelta(run.resources, {
+      fracture: VERDICT_ERASE_FRACTURE_DELTA,
+    }),
     pendingVerdict: undefined,
     verdict: {
       ...run.verdict,
-      fracture: run.verdict.fracture + VERDICT_ERASE_FRACTURE_DELTA,
       records: [...run.verdict.records, record],
     },
   }
+}
+
+function appendRunDeckCards(
+  deckCards: TutorialRunState['deckCards'],
+  cardDefinitionIds: readonly CardId[],
+) {
+  return cardDefinitionIds.reduce(
+    (currentDeckCards, cardDefinitionId) => appendRunDeckCard(currentDeckCards, cardDefinitionId),
+    deckCards,
+  )
 }
 
 function createRegisterEntry(

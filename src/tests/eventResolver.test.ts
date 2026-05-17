@@ -4,6 +4,7 @@ import {
   createInitialTutorialRunState,
   getAvailableEventOptions,
   getRouteEventCandidates,
+  getRouteBattleEncounterIds,
   resolveTutorialEvent,
 } from '../core'
 import { gameData } from '../data'
@@ -39,6 +40,15 @@ describe('T20 event resolver', () => {
       'event_ash_altar_lamp',
       'event_cinnabar_scribe',
     ])
+
+    const resourceRun = createResourceRun()
+
+    expect(getRouteEventCandidates(eventNode, gameData.events, resourceRun).map((event) => event.id)).toEqual([
+      'event_mid_ink_pool',
+      'event_abandoned_registry_desk',
+      'event_ash_altar_lamp',
+      'event_cinnabar_scribe',
+    ])
   })
 
   it('adds cards, removes cards, and records event choices', () => {
@@ -66,6 +76,8 @@ describe('T20 event resolver', () => {
         eventId: event.id,
         optionId: 'event_abandoned_registry_desk_take_trace_slip',
         addedCardDefinitionIds: ['card_trace_name_slip'],
+        inkDelta: 0,
+        doomDelta: 0,
         fractureDelta: 0,
       }),
     )
@@ -112,7 +124,7 @@ describe('T20 event resolver', () => {
       'event_cinnabar_scribe_request_red_ink',
     )
 
-    expect(fractureRun.verdict.fracture).toBe(abnormalRun.verdict.fracture + 1)
+    expect(fractureRun.resources.fracture).toBe(abnormalRun.resources.fracture + 1)
     expect(fractureRun.deckDefinitionIds).toContain('card_thunder_splinter')
     expect(fractureRun.events.records[0].fractureDelta).toBe(1)
     expect(getAvailableEventOptions(cinnabarEvent, coreRun)).toHaveLength(0)
@@ -122,4 +134,93 @@ describe('T20 event resolver', () => {
     ])
     expect(redInkServiceRun.events.records[0].createdRedInkOffer).toBe(true)
   })
+
+  it('applies T23 ink and doom event resource choices with spend filtering', () => {
+    const resourceRun = createResourceRun()
+    const inkEvent = gameData.events.find((event) => event.id === 'event_mid_ink_pool')
+
+    if (!inkEvent) {
+      throw new Error('Missing event_mid_ink_pool')
+    }
+
+    expect(getAvailableEventOptions(inkEvent, resourceRun).map((option) => option.id)).toEqual([
+      'event_mid_ink_pool_grind_ink',
+      'event_mid_ink_pool_borrow_doom',
+    ])
+
+    const inkRun = resolveTutorialEvent(resourceRun, inkEvent, 'event_mid_ink_pool_grind_ink')
+    const doomRun = resolveTutorialEvent(resourceRun, inkEvent, 'event_mid_ink_pool_borrow_doom')
+    const inkReadyRun = {
+      ...resourceRun,
+      resources: {
+        ...resourceRun.resources,
+        ink: 1,
+      },
+    }
+    const redInkRun = resolveTutorialEvent(
+      inkReadyRun,
+      inkEvent,
+      'event_mid_ink_pool_spend_ink_red_ink',
+    )
+
+    expect(inkRun.resources.ink).toBe(resourceRun.resources.ink + 2)
+    expect(inkRun.events.records[0]).toEqual(
+      expect.objectContaining({
+        inkDelta: 2,
+        doomDelta: 0,
+        fractureDelta: 0,
+      }),
+    )
+    expect(doomRun.resources.doom).toBe(resourceRun.resources.doom + 1)
+    expect(doomRun.deckDefinitionIds).toContain('card_borrowed_doom_talisman')
+    expect(doomRun.events.records[0]).toEqual(
+      expect.objectContaining({
+        addedCardDefinitionIds: ['card_borrowed_doom_talisman'],
+        doomDelta: 1,
+      }),
+    )
+    expect(getAvailableEventOptions(inkEvent, inkReadyRun).map((option) => option.id)).toContain(
+      'event_mid_ink_pool_spend_ink_red_ink',
+    )
+    expect(redInkRun.resources.ink).toBe(0)
+    expect(redInkRun.pendingRedInk).toBeDefined()
+    expect(redInkRun.events.records[0]).toEqual(
+      expect.objectContaining({
+        inkDelta: -1,
+        createdRedInkOffer: true,
+      }),
+    )
+  })
 })
+
+function createResourceRun() {
+  const firstRun = createInitialTutorialRunState(
+    gameData.tutorialUnlocks,
+    getRouteBattleEncounterIds(route),
+  )
+  const secondRun = advanceTutorialRun(
+    firstRun,
+    gameData.encounters,
+    gameData.tutorialUnlocks,
+    'vanquish',
+  )
+  const thirdRun = advanceTutorialRun(
+    secondRun,
+    gameData.encounters,
+    gameData.tutorialUnlocks,
+    'vanquish',
+  )
+  const fourthRun = advanceTutorialRun(
+    thirdRun,
+    gameData.encounters,
+    gameData.tutorialUnlocks,
+    'vanquish',
+  )
+
+  return advanceTutorialRun(
+    fourthRun,
+    gameData.encounters,
+    gameData.tutorialUnlocks,
+    'vanquish',
+  )
+}

@@ -51,6 +51,10 @@ describe('T10 tutorial rewards', () => {
       ['stage_core', 'stage_abnormal_boundary', 'stage_red_ink_preview'],
       gameData.tutorialUnlocks,
     )
+    const resourceUnlocks = createUnlockState(
+      ['stage_core', 'stage_abnormal_boundary', 'stage_red_ink_preview', 'stage_run_resources'],
+      gameData.tutorialUnlocks,
+    )
 
     const beforeRedInk = createTutorialRewardOffer({
       encounter: firstEncounter,
@@ -68,6 +72,14 @@ describe('T10 tutorial rewards', () => {
       'card_red_ink_trial',
     )
     expect(afterRedInk.map((card) => card.id)).toContain('card_red_ink_trial')
+    expect(afterRedInk.map((card) => card.id)).not.toContain('card_ink_rubbing_slip')
+    expect(getAvailableTutorialRewardCards(
+      gameData.cards,
+      resourceUnlocks,
+      'ordinary',
+    ).map((card) => card.id)).toEqual(
+      expect.arrayContaining(['card_ink_rubbing_slip', 'card_borrowed_doom_talisman']),
+    )
   })
 
   it('keeps the expanded T15 card pool gated by tutorial unlocks', () => {

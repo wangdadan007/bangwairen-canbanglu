@@ -1,6 +1,9 @@
 import { appendLog } from '../log/actionLog'
+import { createInitialArtifactCollection, type ArtifactBacklashRecord } from '../run/artifactResolver'
+import { createInitialTutorialResourceState } from '../run/resourceResolver'
 import { startPlayerTurn } from './turnFlow'
 import type {
+  ArtifactCollectionState,
   CardDefinition,
   CardId,
   CardInstance,
@@ -9,6 +12,7 @@ import type {
   EnemyIntentDefinition,
   EnemyState,
   RunDeckCard,
+  TutorialResourceState,
   UnlockState,
 } from '../../types'
 
@@ -36,20 +40,30 @@ export interface CreateBattleStateInput {
   readonly deckDefinitionIds?: readonly CardId[]
   readonly deckCards?: readonly RunDeckCard[]
   readonly maxIncenseBonus?: number
+  readonly resources?: TutorialResourceState
+  readonly temporaryResourceDelta?: TutorialResourceState
+  readonly artifacts?: ArtifactCollectionState
+  readonly extraHandDefinitionIds?: readonly CardId[]
+  readonly artifactBacklashRecords?: readonly ArtifactBacklashRecord[]
   readonly unlocks?: UnlockState
 }
 
 export function createInitialBattleState(input: CreateBattleStateInput): CombatState {
   const deckDefinitionIds = input.deckDefinitionIds ?? DEFAULT_STARTER_DECK_IDS
   const deckCards = input.deckCards
+  const extraHandDefinitionIds = input.extraHandDefinitionIds ?? []
   assertDeckDefinitionsExist(
-    deckCards ? deckCards.map((card) => card.definitionId) : deckDefinitionIds,
+    [
+      ...(deckCards ? deckCards.map((card) => card.definitionId) : deckDefinitionIds),
+      ...extraHandDefinitionIds,
+    ],
     input.cardDefinitions,
   )
 
   const deck = deckCards
     ? createCardInstancesFromRunDeck(deckCards)
     : createCardInstances(deckDefinitionIds)
+  const extraHandCards = createTemporaryCardInstances(extraHandDefinitionIds)
   const enemy = createEnemyState(input.enemyDefinition, 0)
   const maxIncense = DEFAULT_MAX_INCENSE + (input.maxIncenseBonus ?? 0)
 
@@ -67,10 +81,15 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     },
     enemies: [enemy],
     drawPile: deck,
-    hand: [],
+    hand: extraHandCards,
     discardPile: [],
     exhaustPile: [],
     nextTurnIncensePenalty: 0,
+    resources: input.resources ?? createInitialTutorialResourceState(),
+    temporaryResourceDelta: input.temporaryResourceDelta ?? createInitialTutorialResourceState(),
+    altars: [],
+    artifacts: input.artifacts ?? createInitialArtifactCollection(),
+    triggeredArtifactIds: [],
     actionLog: [],
     result: {
       status: 'ongoing',
@@ -86,6 +105,19 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
       deckSize: deck.length,
     },
   })
+
+  for (const backlashRecord of input.artifactBacklashRecords ?? []) {
+    state = appendLog(state, {
+      type: 'ARTIFACT_BACKLASH_TRIGGERED',
+      sourceId: backlashRecord.artifactId,
+      payload: {
+        effectType: backlashRecord.effectType,
+        amount: backlashRecord.amount ?? null,
+        cardDefinitionId: backlashRecord.cardDefinitionId ?? null,
+        fractureDelta: backlashRecord.fractureDelta ?? null,
+      },
+    })
+  }
 
   return startPlayerTurn(state, DEFAULT_HAND_DRAW)
 }
@@ -109,6 +141,18 @@ export function createCardInstancesFromRunDeck(
     owner: 'player',
     isTemporary: false,
     annotations: card.annotations,
+  }))
+}
+
+export function createTemporaryCardInstances(
+  deckDefinitionIds: readonly CardId[],
+): readonly CardInstance[] {
+  return deckDefinitionIds.map((definitionId, index) => ({
+    instanceId: `temporary_card_instance_${(index + 1).toString().padStart(3, '0')}_${definitionId}`,
+    definitionId,
+    owner: 'player',
+    isTemporary: true,
+    annotations: [],
   }))
 }
 

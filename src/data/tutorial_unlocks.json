@@ -26,5 +26,39 @@
     "keywords": [
       "red_ink_preview"
     ]
+  },
+  {
+    "id": "stage_run_resources",
+    "nameKey": "unlock.stage_run_resources.name",
+    "keywords": [
+      "ink",
+      "doom",
+      "fracture"
+    ]
+  },
+  {
+    "id": "stage_human_altar",
+    "nameKey": "unlock.stage_human_altar.name",
+    "keywords": [
+      "altar",
+      "human_altar",
+      "ink",
+      "ask_name"
+    ]
+  },
+  {
+    "id": "stage_three_altars",
+    "nameKey": "unlock.stage_three_altars.name",
+    "keywords": [
+      "altar",
+      "human_altar",
+      "earth_altar",
+      "heaven_altar",
+      "ink",
+      "ask_name",
+      "counter_abnormal_move",
+      "seal_momentum",
+      "artifact"
+    ]
   }
 ]

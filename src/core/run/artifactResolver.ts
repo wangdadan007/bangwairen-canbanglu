@@ -1,10 +1,18 @@
 import type {
   ArtifactCollectionState,
   ArtifactDefinition,
+  ArtifactId,
   ArtifactOverloadKind,
   ArtifactProgressKind,
   ArtifactState,
+  CardId,
+  TutorialResourceState,
 } from '../../types'
+import { applyTutorialResourceDelta } from './resourceResolver'
+
+export const WHIP_FRAGMENT_ARTIFACT_ID: ArtifactId = 'artifact_whip_fragment'
+export const FRACTURE_NEEDLE_ARTIFACT_ID: ArtifactId = 'artifact_fracture_needle'
+export const WHIP_BACKLASH_CARD_ID: CardId = 'card_cracked_whip_echo'
 
 export interface ArtifactProgressEvent {
   readonly kind: ArtifactProgressKind
@@ -19,6 +27,22 @@ export interface ArtifactBattleProgressInput {
   readonly askNameCount?: number
   readonly catalogueNamedEnemyCount?: number
   readonly vanquishNamedEnemyBeforeNamedCount?: number
+}
+
+export interface ArtifactBacklashRecord {
+  readonly artifactId: ArtifactId
+  readonly effectType: string
+  readonly amount?: number
+  readonly cardDefinitionId?: CardId
+  readonly fractureDelta?: number
+}
+
+export interface ArtifactBacklashResolution {
+  readonly artifacts: ArtifactCollectionState
+  readonly resources: TutorialResourceState
+  readonly temporaryResourceDelta: TutorialResourceState
+  readonly extraHandDefinitionIds: readonly CardId[]
+  readonly records: readonly ArtifactBacklashRecord[]
 }
 
 export function createInitialArtifactCollection(
@@ -72,6 +96,80 @@ export function advanceArtifactsAfterBattle(
   return settleArtifactBattleWindow(
     markArtifactOverloads(advanceArtifactProgress(collection, progressEvents), overloadEvents),
   )
+}
+
+export function resolveArtifactBacklashesAtBattleStart(
+  collection: ArtifactCollectionState,
+  resources: TutorialResourceState,
+): ArtifactBacklashResolution {
+  const extraHandDefinitionIds: CardId[] = []
+  const records: ArtifactBacklashRecord[] = []
+  let nextResources = resources
+  let temporaryResourceDelta: TutorialResourceState = {
+    ink: 0,
+    doom: 0,
+    fracture: 0,
+  }
+
+  const artifacts = collection.artifacts.map((artifact) => {
+    if (!artifact.pendingBacklash) {
+      return artifact
+    }
+
+    if (artifact.definitionId === WHIP_FRAGMENT_ARTIFACT_ID) {
+      extraHandDefinitionIds.push(WHIP_BACKLASH_CARD_ID)
+      records.push({
+        artifactId: artifact.id,
+        effectType: 'add_temporary_card',
+        amount: 1,
+        cardDefinitionId: WHIP_BACKLASH_CARD_ID,
+      })
+    }
+
+    if (artifact.definitionId === FRACTURE_NEEDLE_ARTIFACT_ID) {
+      const fractureDelta = 1
+      nextResources = applyTutorialResourceDelta(nextResources, {
+        fracture: fractureDelta,
+      })
+      temporaryResourceDelta = applyTutorialResourceDelta(temporaryResourceDelta, {
+        fracture: fractureDelta,
+      })
+      records.push({
+        artifactId: artifact.id,
+        effectType: 'temporary_fracture',
+        amount: fractureDelta,
+        fractureDelta,
+      })
+    }
+
+    return {
+      ...artifact,
+      pendingBacklash: false,
+      consecutiveOverloadBattles: 0,
+    }
+  })
+
+  return {
+    artifacts: {
+      artifacts,
+    },
+    resources: nextResources,
+    temporaryResourceDelta,
+    extraHandDefinitionIds,
+    records,
+  }
+}
+
+export function getEraseRewardBonusCount(collection: ArtifactCollectionState): number {
+  const artifact = collection.artifacts.find(
+    (candidate) => candidate.definitionId === FRACTURE_NEEDLE_ARTIFACT_ID,
+  )
+
+  if (!artifact) {
+    return 0
+  }
+
+  return artifact.bindingStatus === 'bound' ? 2 : 1
 }
 
 export function advanceArtifactProgress(

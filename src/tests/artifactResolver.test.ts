@@ -2,14 +2,23 @@ import { describe, expect, it } from 'vitest'
 import {
   advanceArtifactProgress,
   advanceArtifactsAfterBattle,
+  createInitialBattleState,
   createInitialArtifactCollection,
   createInitialTutorialRunState,
+  reduceBattleState,
+  resolveArtifactBacklashesAtBattleStart,
   resolveTutorialRedInk,
   resolveTutorialVerdict,
   advanceTutorialRun,
+  type BattleReducerContext,
 } from '../core'
 import { gameData } from '../data'
 import type { EnemyDefinition } from '../types'
+
+const battleContext: BattleReducerContext = {
+  cardDefinitions: gameData.cards,
+  enemyDefinitions: gameData.enemies,
+}
 
 describe('T17 artifact foundation', () => {
   it('creates artifact state as out-of-deck run equipment', () => {
@@ -75,6 +84,112 @@ describe('T17 artifact foundation', () => {
     expect(whip?.pendingBacklash).toBe(true)
   })
 
+  it('resolves pending whip backlash into a temporary opening-hand card', () => {
+    const artifacts = createInitialArtifactCollection(gameData.artifacts)
+    const firstWindow = advanceArtifactsAfterBattle(artifacts, {
+      vanquishNamedEnemyBeforeNamedCount: 1,
+    })
+    const secondWindow = advanceArtifactsAfterBattle(firstWindow, {
+      vanquishNamedEnemyBeforeNamedCount: 1,
+    })
+    const resolution = resolveArtifactBacklashesAtBattleStart(secondWindow, {
+      ink: 0,
+      doom: 0,
+      fracture: 0,
+    })
+    const battle = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[0],
+      artifacts: resolution.artifacts,
+      resources: resolution.resources,
+      extraHandDefinitionIds: resolution.extraHandDefinitionIds,
+      artifactBacklashRecords: resolution.records,
+    })
+
+    expect(resolution.extraHandDefinitionIds).toEqual(['card_cracked_whip_echo'])
+    expect(
+      resolution.artifacts.artifacts.find(
+        (artifact) => artifact.definitionId === 'artifact_whip_fragment',
+      )?.pendingBacklash,
+    ).toBe(false)
+    expect(battle.hand.map((card) => card.definitionId)).toContain('card_cracked_whip_echo')
+    expect(battle.actionLog.map((entry) => entry.type)).toContain('ARTIFACT_BACKLASH_TRIGGERED')
+  })
+
+  it('applies whip fragment bonus after the first naming in a battle', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[0],
+      deckDefinitionIds: ['card_ask_name', 'card_ask_name', 'card_zhu_fu'],
+      artifacts: createInitialArtifactCollection(gameData.artifacts),
+    })
+    const firstAsk = getHandCard(state, 'card_ask_name')
+    const afterFirstAsk = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: firstAsk.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const secondAsk = getHandCard(afterFirstAsk, 'card_ask_name')
+    const afterSecondAsk = reduceBattleState(
+      afterFirstAsk,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: secondAsk.instanceId,
+        targetEnemyInstanceId: afterFirstAsk.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const zhuFu = getHandCard(afterSecondAsk, 'card_zhu_fu')
+    const afterBreak = reduceBattleState(
+      afterSecondAsk,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: zhuFu.instanceId,
+        targetEnemyInstanceId: afterSecondAsk.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+
+    expect(afterSecondAsk.pendingArtifactBreakShapeBonus).toEqual({
+      artifactId: 'artifact_whip_fragment',
+      amount: 2,
+    })
+    expect(afterBreak.pendingArtifactBreakShapeBonus).toBeUndefined()
+    expect(afterBreak.enemies[0].currentForm).toBe(5)
+    expect(afterBreak.actionLog.map((entry) => entry.type)).toContain('ARTIFACT_TRIGGERED')
+  })
+
+  it('uses fracture needle to improve erase verdict card rewards', () => {
+    const initialRun = createInitialTutorialRunState(
+      gameData.tutorialUnlocks,
+      undefined,
+      undefined,
+      gameData.artifacts,
+    )
+    const afterBattle = advanceTutorialRun(
+      initialRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'catalogue',
+      gameData.cards,
+      createVerdictContext(gameData.enemies[0]),
+    )
+    const afterErase = resolveTutorialVerdict(afterBattle, 'erase')
+
+    expect(afterErase.deckDefinitionIds.slice(-2)).toEqual([
+      'card_split_form_talisman',
+      'card_split_form_talisman',
+    ])
+    expect(afterErase.deckCards.slice(-2).map((card) => card.definitionId)).toEqual([
+      'card_split_form_talisman',
+      'card_split_form_talisman',
+    ])
+  })
+
   it('advances artifact progress from battle, red ink, and erase verdict records', () => {
     const initialRun = createInitialTutorialRunState(
       gameData.tutorialUnlocks,
@@ -122,6 +237,16 @@ describe('T17 artifact foundation', () => {
     expect(getArtifactProgress(afterErase, 'artifact_fracture_needle')).toBe(1)
   })
 })
+
+function getHandCard(state: ReturnType<typeof createInitialBattleState>, cardDefinitionId: string) {
+  const card = state.hand.find((candidate) => candidate.definitionId === cardDefinitionId)
+
+  if (!card) {
+    throw new Error(`Missing hand card: ${cardDefinitionId}`)
+  }
+
+  return card
+}
 
 function getArtifactProgress(run: ReturnType<typeof createInitialTutorialRunState>, artifactId: string) {
   const artifact = run.artifacts.artifacts.find((candidate) => candidate.definitionId === artifactId)

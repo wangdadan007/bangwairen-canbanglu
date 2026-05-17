@@ -1343,6 +1343,43 @@ button:disabled {
   font-size: 18px;
 }
 
+.altar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.altar-slot {
+  display: grid;
+  min-height: 72px;
+  align-content: center;
+  gap: 4px;
+  border: 1px dashed rgba(178, 139, 82, 0.38);
+  border-radius: 6px;
+  padding: 8px;
+  color: #ad9c82;
+  background: rgba(14, 20, 19, 0.36);
+}
+
+.altar-slot.active {
+  border-style: solid;
+  border-color: rgba(224, 180, 93, 0.62);
+  background: rgba(75, 58, 32, 0.34);
+}
+
+.altar-slot span,
+.altar-slot small {
+  color: #ad9c82;
+  font-size: 12px;
+}
+
+.altar-slot strong {
+  color: #f0e2ca;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
 .hand-list {
   display: grid;
   gap: 10px;
@@ -1515,6 +1552,7 @@ button:disabled {
   }
 
   .resource-grid,
+  .altar-grid,
   .name-slots,
   .intent-detail-grid,
   .intent-rule-grid,

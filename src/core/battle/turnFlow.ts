@@ -1,4 +1,6 @@
 import { appendLog } from '../log/actionLog'
+import { triggerHeavenAltars } from './altarResolver'
+import { settleVictoryIfNeeded } from './victoryResolver'
 import type { CardInstance, CombatState } from '../../types'
 
 export function startPlayerTurn(state: CombatState, drawCount: number): CombatState {
@@ -31,6 +33,13 @@ export function startPlayerTurn(state: CombatState, drawCount: number): CombatSt
       incensePenalty,
     },
   })
+
+  nextState = triggerHeavenAltars(nextState)
+  nextState = settleVictoryIfNeeded(nextState)
+
+  if (nextState.result.status !== 'ongoing') {
+    return nextState
+  }
 
   return drawCards(nextState, drawCount)
 }

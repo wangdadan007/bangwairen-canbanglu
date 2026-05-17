@@ -1,5 +1,66 @@
 [
   {
+    "id": "event_mid_ink_pool",
+    "nameKey": "event.mid_ink_pool.name",
+    "descriptionKey": "event.mid_ink_pool.description",
+    "unlockStage": "stage_run_resources",
+    "tags": ["chapter_one", "mid", "ink", "doom"],
+    "options": [
+      {
+        "id": "event_mid_ink_pool_grind_ink",
+        "nameKey": "event.mid_ink_pool.option.grind_ink.name",
+        "descriptionKey": "event.mid_ink_pool.option.grind_ink.description",
+        "rewardKey": "event.mid_ink_pool.option.grind_ink.reward",
+        "costKey": "event.mid_ink_pool.option.grind_ink.cost",
+        "requiredUnlockStages": ["stage_run_resources"],
+        "flags": ["ink"],
+        "effects": [
+          {
+            "type": "ADD_INK",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "event_mid_ink_pool_borrow_doom",
+        "nameKey": "event.mid_ink_pool.option.borrow_doom.name",
+        "descriptionKey": "event.mid_ink_pool.option.borrow_doom.description",
+        "rewardKey": "event.mid_ink_pool.option.borrow_doom.reward",
+        "costKey": "event.mid_ink_pool.option.borrow_doom.cost",
+        "requiredUnlockStages": ["stage_run_resources"],
+        "flags": ["doom"],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_borrowed_doom_talisman"
+          },
+          {
+            "type": "ADD_DOOM",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "event_mid_ink_pool_spend_ink_red_ink",
+        "nameKey": "event.mid_ink_pool.option.spend_ink_red_ink.name",
+        "descriptionKey": "event.mid_ink_pool.option.spend_ink_red_ink.description",
+        "rewardKey": "event.mid_ink_pool.option.spend_ink_red_ink.reward",
+        "costKey": "event.mid_ink_pool.option.spend_ink_red_ink.cost",
+        "requiredUnlockStages": ["stage_run_resources", "stage_red_ink_preview"],
+        "flags": ["ink", "red_ink"],
+        "effects": [
+          {
+            "type": "SPEND_INK",
+            "amount": 1
+          },
+          {
+            "type": "CREATE_RED_INK_OFFER"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "event_abandoned_registry_desk",
     "nameKey": "event.abandoned_registry_desk.name",
     "descriptionKey": "event.abandoned_registry_desk.description",

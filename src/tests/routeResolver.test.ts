@@ -53,6 +53,7 @@ describe('T22 route skeleton', () => {
     expect(getCurrentRouteNode(route, eventState)?.type).toBe('event')
     expect(getCurrentRouteNode(route, eventState)?.isPlaceholder).toBeUndefined()
     expect(getCurrentRouteNode(route, eventState)?.eventPoolIds).toEqual([
+      'event_mid_ink_pool',
       'event_abandoned_registry_desk',
       'event_ash_altar_lamp',
       'event_cinnabar_scribe',

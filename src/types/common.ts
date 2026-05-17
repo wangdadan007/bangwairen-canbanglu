@@ -3,6 +3,7 @@ export type CardInstanceId = string
 export type EnemyId = string
 export type EnemyInstanceId = string
 export type ArtifactId = string
+export type AltarId = string
 export type EncounterId = string
 export type EventId = string
 export type RouteId = string
@@ -22,6 +23,7 @@ export type GameEntityId =
   | EnemyId
   | EnemyInstanceId
   | ArtifactId
+  | AltarId
   | EncounterId
   | EventId
   | RouteId

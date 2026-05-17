@@ -2,6 +2,7 @@ import { resolvePlayCard } from './cardResolver'
 import { executeEnemyTurn } from './enemyIntentResolver'
 import { startPlayerTurn, discardHand } from './turnFlow'
 import { appendLog } from '../log/actionLog'
+import { triggerHumanAltars } from './altarResolver'
 import type { BattleCommand, CardDefinition, CombatState, EnemyDefinition } from '../../types'
 
 export interface BattleReducerContext {
@@ -43,6 +44,7 @@ function endPlayerTurn(state: CombatState, context: BattleReducerContext): Comba
     },
   })
 
+  nextState = triggerHumanAltars(nextState)
   nextState = discardHand(nextState)
   nextState = executeEnemyTurn(nextState, context.enemyDefinitions)
 

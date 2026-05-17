@@ -20,7 +20,9 @@ export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSumm
     restCount: run.rests.records.length,
     shopPurchaseCount: run.shops.records.length,
     incenseMoney: run.currency.incenseMoney,
-    fracture: run.verdict.fracture,
+    ink: run.resources.ink,
+    doom: run.resources.doom,
+    fracture: run.resources.fracture,
     deckSize: run.deckCards.length,
     artifactCount: run.artifacts.artifacts.length,
     boundArtifactCount: run.artifacts.artifacts.filter(

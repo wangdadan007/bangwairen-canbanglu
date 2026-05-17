@@ -24,7 +24,7 @@
     "tutorialOrder": 3,
     "lessonKey": "encounter.tutorial.bronze_bell_patrol.lesson",
     "completionKey": "encounter.tutorial.bronze_bell_patrol.completion",
-    "unlocksOnVictory": []
+    "unlocksOnVictory": ["stage_human_altar"]
   },
   {
     "id": "encounter_mid_unlit_temple_warden",
@@ -33,6 +33,60 @@
     "tutorialOrder": 4,
     "lessonKey": "encounter.mid.unlit_temple_warden.lesson",
     "completionKey": "encounter.mid.unlit_temple_warden.completion",
+    "unlocksOnVictory": ["stage_run_resources", "stage_three_altars"]
+  },
+  {
+    "id": "encounter_mid_fortune_breaker",
+    "nameKey": "encounter.mid.fortune_breaker.name",
+    "enemyDefinitionId": "enemy_fortune_breaker",
+    "tutorialOrder": 6,
+    "lessonKey": "encounter.mid.fortune_breaker.lesson",
+    "completionKey": "encounter.mid.fortune_breaker.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_mid_ash_altar_child",
+    "nameKey": "encounter.mid.ash_altar_child.name",
+    "enemyDefinitionId": "enemy_ash_altar_child",
+    "tutorialOrder": 7,
+    "lessonKey": "encounter.mid.ash_altar_child.lesson",
+    "completionKey": "encounter.mid.ash_altar_child.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_pool_nameless_paper_imp",
+    "nameKey": "encounter.pool.nameless_paper_imp.name",
+    "enemyDefinitionId": "enemy_nameless_paper_imp",
+    "tutorialOrder": 8,
+    "lessonKey": "encounter.pool.nameless_paper_imp.lesson",
+    "completionKey": "encounter.pool.nameless_paper_imp.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_pool_incense_ash_louse",
+    "nameKey": "encounter.pool.incense_ash_louse.name",
+    "enemyDefinitionId": "enemy_incense_ash_louse",
+    "tutorialOrder": 9,
+    "lessonKey": "encounter.pool.incense_ash_louse.lesson",
+    "completionKey": "encounter.pool.incense_ash_louse.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_pool_unlit_temple_warden_return",
+    "nameKey": "encounter.pool.unlit_temple_warden_return.name",
+    "enemyDefinitionId": "enemy_unlit_temple_warden",
+    "tutorialOrder": 10,
+    "lessonKey": "encounter.pool.unlit_temple_warden_return.lesson",
+    "completionKey": "encounter.pool.unlit_temple_warden_return.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_pool_bronze_bell_patrol_return",
+    "nameKey": "encounter.pool.bronze_bell_patrol_return.name",
+    "enemyDefinitionId": "enemy_bronze_bell_patrol",
+    "tutorialOrder": 11,
+    "lessonKey": "encounter.pool.bronze_bell_patrol_return.lesson",
+    "completionKey": "encounter.pool.bronze_bell_patrol_return.completion",
     "unlocksOnVictory": []
   },
   {

@@ -262,6 +262,118 @@
     ]
   },
   {
+    "id": "enemy_fortune_breaker",
+    "nameKey": "enemy.fortune_breaker.name",
+    "maxForm": 26,
+    "nameSlots": 2,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.fortune_breaker.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.fortune_breaker.name_slot.1"
+      }
+    ],
+    "tier": "normal",
+    "traits": ["chapter_one", "mid_chapter", "doom", "incoming_force"],
+    "intents": [
+      {
+        "id": "intent_fortune_breaker_crack_lot",
+        "nameKey": "enemy.fortune_breaker.intent.crack_lot",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 6
+          }
+        ]
+      },
+      {
+        "id": "intent_fortune_breaker_turn_omen",
+        "nameKey": "enemy.fortune_breaker.intent.turn_omen",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 5
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_fortune_breaker_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.fortune_breaker.reward.vanquish"
+      },
+      {
+        "id": "reward_fortune_breaker_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.fortune_breaker.reward.catalogue"
+      }
+    ]
+  },
+  {
+    "id": "enemy_ash_altar_child",
+    "nameKey": "enemy.ash_altar_child.name",
+    "maxForm": 22,
+    "nameSlots": 2,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.ash_altar_child.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.ash_altar_child.name_slot.1"
+      }
+    ],
+    "tier": "normal",
+    "traits": ["chapter_one", "mid_chapter", "earth_altar", "abnormal_move", "steal_incense"],
+    "intents": [
+      {
+        "id": "intent_ash_altar_child_scatter_ash",
+        "nameKey": "enemy.ash_altar_child.intent.scatter_ash",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "steal_incense",
+              "amount": 1,
+              "descriptionKey": "enemy.ash_altar_child.intent.scatter_ash.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_ash_altar_child_press_bowl",
+        "nameKey": "enemy.ash_altar_child.intent.press_bowl",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 5
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_ash_altar_child_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.ash_altar_child.reward.vanquish"
+      },
+      {
+        "id": "reward_ash_altar_child_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.ash_altar_child.reward.catalogue"
+      }
+    ]
+  },
+  {
     "id": "enemy_incense_clerk",
     "nameKey": "enemy.incense_clerk.name",
     "maxForm": 38,

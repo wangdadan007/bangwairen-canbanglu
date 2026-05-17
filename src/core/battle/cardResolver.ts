@@ -1,6 +1,10 @@
 import { appendLog } from '../log/actionLog'
+import { applyTutorialResourceDelta } from '../run/resourceResolver'
+import { placeAltar } from './altarResolver'
+import { consumePendingBreakShapeBonus } from './artifactBattleResolver'
 import { drawCards } from './turnFlow'
 import { resolveAskName } from './nameResolver'
+import { settleVictoryIfNeeded } from './victoryResolver'
 import type {
   CardDefinition,
   CardAnnotation,
@@ -176,12 +180,60 @@ function resolveCardEffect(
     })
   }
 
+  if (effect.type === 'GAIN_INK') {
+    const nextResources = applyTutorialResourceDelta(state.resources, {
+      ink: effect.amount,
+    })
+    const nextState = {
+      ...state,
+      resources: nextResources,
+    }
+
+    return appendLog(nextState, {
+      type: 'INK_GAINED',
+      sourceId: card.instanceId,
+      targetId: 'player',
+      payload: {
+        amount: effect.amount,
+        currentInk: nextResources.ink,
+      },
+    })
+  }
+
+  if (effect.type === 'GAIN_DOOM') {
+    const nextResources = applyTutorialResourceDelta(state.resources, {
+      doom: effect.amount,
+    })
+    const nextState = {
+      ...state,
+      resources: nextResources,
+    }
+
+    return appendLog(nextState, {
+      type: 'DOOM_GAINED',
+      sourceId: card.instanceId,
+      targetId: 'player',
+      payload: {
+        amount: effect.amount,
+        currentDoom: nextResources.doom,
+      },
+    })
+  }
+
   if (effect.type === 'SEAL_MOMENTUM') {
     return sealIncomingForce(state, card, effect, targetEnemyInstanceId)
   }
 
   if (effect.type === 'COUNTER_ABNORMAL_MOVE') {
     return counterAbnormalMove(state, card, effect, targetEnemyInstanceId)
+  }
+
+  if (effect.type === 'PLACE_ALTAR') {
+    return placeAltar(state, {
+      card,
+      effect,
+      targetEnemyInstanceId,
+    })
   }
 
   return resolveAskName(state, {
@@ -281,7 +333,15 @@ function breakEnemyForm(
   let nextState = state
 
   for (const target of targets) {
-    const nextCurrentForm = Math.max(0, target.currentForm - amount)
+    let breakAmount = amount
+
+    if (nextState.pendingArtifactBreakShapeBonus) {
+      const consumedBonus = consumePendingBreakShapeBonus(nextState, target.instanceId)
+      nextState = consumedBonus.state
+      breakAmount += consumedBonus.bonusAmount
+    }
+
+    const nextCurrentForm = Math.max(0, target.currentForm - breakAmount)
     const brokenAmount = target.currentForm - nextCurrentForm
 
     nextState = {
@@ -380,33 +440,6 @@ function movePlayedCard(
     sourceId: card.instanceId,
     payload: {
       cardDefinitionId: card.definitionId,
-    },
-  })
-}
-
-function settleVictoryIfNeeded(state: CombatState): CombatState {
-  const defeatedEnemy = state.enemies.find((enemy) => enemy.currentForm <= 0)
-
-  if (!defeatedEnemy || state.result.status !== 'ongoing') {
-    return state
-  }
-
-  const settlement = defeatedEnemy.isNamed ? 'catalogue' : 'vanquish'
-  const nextState: CombatState = {
-    ...state,
-    phase: 'victory',
-    result: {
-      status: 'victory',
-      settlement,
-      enemyInstanceId: defeatedEnemy.instanceId,
-    },
-  }
-
-  return appendLog(nextState, {
-    type: 'VICTORY_SETTLED',
-    sourceId: defeatedEnemy.instanceId,
-    payload: {
-      settlement,
     },
   })
 }

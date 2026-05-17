@@ -51,7 +51,9 @@ export function RestPage({
 
       <div className="rest-state-row" aria-label="休整相关状态">
         <span>牌组 {deckCards.length} 张</span>
-        <span>榜裂 {run.verdict.fracture}</span>
+        <span>墨 {run.resources.ink}</span>
+        <span>劫数 {run.resources.doom}</span>
+        <span>榜裂 {run.resources.fracture}</span>
         <span>法宝 {visibleArtifacts.length} 件</span>
         <span>
           反噬预警 {visibleArtifacts.filter((artifact) => artifact.pendingBacklash).length}

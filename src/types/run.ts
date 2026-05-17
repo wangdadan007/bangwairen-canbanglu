@@ -3,6 +3,7 @@ import type { CardId, EncounterId, EventId, LocalizationKey } from './common'
 import type { CardAnnotation } from './card'
 import type { UnlockState, VictorySettlement } from './battle'
 import type { TutorialRestState } from './rest'
+import type { TutorialResourceState } from './resource'
 import type { TutorialCurrencyState, TutorialShopState } from './shop'
 import type { TutorialVerdictOffer, TutorialVerdictState } from './verdict'
 
@@ -73,6 +74,8 @@ export interface TutorialEventRecord {
   readonly addedCardDefinitionIds: readonly CardId[]
   readonly removedDeckCardIds: readonly RunDeckCardId[]
   readonly removedCardDefinitionIds: readonly CardId[]
+  readonly inkDelta: number
+  readonly doomDelta: number
   readonly fractureDelta: number
   readonly createdRedInkOffer: boolean
 }
@@ -93,6 +96,7 @@ export interface TutorialRunState {
   readonly deckCards: readonly RunDeckCard[]
   readonly artifacts: ArtifactCollectionState
   readonly currency: TutorialCurrencyState
+  readonly resources: TutorialResourceState
   readonly unlocks: UnlockState
   readonly verdict: TutorialVerdictState
   readonly events: TutorialEventState
@@ -122,6 +126,8 @@ export interface TutorialRunSummary {
   readonly restCount: number
   readonly shopPurchaseCount: number
   readonly incenseMoney: number
+  readonly ink: number
+  readonly doom: number
   readonly fracture: number
   readonly deckSize: number
   readonly artifactCount: number

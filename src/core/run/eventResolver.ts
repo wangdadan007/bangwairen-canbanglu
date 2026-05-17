@@ -11,6 +11,10 @@ import type {
 } from '../../types'
 import { appendRunDeckCard, removeFirstMatchingRunDeckCard } from './deckResolver'
 import { RED_INK_OPTIONS } from './redInkResolver'
+import {
+  applyTutorialResourceDelta,
+  canSpendTutorialResources,
+} from './resourceResolver'
 
 export function createInitialTutorialEventState(): TutorialEventState {
   return {
@@ -103,6 +107,8 @@ export function resolveTutorialEvent(
     addedCardDefinitionIds: result.addedCardDefinitionIds,
     removedDeckCardIds: result.removedDeckCardIds,
     removedCardDefinitionIds: result.removedCardDefinitionIds,
+    inkDelta: result.inkDelta,
+    doomDelta: result.doomDelta,
     fractureDelta: result.fractureDelta,
     createdRedInkOffer: result.createdRedInkOffer,
   }
@@ -111,10 +117,11 @@ export function resolveTutorialEvent(
     ...run,
     deckDefinitionIds: result.deckDefinitionIds,
     deckCards: result.deckCards,
-    verdict: {
-      ...run.verdict,
-      fracture: run.verdict.fracture + result.fractureDelta,
-    },
+    resources: applyTutorialResourceDelta(run.resources, {
+      ink: result.inkDelta,
+      doom: result.doomDelta,
+      fracture: result.fractureDelta,
+    }),
     pendingRedInk: result.createdRedInkOffer
       ? {
           id: `red_ink_offer_${run.redInkRecords.length + 1}`,
@@ -135,6 +142,12 @@ function everyRequiredStageUnlocked(option: EventOptionDefinition, run: Tutorial
 }
 
 function isEventEffectAvailable(effect: EventEffect, run: TutorialRunState) {
+  if (effect.type === 'SPEND_INK') {
+    return canSpendTutorialResources(run.resources, {
+      ink: -effect.amount,
+    })
+  }
+
   if (effect.type !== 'REMOVE_CARD') {
     return true
   }
@@ -150,6 +163,8 @@ interface EventEffectResult {
   readonly addedCardDefinitionIds: readonly CardId[]
   readonly removedDeckCardIds: readonly RunDeckCardId[]
   readonly removedCardDefinitionIds: readonly CardId[]
+  readonly inkDelta: number
+  readonly doomDelta: number
   readonly fractureDelta: number
   readonly createdRedInkOffer: boolean
 }
@@ -163,6 +178,8 @@ function applyEventEffects(
   const addedCardDefinitionIds: CardId[] = []
   const removedDeckCardIds: RunDeckCardId[] = []
   const removedCardDefinitionIds: CardId[] = []
+  let inkDelta = 0
+  let doomDelta = 0
   let fractureDelta = 0
   let createdRedInkOffer = false
 
@@ -190,6 +207,18 @@ function applyEventEffects(
       fractureDelta += effect.amount
     }
 
+    if (effect.type === 'ADD_INK') {
+      inkDelta += effect.amount
+    }
+
+    if (effect.type === 'SPEND_INK') {
+      inkDelta -= effect.amount
+    }
+
+    if (effect.type === 'ADD_DOOM') {
+      doomDelta += effect.amount
+    }
+
     if (effect.type === 'CREATE_RED_INK_OFFER') {
       createdRedInkOffer = true
     }
@@ -201,6 +230,8 @@ function applyEventEffects(
     addedCardDefinitionIds,
     removedDeckCardIds,
     removedCardDefinitionIds,
+    inkDelta,
+    doomDelta,
     fractureDelta,
     createdRedInkOffer,
   }

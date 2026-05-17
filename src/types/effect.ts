@@ -1,3 +1,4 @@
+import type { AltarEffectDefinition, AltarSlot } from './altar'
 import type { AbnormalMoveType } from './enemy'
 
 export type EffectTarget =
@@ -24,6 +25,9 @@ export type CardEffect =
   | CounterAbnormalMoveEffect
   | DrawCardsEffect
   | GainIncenseEffect
+  | GainInkEffect
+  | GainDoomEffect
+  | PlaceAltarEffect
 
 export interface BreakShapeEffect {
   readonly type: 'BREAK_SHAPE'
@@ -64,5 +68,27 @@ export interface GainIncenseEffect {
   readonly type: 'GAIN_INCENSE'
   readonly target: Extract<EffectTarget, 'self'>
   readonly amount: number
+  readonly condition?: EffectCondition
+}
+
+export interface GainInkEffect {
+  readonly type: 'GAIN_INK'
+  readonly target: Extract<EffectTarget, 'self'>
+  readonly amount: number
+  readonly condition?: EffectCondition
+}
+
+export interface GainDoomEffect {
+  readonly type: 'GAIN_DOOM'
+  readonly target: Extract<EffectTarget, 'self'>
+  readonly amount: number
+  readonly condition?: EffectCondition
+}
+
+export interface PlaceAltarEffect {
+  readonly type: 'PLACE_ALTAR'
+  readonly target: Extract<EffectTarget, 'selected_enemy' | 'self'>
+  readonly altarSlot: AltarSlot
+  readonly altarEffect: AltarEffectDefinition
   readonly condition?: EffectCondition
 }

@@ -369,5 +369,284 @@
         "amount": 1
       }
     ]
+  },
+  {
+    "id": "card_ink_rubbing_slip",
+    "nameKey": "card.ink_rubbing_slip.name",
+    "descriptionKey": "card.ink_rubbing_slip.description",
+    "rulesTextKey": "card.ink_rubbing_slip.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "ink", "ask_name"],
+    "effects": [
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      },
+      {
+        "type": "GAIN_INK",
+        "target": "self",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "card_borrowed_doom_talisman",
+    "nameKey": "card.borrowed_doom_talisman.name",
+    "descriptionKey": "card.borrowed_doom_talisman.description",
+    "rulesTextKey": "card.borrowed_doom_talisman.rules",
+    "cost": 0,
+    "type": "ritual",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "doom", "gain_incense"],
+    "effects": [
+      {
+        "type": "GAIN_DOOM",
+        "target": "self",
+        "amount": 1
+      },
+      {
+        "type": "GAIN_INCENSE",
+        "target": "self",
+        "amount": 2
+      }
+    ]
+  },
+  {
+    "id": "card_human_altar_name_sigil",
+    "nameKey": "card.human_altar_name_sigil.name",
+    "descriptionKey": "card.human_altar_name_sigil.description",
+    "rulesTextKey": "card.human_altar_name_sigil.rules",
+    "cost": 1,
+    "type": "ritual",
+    "unlockStage": "stage_human_altar",
+    "tags": ["reward", "altar", "human_altar", "ink", "ask_name"],
+    "effects": [
+      {
+        "type": "PLACE_ALTAR",
+        "target": "selected_enemy",
+        "altarSlot": "human",
+        "altarEffect": {
+          "type": "gain_ink_for_name_progress",
+          "amount": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_earth_altar_watch",
+    "nameKey": "card.earth_altar_watch.name",
+    "descriptionKey": "card.earth_altar_watch.description",
+    "rulesTextKey": "card.earth_altar_watch.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_three_altars",
+    "tags": ["reward", "altar", "earth_altar", "counter_abnormal_move", "ink"],
+    "effects": [
+      {
+        "type": "PLACE_ALTAR",
+        "target": "selected_enemy",
+        "altarSlot": "earth",
+        "altarEffect": {
+          "type": "counter_abnormal_or_gain_ink",
+          "amount": 1,
+          "moveType": "steal_incense"
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_heaven_altar_oracle",
+    "nameKey": "card.heaven_altar_oracle.name",
+    "descriptionKey": "card.heaven_altar_oracle.description",
+    "rulesTextKey": "card.heaven_altar_oracle.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_three_altars",
+    "tags": ["reward", "catalogue_reward", "altar", "heaven_altar", "ask_name", "ink"],
+    "effects": [
+      {
+        "type": "PLACE_ALTAR",
+        "target": "selected_enemy",
+        "altarSlot": "heaven",
+        "altarEffect": {
+          "type": "ask_name_and_gain_ink",
+          "amount": 1
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_ink_seal_edict",
+    "nameKey": "card.ink_seal_edict.name",
+    "descriptionKey": "card.ink_seal_edict.description",
+    "rulesTextKey": "card.ink_seal_edict.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "ink", "ask_name", "draw"],
+    "effects": [
+      {
+        "type": "GAIN_INK",
+        "target": "self",
+        "amount": 1
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "card_doom_flash_talisman",
+    "nameKey": "card.doom_flash_talisman.name",
+    "descriptionKey": "card.doom_flash_talisman.description",
+    "rulesTextKey": "card.doom_flash_talisman.rules",
+    "cost": 1,
+    "type": "talisman",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "doom", "break_form"],
+    "effects": [
+      {
+        "type": "GAIN_DOOM",
+        "target": "self",
+        "amount": 1
+      },
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 7
+      }
+    ]
+  },
+  {
+    "id": "card_altar_echo_slip",
+    "nameKey": "card.altar_echo_slip.name",
+    "descriptionKey": "card.altar_echo_slip.description",
+    "rulesTextKey": "card.altar_echo_slip.rules",
+    "cost": 0,
+    "type": "ritual",
+    "unlockStage": "stage_human_altar",
+    "tags": ["reward", "altar", "human_altar", "ink", "draw", "exhaust"],
+    "effects": [
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
+      },
+      {
+        "type": "GAIN_INK",
+        "target": "self",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "card_earth_counter_charm",
+    "nameKey": "card.earth_counter_charm.name",
+    "descriptionKey": "card.earth_counter_charm.description",
+    "rulesTextKey": "card.earth_counter_charm.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_three_altars",
+    "tags": ["reward", "earth_altar", "seal_momentum", "counter_abnormal_move"],
+    "effects": [
+      {
+        "type": "SEAL_MOMENTUM",
+        "target": "selected_enemy",
+        "amount": 2
+      },
+      {
+        "type": "COUNTER_ABNORMAL_MOVE",
+        "target": "selected_enemy",
+        "moveType": "steal_incense"
+      }
+    ]
+  },
+  {
+    "id": "card_heaven_trace_edict",
+    "nameKey": "card.heaven_trace_edict.name",
+    "descriptionKey": "card.heaven_trace_edict.description",
+    "rulesTextKey": "card.heaven_trace_edict.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_three_altars",
+    "tags": ["reward", "catalogue_reward", "heaven_altar", "ask_name", "draw"],
+    "effects": [
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "card_artifact_polish_slip",
+    "nameKey": "card.artifact_polish_slip.name",
+    "descriptionKey": "card.artifact_polish_slip.description",
+    "rulesTextKey": "card.artifact_polish_slip.rules",
+    "cost": 0,
+    "type": "ritual",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "artifact", "ink", "draw", "exhaust"],
+    "effects": [
+      {
+        "type": "GAIN_INK",
+        "target": "self",
+        "amount": 1
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "card_registry_splinter",
+    "nameKey": "card.registry_splinter.name",
+    "descriptionKey": "card.registry_splinter.description",
+    "rulesTextKey": "card.registry_splinter.rules",
+    "cost": 2,
+    "type": "talisman",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "fracture", "doom", "break_form"],
+    "effects": [
+      {
+        "type": "GAIN_DOOM",
+        "target": "self",
+        "amount": 1
+      },
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 8
+      }
+    ]
+  },
+  {
+    "id": "card_cracked_whip_echo",
+    "nameKey": "card.cracked_whip_echo.name",
+    "descriptionKey": "card.cracked_whip_echo.description",
+    "rulesTextKey": "card.cracked_whip_echo.rules",
+    "cost": 0,
+    "type": "temporary",
+    "unlockStage": "stage_run_resources",
+    "tags": ["temporary", "artifact", "break_form", "exhaust"],
+    "effects": [
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 3
+      }
+    ]
   }
 ]

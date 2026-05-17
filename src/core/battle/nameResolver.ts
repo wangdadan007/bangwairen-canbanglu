@@ -1,4 +1,5 @@
 import { appendLog } from '../log/actionLog'
+import { triggerArtifactsAfterEnemyNamed } from './artifactBattleResolver'
 import type { CombatState, EnemyInstanceId, EnemyState, GameEntityId } from '../../types'
 
 const NORMAL_NAME_BREAK_RATIO = 0.33
@@ -53,6 +54,7 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
   if (updatedTarget && shouldTriggerNaming(updatedTarget)) {
     nextState = markEnemyNamed(nextState, updatedTarget, input.sourceId)
     nextState = triggerNameBreak(nextState, updatedTarget.instanceId, input.sourceId)
+    nextState = triggerArtifactsAfterEnemyNamed(nextState, input.sourceId)
   }
 
   return nextState

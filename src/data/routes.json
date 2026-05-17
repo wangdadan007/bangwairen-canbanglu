@@ -43,6 +43,7 @@
         "nameKey": "route.node.first_event.name",
         "descriptionKey": "route.node.first_event.description",
         "eventPoolIds": [
+          "event_mid_ink_pool",
           "event_abandoned_registry_desk",
           "event_ash_altar_lamp",
           "event_cinnabar_scribe"

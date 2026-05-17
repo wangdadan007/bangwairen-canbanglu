@@ -1,4 +1,5 @@
 import { appendLog } from '../log/actionLog'
+import { triggerEarthAltars } from './altarResolver'
 import type {
   AbnormalMoveDefinition,
   CombatState,
@@ -15,6 +16,8 @@ export function executeEnemyTurn(
     ...state,
     phase: 'enemy_turn',
   }
+
+  nextState = triggerEarthAltars(nextState)
 
   for (const enemy of nextState.enemies) {
     if (enemy.currentForm <= 0) {

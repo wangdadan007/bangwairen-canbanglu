@@ -22,6 +22,14 @@ const MECHANIC_TAGS = new Set([
   'draw',
   'gain_incense',
   'red_ink_preview',
+  'ink',
+  'doom',
+  'fracture',
+  'altar',
+  'human_altar',
+  'earth_altar',
+  'heaven_altar',
+  'artifact',
 ])
 
 export interface CreateTutorialRewardOfferInput {

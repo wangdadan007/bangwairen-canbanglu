@@ -6,13 +6,13 @@ describe('initial game data', () => {
     const data = loadGameData()
 
     expect(data.artifacts).toHaveLength(4)
-    expect(data.cards).toHaveLength(18)
-    expect(data.enemies).toHaveLength(8)
-    expect(data.encounters).toHaveLength(6)
-    expect(data.events).toHaveLength(3)
+    expect(data.cards).toHaveLength(31)
+    expect(data.enemies).toHaveLength(10)
+    expect(data.encounters).toHaveLength(12)
+    expect(data.events).toHaveLength(4)
     expect(data.routes).toHaveLength(1)
     expect(data.shopItems).toHaveLength(5)
-    expect(data.tutorialUnlocks).toHaveLength(3)
+    expect(data.tutorialUnlocks).toHaveLength(6)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
   })
 
@@ -117,6 +117,35 @@ describe('initial game data', () => {
     expect(getCardDefinition('card_red_ink_trial', data)?.unlockStage).toBe(
       'stage_red_ink_preview',
     )
+    expect(getCardDefinition('card_ink_rubbing_slip', data)?.effects.map((effect) => effect.type)).toEqual([
+      'ASK_NAME',
+      'GAIN_INK',
+    ])
+    expect(getCardDefinition('card_borrowed_doom_talisman', data)?.effects.map((effect) => effect.type)).toEqual([
+      'GAIN_DOOM',
+      'GAIN_INCENSE',
+    ])
+    expect(getCardDefinition('card_human_altar_name_sigil', data)?.effects[0].type).toBe(
+      'PLACE_ALTAR',
+    )
+    expect(getCardDefinition('card_earth_altar_watch', data)?.effects[0]).toEqual({
+      type: 'PLACE_ALTAR',
+      target: 'selected_enemy',
+      altarSlot: 'earth',
+      altarEffect: {
+        type: 'counter_abnormal_or_gain_ink',
+        amount: 1,
+        moveType: 'steal_incense',
+      },
+    })
+    expect(getCardDefinition('card_heaven_altar_oracle', data)?.tags).toContain(
+      'catalogue_reward',
+    )
+    expect(getCardDefinition('card_doom_flash_talisman', data)?.effects.map((effect) => effect.type)).toEqual([
+      'GAIN_DOOM',
+      'BREAK_SHAPE',
+    ])
+    expect(getCardDefinition('card_cracked_whip_echo', data)?.type).toBe('temporary')
 
     const paperWraith = getEnemyDefinition('enemy_paper_wraith', data)
     expect(paperWraith?.maxForm).toBe(18)
@@ -154,6 +183,18 @@ describe('initial game data', () => {
       true,
     )
 
+    const fortuneBreaker = getEnemyDefinition('enemy_fortune_breaker', data)
+    expect(fortuneBreaker?.tier).toBe('normal')
+    expect(fortuneBreaker?.maxForm).toBe(26)
+    expect(fortuneBreaker?.traits).toContain('doom')
+
+    const ashAltarChild = getEnemyDefinition('enemy_ash_altar_child', data)
+    expect(ashAltarChild?.tier).toBe('normal')
+    expect(ashAltarChild?.intents.map((intent) => intent.kind)).toEqual([
+      'abnormal_move',
+      'incoming_force',
+    ])
+
     const incenseClerk = getEnemyDefinition('enemy_incense_clerk', data)
     expect(incenseClerk?.tier).toBe('elite')
     expect(incenseClerk?.maxForm).toBe(38)
@@ -178,6 +219,12 @@ describe('initial game data', () => {
       'enemy_incense_thief_mouse',
       'enemy_bronze_bell_patrol',
       'enemy_unlit_temple_warden',
+      'enemy_fortune_breaker',
+      'enemy_ash_altar_child',
+      'enemy_nameless_paper_imp',
+      'enemy_incense_ash_louse',
+      'enemy_unlit_temple_warden',
+      'enemy_bronze_bell_patrol',
       'enemy_incense_clerk',
       'enemy_registry_thief',
     ])
@@ -242,6 +289,7 @@ describe('initial game data', () => {
     ])
     expect(route.nodes.filter((node) => node.isPlaceholder).map((node) => node.type)).toEqual([])
     expect(route.nodes.find((node) => node.type === 'event')?.eventPoolIds).toEqual([
+      'event_mid_ink_pool',
       'event_abandoned_registry_desk',
       'event_ash_altar_lamp',
       'event_cinnabar_scribe',
@@ -269,10 +317,10 @@ describe('initial game data', () => {
       sealMomentum: data.cards.filter((card) => card.tags.includes('seal_momentum')),
     }
 
-    expect(cardsByDirection.breakForm).toHaveLength(7)
-    expect(cardsByDirection.askName).toHaveLength(5)
-    expect(cardsByDirection.sealMomentum).toHaveLength(4)
-    expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(11)
+    expect(cardsByDirection.breakForm).toHaveLength(10)
+    expect(cardsByDirection.askName).toHaveLength(10)
+    expect(cardsByDirection.sealMomentum).toHaveLength(5)
+    expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(23)
   })
 
   it('keeps early chapter reward numbers within the current enemy curve', () => {

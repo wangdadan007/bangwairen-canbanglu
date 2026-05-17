@@ -1,6 +1,6 @@
 import type { CardId, EventId, LocalizationKey, UnlockStageId } from './common'
 
-export type EventFlag = 'fracture' | 'doom' | 'red_ink'
+export type EventFlag = 'ink' | 'fracture' | 'doom' | 'red_ink'
 
 export type EventEffect =
   | {
@@ -13,6 +13,18 @@ export type EventEffect =
     }
   | {
       readonly type: 'ADD_FRACTURE'
+      readonly amount: number
+    }
+  | {
+      readonly type: 'ADD_INK'
+      readonly amount: number
+    }
+  | {
+      readonly type: 'SPEND_INK'
+      readonly amount: number
+    }
+  | {
+      readonly type: 'ADD_DOOM'
       readonly amount: number
     }
   | {

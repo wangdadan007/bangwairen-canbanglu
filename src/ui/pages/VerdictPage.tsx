@@ -1,4 +1,5 @@
 import type {
+  TutorialResourceState,
   TutorialVerdictChoiceId,
   TutorialVerdictOffer,
   TutorialVerdictState,
@@ -6,12 +7,13 @@ import type {
 
 export interface VerdictPageProps {
   readonly offer: TutorialVerdictOffer
+  readonly resources: TutorialResourceState
   readonly verdict: TutorialVerdictState
   readonly t: (key: string | undefined) => string
   readonly onChoose: (choiceId: TutorialVerdictChoiceId) => void
 }
 
-export function VerdictPage({ offer, verdict, t, onChoose }: VerdictPageProps) {
+export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictPageProps) {
   return (
     <section className="verdict-page" aria-label="裁定页">
       <div className="section-title-row">
@@ -29,7 +31,9 @@ export function VerdictPage({ offer, verdict, t, onChoose }: VerdictPageProps) {
       </div>
 
       <div className="verdict-state-row" aria-label="裁定状态">
-        <span>榜裂 {verdict.fracture}</span>
+        <span>墨 {resources.ink}</span>
+        <span>劫数 {resources.doom}</span>
+        <span>榜裂 {resources.fracture}</span>
         <span>登簿 {verdict.registerEntries.length}</span>
         <span>裁定 {verdict.records.length} 次</span>
       </div>

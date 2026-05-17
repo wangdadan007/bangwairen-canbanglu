@@ -151,12 +151,16 @@ describe('core type contracts', () => {
       currency: {
         incenseMoney: 100,
       },
+      resources: {
+        ink: 0,
+        doom: 0,
+        fracture: 0,
+      },
       unlocks: {
         stages: ['stage_core'],
         keywords: ['break_form'],
       },
       verdict: {
-        fracture: 0,
         maxIncenseBonus: 0,
         registerEntries: [],
         records: [],
@@ -211,6 +215,10 @@ describe('core type contracts', () => {
           effects: [
             {
               type: 'ADD_FRACTURE',
+              amount: 1,
+            },
+            {
+              type: 'ADD_INK',
               amount: 1,
             },
           ],
@@ -343,6 +351,21 @@ describe('core type contracts', () => {
       discardPile: [],
       exhaustPile: [],
       nextTurnIncensePenalty: 0,
+      resources: {
+        ink: 0,
+        doom: 0,
+        fracture: 0,
+      },
+      temporaryResourceDelta: {
+        ink: 0,
+        doom: 0,
+        fracture: 0,
+      },
+      altars: [],
+      artifacts: {
+        artifacts: [],
+      },
+      triggeredArtifactIds: [],
       actionLog: [logEntry],
       result: {
         status: 'ongoing',

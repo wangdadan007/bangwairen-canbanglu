@@ -37,8 +37,9 @@ export function EventPage({
 
       <div className="event-state-row" aria-label="事件相关状态">
         <span>牌组 {run.deckCards.length} 张</span>
-        <span>榜裂 {run.verdict.fracture}</span>
-        <span>劫数未解锁</span>
+        <span>墨 {run.resources.ink}</span>
+        <span>劫数 {run.resources.doom}</span>
+        <span>榜裂 {run.resources.fracture}</span>
         <span>已历事件 {run.events.records.length} 次</span>
       </div>
 
@@ -78,6 +79,10 @@ export function EventPage({
 }
 
 function getOptionFlagLabel(flags: readonly EventFlag[]) {
+  if (flags.includes('ink')) {
+    return '涉及墨'
+  }
+
   if (flags.includes('fracture')) {
     return '涉及榜裂'
   }
@@ -113,6 +118,18 @@ function getOptionEffectLabels(
 
     if (effect.type === 'ADD_FRACTURE') {
       return `榜裂 +${effect.amount}`
+    }
+
+    if (effect.type === 'ADD_INK') {
+      return `墨 +${effect.amount}`
+    }
+
+    if (effect.type === 'SPEND_INK') {
+      return `墨 -${effect.amount}`
+    }
+
+    if (effect.type === 'ADD_DOOM') {
+      return `劫数 +${effect.amount}`
     }
 
     return '进入朱批'

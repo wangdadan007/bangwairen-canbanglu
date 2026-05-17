@@ -196,6 +196,7 @@ describe('T09 tutorial run sequence', () => {
       'encounter_elite_incense_clerk',
     )
     expect(fifthRun.status).toBe('active')
+    expect(fifthRun.unlocks.stages).toContain('stage_run_resources')
     expect(fifthRun.completedEncounterIds).toEqual([
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',

@@ -36,7 +36,6 @@ export interface TutorialVerdictRecord {
 }
 
 export interface TutorialVerdictState {
-  readonly fracture: number
   readonly maxIncenseBonus: number
   readonly registerEntries: readonly TutorialVerdictRegisterEntry[]
   readonly records: readonly TutorialVerdictRecord[]
