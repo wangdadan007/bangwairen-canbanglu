@@ -1,6 +1,6 @@
 # 《榜外人：残榜录》项目规划与开发进度
 
-版本：v0.1  
+版本：v0.3
 日期：2026-05-17  
 适用阶段：阶段 A 核心战斗 MVP → 阶段 B 教学纵切 MVP
 
@@ -12,6 +12,7 @@
 
 - `AGENTS.md`：稳定开发规则、术语红线、协作纪律。
 - `docs/prd/`：产品目标、机制事实源、验收标准。
+- `docs/tasks/FULL_PROJECT_PLAN.md`：从核心战斗 MVP 到第一章公开 Demo 的完整版项目路线图。
 - `docs/tasks/codex_tasks_v0.1.md`：首批 T00 到 T06 的原始任务说明。
 - `docs/prd/PRD-changelog.md`：范围、机制、技术栈等需求变更记录。
 
@@ -28,7 +29,9 @@
 - 核心战斗逻辑位于 `src/core`，不依赖 React、Phaser 或 DOM。
 - React HUD 已能显示香火、手牌、敌人形、名格、正名状态、战斗日志、伏诛 / 归册结果。
 - 基础规则测试已覆盖破形、问名、正名、名破、伏诛 / 归册、费用不足、抽牌堆回洗。
-- 本地 git 仓库已初始化，主分支为 `main`；GitHub 远程推送等待 `gh auth login` 完成。
+- 本地 git 仓库已初始化，主分支为 `main`。
+- GitHub 仓库已创建并推送 `main`：`https://github.com/wangdadan007/bangwairen-canbanglu.git`。
+- 完整版项目路线图已新增：`docs/tasks/FULL_PROJECT_PLAN.md`，并包含原始 16 项推荐开发顺序覆盖表。
 
 当前推荐下一步：T07 来势 / 封势 / 异动边界。
 
@@ -259,16 +262,16 @@
 - 当前本地目录已经初始化为 git 仓库，主分支为 `main`。
 - 本地首个基线提交已创建：`265ed39 chore: establish core battle mvp baseline`。
 - GitHub CLI `gh` 已安装。
-- GitHub CLI 尚未登录；`gh auth status` 显示未登录任何 GitHub host。
-- GitHub 远程仓库尚未创建，等待完成 `gh auth login` 后继续。
+- GitHub CLI 已登录账号 `wangdadan007`。
+- GitHub 远程仓库已创建：`https://github.com/wangdadan007/bangwairen-canbanglu.git`。
+- 本地 `main` 已推送并跟踪 `origin/main`。
 - 已有 `.gitignore`，并已排除 `node_modules/`、`dist/`、`.DS_Store`、本地调试文件和包管理日志。
 
 建议：
 
-- 建议上传 GitHub，优先使用私有仓库。
-- 上传时机建议放在 T07 开始前。当前 T00 到 T06 已经形成一个可运行、可测试的基础版本，适合作为首个提交基线。
+- T07 开始前已经完成 GitHub 上传，后续建议按小功能建立分支、提交和推送。
 - 不要上传 `node_modules/`、`dist/`、本地密钥、账号、API token、授权不明素材。
-- 首次上传前先运行 `npm run typecheck`、`npm run test`、`npm run build`，并记录结果。
+- 每次核心规则或 UI 任务完成后先运行 `npm run typecheck`、`npm run test`、`npm run build`，并记录结果。
 
 推荐首批提交内容：
 
@@ -283,7 +286,7 @@
 - `index.html`
 - `.gitignore`
 
-不在 Codex 未经用户明确授权时自动创建远程仓库、提交或推送。
+不在 Codex 未经用户明确授权时自动提交或推送。
 
 ## 9. 当前不可提前做
 
