@@ -6,8 +6,10 @@ import type {
   CardEffect,
   CardInstance,
   CombatState,
+  CounterAbnormalMoveEffect,
   EnemyInstanceId,
   EnemyState,
+  SealMomentumEffect,
 } from '../../types'
 
 export interface ResolveCardInput {
@@ -142,14 +144,11 @@ function resolveCardEffect(
   }
 
   if (effect.type === 'SEAL_MOMENTUM') {
-    return appendLog(state, {
-      type: 'INCOMING_FORCE_SEALED',
-      sourceId: card.instanceId,
-      targetId: targetEnemyInstanceId,
-      payload: {
-        amount: effect.amount,
-      },
-    })
+    return sealIncomingForce(state, card, effect, targetEnemyInstanceId)
+  }
+
+  if (effect.type === 'COUNTER_ABNORMAL_MOVE') {
+    return counterAbnormalMove(state, card, effect, targetEnemyInstanceId)
   }
 
   return resolveAskName(state, {
@@ -157,6 +156,86 @@ function resolveCardEffect(
     targetEnemyInstanceId,
     amount: effect.amount,
   })
+}
+
+function sealIncomingForce(
+  state: CombatState,
+  card: CardInstance,
+  effect: SealMomentumEffect,
+  targetEnemyInstanceId?: EnemyInstanceId,
+): CombatState {
+  const targets = selectEnemyTargets(state.enemies, targetEnemyInstanceId, effect.target)
+  let nextState = state
+
+  for (const target of targets) {
+    const nextIncomingForce = Math.max(0, target.incomingForce - effect.amount)
+    const sealedAmount = target.incomingForce - nextIncomingForce
+
+    nextState = {
+      ...nextState,
+      enemies: nextState.enemies.map((enemy) =>
+        enemy.instanceId === target.instanceId
+          ? {
+              ...enemy,
+              incomingForce: nextIncomingForce,
+            }
+          : enemy,
+      ),
+    }
+
+    nextState = appendLog(nextState, {
+      type: 'INCOMING_FORCE_SEALED',
+      sourceId: card.instanceId,
+      targetId: target.instanceId,
+      payload: {
+        requestedAmount: effect.amount,
+        amount: sealedAmount,
+        remainingIncomingForce: nextIncomingForce,
+      },
+    })
+  }
+
+  return nextState
+}
+
+function counterAbnormalMove(
+  state: CombatState,
+  card: CardInstance,
+  effect: CounterAbnormalMoveEffect,
+  targetEnemyInstanceId?: EnemyInstanceId,
+): CombatState {
+  const targets = selectEnemyTargets(state.enemies, targetEnemyInstanceId, effect.target)
+  let nextState = state
+
+  for (const target of targets) {
+    const nextBlockedMoveTypes = target.blockedAbnormalMoveTypes.includes(effect.moveType ?? 'custom')
+      ? target.blockedAbnormalMoveTypes
+      : [...target.blockedAbnormalMoveTypes, effect.moveType ?? 'custom']
+
+    nextState = {
+      ...nextState,
+      enemies: nextState.enemies.map((enemy) =>
+        enemy.instanceId === target.instanceId
+          ? {
+              ...enemy,
+              blockedAbnormalMoveTypes: nextBlockedMoveTypes,
+            }
+          : enemy,
+      ),
+    }
+
+    nextState = appendLog(nextState, {
+      type: 'ABNORMAL_MOVE_COUNTERED',
+      sourceId: card.instanceId,
+      targetId: target.instanceId,
+      payload: {
+        moveType: effect.moveType ?? 'custom',
+        result: 'prepared',
+      },
+    })
+  }
+
+  return nextState
 }
 
 function breakEnemyForm(
@@ -201,7 +280,12 @@ function breakEnemyForm(
 function selectEnemyTargets(
   enemies: readonly EnemyState[],
   targetEnemyInstanceId?: EnemyInstanceId,
+  targetType: 'selected_enemy' | 'all_enemies' | 'random_enemy' = 'selected_enemy',
 ): readonly EnemyState[] {
+  if (targetType === 'all_enemies') {
+    return enemies.filter((enemy) => enemy.currentForm > 0)
+  }
+
   if (targetEnemyInstanceId) {
     return enemies.filter((enemy) => enemy.instanceId === targetEnemyInstanceId)
   }

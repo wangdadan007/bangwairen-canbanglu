@@ -41,5 +41,59 @@
         "descriptionKey": "enemy.paper_wraith.reward.catalogue"
       }
     ]
+  },
+  {
+    "id": "enemy_incense_thief_mouse",
+    "nameKey": "enemy.incense_thief_mouse.name",
+    "maxForm": 14,
+    "nameSlots": 1,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.incense_thief_mouse.name_slot.0"
+      }
+    ],
+    "tier": "normal",
+    "traits": ["tutorial", "abnormal_move", "steal_incense"],
+    "intents": [
+      {
+        "id": "intent_incense_thief_mouse_steal",
+        "nameKey": "enemy.incense_thief_mouse.intent.steal",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "steal_incense",
+              "amount": 1,
+              "descriptionKey": "enemy.incense_thief_mouse.intent.steal.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_incense_thief_mouse_bite",
+        "nameKey": "enemy.incense_thief_mouse.intent.bite",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 4
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_incense_thief_mouse_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.incense_thief_mouse.reward.vanquish"
+      },
+      {
+        "id": "reward_incense_thief_mouse_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.incense_thief_mouse.reward.catalogue"
+      }
+    ]
   }
 ]

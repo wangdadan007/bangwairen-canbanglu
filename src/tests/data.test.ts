@@ -5,8 +5,8 @@ describe('initial game data', () => {
   it('loads starter cards, tutorial enemy, unlocks, and localization', () => {
     const data = loadGameData()
 
-    expect(data.cards).toHaveLength(6)
-    expect(data.enemies).toHaveLength(1)
+    expect(data.cards).toHaveLength(7)
+    expect(data.enemies).toHaveLength(2)
     expect(data.tutorialUnlocks).toHaveLength(1)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
   })
@@ -21,13 +21,16 @@ describe('initial game data', () => {
     )
   })
 
-  it('contains the six starter cards and paper wraith baseline', () => {
+  it('contains starter cards, paper wraith, and abnormal move tutorial data', () => {
     const data = loadGameData()
 
     expect(getCardDefinition('card_zhu_fu', data)?.cost).toBe(1)
     expect(getCardDefinition('card_ask_name', data)?.effects[0].type).toBe('ASK_NAME')
     expect(getCardDefinition('card_guard_desk_talisman', data)?.effects[0].type).toBe(
       'SEAL_MOMENTUM',
+    )
+    expect(getCardDefinition('card_cut_supply_talisman', data)?.effects[0].type).toBe(
+      'COUNTER_ABNORMAL_MOVE',
     )
     expect(getCardDefinition('card_mark_forehead', data)?.effects.map((effect) => effect.type)).toEqual([
       'BREAK_SHAPE',
@@ -40,6 +43,10 @@ describe('initial game data', () => {
     expect(paperWraith?.maxForm).toBe(18)
     expect(paperWraith?.nameSlots).toBe(2)
     expect(paperWraith?.intents[0].kind).toBe('incoming_force')
+
+    const incenseThiefMouse = getEnemyDefinition('enemy_incense_thief_mouse', data)
+    expect(incenseThiefMouse?.intents[0].kind).toBe('abnormal_move')
+    expect(incenseThiefMouse?.intents[0].effects[0].type).toBe('ABNORMAL_MOVE')
   })
 
   it('keeps logical object keys ASCII-only while allowing localized values', () => {

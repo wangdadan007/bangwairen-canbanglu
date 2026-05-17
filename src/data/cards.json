@@ -67,6 +67,23 @@
     ]
   },
   {
+    "id": "card_cut_supply_talisman",
+    "nameKey": "card.cut_supply_talisman.name",
+    "descriptionKey": "card.cut_supply_talisman.description",
+    "rulesTextKey": "card.cut_supply_talisman.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_core",
+    "tags": ["starter", "counter_abnormal_move"],
+    "effects": [
+      {
+        "type": "COUNTER_ABNORMAL_MOVE",
+        "target": "selected_enemy",
+        "moveType": "steal_incense"
+      }
+    ]
+  },
+  {
     "id": "card_mark_forehead",
     "nameKey": "card.mark_forehead.name",
     "descriptionKey": "card.mark_forehead.description",

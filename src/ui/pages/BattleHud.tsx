@@ -7,6 +7,7 @@ import {
 import { gameData } from '../../data'
 import type {
   ActionLogEntry,
+  AbnormalMoveDefinition,
   CardDefinition,
   CardInstance,
   CombatState,
@@ -23,15 +24,16 @@ const battleContext: BattleReducerContext = {
 const enemyDefinitionsById = new Map(gameData.enemies.map((enemy) => [enemy.id, enemy]))
 const startingEnemy = getStartingEnemy()
 
-function createBattle() {
+function createBattle(enemyDefinition = startingEnemy) {
   return createInitialBattleState({
     cardDefinitions: gameData.cards,
-    enemyDefinition: startingEnemy,
+    enemyDefinition,
   })
 }
 
 export function BattleHud() {
-  const [battle, setBattle] = useState(createBattle)
+  const [selectedEnemyId, setSelectedEnemyId] = useState(startingEnemy.id)
+  const [battle, setBattle] = useState(() => createBattle(startingEnemy))
   const enemy = battle.enemies[0]
   const cardDefinitionsById = useMemo(() => createCardDefinitionMap(gameData.cards), [])
   const allCardsByInstanceId = useMemo(() => createCardInstanceMap(battle.player.deck), [battle])
@@ -73,7 +75,14 @@ export function BattleHud() {
   }
 
   function restartBattle() {
-    setBattle(createBattle())
+    setBattle(createBattle(getEnemyDefinition(selectedEnemyId)))
+  }
+
+  function changeEnemy(enemyDefinitionId: string) {
+    const enemyDefinition = getEnemyDefinition(enemyDefinitionId)
+
+    setSelectedEnemyId(enemyDefinition.id)
+    setBattle(createBattle(enemyDefinition))
   }
 
   return (
@@ -81,11 +90,26 @@ export function BattleHud() {
       <header className="hud-header">
         <div>
           <p className="panel-kicker">残榜试战</p>
-          <h2>纸面鬼</h2>
+          <h2>{getEnemyDefinitionName(selectedEnemyId)}</h2>
         </div>
-        <button className="ghost-button" type="button" onClick={restartBattle}>
-          新开测试战斗
-        </button>
+        <div className="dev-controls">
+          <label>
+            <span>测试敌人</span>
+            <select
+              value={selectedEnemyId}
+              onChange={(event) => changeEnemy(event.currentTarget.value)}
+            >
+              {gameData.enemies.map((definition) => (
+                <option key={definition.id} value={definition.id}>
+                  {t(definition.nameKey)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="ghost-button" type="button" onClick={restartBattle}>
+            新开测试战斗
+          </button>
+        </div>
       </header>
 
       {battle.result.status === 'victory' ? (
@@ -175,6 +199,7 @@ export function BattleHud() {
 function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
   const formPercent = Math.max(0, Math.min(100, (enemy.currentForm / enemy.maxForm) * 100))
   const intentLabel = enemy.currentIntent ? t(enemy.currentIntent.nameKey) : '无'
+  const abnormalMove = getCurrentAbnormalMove(enemy)
   const intentKind =
     enemy.currentIntent?.kind === 'abnormal_move'
       ? '异动'
@@ -220,6 +245,16 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
         <span>{intentKind}</span>
         <strong>{intentLabel}</strong>
       </div>
+      <div className="intent-detail-grid" aria-label="敌人意图详情">
+        <div>
+          <span>当前来势</span>
+          <strong>{enemy.incomingForce}</strong>
+        </div>
+        <div className={abnormalMove ? 'intent-alert active' : 'intent-alert'}>
+          <span>异动预警</span>
+          <strong>{abnormalMove ? t(abnormalMove.descriptionKey) : '无'}</strong>
+        </div>
+      </div>
     </section>
   )
 }
@@ -249,6 +284,20 @@ function getStartingEnemy() {
   }
 
   return enemy
+}
+
+function getEnemyDefinition(definitionId: string) {
+  const enemy = enemyDefinitionsById.get(definitionId)
+
+  if (!enemy) {
+    throw new Error(`Missing enemy definition: ${definitionId}`)
+  }
+
+  return enemy
+}
+
+function getCurrentAbnormalMove(enemy: EnemyState): AbnormalMoveDefinition | undefined {
+  return enemy.currentIntent?.effects.find((effect) => effect.type === 'ABNORMAL_MOVE')?.move
 }
 
 function formatLogEntry(
@@ -299,6 +348,14 @@ function formatLogEntry(
   }
 
   if (entry.type === 'INCENSE_GAINED') {
+    const incensePenalty = getPayloadNumber(entry.payload.incensePenalty) ?? 0
+
+    if (incensePenalty > 0) {
+      return `香火受扰 -${incensePenalty}，本回合获得 ${
+        getPayloadNumber(entry.payload.amount) ?? 0
+      }，当前 ${getPayloadNumber(entry.payload.currentIncense) ?? 0}。`
+    }
+
     return `香火 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
       getPayloadNumber(entry.payload.currentIncense) ?? 0
     }。`
@@ -343,11 +400,27 @@ function formatLogEntry(
   }
 
   if (entry.type === 'INCOMING_FORCE_SEALED') {
-    return `${sourceCardName ?? '符诏'}封势 ${getPayloadNumber(entry.payload.amount) ?? 0}。`
+    return `${sourceCardName ?? '符诏'}封势 ${
+      getPayloadNumber(entry.payload.amount) ?? 0
+    }，剩余来势 ${getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0}。`
   }
 
   if (entry.type === 'ABNORMAL_MOVE_EXECUTED') {
-    return `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}发动异动。`
+    return `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}发动异动：${getMoveLabel(
+      getPayloadString(entry.payload.moveType),
+    )}。`
+  }
+
+  if (entry.type === 'ABNORMAL_MOVE_COUNTERED') {
+    const result = getPayloadString(entry.payload.result)
+
+    return result === 'prevented'
+      ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${getMoveLabel(
+          getPayloadString(entry.payload.moveType),
+        )}被断异动阻止。`
+      : `${sourceCardName ?? '符诏'}准备断异动：${getMoveLabel(
+          getPayloadString(entry.payload.moveType),
+        )}。`
   }
 
   if (entry.type === 'VICTORY_SETTLED') {
@@ -411,6 +484,18 @@ function getSettlementLabel(settlement: VictorySettlement) {
 
 function getSettlementText(settlement: VictorySettlement) {
   return settlement === 'catalogue' ? '真名入卷，奖励质量提高。' : '敌形已散，获得普通奖励。'
+}
+
+function getMoveLabel(moveType: string | undefined) {
+  if (moveType === 'steal_incense') {
+    return '偷香'
+  }
+
+  if (moveType === 'add_fouled_scroll') {
+    return '塞污卷'
+  }
+
+  return moveType ?? '异动'
 }
 
 function getEnemyDefinitionName(definitionId: string) {

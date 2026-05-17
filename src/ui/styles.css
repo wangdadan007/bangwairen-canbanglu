@@ -127,6 +127,29 @@ button:disabled {
   padding-bottom: 2px;
 }
 
+.dev-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.dev-controls label {
+  display: grid;
+  gap: 5px;
+  color: #d8c2a0;
+  font-size: 12px;
+}
+
+.dev-controls select {
+  min-height: 34px;
+  border: 1px solid rgba(178, 139, 82, 0.55);
+  border-radius: 6px;
+  padding: 0 10px;
+  color: #eadfca;
+  background: rgba(24, 56, 51, 0.52);
+  font: inherit;
+}
+
 .battle-hud h2,
 .battle-hud h3 {
   margin: 0;
@@ -260,6 +283,40 @@ button:disabled {
   margin-top: 14px;
 }
 
+.intent-detail-grid {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.intent-detail-grid > div {
+  display: grid;
+  min-height: 54px;
+  align-content: center;
+  gap: 4px;
+  border: 1px solid rgba(178, 139, 82, 0.26);
+  border-radius: 6px;
+  padding: 8px;
+  background: rgba(14, 20, 19, 0.42);
+}
+
+.intent-detail-grid span {
+  color: #ad9c82;
+  font-size: 12px;
+}
+
+.intent-detail-grid strong {
+  color: #f0e2ca;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.intent-alert.active {
+  border-color: rgba(201, 79, 61, 0.7);
+  background: rgba(91, 33, 30, 0.42);
+}
+
 .resource-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -390,8 +447,20 @@ button:disabled {
     flex-direction: column;
   }
 
+  .dev-controls {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .dev-controls select,
+  .dev-controls button {
+    width: 100%;
+  }
+
   .resource-grid,
-  .name-slots {
+  .name-slots,
+  .intent-detail-grid {
     grid-template-columns: 1fr 1fr;
   }
 }

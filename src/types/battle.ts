@@ -70,6 +70,7 @@ export type ActionLogType =
   | 'INCOMING_FORCE_CREATED'
   | 'INCOMING_FORCE_SEALED'
   | 'ABNORMAL_MOVE_EXECUTED'
+  | 'ABNORMAL_MOVE_COUNTERED'
   | 'VICTORY_SETTLED'
   | 'DEBUG'
 
@@ -82,6 +83,7 @@ export interface CombatState {
   readonly hand: readonly CardInstance[]
   readonly discardPile: readonly CardInstance[]
   readonly exhaustPile: readonly CardInstance[]
+  readonly nextTurnIncensePenalty: number
   readonly actionLog: readonly ActionLogEntry[]
   readonly result: BattleResult
 }

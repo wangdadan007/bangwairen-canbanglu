@@ -2,12 +2,15 @@ import { appendLog } from '../log/actionLog'
 import type { CardInstance, CombatState } from '../../types'
 
 export function startPlayerTurn(state: CombatState, drawCount: number): CombatState {
+  const incensePenalty = state.nextTurnIncensePenalty
+  const turnIncense = Math.max(0, state.player.maxIncense - incensePenalty)
   let nextState: CombatState = {
     ...state,
+    nextTurnIncensePenalty: 0,
     phase: 'player_turn',
     player: {
       ...state.player,
-      incense: state.player.maxIncense,
+      incense: turnIncense,
     },
   }
 
@@ -23,8 +26,9 @@ export function startPlayerTurn(state: CombatState, drawCount: number): CombatSt
     type: 'INCENSE_GAINED',
     sourceId: 'player',
     payload: {
-      amount: nextState.player.maxIncense,
+      amount: turnIncense,
       currentIncense: nextState.player.incense,
+      incensePenalty,
     },
   })
 

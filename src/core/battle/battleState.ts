@@ -6,6 +6,7 @@ import type {
   CardInstance,
   CombatState,
   EnemyDefinition,
+  EnemyIntentDefinition,
   EnemyState,
   UnlockState,
 } from '../../types'
@@ -14,12 +15,12 @@ export const DEFAULT_MAX_INCENSE = 3
 export const DEFAULT_HAND_DRAW = 5
 
 export const DEFAULT_STARTER_DECK_IDS: readonly CardId[] = [
-  'card_zhu_fu',
-  'card_zhu_fu',
-  'card_zhu_fu',
-  'card_zhu_fu',
   'card_guard_desk_talisman',
-  'card_guard_desk_talisman',
+  'card_cut_supply_talisman',
+  'card_zhu_fu',
+  'card_zhu_fu',
+  'card_zhu_fu',
+  'card_zhu_fu',
   'card_guard_desk_talisman',
   'card_ask_name',
   'card_ask_name',
@@ -59,6 +60,7 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     hand: [],
     discardPile: [],
     exhaustPile: [],
+    nextTurnIncensePenalty: 0,
     actionLog: [],
     result: {
       status: 'ongoing',
@@ -109,8 +111,21 @@ export function createEnemyState(definition: EnemyDefinition, index: number): En
     hasTriggeredNameBreak: false,
     intentIndex: 0,
     currentIntent: definition.intents[0],
+    incomingForce: getIncomingForce(definition.intents[0]),
+    blockedAbnormalMoveTypes: [],
     traits: definition.traits,
   }
+}
+
+function getIncomingForce(intent: EnemyIntentDefinition | undefined): number {
+  if (!intent) {
+    return 0
+  }
+
+  return intent.effects.reduce(
+    (total, effect) => total + (effect.type === 'INCOMING_FORCE' ? effect.amount : 0),
+    0,
+  )
 }
 
 function assertDeckDefinitionsExist(

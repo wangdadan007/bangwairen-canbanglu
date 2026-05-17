@@ -1,3 +1,5 @@
+import type { AbnormalMoveType } from './enemy'
+
 export type EffectTarget =
   | 'self'
   | 'selected_enemy'
@@ -19,6 +21,7 @@ export type CardEffect =
   | BreakShapeEffect
   | AskNameEffect
   | SealMomentumEffect
+  | CounterAbnormalMoveEffect
   | DrawCardsEffect
   | GainIncenseEffect
 
@@ -40,6 +43,13 @@ export interface SealMomentumEffect {
   readonly type: 'SEAL_MOMENTUM'
   readonly target: Extract<EffectTarget, 'selected_enemy' | 'all_enemies'>
   readonly amount: number
+  readonly condition?: EffectCondition
+}
+
+export interface CounterAbnormalMoveEffect {
+  readonly type: 'COUNTER_ABNORMAL_MOVE'
+  readonly target: Extract<EffectTarget, 'selected_enemy' | 'all_enemies'>
+  readonly moveType?: AbnormalMoveType
   readonly condition?: EffectCondition
 }
 

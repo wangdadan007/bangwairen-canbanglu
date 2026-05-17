@@ -84,5 +84,7 @@ export interface EnemyState {
   readonly hasTriggeredNameBreak: boolean
   readonly intentIndex: number
   readonly currentIntent?: EnemyIntentDefinition
+  readonly incomingForce: number
+  readonly blockedAbnormalMoveTypes: readonly AbnormalMoveType[]
   readonly traits: readonly string[]
 }

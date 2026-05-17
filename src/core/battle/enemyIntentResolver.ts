@@ -1,5 +1,11 @@
 import { appendLog } from '../log/actionLog'
-import type { CombatState, EnemyDefinition, EnemyState } from '../../types'
+import type {
+  AbnormalMoveDefinition,
+  CombatState,
+  EnemyDefinition,
+  EnemyIntentDefinition,
+  EnemyState,
+} from '../../types'
 
 export function executeEnemyTurn(
   state: CombatState,
@@ -34,32 +40,66 @@ function executeEnemyIntent(
 
   for (const effect of enemy.currentIntent.effects) {
     if (effect.type === 'INCOMING_FORCE') {
+      const amount = enemy.incomingForce
       nextState = appendLog(nextState, {
         type: 'INCOMING_FORCE_CREATED',
         sourceId: enemy.instanceId,
         targetId: 'player',
         payload: {
           intentId: enemy.currentIntent.id,
-          amount: effect.amount,
+          amount,
+          baseAmount: effect.amount,
         },
       })
     }
 
     if (effect.type === 'ABNORMAL_MOVE') {
-      nextState = appendLog(nextState, {
-        type: 'ABNORMAL_MOVE_EXECUTED',
-        sourceId: enemy.instanceId,
-        targetId: 'player',
-        payload: {
-          intentId: enemy.currentIntent.id,
-          moveType: effect.move.type,
-          amount: effect.move.amount ?? null,
-        },
-      })
+      nextState = executeAbnormalMove(nextState, enemy, enemy.currentIntent.id, effect.move)
     }
   }
 
   return advanceEnemyIntent(nextState, enemy, enemyDefinitions)
+}
+
+function executeAbnormalMove(
+  state: CombatState,
+  enemy: EnemyState,
+  intentId: string,
+  move: AbnormalMoveDefinition,
+): CombatState {
+  if (enemy.blockedAbnormalMoveTypes.includes(move.type)) {
+    return appendLog(state, {
+      type: 'ABNORMAL_MOVE_COUNTERED',
+      sourceId: enemy.instanceId,
+      targetId: 'player',
+      payload: {
+        intentId,
+        moveType: move.type,
+        result: 'prevented',
+      },
+    })
+  }
+
+  let nextState = state
+
+  if (move.type === 'steal_incense') {
+    nextState = {
+      ...nextState,
+      nextTurnIncensePenalty: nextState.nextTurnIncensePenalty + (move.amount ?? 1),
+    }
+  }
+
+  return appendLog(nextState, {
+    type: 'ABNORMAL_MOVE_EXECUTED',
+    sourceId: enemy.instanceId,
+    targetId: 'player',
+    payload: {
+      intentId,
+      moveType: move.type,
+      amount: move.amount ?? null,
+      nextTurnIncensePenalty: nextState.nextTurnIncensePenalty,
+    },
+  })
 }
 
 function advanceEnemyIntent(
@@ -74,12 +114,15 @@ function advanceEnemyIntent(
   }
 
   const nextIntentIndex = (enemy.intentIndex + 1) % definition.intents.length
+  const nextIntent = definition.intents[nextIntentIndex]
   const enemies = state.enemies.map((candidate) =>
     candidate.instanceId === enemy.instanceId
       ? {
           ...candidate,
           intentIndex: nextIntentIndex,
-          currentIntent: definition.intents[nextIntentIndex],
+          currentIntent: nextIntent,
+          incomingForce: getIncomingForce(nextIntent),
+          blockedAbnormalMoveTypes: [],
         }
       : candidate,
   )
@@ -88,4 +131,15 @@ function advanceEnemyIntent(
     ...state,
     enemies,
   }
+}
+
+function getIncomingForce(intent: EnemyIntentDefinition | undefined): number {
+  if (!intent) {
+    return 0
+  }
+
+  return intent.effects.reduce(
+    (total, effect) => total + (effect.type === 'INCOMING_FORCE' ? effect.amount : 0),
+    0,
+  )
 }

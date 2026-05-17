@@ -99,6 +99,8 @@ describe('core type contracts', () => {
           isNamed: false,
           hasTriggeredNameBreak: false,
           intentIndex: 0,
+          incomingForce: 5,
+          blockedAbnormalMoveTypes: [],
           traits: ['tutorial'],
         },
       ],
@@ -106,6 +108,7 @@ describe('core type contracts', () => {
       hand: [],
       discardPile: [],
       exhaustPile: [],
+      nextTurnIncensePenalty: 0,
       actionLog: [logEntry],
       result: {
         status: 'ongoing',
