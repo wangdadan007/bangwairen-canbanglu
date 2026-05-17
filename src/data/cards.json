@@ -1,0 +1,125 @@
+[
+  {
+    "id": "card_zhu_fu",
+    "nameKey": "card.zhu_fu.name",
+    "descriptionKey": "card.zhu_fu.description",
+    "rulesTextKey": "card.zhu_fu.rules",
+    "cost": 1,
+    "type": "talisman",
+    "unlockStage": "stage_core",
+    "tags": ["starter", "break_form"],
+    "effects": [
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 4
+      },
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 1,
+        "condition": {
+          "type": "TARGET_HAS_REVEALED_NAME_SLOT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_ask_name",
+    "nameKey": "card.ask_name.name",
+    "descriptionKey": "card.ask_name.description",
+    "rulesTextKey": "card.ask_name.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_core",
+    "tags": ["starter", "ask_name"],
+    "effects": [
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      },
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 1,
+        "condition": {
+          "type": "TARGET_HAS_NO_NAME_SLOT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_guard_desk_talisman",
+    "nameKey": "card.guard_desk_talisman.name",
+    "descriptionKey": "card.guard_desk_talisman.description",
+    "rulesTextKey": "card.guard_desk_talisman.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_core",
+    "tags": ["starter", "seal_momentum"],
+    "effects": [
+      {
+        "type": "SEAL_MOMENTUM",
+        "target": "selected_enemy",
+        "amount": 3
+      }
+    ]
+  },
+  {
+    "id": "card_mark_forehead",
+    "nameKey": "card.mark_forehead.name",
+    "descriptionKey": "card.mark_forehead.description",
+    "rulesTextKey": "card.mark_forehead.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_core",
+    "tags": ["starter", "break_form", "ask_name"],
+    "effects": [
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 2
+      },
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "card_order_scroll",
+    "nameKey": "card.order_scroll.name",
+    "descriptionKey": "card.order_scroll.description",
+    "rulesTextKey": "card.order_scroll.rules",
+    "cost": 0,
+    "type": "ritual",
+    "unlockStage": "stage_core",
+    "tags": ["starter", "draw", "mvp_simplified"],
+    "effects": [
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "card_quiet_incense",
+    "nameKey": "card.quiet_incense.name",
+    "descriptionKey": "card.quiet_incense.description",
+    "rulesTextKey": "card.quiet_incense.rules",
+    "cost": 0,
+    "type": "ritual",
+    "unlockStage": "stage_core",
+    "tags": ["starter", "gain_incense", "exhaust", "mvp_simplified"],
+    "effects": [
+      {
+        "type": "GAIN_INCENSE",
+        "target": "self",
+        "amount": 1
+      }
+    ]
+  }
+]

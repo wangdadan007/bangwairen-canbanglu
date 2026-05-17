@@ -1,0 +1,7 @@
+[
+  {
+    "id": "stage_core",
+    "nameKey": "unlock.stage_core.name",
+    "keywords": ["break_form", "ask_name", "seal_momentum", "draw", "gain_incense"]
+  }
+]

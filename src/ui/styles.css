@@ -1,0 +1,397 @@
+:root {
+  color: #eadfca;
+  background: #15120f;
+  font-family:
+    "Noto Serif SC",
+    "Songti SC",
+    "Microsoft YaHei",
+    system-ui,
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(33, 24, 19, 0.86), rgba(16, 17, 16, 0.96)),
+    linear-gradient(180deg, rgba(120, 30, 27, 0.18), rgba(18, 53, 48, 0.12)),
+    #15120f;
+}
+
+button {
+  min-height: 40px;
+  border: 1px solid #b28b52;
+  border-radius: 6px;
+  padding: 0 14px;
+  color: #231815;
+  background: #caa76a;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #d9b877;
+}
+
+button:disabled {
+  border-color: rgba(173, 147, 104, 0.35);
+  color: rgba(234, 223, 202, 0.48);
+  background: rgba(72, 57, 45, 0.58);
+  cursor: not-allowed;
+}
+
+.app-shell {
+  width: min(1320px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.title-page {
+  margin-bottom: 24px;
+}
+
+.title-page h1 {
+  margin: 0;
+  font-size: 58px;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.title-page p {
+  max-width: 760px;
+  margin: 14px 0 0;
+  color: #d0c0a5;
+  line-height: 1.7;
+}
+
+.title-page code {
+  border-radius: 4px;
+  padding: 2px 5px;
+  background: rgba(234, 223, 202, 0.1);
+}
+
+.eyebrow {
+  color: #c94f3d;
+  font-weight: 700;
+}
+
+.battle-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.phaser-shell,
+.battle-hud {
+  border: 1px solid rgba(178, 139, 82, 0.44);
+  border-radius: 8px;
+  background: rgba(30, 25, 21, 0.82);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+}
+
+.phaser-shell {
+  min-height: 520px;
+  overflow: hidden;
+}
+
+.battle-hud {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 720px;
+  overflow: auto;
+  padding: 18px;
+}
+
+.hud-header,
+.section-title-row,
+.card-topline,
+.form-row,
+.intent-row,
+.hud-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hud-header {
+  padding-bottom: 2px;
+}
+
+.battle-hud h2,
+.battle-hud h3 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.battle-hud h2 {
+  font-size: 24px;
+}
+
+.battle-hud h3 {
+  font-size: 17px;
+}
+
+.panel-kicker {
+  margin: 0 0 5px;
+  color: #a9885d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ghost-button {
+  min-height: 34px;
+  border-color: rgba(178, 139, 82, 0.55);
+  color: #eadfca;
+  background: rgba(24, 56, 51, 0.52);
+}
+
+.ghost-button:hover {
+  background: rgba(37, 80, 73, 0.72);
+}
+
+.result-banner {
+  display: grid;
+  gap: 6px;
+  border-left: 3px solid #c94f3d;
+  padding: 12px 14px;
+  background: rgba(102, 28, 26, 0.32);
+}
+
+.result-banner span {
+  color: #f3c66f;
+  font-weight: 800;
+}
+
+.result-banner strong {
+  color: #f3ead8;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.enemy-panel,
+.hud-section {
+  border-top: 1px solid rgba(178, 139, 82, 0.26);
+  padding-top: 16px;
+}
+
+.status-pill,
+.turn-pill,
+.target-note,
+.section-title-row > span {
+  color: #d8c2a0;
+  font-size: 12px;
+}
+
+.status-pill,
+.turn-pill {
+  border: 1px solid rgba(178, 139, 82, 0.45);
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: rgba(13, 26, 25, 0.45);
+}
+
+.status-pill.named {
+  border-color: rgba(201, 79, 61, 0.72);
+  color: #f0c774;
+  background: rgba(112, 33, 28, 0.34);
+}
+
+.form-meter {
+  height: 12px;
+  margin: 14px 0 8px;
+  border: 1px solid rgba(178, 139, 82, 0.42);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(11, 18, 18, 0.62);
+}
+
+.form-meter span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #b73e35, #e0b45d);
+}
+
+.form-row,
+.intent-row {
+  color: #c7b492;
+  font-size: 14px;
+}
+
+.form-row strong,
+.intent-row strong {
+  color: #f0e2ca;
+}
+
+.name-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.name-slot {
+  min-height: 34px;
+  border: 1px dashed rgba(178, 139, 82, 0.5);
+  border-radius: 6px;
+  padding: 7px 9px;
+  color: #ad9c82;
+  background: rgba(14, 20, 19, 0.52);
+  text-align: center;
+}
+
+.name-slot.revealed {
+  border-style: solid;
+  border-color: rgba(201, 79, 61, 0.72);
+  color: #f1d69b;
+  background: rgba(81, 31, 28, 0.5);
+}
+
+.intent-row {
+  margin-top: 14px;
+}
+
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.metric {
+  display: grid;
+  min-height: 58px;
+  align-content: center;
+  gap: 4px;
+  border-top: 1px solid rgba(178, 139, 82, 0.22);
+  color: #ad9c82;
+}
+
+.metric strong {
+  color: #f0e2ca;
+  font-size: 18px;
+}
+
+.hand-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.card-button {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  min-height: 104px;
+  padding: 12px;
+  color: #eadfca;
+  background: rgba(47, 37, 31, 0.86);
+  text-align: left;
+}
+
+.card-button:hover {
+  background: rgba(66, 48, 38, 0.96);
+}
+
+.card-button:disabled {
+  background: rgba(39, 35, 31, 0.66);
+}
+
+.card-topline strong {
+  color: #f3d482;
+  font-size: 17px;
+}
+
+.card-topline span {
+  flex: 0 0 auto;
+  color: #d8c2a0;
+  font-size: 13px;
+}
+
+.card-rules {
+  color: #d9ccb8;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.card-state {
+  color: #cba079;
+  font-size: 12px;
+}
+
+.hud-actions button {
+  width: 100%;
+}
+
+.empty-state {
+  margin: 0;
+  color: #a9977d;
+  line-height: 1.6;
+}
+
+.log-section {
+  min-height: 180px;
+}
+
+.log-list {
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  margin: 12px 0 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.log-list li {
+  border-left: 2px solid rgba(178, 139, 82, 0.45);
+  padding-left: 10px;
+  color: #d9ccb8;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 840px) {
+  .battle-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .phaser-shell {
+    min-height: 420px;
+  }
+
+  .battle-hud {
+    max-height: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-shell {
+    width: min(100vw - 20px, 1320px);
+    padding: 20px 0;
+  }
+
+  .title-page h1 {
+    font-size: 40px;
+  }
+
+  .hud-header,
+  .section-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .resource-grid,
+  .name-slots {
+    grid-template-columns: 1fr 1fr;
+  }
+}

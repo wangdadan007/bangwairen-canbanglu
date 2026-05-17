@@ -1,0 +1,45 @@
+[
+  {
+    "id": "enemy_paper_wraith",
+    "nameKey": "enemy.paper_wraith.name",
+    "maxForm": 18,
+    "nameSlots": 2,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.paper_wraith.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.paper_wraith.name_slot.1"
+      }
+    ],
+    "tier": "normal",
+    "traits": ["tutorial", "paper"],
+    "intents": [
+      {
+        "id": "intent_paper_wraith_scrape",
+        "nameKey": "enemy.paper_wraith.intent.scrape",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 5
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_paper_wraith_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.paper_wraith.reward.vanquish"
+      },
+      {
+        "id": "reward_paper_wraith_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.paper_wraith.reward.catalogue"
+      }
+    ]
+  }
+]
