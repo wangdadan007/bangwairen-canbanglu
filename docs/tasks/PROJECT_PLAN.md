@@ -257,6 +257,7 @@
 当前状态：
 
 - 当前本地目录已经初始化为 git 仓库，主分支为 `main`。
+- 本地首个基线提交已创建：`265ed39 chore: establish core battle mvp baseline`。
 - GitHub CLI `gh` 已安装。
 - GitHub CLI 尚未登录；`gh auth status` 显示未登录任何 GitHub host。
 - GitHub 远程仓库尚未创建，等待完成 `gh auth login` 后继续。
