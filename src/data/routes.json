@@ -70,6 +70,46 @@
         "nameKey": "route.node.first_elite.name",
         "descriptionKey": "route.node.first_elite.description",
         "encounterId": "encounter_elite_incense_clerk",
+        "nextNodeIds": ["route_node_late_plague_paper_figure"]
+      },
+      {
+        "id": "route_node_late_plague_paper_figure",
+        "type": "normal_battle",
+        "nameKey": "route.node.late_plague_paper_figure.name",
+        "descriptionKey": "route.node.late_plague_paper_figure.description",
+        "encounterId": "encounter_late_plague_paper_figure",
+        "nextNodeIds": ["route_node_second_elite"]
+      },
+      {
+        "id": "route_node_second_elite",
+        "type": "elite",
+        "nameKey": "route.node.second_elite.name",
+        "descriptionKey": "route.node.second_elite.description",
+        "encounterId": "encounter_elite_fire_fleeing_name",
+        "nextNodeIds": ["route_node_late_scroll_stuffer_clerk"]
+      },
+      {
+        "id": "route_node_late_scroll_stuffer_clerk",
+        "type": "normal_battle",
+        "nameKey": "route.node.late_scroll_stuffer_clerk.name",
+        "descriptionKey": "route.node.late_scroll_stuffer_clerk.description",
+        "encounterId": "encounter_late_scroll_stuffer_clerk",
+        "nextNodeIds": ["route_node_third_elite"]
+      },
+      {
+        "id": "route_node_third_elite",
+        "type": "elite",
+        "nameKey": "route.node.third_elite.name",
+        "descriptionKey": "route.node.third_elite.description",
+        "encounterId": "encounter_elite_dipper_empty_shell",
+        "nextNodeIds": ["route_node_late_fleeing_name_paper_horse"]
+      },
+      {
+        "id": "route_node_late_fleeing_name_paper_horse",
+        "type": "normal_battle",
+        "nameKey": "route.node.late_fleeing_name_paper_horse.name",
+        "descriptionKey": "route.node.late_fleeing_name_paper_horse.description",
+        "encounterId": "encounter_late_fleeing_name_paper_horse",
         "nextNodeIds": ["route_node_boss_registry_thief"]
       },
       {

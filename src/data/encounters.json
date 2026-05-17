@@ -90,12 +90,102 @@
     "unlocksOnVictory": []
   },
   {
+    "id": "encounter_late_plague_paper_figure",
+    "nameKey": "encounter.late.plague_paper_figure.name",
+    "enemyDefinitionId": "enemy_plague_paper_figure",
+    "tutorialOrder": 12,
+    "lessonKey": "encounter.late.plague_paper_figure.lesson",
+    "completionKey": "encounter.late.plague_paper_figure.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_late_scroll_stuffer_clerk",
+    "nameKey": "encounter.late.scroll_stuffer_clerk.name",
+    "enemyDefinitionId": "enemy_scroll_stuffer_clerk",
+    "tutorialOrder": 13,
+    "lessonKey": "encounter.late.scroll_stuffer_clerk.lesson",
+    "completionKey": "encounter.late.scroll_stuffer_clerk.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_late_fleeing_name_paper_horse",
+    "nameKey": "encounter.late.fleeing_name_paper_horse.name",
+    "enemyDefinitionId": "enemy_fleeing_name_paper_horse",
+    "tutorialOrder": 14,
+    "lessonKey": "encounter.late.fleeing_name_paper_horse.lesson",
+    "completionKey": "encounter.late.fleeing_name_paper_horse.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_late_offering_table_afterimage",
+    "nameKey": "encounter.late.offering_table_afterimage.name",
+    "enemyDefinitionId": "enemy_offering_table_afterimage",
+    "tutorialOrder": 15,
+    "lessonKey": "encounter.late.offering_table_afterimage.lesson",
+    "completionKey": "encounter.late.offering_table_afterimage.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_pool_plague_paper_figure_return",
+    "nameKey": "encounter.pool.plague_paper_figure_return.name",
+    "enemyDefinitionId": "enemy_plague_paper_figure",
+    "tutorialOrder": 16,
+    "lessonKey": "encounter.pool.plague_paper_figure_return.lesson",
+    "completionKey": "encounter.pool.plague_paper_figure_return.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_pool_scroll_stuffer_clerk_return",
+    "nameKey": "encounter.pool.scroll_stuffer_clerk_return.name",
+    "enemyDefinitionId": "enemy_scroll_stuffer_clerk",
+    "tutorialOrder": 17,
+    "lessonKey": "encounter.pool.scroll_stuffer_clerk_return.lesson",
+    "completionKey": "encounter.pool.scroll_stuffer_clerk_return.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_pool_fleeing_name_paper_horse_return",
+    "nameKey": "encounter.pool.fleeing_name_paper_horse_return.name",
+    "enemyDefinitionId": "enemy_fleeing_name_paper_horse",
+    "tutorialOrder": 18,
+    "lessonKey": "encounter.pool.fleeing_name_paper_horse_return.lesson",
+    "completionKey": "encounter.pool.fleeing_name_paper_horse_return.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_pool_offering_table_afterimage_return",
+    "nameKey": "encounter.pool.offering_table_afterimage_return.name",
+    "enemyDefinitionId": "enemy_offering_table_afterimage",
+    "tutorialOrder": 19,
+    "lessonKey": "encounter.pool.offering_table_afterimage_return.lesson",
+    "completionKey": "encounter.pool.offering_table_afterimage_return.completion",
+    "unlocksOnVictory": []
+  },
+  {
     "id": "encounter_elite_incense_clerk",
     "nameKey": "encounter.elite.incense_clerk.name",
     "enemyDefinitionId": "enemy_incense_clerk",
     "tutorialOrder": 5,
     "lessonKey": "encounter.elite.incense_clerk.lesson",
     "completionKey": "encounter.elite.incense_clerk.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_elite_fire_fleeing_name",
+    "nameKey": "encounter.elite.fire_fleeing_name.name",
+    "enemyDefinitionId": "enemy_fire_fleeing_name",
+    "tutorialOrder": 20,
+    "lessonKey": "encounter.elite.fire_fleeing_name.lesson",
+    "completionKey": "encounter.elite.fire_fleeing_name.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_elite_dipper_empty_shell",
+    "nameKey": "encounter.elite.dipper_empty_shell.name",
+    "enemyDefinitionId": "enemy_dipper_empty_shell",
+    "tutorialOrder": 21,
+    "lessonKey": "encounter.elite.dipper_empty_shell.lesson",
+    "completionKey": "encounter.elite.dipper_empty_shell.completion",
     "unlocksOnVictory": []
   },
   {

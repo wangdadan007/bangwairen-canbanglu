@@ -158,37 +158,20 @@ describe('T09 tutorial run sequence', () => {
 
   it('can use route battle encounter ids for the T20 route-driven sequence', () => {
     const routeEncounterIds = getRouteBattleEncounterIds(gameData.routes[0])
-    const firstRun = createInitialTutorialRunState(gameData.tutorialUnlocks, routeEncounterIds)
-    const secondRun = advanceTutorialRun(
-      firstRun,
-      gameData.encounters,
-      gameData.tutorialUnlocks,
-      'vanquish',
-    )
-    const thirdRun = advanceTutorialRun(
-      secondRun,
-      gameData.encounters,
-      gameData.tutorialUnlocks,
-      'vanquish',
-    )
-    const fourthRun = advanceTutorialRun(
-      thirdRun,
-      gameData.encounters,
-      gameData.tutorialUnlocks,
-      'vanquish',
-    )
-    const fifthRun = advanceTutorialRun(
-      fourthRun,
-      gameData.encounters,
-      gameData.tutorialUnlocks,
-      'vanquish',
-    )
-    const sixthRun = advanceTutorialRun(
-      fifthRun,
-      gameData.encounters,
-      gameData.tutorialUnlocks,
-      'catalogue',
-    )
+    const runs = routeEncounterIds
+      .slice(0, 6)
+      .reduce(
+        (states, _encounterId, index) => [
+          ...states,
+          advanceTutorialRun(
+            states[states.length - 1],
+            gameData.encounters,
+            gameData.tutorialUnlocks,
+            index === 5 ? 'catalogue' : 'vanquish',
+          ),
+        ],
+        [createInitialTutorialRunState(gameData.tutorialUnlocks, routeEncounterIds)],
+      )
 
     expect(routeEncounterIds).toEqual([
       'encounter_tutorial_paper_wraith',
@@ -196,25 +179,33 @@ describe('T09 tutorial run sequence', () => {
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
+      'encounter_late_plague_paper_figure',
+      'encounter_elite_fire_fleeing_name',
+      'encounter_late_scroll_stuffer_clerk',
+      'encounter_elite_dipper_empty_shell',
+      'encounter_late_fleeing_name_paper_horse',
       'encounter_boss_registry_thief',
     ])
-    expect(getCurrentTutorialEncounter(fourthRun, gameData.encounters)?.id).toBe(
+    expect(getCurrentTutorialEncounter(runs[3], gameData.encounters)?.id).toBe(
       'encounter_mid_unlit_temple_warden',
     )
-    expect(getCurrentTutorialEncounter(fifthRun, gameData.encounters)?.id).toBe(
+    expect(getCurrentTutorialEncounter(runs[4], gameData.encounters)?.id).toBe(
       'encounter_elite_incense_clerk',
     )
-    expect(fifthRun.status).toBe('active')
-    expect(getCurrentTutorialEncounter(sixthRun, gameData.encounters)?.id).toBe(
-      'encounter_boss_registry_thief',
+    expect(getCurrentTutorialEncounter(runs[5], gameData.encounters)?.id).toBe(
+      'encounter_late_plague_paper_figure',
     )
-    expect(sixthRun.status).toBe('active')
-    expect(fifthRun.unlocks.stages).toContain('stage_run_resources')
-    expect(fifthRun.completedEncounterIds).toEqual([
+    expect(getCurrentTutorialEncounter(runs[6], gameData.encounters)?.id).toBe(
+      'encounter_elite_fire_fleeing_name',
+    )
+    expect(runs[6].status).toBe('active')
+    expect(runs[5].unlocks.stages).toContain('stage_run_resources')
+    expect(runs[5].completedEncounterIds).toEqual([
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
+      'encounter_elite_incense_clerk',
     ])
   })
 

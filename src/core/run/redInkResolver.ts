@@ -1,6 +1,7 @@
 import { annotateRunDeckCard } from './deckResolver'
-import { advanceArtifactProgress } from './artifactResolver'
+import { advanceArtifactProgress, CINNABAR_DOU_ARTIFACT_ID } from './artifactResolver'
 import type {
+  CardAnnotation,
   RedInkAnnotationId,
   RunDeckCardId,
   TutorialRedInkOption,
@@ -93,6 +94,7 @@ export function resolveTutorialRedInk(
     throw new Error(`Missing red ink option: ${input.annotationId}`)
   }
 
+  const cinnabarBonus = createCinnabarBonusAnnotation(run)
   const record: TutorialRedInkRecord = {
     id: `red_ink_record_${run.redInkRecords.length + 1}`,
     deckCardId: targetCard.id,
@@ -100,17 +102,83 @@ export function resolveTutorialRedInk(
     annotationId: option.id,
     skipped: false,
   }
+  const deckCardsWithBaseAnnotation = annotateRunDeckCard(
+    run.deckCards,
+    targetCard.id,
+    option.annotation,
+  )
+  const deckCards = cinnabarBonus
+    ? annotateRunDeckCard(deckCardsWithBaseAnnotation, targetCard.id, cinnabarBonus)
+    : deckCardsWithBaseAnnotation
+  const progressedArtifacts = advanceArtifactProgress(run.artifacts, [
+    {
+      kind: 'red_ink_applied',
+    },
+  ])
 
   return {
     ...run,
-    deckCards: annotateRunDeckCard(run.deckCards, targetCard.id, option.annotation),
-    artifacts: advanceArtifactProgress(run.artifacts, [
-      {
-        kind: 'red_ink_applied',
-      },
-    ]),
+    deckCards,
+    artifacts: cinnabarBonus ? markCinnabarTriggered(progressedArtifacts) : progressedArtifacts,
     pendingRedInk: undefined,
     redInkRecords: [...run.redInkRecords, record],
+  }
+}
+
+function createCinnabarBonusAnnotation(run: TutorialRunState): CardAnnotation | undefined {
+  const cinnabarDou = run.artifacts.artifacts.find(
+    (artifact) => artifact.definitionId === CINNABAR_DOU_ARTIFACT_ID,
+  )
+
+  if (!cinnabarDou || cinnabarDou.chargesRemaining <= 0) {
+    return undefined
+  }
+
+  return {
+    id:
+      cinnabarDou.bindingStatus === 'bound'
+        ? 'red_ink_cinnabar_bound_bonus'
+        : 'red_ink_cinnabar_base_bonus',
+    nameKey: 'red_ink.cinnabar_bonus.name',
+    rulesTextKey:
+      cinnabarDou.bindingStatus === 'bound'
+        ? 'red_ink.cinnabar_bonus.bound.rules'
+        : 'red_ink.cinnabar_bonus.base.rules',
+    effects:
+      cinnabarDou.bindingStatus === 'bound'
+        ? [
+            {
+              type: 'GAIN_INK',
+              target: 'self',
+              amount: 1,
+            },
+            {
+              type: 'DRAW',
+              target: 'self',
+              count: 1,
+            },
+          ]
+        : [
+            {
+              type: 'GAIN_INK',
+              target: 'self',
+              amount: 1,
+            },
+          ],
+  }
+}
+
+function markCinnabarTriggered(artifacts: TutorialRunState['artifacts']) {
+  return {
+    artifacts: artifacts.artifacts.map((artifact) =>
+      artifact.definitionId === CINNABAR_DOU_ARTIFACT_ID
+        ? {
+            ...artifact,
+            hasTriggeredThisBattle: true,
+            triggerCountThisBattle: artifact.triggerCountThisBattle + 1,
+          }
+        : artifact,
+    ),
   }
 }
 

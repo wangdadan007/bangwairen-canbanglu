@@ -5,10 +5,10 @@ describe('initial game data', () => {
   it('loads starter cards, tutorial enemy, unlocks, and localization', () => {
     const data = loadGameData()
 
-    expect(data.artifacts).toHaveLength(4)
-    expect(data.cards).toHaveLength(31)
-    expect(data.enemies).toHaveLength(10)
-    expect(data.encounters).toHaveLength(12)
+    expect(data.artifacts).toHaveLength(8)
+    expect(data.cards).toHaveLength(32)
+    expect(data.enemies).toHaveLength(16)
+    expect(data.encounters).toHaveLength(22)
     expect(data.events).toHaveLength(4)
     expect(data.routes).toHaveLength(1)
     expect(data.shopItems).toHaveLength(5)
@@ -46,6 +46,10 @@ describe('initial game data', () => {
       'artifact_bone_mirror',
       'artifact_cinnabar_dou',
       'artifact_fracture_needle',
+      'artifact_registry_inkstone',
+      'artifact_seal_door_tablet',
+      'artifact_ash_lamp',
+      'artifact_doom_bell',
     ])
     expect(artifactIds.every((artifactId) => !cardIds.has(artifactId))).toBe(true)
     expect(getArtifactDefinition('artifact_whip_fragment', data)?.triggerType).toBe(
@@ -58,6 +62,10 @@ describe('initial game data', () => {
     expect(data.artifacts.map((artifact) => artifact.bindCondition.kind)).toEqual([
       'catalogue_named_enemy',
       'ask_name',
+      'red_ink_applied',
+      'erase_verdict',
+      'ask_name',
+      'catalogue_named_enemy',
       'red_ink_applied',
       'erase_verdict',
     ])
@@ -146,6 +154,7 @@ describe('initial game data', () => {
       'BREAK_SHAPE',
     ])
     expect(getCardDefinition('card_cracked_whip_echo', data)?.type).toBe('temporary')
+    expect(getCardDefinition('card_fouled_scroll', data)?.effects).toEqual([])
 
     const paperWraith = getEnemyDefinition('enemy_paper_wraith', data)
     expect(paperWraith?.maxForm).toBe(18)
@@ -195,6 +204,39 @@ describe('initial game data', () => {
       'incoming_force',
     ])
 
+    const plaguePaperFigure = getEnemyDefinition('enemy_plague_paper_figure', data)
+    expect(plaguePaperFigure?.tier).toBe('normal')
+    expect(plaguePaperFigure?.intents[0].effects[0]).toEqual(
+      expect.objectContaining({
+        type: 'ABNORMAL_MOVE',
+        move: expect.objectContaining({
+          type: 'add_fouled_scroll',
+        }),
+      }),
+    )
+
+    const fleeingNamePaperHorse = getEnemyDefinition('enemy_fleeing_name_paper_horse', data)
+    expect(fleeingNamePaperHorse?.traits).toContain('cover_name')
+    expect(fleeingNamePaperHorse?.intents[0].effects[0]).toEqual(
+      expect.objectContaining({
+        type: 'ABNORMAL_MOVE',
+        move: expect.objectContaining({
+          type: 'cover_name',
+        }),
+      }),
+    )
+
+    const offeringTableAfterimage = getEnemyDefinition('enemy_offering_table_afterimage', data)
+    expect(offeringTableAfterimage?.tier).toBe('minion')
+    expect(offeringTableAfterimage?.intents[0].effects[0]).toEqual(
+      expect.objectContaining({
+        type: 'ABNORMAL_MOVE',
+        move: expect.objectContaining({
+          type: 'heal_form',
+        }),
+      }),
+    )
+
     const incenseClerk = getEnemyDefinition('enemy_incense_clerk', data)
     expect(incenseClerk?.tier).toBe('elite')
     expect(incenseClerk?.maxForm).toBe(38)
@@ -205,13 +247,31 @@ describe('initial game data', () => {
       'incoming_force',
     ])
 
+    const fireFleeingName = getEnemyDefinition('enemy_fire_fleeing_name', data)
+    expect(fireFleeingName?.tier).toBe('elite')
+    expect(fireFleeingName?.nameSlots).toBe(3)
+    expect(fireFleeingName?.intents.map((intent) => intent.kind)).toEqual([
+      'incoming_force',
+      'abnormal_move',
+      'incoming_force',
+    ])
+
+    const dipperEmptyShell = getEnemyDefinition('enemy_dipper_empty_shell', data)
+    expect(dipperEmptyShell?.tier).toBe('elite')
+    expect(dipperEmptyShell?.traits).toEqual(
+      expect.arrayContaining(['altar', 'artifact', 'cover_name']),
+    )
+
     const registryThief = getEnemyDefinition('enemy_registry_thief', data)
     expect(registryThief?.tier).toBe('boss')
-    expect(registryThief?.maxForm).toBe(72)
+    expect(registryThief?.maxForm).toBe(84)
     expect(registryThief?.nameSlots).toBe(3)
     expect(registryThief?.intents.map((intent) => intent.kind)).toEqual([
       'incoming_force',
       'abnormal_move',
+      'abnormal_move',
+      'abnormal_move',
+      'incoming_force',
     ])
 
     expect(data.encounters.map((encounter) => encounter.enemyDefinitionId)).toEqual([
@@ -225,7 +285,17 @@ describe('initial game data', () => {
       'enemy_incense_ash_louse',
       'enemy_unlit_temple_warden',
       'enemy_bronze_bell_patrol',
+      'enemy_plague_paper_figure',
+      'enemy_scroll_stuffer_clerk',
+      'enemy_fleeing_name_paper_horse',
+      'enemy_offering_table_afterimage',
+      'enemy_plague_paper_figure',
+      'enemy_scroll_stuffer_clerk',
+      'enemy_fleeing_name_paper_horse',
+      'enemy_offering_table_afterimage',
       'enemy_incense_clerk',
+      'enemy_fire_fleeing_name',
+      'enemy_dipper_empty_shell',
       'enemy_registry_thief',
     ])
   })
@@ -286,6 +356,11 @@ describe('initial game data', () => {
       'shop',
       'rest',
       'elite',
+      'normal_battle',
+      'elite',
+      'normal_battle',
+      'elite',
+      'normal_battle',
       'boss',
     ])
     expect(route.nodes.filter((node) => node.isPlaceholder).map((node) => node.type)).toEqual([])
@@ -302,7 +377,7 @@ describe('initial game data', () => {
       'route_node_rest_site',
     ])
     expect(route.nodes.find((node) => node.type === 'elite')?.nextNodeIds).toEqual([
-      'route_node_boss_registry_thief',
+      'route_node_late_plague_paper_figure',
     ])
     expect(route.nodes.find((node) => node.type === 'boss')?.nextNodeIds).toEqual([])
     expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
@@ -311,6 +386,11 @@ describe('initial game data', () => {
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
+      'encounter_late_plague_paper_figure',
+      'encounter_elite_fire_fleeing_name',
+      'encounter_late_scroll_stuffer_clerk',
+      'encounter_elite_dipper_empty_shell',
+      'encounter_late_fleeing_name_paper_horse',
       'encounter_boss_registry_thief',
     ])
   })

@@ -11,6 +11,8 @@ import type {
 import { applyTutorialResourceDelta } from './resourceResolver'
 
 export const WHIP_FRAGMENT_ARTIFACT_ID: ArtifactId = 'artifact_whip_fragment'
+export const BONE_MIRROR_ARTIFACT_ID: ArtifactId = 'artifact_bone_mirror'
+export const CINNABAR_DOU_ARTIFACT_ID: ArtifactId = 'artifact_cinnabar_dou'
 export const FRACTURE_NEEDLE_ARTIFACT_ID: ArtifactId = 'artifact_fracture_needle'
 export const WHIP_BACKLASH_CARD_ID: CardId = 'card_cracked_whip_echo'
 

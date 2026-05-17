@@ -1,6 +1,63 @@
 import { appendLog } from '../log/actionLog'
-import { WHIP_FRAGMENT_ARTIFACT_ID } from '../run/artifactResolver'
+import { BONE_MIRROR_ARTIFACT_ID, WHIP_FRAGMENT_ARTIFACT_ID } from '../run/artifactResolver'
 import type { CombatState, EnemyInstanceId, GameEntityId } from '../../types'
+
+export function triggerArtifactsAfterAskName(
+  state: CombatState,
+  sourceId: GameEntityId,
+): CombatState {
+  const boneMirror = state.artifacts.artifacts.find(
+    (artifact) => artifact.definitionId === BONE_MIRROR_ARTIFACT_ID,
+  )
+
+  if (!boneMirror || state.triggeredArtifactIds.includes(boneMirror.id)) {
+    return state
+  }
+
+  const askNameEntry = state.actionLog
+    .slice()
+    .reverse()
+    .find(
+      (entry) =>
+        entry.type === 'NAME_ASKED' &&
+        entry.turn === state.turn &&
+        entry.sourceId === sourceId,
+    )
+
+  if (!askNameEntry) {
+    return state
+  }
+
+  const target = state.enemies.find((enemy) => enemy.instanceId === askNameEntry.targetId)
+  const nextState: CombatState = {
+    ...state,
+    artifacts: {
+      artifacts: state.artifacts.artifacts.map((artifact) =>
+        artifact.id === boneMirror.id
+          ? {
+              ...artifact,
+              hasTriggeredThisBattle: true,
+              triggerCountThisBattle: artifact.triggerCountThisBattle + 1,
+            }
+          : artifact,
+      ),
+    },
+    triggeredArtifactIds: [...state.triggeredArtifactIds, boneMirror.id],
+  }
+
+  return appendLog(nextState, {
+    type: 'ARTIFACT_TRIGGERED',
+    sourceId: boneMirror.id,
+    targetId: target?.instanceId,
+    payload: {
+      effectType: 'peek_intent_after_ask_name',
+      result: 'peeked',
+      intentId: target?.currentIntent?.id ?? null,
+      intentKind: target?.currentIntent?.kind ?? null,
+      boundBonus: boneMirror.bindingStatus === 'bound' ? 1 : 0,
+    },
+  })
+}
 
 export function triggerArtifactsAfterEnemyNamed(
   state: CombatState,

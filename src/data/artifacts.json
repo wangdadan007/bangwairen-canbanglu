@@ -129,5 +129,137 @@
       "amount": 1,
       "descriptionKey": "artifact.fracture_needle.backlash"
     }
+  },
+  {
+    "id": "artifact_registry_inkstone",
+    "nameKey": "artifact.registry_inkstone.name",
+    "descriptionKey": "artifact.registry_inkstone.description",
+    "rulesTextKey": "artifact.registry_inkstone.rules",
+    "triggerType": "battle_trigger",
+    "unlockStage": "stage_run_resources",
+    "tags": ["chapter_one", "ink", "ask_name"],
+    "baseEffect": {
+      "type": "peek_intent_after_ask_name",
+      "amount": 1,
+      "descriptionKey": "artifact.registry_inkstone.effect.base"
+    },
+    "boundEffect": {
+      "type": "peek_intent_after_ask_name",
+      "amount": 2,
+      "descriptionKey": "artifact.registry_inkstone.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "ask_name",
+      "requiredCount": 6,
+      "descriptionKey": "artifact.registry_inkstone.bind"
+    },
+    "overloadCondition": {
+      "kind": "mirror_nameless_twice",
+      "descriptionKey": "artifact.registry_inkstone.overload"
+    },
+    "backlashEffect": {
+      "type": "hide_intent_before_ask_name",
+      "descriptionKey": "artifact.registry_inkstone.backlash"
+    }
+  },
+  {
+    "id": "artifact_seal_door_tablet",
+    "nameKey": "artifact.seal_door_tablet.name",
+    "descriptionKey": "artifact.seal_door_tablet.description",
+    "rulesTextKey": "artifact.seal_door_tablet.rules",
+    "triggerType": "battle_trigger",
+    "unlockStage": "stage_abnormal_boundary",
+    "tags": ["chapter_one", "seal_momentum", "break_form"],
+    "baseEffect": {
+      "type": "next_break_shape_bonus",
+      "amount": 1,
+      "descriptionKey": "artifact.seal_door_tablet.effect.base"
+    },
+    "boundEffect": {
+      "type": "next_break_shape_bonus",
+      "amount": 3,
+      "descriptionKey": "artifact.seal_door_tablet.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "catalogue_named_enemy",
+      "requiredCount": 2,
+      "descriptionKey": "artifact.seal_door_tablet.bind"
+    },
+    "overloadCondition": {
+      "kind": "vanquish_named_enemy_before_named",
+      "descriptionKey": "artifact.seal_door_tablet.overload"
+    },
+    "backlashEffect": {
+      "type": "add_temporary_card",
+      "amount": 1,
+      "descriptionKey": "artifact.seal_door_tablet.backlash"
+    }
+  },
+  {
+    "id": "artifact_ash_lamp",
+    "nameKey": "artifact.ash_lamp.name",
+    "descriptionKey": "artifact.ash_lamp.description",
+    "rulesTextKey": "artifact.ash_lamp.rules",
+    "triggerType": "active_charge",
+    "unlockStage": "stage_human_altar",
+    "tags": ["chapter_one", "red_ink", "altar"],
+    "chargesPerBattle": 1,
+    "baseEffect": {
+      "type": "red_ink_annotation_bonus",
+      "amount": 1,
+      "descriptionKey": "artifact.ash_lamp.effect.base"
+    },
+    "boundEffect": {
+      "type": "red_ink_annotation_bonus",
+      "amount": 1,
+      "descriptionKey": "artifact.ash_lamp.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "red_ink_applied",
+      "requiredCount": 2,
+      "descriptionKey": "artifact.ash_lamp.bind"
+    },
+    "overloadCondition": {
+      "kind": "repeat_red_ink_same_card",
+      "descriptionKey": "artifact.ash_lamp.overload"
+    },
+    "backlashEffect": {
+      "type": "lock_red_ink_target",
+      "amount": 1,
+      "descriptionKey": "artifact.ash_lamp.backlash"
+    }
+  },
+  {
+    "id": "artifact_doom_bell",
+    "nameKey": "artifact.doom_bell.name",
+    "descriptionKey": "artifact.doom_bell.description",
+    "rulesTextKey": "artifact.doom_bell.rules",
+    "triggerType": "verdict_modifier",
+    "unlockStage": "stage_run_resources",
+    "tags": ["chapter_one", "doom", "verdict"],
+    "baseEffect": {
+      "type": "erase_reward_bonus",
+      "amount": 1,
+      "descriptionKey": "artifact.doom_bell.effect.base"
+    },
+    "boundEffect": {
+      "type": "erase_reward_bonus",
+      "amount": 2,
+      "descriptionKey": "artifact.doom_bell.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "erase_verdict",
+      "requiredCount": 1,
+      "descriptionKey": "artifact.doom_bell.bind"
+    },
+    "overloadCondition": {
+      "kind": "consecutive_erase_verdicts",
+      "descriptionKey": "artifact.doom_bell.overload"
+    },
+    "backlashEffect": {
+      "type": "temporary_fracture",
+      "amount": 1,
+      "descriptionKey": "artifact.doom_bell.backlash"
+    }
   }
 ]

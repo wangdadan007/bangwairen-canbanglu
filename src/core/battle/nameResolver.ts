@@ -1,5 +1,8 @@
 import { appendLog } from '../log/actionLog'
-import { triggerArtifactsAfterEnemyNamed } from './artifactBattleResolver'
+import {
+  triggerArtifactsAfterAskName,
+  triggerArtifactsAfterEnemyNamed,
+} from './artifactBattleResolver'
 import type { CombatState, EnemyInstanceId, EnemyState, GameEntityId } from '../../types'
 
 const NORMAL_NAME_BREAK_RATIO = 0.33
@@ -33,6 +36,8 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
       result: target.nameSlots.length === 0 ? 'discern_intent' : 'reveal_name_slot',
     },
   })
+
+  nextState = triggerArtifactsAfterAskName(nextState, input.sourceId)
 
   if (target.nameSlots.length === 0 || target.isNamed) {
     return nextState

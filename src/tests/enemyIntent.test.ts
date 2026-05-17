@@ -87,6 +87,58 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
     expect(nextTurn.player.incense).toBe(3)
     expect(nextTurn.enemies[0].blockedAbnormalMoveTypes).toHaveLength(0)
   })
+
+  it('executes fouled-scroll pressure by adding a temporary clog card', () => {
+    const state = createBattle('enemy_scroll_stuffer_clerk', ['card_guard_desk_talisman'])
+    const nextTurn = reduceBattleState(state, { type: 'END_TURN' }, context)
+    const fouledScrollZones = [
+      ...nextTurn.hand,
+      ...nextTurn.drawPile,
+      ...nextTurn.discardPile,
+      ...nextTurn.exhaustPile,
+    ]
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_EXECUTED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'add_fouled_scroll',
+        addedCardDefinitionId: 'card_fouled_scroll',
+        addedCardCount: 1,
+      }),
+    )
+    expect(fouledScrollZones.map((card) => card.definitionId)).toContain('card_fouled_scroll')
+  })
+
+  it('executes cover-name pressure without undoing a fully named enemy', () => {
+    const state = createBattle('enemy_fleeing_name_paper_horse', ['card_ask_name'])
+    const afterAsk = playFirstCard(state, 'card_ask_name')
+    const nextTurn = reduceBattleState(afterAsk, { type: 'END_TURN' }, context)
+
+    expect(afterAsk.enemies[0].nameSlots.some((slot) => slot.isRevealed)).toBe(true)
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_EXECUTED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'cover_name',
+        coveredSlotIndex: 0,
+      }),
+    )
+    expect(nextTurn.enemies[0].nameSlots.every((slot) => !slot.isRevealed)).toBe(true)
+  })
+
+  it('executes support recovery as a low-cost support pressure', () => {
+    const state = withEnemyCurrentForm(
+      createBattle('enemy_offering_table_afterimage', ['card_guard_desk_talisman']),
+      8,
+    )
+    const nextTurn = reduceBattleState(state, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_EXECUTED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'heal_form',
+        healedAmount: 4,
+        currentForm: 12,
+      }),
+    )
+    expect(nextTurn.enemies[0].currentForm).toBe(12)
+  })
 })
 
 function createBattle(enemyDefinitionId: EnemyId, deckDefinitionIds: readonly CardId[]) {
@@ -129,4 +181,18 @@ function lastLogOfType(state: CombatState, type: CombatState['actionLog'][number
   const entries = state.actionLog.filter((entry) => entry.type === type)
 
   return entries[entries.length - 1]
+}
+
+function withEnemyCurrentForm(state: CombatState, currentForm: number): CombatState {
+  return {
+    ...state,
+    enemies: state.enemies.map((enemy, index) =>
+      index === 0
+        ? {
+            ...enemy,
+            currentForm,
+          }
+        : enemy,
+    ),
+  }
 }

@@ -1733,6 +1733,14 @@ function getMoveLabel(moveType: string | undefined) {
     return '塞污卷'
   }
 
+  if (moveType === 'cover_name') {
+    return '遮名'
+  }
+
+  if (moveType === 'heal_form') {
+    return '回形'
+  }
+
   return moveType ?? '异动'
 }
 

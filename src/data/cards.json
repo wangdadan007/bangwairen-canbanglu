@@ -633,6 +633,17 @@
     ]
   },
   {
+    "id": "card_fouled_scroll",
+    "nameKey": "card.fouled_scroll.name",
+    "descriptionKey": "card.fouled_scroll.description",
+    "rulesTextKey": "card.fouled_scroll.rules",
+    "cost": 1,
+    "type": "temporary",
+    "unlockStage": "stage_run_resources",
+    "tags": ["temporary", "fouled_scroll", "exhaust"],
+    "effects": []
+  },
+  {
     "id": "card_cracked_whip_echo",
     "nameKey": "card.cracked_whip_echo.name",
     "descriptionKey": "card.cracked_whip_echo.description",

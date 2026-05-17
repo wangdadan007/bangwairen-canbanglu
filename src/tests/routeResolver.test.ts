@@ -61,15 +61,16 @@ describe('T28 chapter one route closure', () => {
   })
 
   it('supports event, shop, rest, elite, and boss nodes before route completion', () => {
-    const firstBattleDone = completeCurrentRouteNode(route, createInitialRouteState(route))
-    const secondBattleDone = completeCurrentRouteNode(route, firstBattleDone)
-    const thirdBattleDone = completeCurrentRouteNode(route, secondBattleDone)
-    const stateAfterFourthBattle = completeCurrentRouteNode(route, thirdBattleDone)
-    const shopState = completeCurrentRouteNode(route, stateAfterFourthBattle)
-    const restState = completeCurrentRouteNode(route, shopState)
-    const eliteState = completeCurrentRouteNode(route, restState)
-    const bossState = completeCurrentRouteNode(route, eliteState)
-    const completeState = completeCurrentRouteNode(route, bossState)
+    const states = collectRouteStates()
+    const stateAfterFourthBattle = states[4]
+    const shopState = states[5]
+    const restState = states[6]
+    const eliteState = states[7]
+    const lateBattleState = states[8]
+    const secondEliteState = states[9]
+    const thirdEliteState = states[11]
+    const bossState = states[13]
+    const completeState = states[14]
 
     expect(getCurrentRouteNode(route, stateAfterFourthBattle)?.type).toBe('event')
     expect(getCurrentRouteNode(route, stateAfterFourthBattle)?.isPlaceholder).toBeUndefined()
@@ -80,6 +81,16 @@ describe('T28 chapter one route closure', () => {
     expect(getCurrentRouteNode(route, eliteState)?.type).toBe('elite')
     expect(getCurrentRouteNode(route, eliteState)?.isPlaceholder).toBeUndefined()
     expect(getCurrentRouteNode(route, eliteState)?.encounterId).toBe('encounter_elite_incense_clerk')
+    expect(getCurrentRouteNode(route, lateBattleState)?.type).toBe('normal_battle')
+    expect(getCurrentRouteNode(route, lateBattleState)?.encounterId).toBe(
+      'encounter_late_plague_paper_figure',
+    )
+    expect(getCurrentRouteNode(route, secondEliteState)?.encounterId).toBe(
+      'encounter_elite_fire_fleeing_name',
+    )
+    expect(getCurrentRouteNode(route, thirdEliteState)?.encounterId).toBe(
+      'encounter_elite_dipper_empty_shell',
+    )
     expect(getCurrentRouteNode(route, bossState)?.type).toBe('boss')
     expect(getCurrentRouteNode(route, bossState)?.encounterId).toBe(
       'encounter_boss_registry_thief',
@@ -88,15 +99,14 @@ describe('T28 chapter one route closure', () => {
   })
 
   it('reports the current route flow and current encounter from route state', () => {
-    const first = createInitialRouteState(route)
-    const second = completeCurrentRouteNode(route, first)
-    const third = completeCurrentRouteNode(route, second)
-    const fourth = completeCurrentRouteNode(route, third)
-    const eventState = completeCurrentRouteNode(route, fourth)
-    const shopState = completeCurrentRouteNode(route, eventState)
-    const restState = completeCurrentRouteNode(route, shopState)
-    const eliteState = completeCurrentRouteNode(route, restState)
-    const bossState = completeCurrentRouteNode(route, eliteState)
+    const states = collectRouteStates()
+    const first = states[0]
+    const fourth = states[3]
+    const eventState = states[4]
+    const shopState = states[5]
+    const restState = states[6]
+    const eliteState = states[7]
+    const bossState = states[13]
 
     expect(getRouteBattleEncounterIds(route)).toEqual([
       'encounter_tutorial_paper_wraith',
@@ -104,6 +114,11 @@ describe('T28 chapter one route closure', () => {
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
+      'encounter_late_plague_paper_figure',
+      'encounter_elite_fire_fleeing_name',
+      'encounter_late_scroll_stuffer_clerk',
+      'encounter_elite_dipper_empty_shell',
+      'encounter_late_fleeing_name_paper_horse',
       'encounter_boss_registry_thief',
     ])
     expect(getCurrentRouteFlowKind(route, first)).toBe('battle')
@@ -121,3 +136,13 @@ describe('T28 chapter one route closure', () => {
     )
   })
 })
+
+function collectRouteStates() {
+  const states = [createInitialRouteState(route)]
+
+  while (getCurrentRouteFlowKind(route, states[states.length - 1]) !== 'complete') {
+    states.push(completeCurrentRouteNode(route, states[states.length - 1]))
+  }
+
+  return states
+}

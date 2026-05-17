@@ -2,11 +2,14 @@ import { appendLog } from '../log/actionLog'
 import { triggerEarthAltars } from './altarResolver'
 import type {
   AbnormalMoveDefinition,
+  CardInstance,
   CombatState,
   EnemyDefinition,
   EnemyIntentDefinition,
   EnemyState,
 } from '../../types'
+
+const FOULED_SCROLL_CARD_ID = 'card_fouled_scroll'
 
 export function executeEnemyTurn(
   state: CombatState,
@@ -84,11 +87,56 @@ function executeAbnormalMove(
   }
 
   let nextState = state
+  let resultPayload = {}
 
   if (move.type === 'steal_incense') {
     nextState = {
       ...nextState,
       nextTurnIncensePenalty: nextState.nextTurnIncensePenalty + (move.amount ?? 1),
+    }
+    resultPayload = {
+      nextTurnIncensePenalty: nextState.nextTurnIncensePenalty,
+    }
+  }
+
+  if (move.type === 'add_fouled_scroll') {
+    const addedCards = createFouledScrollCards(nextState, move.amount ?? 1)
+    nextState = {
+      ...nextState,
+      discardPile: [...nextState.discardPile, ...addedCards],
+    }
+    resultPayload = {
+      addedCardDefinitionId: FOULED_SCROLL_CARD_ID,
+      addedCardCount: addedCards.length,
+      discardPileCount: nextState.discardPile.length,
+    }
+  }
+
+  if (move.type === 'cover_name') {
+    const { state: coveredState, coveredSlotIndex } = coverOneRevealedNameSlot(nextState, enemy)
+    nextState = coveredState
+    resultPayload = {
+      coveredSlotIndex,
+    }
+  }
+
+  if (move.type === 'heal_form') {
+    const healAmount = move.amount ?? 1
+    const nextCurrentForm = Math.min(enemy.maxForm, enemy.currentForm + healAmount)
+    nextState = {
+      ...nextState,
+      enemies: nextState.enemies.map((candidate) =>
+        candidate.instanceId === enemy.instanceId
+          ? {
+              ...candidate,
+              currentForm: nextCurrentForm,
+            }
+          : candidate,
+      ),
+    }
+    resultPayload = {
+      healedAmount: nextCurrentForm - enemy.currentForm,
+      currentForm: nextCurrentForm,
     }
   }
 
@@ -100,9 +148,73 @@ function executeAbnormalMove(
       intentId,
       moveType: move.type,
       amount: move.amount ?? null,
-      nextTurnIncensePenalty: nextState.nextTurnIncensePenalty,
+      ...resultPayload,
     },
   })
+}
+
+function createFouledScrollCards(
+  state: CombatState,
+  count: number,
+): readonly CardInstance[] {
+  return Array.from({ length: count }, (_, index) => ({
+    instanceId: `temporary_card_instance_${state.turn}_${state.actionLog.length}_${index + 1}_${FOULED_SCROLL_CARD_ID}`,
+    definitionId: FOULED_SCROLL_CARD_ID,
+    owner: 'player',
+    isTemporary: true,
+    annotations: [],
+  }))
+}
+
+function coverOneRevealedNameSlot(
+  state: CombatState,
+  enemy: EnemyState,
+): {
+  readonly state: CombatState
+  readonly coveredSlotIndex: number | null
+} {
+  const currentEnemy = state.enemies.find((candidate) => candidate.instanceId === enemy.instanceId)
+
+  if (!currentEnemy || currentEnemy.isNamed) {
+    return {
+      state,
+      coveredSlotIndex: null,
+    }
+  }
+
+  const revealedSlot = currentEnemy.nameSlots
+    .slice()
+    .reverse()
+    .find((slot) => slot.isRevealed)
+
+  if (!revealedSlot) {
+    return {
+      state,
+      coveredSlotIndex: null,
+    }
+  }
+
+  return {
+    state: {
+      ...state,
+      enemies: state.enemies.map((candidate) =>
+        candidate.instanceId === currentEnemy.instanceId
+          ? {
+              ...candidate,
+              nameSlots: candidate.nameSlots.map((slot) =>
+                slot.index === revealedSlot.index
+                  ? {
+                      ...slot,
+                      isRevealed: false,
+                    }
+                  : slot,
+              ),
+            }
+          : candidate,
+      ),
+    },
+    coveredSlotIndex: revealedSlot.index,
+  }
 }
 
 function advanceEnemyIntent(

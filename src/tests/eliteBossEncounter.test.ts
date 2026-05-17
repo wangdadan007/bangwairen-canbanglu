@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { createInitialBattleState } from '../core'
 import { getEncounterDefinition, getEnemyDefinition, gameData } from '../data'
 
-describe('T18 elite and boss encounter skeletons', () => {
+describe('T31-T35 elite and boss encounter skeletons', () => {
   it('wires the first elite route node to an executable incense clerk encounter', () => {
     const route = gameData.routes[0]
     const eliteNode = route.nodes.find((node) => node.id === 'route_node_first_elite')
@@ -27,6 +27,45 @@ describe('T18 elite and boss encounter skeletons', () => {
     expect(battle.enemies[0].incomingForce).toBe(7)
   })
 
+  it('wires the second and third elite route nodes to executable encounters', () => {
+    const route = gameData.routes[0]
+    const secondEliteNode = route.nodes.find((node) => node.id === 'route_node_second_elite')
+    const thirdEliteNode = route.nodes.find((node) => node.id === 'route_node_third_elite')
+    const secondEncounter = getEncounterDefinition(secondEliteNode?.encounterId ?? '', gameData)
+    const thirdEncounter = getEncounterDefinition(thirdEliteNode?.encounterId ?? '', gameData)
+    const fireElite = secondEncounter
+      ? getEnemyDefinition(secondEncounter.enemyDefinitionId, gameData)
+      : undefined
+    const dipperElite = thirdEncounter
+      ? getEnemyDefinition(thirdEncounter.enemyDefinitionId, gameData)
+      : undefined
+
+    expect(secondEliteNode?.type).toBe('elite')
+    expect(secondEncounter?.id).toBe('encounter_elite_fire_fleeing_name')
+    expect(fireElite?.tier).toBe('elite')
+    expect(fireElite?.intents.map((intent) => intent.kind)).toEqual([
+      'incoming_force',
+      'abnormal_move',
+      'incoming_force',
+    ])
+
+    expect(thirdEliteNode?.type).toBe('elite')
+    expect(thirdEncounter?.id).toBe('encounter_elite_dipper_empty_shell')
+    expect(dipperElite?.tier).toBe('elite')
+    expect(dipperElite?.traits).toEqual(
+      expect.arrayContaining(['altar', 'artifact', 'cover_name']),
+    )
+
+    const battle = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: fireElite!,
+    })
+
+    expect(battle.enemies[0].definitionId).toBe('enemy_fire_fleeing_name')
+    expect(battle.enemies[0].maxForm).toBe(48)
+    expect(battle.enemies[0].nameSlots).toHaveLength(3)
+  })
+
   it('wires the registry thief boss into the first chapter route closure', () => {
     const bossEncounter = getEncounterDefinition('encounter_boss_registry_thief', gameData)
     const boss = bossEncounter
@@ -36,7 +75,15 @@ describe('T18 elite and boss encounter skeletons', () => {
 
     expect(bossEncounter?.enemyDefinitionId).toBe('enemy_registry_thief')
     expect(boss?.tier).toBe('boss')
-    expect(boss?.intents).toHaveLength(2)
+    expect(boss?.maxForm).toBe(84)
+    expect(boss?.intents).toHaveLength(5)
+    expect(boss?.intents.map((intent) => intent.id)).toEqual([
+      'intent_registry_thief_press_registry',
+      'intent_registry_thief_pinch_offering',
+      'intent_registry_thief_cloak_stolen_name',
+      'intent_registry_thief_tear_registry',
+      'intent_registry_thief_final_stamp',
+    ])
     expect(routeEncounterIds[routeEncounterIds.length - 1]).toBe('encounter_boss_registry_thief')
 
     const battle = createInitialBattleState({
@@ -45,7 +92,7 @@ describe('T18 elite and boss encounter skeletons', () => {
     })
 
     expect(battle.enemies[0].definitionId).toBe('enemy_registry_thief')
-    expect(battle.enemies[0].maxForm).toBe(72)
+    expect(battle.enemies[0].maxForm).toBe(84)
     expect(battle.enemies[0].nameSlots).toHaveLength(3)
     expect(battle.enemies[0].currentIntent?.id).toBe('intent_registry_thief_press_registry')
   })

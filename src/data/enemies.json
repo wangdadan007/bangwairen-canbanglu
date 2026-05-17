@@ -374,6 +374,362 @@
     ]
   },
   {
+    "id": "enemy_plague_paper_figure",
+    "nameKey": "enemy.plague_paper_figure.name",
+    "maxForm": 28,
+    "nameSlots": 2,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.plague_paper_figure.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.plague_paper_figure.name_slot.1"
+      }
+    ],
+    "tier": "normal",
+    "traits": ["chapter_one", "late_chapter", "fouled_scroll", "backlash_preview"],
+    "intents": [
+      {
+        "id": "intent_plague_paper_figure_stain_scroll",
+        "nameKey": "enemy.plague_paper_figure.intent.stain_scroll",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "add_fouled_scroll",
+              "amount": 1,
+              "descriptionKey": "enemy.plague_paper_figure.intent.stain_scroll.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_plague_paper_figure_cough_ash",
+        "nameKey": "enemy.plague_paper_figure.intent.cough_ash",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 6
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_plague_paper_figure_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.plague_paper_figure.reward.vanquish"
+      },
+      {
+        "id": "reward_plague_paper_figure_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.plague_paper_figure.reward.catalogue"
+      }
+    ]
+  },
+  {
+    "id": "enemy_scroll_stuffer_clerk",
+    "nameKey": "enemy.scroll_stuffer_clerk.name",
+    "maxForm": 30,
+    "nameSlots": 2,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.scroll_stuffer_clerk.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.scroll_stuffer_clerk.name_slot.1"
+      }
+    ],
+    "tier": "normal",
+    "traits": ["chapter_one", "late_chapter", "fouled_scroll", "abnormal_move"],
+    "intents": [
+      {
+        "id": "intent_scroll_stuffer_clerk_stuff_scroll",
+        "nameKey": "enemy.scroll_stuffer_clerk.intent.stuff_scroll",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "add_fouled_scroll",
+              "amount": 1,
+              "descriptionKey": "enemy.scroll_stuffer_clerk.intent.stuff_scroll.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_scroll_stuffer_clerk_slam_case",
+        "nameKey": "enemy.scroll_stuffer_clerk.intent.slam_case",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 5
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_scroll_stuffer_clerk_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.scroll_stuffer_clerk.reward.vanquish"
+      },
+      {
+        "id": "reward_scroll_stuffer_clerk_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.scroll_stuffer_clerk.reward.catalogue"
+      }
+    ]
+  },
+  {
+    "id": "enemy_fleeing_name_paper_horse",
+    "nameKey": "enemy.fleeing_name_paper_horse.name",
+    "maxForm": 26,
+    "nameSlots": 2,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.fleeing_name_paper_horse.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.fleeing_name_paper_horse.name_slot.1"
+      }
+    ],
+    "tier": "normal",
+    "traits": ["chapter_one", "late_chapter", "cover_name", "escape_name"],
+    "intents": [
+      {
+        "id": "intent_fleeing_name_paper_horse_hide_trace",
+        "nameKey": "enemy.fleeing_name_paper_horse.intent.hide_trace",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "cover_name",
+              "amount": 1,
+              "descriptionKey": "enemy.fleeing_name_paper_horse.intent.hide_trace.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_fleeing_name_paper_horse_kick_dust",
+        "nameKey": "enemy.fleeing_name_paper_horse.intent.kick_dust",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 7
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_fleeing_name_paper_horse_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.fleeing_name_paper_horse.reward.vanquish"
+      },
+      {
+        "id": "reward_fleeing_name_paper_horse_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.fleeing_name_paper_horse.reward.catalogue"
+      }
+    ]
+  },
+  {
+    "id": "enemy_offering_table_afterimage",
+    "nameKey": "enemy.offering_table_afterimage.name",
+    "maxForm": 16,
+    "nameSlots": 0,
+    "tier": "minion",
+    "traits": ["chapter_one", "late_chapter", "support", "low_cost"],
+    "intents": [
+      {
+        "id": "intent_offering_table_afterimage_restore_shape",
+        "nameKey": "enemy.offering_table_afterimage.intent.restore_shape",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "heal_form",
+              "amount": 4,
+              "descriptionKey": "enemy.offering_table_afterimage.intent.restore_shape.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_offering_table_afterimage_fall",
+        "nameKey": "enemy.offering_table_afterimage.intent.fall",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "enemy_fire_fleeing_name",
+    "nameKey": "enemy.fire_fleeing_name.name",
+    "maxForm": 48,
+    "nameSlots": 3,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.fire_fleeing_name.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.fire_fleeing_name.name_slot.1"
+      },
+      {
+        "index": 2,
+        "nameKey": "enemy.fire_fleeing_name.name_slot.2"
+      }
+    ],
+    "tier": "elite",
+    "traits": ["chapter_one", "elite", "fire", "cover_name", "doom", "fracture"],
+    "intents": [
+      {
+        "id": "intent_fire_fleeing_name_flame_stamp",
+        "nameKey": "enemy.fire_fleeing_name.intent.flame_stamp",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 8
+          }
+        ]
+      },
+      {
+        "id": "intent_fire_fleeing_name_burn_name",
+        "nameKey": "enemy.fire_fleeing_name.intent.burn_name",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "cover_name",
+              "amount": 1,
+              "descriptionKey": "enemy.fire_fleeing_name.intent.burn_name.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_fire_fleeing_name_break_tablet",
+        "nameKey": "enemy.fire_fleeing_name.intent.break_tablet",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 10
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_fire_fleeing_name_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.fire_fleeing_name.reward.vanquish"
+      },
+      {
+        "id": "reward_fire_fleeing_name_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.fire_fleeing_name.reward.catalogue"
+      }
+    ]
+  },
+  {
+    "id": "enemy_dipper_empty_shell",
+    "nameKey": "enemy.dipper_empty_shell.name",
+    "maxForm": 52,
+    "nameSlots": 3,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.dipper_empty_shell.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.dipper_empty_shell.name_slot.1"
+      },
+      {
+        "index": 2,
+        "nameKey": "enemy.dipper_empty_shell.name_slot.2"
+      }
+    ],
+    "tier": "elite",
+    "traits": ["chapter_one", "elite", "dipper", "altar", "artifact", "cover_name"],
+    "intents": [
+      {
+        "id": "intent_dipper_empty_shell_shift_star",
+        "nameKey": "enemy.dipper_empty_shell.intent.shift_star",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 7
+          }
+        ]
+      },
+      {
+        "id": "intent_dipper_empty_shell_blank_name",
+        "nameKey": "enemy.dipper_empty_shell.intent.blank_name",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "cover_name",
+              "amount": 1,
+              "descriptionKey": "enemy.dipper_empty_shell.intent.blank_name.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_dipper_empty_shell_fall_star",
+        "nameKey": "enemy.dipper_empty_shell.intent.fall_star",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 9
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_dipper_empty_shell_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.dipper_empty_shell.reward.vanquish"
+      },
+      {
+        "id": "reward_dipper_empty_shell_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.dipper_empty_shell.reward.catalogue"
+      }
+    ]
+  },
+  {
     "id": "enemy_incense_clerk",
     "nameKey": "enemy.incense_clerk.name",
     "maxForm": 38,
@@ -449,7 +805,7 @@
   {
     "id": "enemy_registry_thief",
     "nameKey": "enemy.registry_thief.name",
-    "maxForm": 72,
+    "maxForm": 84,
     "nameSlots": 3,
     "nameSlotDefinitions": [
       {
@@ -466,7 +822,16 @@
       }
     ],
     "tier": "boss",
-    "traits": ["chapter_one", "boss", "placeholder", "steal_incense"],
+    "traits": [
+      "chapter_one",
+      "boss",
+      "steal_incense",
+      "cover_name",
+      "fouled_scroll",
+      "boss_variant_low_fracture",
+      "boss_variant_high_fracture",
+      "boss_variant_high_catalogue"
+    ],
     "intents": [
       {
         "id": "intent_registry_thief_press_registry",
@@ -491,6 +856,47 @@
               "amount": 1,
               "descriptionKey": "enemy.registry_thief.intent.pinch_offering.description"
             }
+          }
+        ]
+      },
+      {
+        "id": "intent_registry_thief_cloak_stolen_name",
+        "nameKey": "enemy.registry_thief.intent.cloak_stolen_name",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "cover_name",
+              "amount": 1,
+              "descriptionKey": "enemy.registry_thief.intent.cloak_stolen_name.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_registry_thief_tear_registry",
+        "nameKey": "enemy.registry_thief.intent.tear_registry",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "add_fouled_scroll",
+              "amount": 1,
+              "descriptionKey": "enemy.registry_thief.intent.tear_registry.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_registry_thief_final_stamp",
+        "nameKey": "enemy.registry_thief.intent.final_stamp",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 11
           }
         ]
       }
