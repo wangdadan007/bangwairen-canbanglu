@@ -10,6 +10,7 @@ import type {
 
 export type RouteFlowKind =
   | 'battle'
+  | 'event'
   | 'event_placeholder'
   | 'rest_placeholder'
   | 'shop_placeholder'
@@ -80,6 +81,10 @@ export function getCurrentRouteFlowKind(
 
   if (isRouteBattleNode(node)) {
     return 'battle'
+  }
+
+  if (node.type === 'event' && !node.isPlaceholder) {
+    return 'event'
   }
 
   if (node.isPlaceholder && node.type === 'event') {

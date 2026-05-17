@@ -4,6 +4,7 @@ export type EnemyId = string
 export type EnemyInstanceId = string
 export type ArtifactId = string
 export type EncounterId = string
+export type EventId = string
 export type RouteId = string
 export type RouteNodeId = string
 export type LocalizationKey = string
@@ -22,6 +23,7 @@ export type GameEntityId =
   | EnemyInstanceId
   | ArtifactId
   | EncounterId
+  | EventId
   | RouteId
   | RouteNodeId
   | 'player'

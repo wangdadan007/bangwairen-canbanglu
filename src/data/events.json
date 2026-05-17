@@ -1,0 +1,119 @@
+[
+  {
+    "id": "event_abandoned_registry_desk",
+    "nameKey": "event.abandoned_registry_desk.name",
+    "descriptionKey": "event.abandoned_registry_desk.description",
+    "unlockStage": "stage_core",
+    "tags": ["chapter_one", "early", "card_gain", "card_remove"],
+    "options": [
+      {
+        "id": "event_abandoned_registry_desk_take_trace_slip",
+        "nameKey": "event.abandoned_registry_desk.option.take_trace_slip.name",
+        "descriptionKey": "event.abandoned_registry_desk.option.take_trace_slip.description",
+        "rewardKey": "event.abandoned_registry_desk.option.take_trace_slip.reward",
+        "costKey": "event.abandoned_registry_desk.option.take_trace_slip.cost",
+        "flags": [],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_trace_name_slip"
+          }
+        ]
+      },
+      {
+        "id": "event_abandoned_registry_desk_burn_zhu_fu",
+        "nameKey": "event.abandoned_registry_desk.option.burn_zhu_fu.name",
+        "descriptionKey": "event.abandoned_registry_desk.option.burn_zhu_fu.description",
+        "rewardKey": "event.abandoned_registry_desk.option.burn_zhu_fu.reward",
+        "costKey": "event.abandoned_registry_desk.option.burn_zhu_fu.cost",
+        "flags": [],
+        "effects": [
+          {
+            "type": "REMOVE_CARD",
+            "cardDefinitionId": "card_zhu_fu"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "event_ash_altar_lamp",
+    "nameKey": "event.ash_altar_lamp.name",
+    "descriptionKey": "event.ash_altar_lamp.description",
+    "unlockStage": "stage_abnormal_boundary",
+    "tags": ["chapter_one", "early", "incoming_force", "fracture"],
+    "options": [
+      {
+        "id": "event_ash_altar_lamp_press_door",
+        "nameKey": "event.ash_altar_lamp.option.press_door.name",
+        "descriptionKey": "event.ash_altar_lamp.option.press_door.description",
+        "rewardKey": "event.ash_altar_lamp.option.press_door.reward",
+        "costKey": "event.ash_altar_lamp.option.press_door.cost",
+        "requiredUnlockStages": ["stage_abnormal_boundary"],
+        "flags": [],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_press_door_charm"
+          }
+        ]
+      },
+      {
+        "id": "event_ash_altar_lamp_crack_lamp",
+        "nameKey": "event.ash_altar_lamp.option.crack_lamp.name",
+        "descriptionKey": "event.ash_altar_lamp.option.crack_lamp.description",
+        "rewardKey": "event.ash_altar_lamp.option.crack_lamp.reward",
+        "costKey": "event.ash_altar_lamp.option.crack_lamp.cost",
+        "flags": ["fracture"],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_thunder_splinter"
+          },
+          {
+            "type": "ADD_FRACTURE",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "event_cinnabar_scribe",
+    "nameKey": "event.cinnabar_scribe.name",
+    "descriptionKey": "event.cinnabar_scribe.description",
+    "unlockStage": "stage_red_ink_preview",
+    "tags": ["chapter_one", "early", "red_ink"],
+    "options": [
+      {
+        "id": "event_cinnabar_scribe_request_red_ink",
+        "nameKey": "event.cinnabar_scribe.option.request_red_ink.name",
+        "descriptionKey": "event.cinnabar_scribe.option.request_red_ink.description",
+        "rewardKey": "event.cinnabar_scribe.option.request_red_ink.reward",
+        "costKey": "event.cinnabar_scribe.option.request_red_ink.cost",
+        "requiredUnlockStages": ["stage_red_ink_preview"],
+        "flags": ["red_ink"],
+        "effects": [
+          {
+            "type": "CREATE_RED_INK_OFFER"
+          }
+        ]
+      },
+      {
+        "id": "event_cinnabar_scribe_take_trial",
+        "nameKey": "event.cinnabar_scribe.option.take_trial.name",
+        "descriptionKey": "event.cinnabar_scribe.option.take_trial.description",
+        "rewardKey": "event.cinnabar_scribe.option.take_trial.reward",
+        "costKey": "event.cinnabar_scribe.option.take_trial.cost",
+        "requiredUnlockStages": ["stage_red_ink_preview"],
+        "flags": [],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_red_ink_trial"
+          }
+        ]
+      }
+    ]
+  }
+]

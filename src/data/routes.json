@@ -42,8 +42,12 @@
         "type": "event",
         "nameKey": "route.node.first_event.name",
         "descriptionKey": "route.node.first_event.description",
-        "nextNodeIds": ["route_node_rest_site"],
-        "isPlaceholder": true
+        "eventPoolIds": [
+          "event_abandoned_registry_desk",
+          "event_ash_altar_lamp",
+          "event_cinnabar_scribe"
+        ],
+        "nextNodeIds": ["route_node_rest_site"]
       },
       {
         "id": "route_node_rest_site",

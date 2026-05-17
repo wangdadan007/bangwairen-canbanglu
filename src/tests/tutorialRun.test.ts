@@ -154,7 +154,7 @@ describe('T09 tutorial run sequence', () => {
     )
   })
 
-  it('can use route battle encounter ids for the T19 route-driven sequence', () => {
+  it('can use route battle encounter ids for the T20 route-driven sequence', () => {
     const routeEncounterIds = getRouteBattleEncounterIds(gameData.routes[0])
     const firstRun = createInitialTutorialRunState(gameData.tutorialUnlocks, routeEncounterIds)
     const secondRun = advanceTutorialRun(

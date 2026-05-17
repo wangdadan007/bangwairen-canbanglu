@@ -12,7 +12,7 @@ import { gameData } from '../data'
 
 const route = gameData.routes[0]
 
-describe('T19 route skeleton', () => {
+describe('T20 route skeleton', () => {
   it('starts at the first tutorial battle node', () => {
     const state = createInitialRouteState(route)
     const currentNode = getCurrentRouteNode(route, state)
@@ -51,10 +51,15 @@ describe('T19 route skeleton', () => {
 
     expect(eventState.currentNodeId).toBe('route_node_first_event')
     expect(getCurrentRouteNode(route, eventState)?.type).toBe('event')
-    expect(getCurrentRouteNode(route, eventState)?.isPlaceholder).toBe(true)
+    expect(getCurrentRouteNode(route, eventState)?.isPlaceholder).toBeUndefined()
+    expect(getCurrentRouteNode(route, eventState)?.eventPoolIds).toEqual([
+      'event_abandoned_registry_desk',
+      'event_ash_altar_lamp',
+      'event_cinnabar_scribe',
+    ])
   })
 
-  it('supports event and rest placeholders before entering the first elite encounter', () => {
+  it('supports the event node and rest placeholder before entering the first elite encounter', () => {
     const firstBattleDone = completeCurrentRouteNode(route, createInitialRouteState(route))
     const secondBattleDone = completeCurrentRouteNode(route, firstBattleDone)
     const thirdBattleDone = completeCurrentRouteNode(route, secondBattleDone)
@@ -63,7 +68,9 @@ describe('T19 route skeleton', () => {
     const eliteState = completeCurrentRouteNode(route, restState)
 
     expect(getCurrentRouteNode(route, stateAfterFourthBattle)?.type).toBe('event')
+    expect(getCurrentRouteNode(route, stateAfterFourthBattle)?.isPlaceholder).toBeUndefined()
     expect(getCurrentRouteNode(route, restState)?.type).toBe('rest')
+    expect(getCurrentRouteNode(route, restState)?.isPlaceholder).toBe(true)
     expect(getCurrentRouteNode(route, eliteState)?.type).toBe('elite')
     expect(getCurrentRouteNode(route, eliteState)?.isPlaceholder).toBeUndefined()
     expect(getCurrentRouteNode(route, eliteState)?.encounterId).toBe('encounter_elite_incense_clerk')
@@ -89,7 +96,7 @@ describe('T19 route skeleton', () => {
     expect(getCurrentRouteEncounter(route, fourth, gameData.encounters)?.id).toBe(
       'encounter_mid_unlit_temple_warden',
     )
-    expect(getCurrentRouteFlowKind(route, eventState)).toBe('event_placeholder')
+    expect(getCurrentRouteFlowKind(route, eventState)).toBe('event')
     expect(getCurrentRouteEncounter(route, eventState, gameData.encounters)).toBeUndefined()
     expect(getCurrentRouteFlowKind(route, restState)).toBe('rest_placeholder')
     expect(getCurrentRouteFlowKind(route, eliteState)).toBe('battle')

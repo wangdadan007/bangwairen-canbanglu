@@ -9,6 +9,7 @@ describe('initial game data', () => {
     expect(data.cards).toHaveLength(18)
     expect(data.enemies).toHaveLength(8)
     expect(data.encounters).toHaveLength(6)
+    expect(data.events).toHaveLength(3)
     expect(data.routes).toHaveLength(1)
     expect(data.tutorialUnlocks).toHaveLength(3)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
@@ -23,6 +24,7 @@ describe('initial game data', () => {
     expect(new Set(data.encounters.map((encounter) => encounter.id)).size).toBe(
       data.encounters.length,
     )
+    expect(new Set(data.events.map((event) => event.id)).size).toBe(data.events.length)
     expect(new Set(data.routes.map((route) => route.id)).size).toBe(data.routes.length)
     for (const route of data.routes) {
       expect(new Set(route.nodes.map((node) => node.id)).size).toBe(route.nodes.length)
@@ -179,22 +181,45 @@ describe('initial game data', () => {
     ])
   })
 
-  it('keeps encounter enemy and route encounter references valid', () => {
+  it('keeps encounter enemy, event card, and route references valid', () => {
     const data = loadGameData()
     const enemyIds = new Set(data.enemies.map((enemy) => enemy.id))
     const encounterIds = new Set(data.encounters.map((encounter) => encounter.id))
+    const eventIds = new Set(data.events.map((event) => event.id))
+    const cardIds = new Set(data.cards.map((card) => card.id))
 
     expect(data.encounters.every((encounter) => enemyIds.has(encounter.enemyDefinitionId))).toBe(
       true,
     )
     expect(
+      data.events.every((event) =>
+        event.options.every((option) =>
+          option.effects.every((effect) => {
+            if (effect.type === 'ADD_CARD') {
+              return cardIds.has(effect.cardDefinitionId)
+            }
+
+            if (effect.type === 'REMOVE_CARD' && effect.cardDefinitionId) {
+              return cardIds.has(effect.cardDefinitionId)
+            }
+
+            return true
+          }),
+        ),
+      ),
+    ).toBe(true)
+    expect(
       data.routes.every((route) =>
-        route.nodes.every((node) => !node.encounterId || encounterIds.has(node.encounterId)),
+        route.nodes.every(
+          (node) =>
+            (!node.encounterId || encounterIds.has(node.encounterId)) &&
+            (node.eventPoolIds?.every((eventId) => eventIds.has(eventId)) ?? true),
+        ),
       ),
     ).toBe(true)
   })
 
-  it('contains the route skeleton with T19 fourth battle and elite encounter wiring', () => {
+  it('contains the route skeleton with T20 event wiring', () => {
     const data = loadGameData()
     const route = data.routes[0]
 
@@ -210,8 +235,12 @@ describe('initial game data', () => {
       'elite',
     ])
     expect(route.nodes.filter((node) => node.isPlaceholder).map((node) => node.type)).toEqual([
-      'event',
       'rest',
+    ])
+    expect(route.nodes.find((node) => node.type === 'event')?.eventPoolIds).toEqual([
+      'event_abandoned_registry_desk',
+      'event_ash_altar_lamp',
+      'event_cinnabar_scribe',
     ])
     expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
       'encounter_tutorial_paper_wraith',
@@ -261,6 +290,7 @@ describe('initial game data', () => {
     expect(hasNonAsciiKey(data.artifacts)).toBe(false)
     expect(hasNonAsciiKey(data.enemies)).toBe(false)
     expect(hasNonAsciiKey(data.encounters)).toBe(false)
+    expect(hasNonAsciiKey(data.events)).toBe(false)
     expect(hasNonAsciiKey(data.routes)).toBe(false)
     expect(hasNonAsciiKey(data.tutorialUnlocks)).toBe(false)
   })
@@ -318,6 +348,22 @@ describe('initial game data', () => {
     ])
 
     expect(encounterLocalizationKeys.every((key) => data.localization[key])).toBe(true)
+  })
+
+  it('keeps every event display key covered by localization', () => {
+    const data = loadGameData()
+    const eventLocalizationKeys = data.events.flatMap((event) => [
+      event.nameKey,
+      event.descriptionKey,
+      ...event.options.flatMap((option) => [
+        option.nameKey,
+        option.descriptionKey,
+        option.rewardKey,
+        option.costKey,
+      ]),
+    ])
+
+    expect(eventLocalizationKeys.every((key) => data.localization[key])).toBe(true)
   })
 
   it('keeps every route display key covered by localization', () => {

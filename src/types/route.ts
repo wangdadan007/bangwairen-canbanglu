@@ -1,4 +1,4 @@
-import type { EncounterId, LocalizationKey, RouteId, RouteNodeId } from './common'
+import type { EncounterId, EventId, LocalizationKey, RouteId, RouteNodeId } from './common'
 
 export type RouteNodeType = 'normal_battle' | 'elite' | 'event' | 'rest' | 'shop' | 'boss'
 
@@ -8,6 +8,7 @@ export interface RouteNodeDefinition {
   readonly nameKey: LocalizationKey
   readonly descriptionKey: LocalizationKey
   readonly encounterId?: EncounterId
+  readonly eventPoolIds?: readonly EventId[]
   readonly nextNodeIds: readonly RouteNodeId[]
   readonly isPlaceholder?: boolean
 }

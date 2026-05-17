@@ -8,6 +8,7 @@ import type {
   CombatState,
   EncounterDefinition,
   EnemyDefinition,
+  EventDefinition,
   RouteDefinition,
   RouteState,
   TutorialRunState,
@@ -155,11 +156,58 @@ describe('core type contracts', () => {
         registerEntries: [],
         records: [],
       },
+      events: {
+        completedEventIds: [],
+        records: [],
+      },
       rewards: [],
       redInkRecords: [],
     } satisfies TutorialRunState
 
     expect(run.encounterIds[0]).toBe(encounter.id)
+  })
+
+  it('accepts event definition contracts', () => {
+    const event = {
+      id: 'event_abandoned_registry_desk',
+      nameKey: 'event.abandoned_registry_desk.name',
+      descriptionKey: 'event.abandoned_registry_desk.description',
+      unlockStage: 'stage_core',
+      tags: ['chapter_one', 'early', 'card_gain'],
+      options: [
+        {
+          id: 'event_abandoned_registry_desk_take_trace_slip',
+          nameKey: 'event.abandoned_registry_desk.option.take_trace_slip.name',
+          descriptionKey: 'event.abandoned_registry_desk.option.take_trace_slip.description',
+          rewardKey: 'event.abandoned_registry_desk.option.take_trace_slip.reward',
+          costKey: 'event.abandoned_registry_desk.option.take_trace_slip.cost',
+          flags: [],
+          effects: [
+            {
+              type: 'ADD_CARD',
+              cardDefinitionId: 'card_trace_name_slip',
+            },
+          ],
+        },
+        {
+          id: 'event_abandoned_registry_desk_crack_lamp',
+          nameKey: 'event.abandoned_registry_desk.option.crack_lamp.name',
+          descriptionKey: 'event.abandoned_registry_desk.option.crack_lamp.description',
+          rewardKey: 'event.abandoned_registry_desk.option.crack_lamp.reward',
+          costKey: 'event.abandoned_registry_desk.option.crack_lamp.cost',
+          flags: ['fracture'],
+          effects: [
+            {
+              type: 'ADD_FRACTURE',
+              amount: 1,
+            },
+          ],
+        },
+      ],
+    } satisfies EventDefinition
+
+    expect(event.options[0].effects[0].type).toBe('ADD_CARD')
+    expect(event.options[1].flags).toContain('fracture')
   })
 
   it('accepts the route definition and state contracts', () => {

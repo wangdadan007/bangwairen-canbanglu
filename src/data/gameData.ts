@@ -2,6 +2,7 @@ import rawArtifacts from './artifacts.json'
 import rawCards from './cards.json'
 import rawEnemies from './enemies.json'
 import rawEncounters from './encounters.json'
+import rawEvents from './events.json'
 import rawRoutes from './routes.json'
 import rawTutorialUnlocks from './tutorial_unlocks.json'
 import rawZhCn from './localization/zh-CN.json'
@@ -10,6 +11,7 @@ import type {
   CardDefinition,
   EncounterDefinition,
   EnemyDefinition,
+  EventDefinition,
   LocalizationKey,
   RouteDefinition,
   TutorialUnlockDefinition,
@@ -20,6 +22,7 @@ export interface GameData {
   readonly cards: readonly CardDefinition[]
   readonly enemies: readonly EnemyDefinition[]
   readonly encounters: readonly EncounterDefinition[]
+  readonly events: readonly EventDefinition[]
   readonly routes: readonly RouteDefinition[]
   readonly tutorialUnlocks: readonly TutorialUnlockDefinition[]
   readonly localization: Readonly<Record<LocalizationKey, string>>
@@ -29,6 +32,7 @@ const artifacts = rawArtifacts as readonly ArtifactDefinition[]
 const cards = rawCards as readonly CardDefinition[]
 const enemies = rawEnemies as readonly EnemyDefinition[]
 const encounters = rawEncounters as readonly EncounterDefinition[]
+const events = rawEvents as readonly EventDefinition[]
 const routes = rawRoutes as readonly RouteDefinition[]
 const tutorialUnlocks = rawTutorialUnlocks as readonly TutorialUnlockDefinition[]
 const zhCn = rawZhCn as Readonly<Record<LocalizationKey, string>>
@@ -38,10 +42,12 @@ export function loadGameData(): GameData {
   assertUniqueIds(cards, 'card')
   assertUniqueIds(enemies, 'enemy')
   assertUniqueIds(encounters, 'encounter')
+  assertUniqueIds(events, 'event')
   assertUniqueIds(routes, 'route')
   assertEncounterEnemyIds(encounters, enemies)
+  assertEventCardIds(events, cards)
   assertRouteNodeIds(routes)
-  assertRouteReferences(routes, encounters)
+  assertRouteReferences(routes, encounters, events)
   assertUniqueIds(tutorialUnlocks, 'tutorial unlock')
 
   return {
@@ -49,6 +55,7 @@ export function loadGameData(): GameData {
     cards,
     enemies,
     encounters,
+    events,
     routes,
     tutorialUnlocks,
     localization: zhCn,
@@ -69,6 +76,10 @@ export function getEnemyDefinition(id: string, data: GameData = loadGameData()) 
 
 export function getEncounterDefinition(id: string, data: GameData = loadGameData()) {
   return data.encounters.find((encounter) => encounter.id === id)
+}
+
+export function getEventDefinition(id: string, data: GameData = loadGameData()) {
+  return data.events.find((event) => event.id === id)
 }
 
 export function getRouteDefinition(id: string, data: GameData = loadGameData()) {
@@ -108,11 +119,42 @@ function assertEncounterEnemyIds(
   }
 }
 
+function assertEventCardIds(
+  events: readonly EventDefinition[],
+  cards: readonly CardDefinition[],
+) {
+  const cardIds = new Set(cards.map((card) => card.id))
+
+  for (const event of events) {
+    for (const option of event.options) {
+      for (const effect of option.effects) {
+        if (effect.type === 'ADD_CARD' && !cardIds.has(effect.cardDefinitionId)) {
+          throw new Error(
+            `Event option ${option.id} references missing added card ${effect.cardDefinitionId}`,
+          )
+        }
+
+        if (
+          effect.type === 'REMOVE_CARD' &&
+          effect.cardDefinitionId &&
+          !cardIds.has(effect.cardDefinitionId)
+        ) {
+          throw new Error(
+            `Event option ${option.id} references missing removed card ${effect.cardDefinitionId}`,
+          )
+        }
+      }
+    }
+  }
+}
+
 function assertRouteReferences(
   routes: readonly RouteDefinition[],
   encounters: readonly EncounterDefinition[],
+  events: readonly EventDefinition[],
 ) {
   const encounterIds = new Set(encounters.map((encounter) => encounter.id))
+  const eventIds = new Set(events.map((event) => event.id))
 
   for (const route of routes) {
     const nodeIds = new Set(route.nodes.map((node) => node.id))
@@ -124,6 +166,12 @@ function assertRouteReferences(
     for (const node of route.nodes) {
       if (node.encounterId && !encounterIds.has(node.encounterId)) {
         throw new Error(`Route node ${node.id} references missing encounter ${node.encounterId}`)
+      }
+
+      for (const eventId of node.eventPoolIds ?? []) {
+        if (!eventIds.has(eventId)) {
+          throw new Error(`Route node ${node.id} references missing event ${eventId}`)
+        }
       }
 
       for (const nextNodeId of node.nextNodeIds) {

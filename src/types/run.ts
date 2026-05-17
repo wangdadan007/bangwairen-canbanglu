@@ -1,5 +1,5 @@
 import type { ArtifactCollectionState } from './artifact'
-import type { CardId, EncounterId, LocalizationKey } from './common'
+import type { CardId, EncounterId, EventId, LocalizationKey } from './common'
 import type { CardAnnotation } from './card'
 import type { UnlockState, VictorySettlement } from './battle'
 import type { TutorialVerdictOffer, TutorialVerdictState } from './verdict'
@@ -64,6 +64,22 @@ export interface TutorialRedInkRecord {
   readonly skipped: boolean
 }
 
+export interface TutorialEventRecord {
+  readonly id: string
+  readonly eventId: EventId
+  readonly optionId: string
+  readonly addedCardDefinitionIds: readonly CardId[]
+  readonly removedDeckCardIds: readonly RunDeckCardId[]
+  readonly removedCardDefinitionIds: readonly CardId[]
+  readonly fractureDelta: number
+  readonly createdRedInkOffer: boolean
+}
+
+export interface TutorialEventState {
+  readonly completedEventIds: readonly EventId[]
+  readonly records: readonly TutorialEventRecord[]
+}
+
 export interface TutorialRunState {
   readonly status: TutorialRunStatus
   readonly failureReason?: TutorialRunFailureReason
@@ -76,6 +92,7 @@ export interface TutorialRunState {
   readonly artifacts: ArtifactCollectionState
   readonly unlocks: UnlockState
   readonly verdict: TutorialVerdictState
+  readonly events: TutorialEventState
   readonly pendingVerdict?: TutorialVerdictOffer
   readonly pendingReward?: TutorialRewardOffer
   readonly pendingRedInk?: TutorialRedInkOffer

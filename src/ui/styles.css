@@ -599,6 +599,16 @@ button:disabled {
   border-left-color: #b28b52;
 }
 
+.event-page {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(92, 161, 138, 0.5);
+  border-left: 4px solid #5ca18a;
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(24, 77, 67, 0.28);
+}
+
 .red-ink-page {
   display: grid;
   gap: 12px;
@@ -771,6 +781,83 @@ button:disabled {
 .reward-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.event-copy {
+  margin: 0;
+  color: #d9ccb8;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.event-state-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.event-state-row span {
+  border: 1px solid rgba(92, 161, 138, 0.36);
+  border-radius: 999px;
+  padding: 3px 8px;
+  color: #c5efe0;
+  background: rgba(24, 77, 67, 0.26);
+  font-size: 12px;
+}
+
+.event-options {
+  display: grid;
+  gap: 10px;
+}
+
+.event-option {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  min-height: 132px;
+  padding: 12px;
+  color: #eadfca;
+  background: rgba(37, 48, 42, 0.86);
+  text-align: left;
+}
+
+.event-option:hover {
+  background: rgba(45, 65, 55, 0.96);
+}
+
+.event-option.fracture {
+  border-color: rgba(201, 79, 61, 0.62);
+  background: rgba(72, 30, 27, 0.5);
+}
+
+.event-option-copy {
+  color: #d9ccb8;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.event-result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.event-result-grid > span {
+  display: grid;
+  gap: 3px;
+  border: 1px solid rgba(178, 139, 82, 0.26);
+  border-radius: 6px;
+  padding: 8px;
+  color: #d9ccb8;
+  background: rgba(14, 20, 19, 0.34);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.event-result-grid em {
+  color: #f0d28d;
+  font-style: normal;
+  font-weight: 800;
 }
 
 .red-ink-grid {
