@@ -451,6 +451,135 @@ button:disabled {
   font-style: normal;
 }
 
+.artifact-bar {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(178, 139, 82, 0.34);
+  border-left: 4px solid #b28b52;
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(34, 28, 24, 0.78);
+}
+
+.artifact-bar header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.artifact-bar header span {
+  border: 1px solid rgba(178, 139, 82, 0.42);
+  border-radius: 999px;
+  padding: 4px 9px;
+  color: #f0d28d;
+  background: rgba(13, 26, 25, 0.45);
+  font-size: 12px;
+}
+
+.artifact-grid {
+  display: grid;
+  gap: 9px;
+}
+
+.artifact-card {
+  display: grid;
+  gap: 7px;
+  border: 1px solid rgba(178, 139, 82, 0.26);
+  border-radius: 6px;
+  padding: 10px;
+  background: rgba(14, 20, 19, 0.38);
+}
+
+.artifact-card.bound {
+  border-color: rgba(92, 161, 138, 0.62);
+  background: rgba(24, 77, 67, 0.28);
+}
+
+.artifact-card.backlash {
+  border-color: rgba(201, 79, 61, 0.75);
+  background: rgba(91, 33, 30, 0.38);
+}
+
+.artifact-card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.artifact-card-topline strong {
+  color: #f3d482;
+  font-size: 14px;
+}
+
+.artifact-card-topline span {
+  flex: 0 0 auto;
+  border: 1px solid rgba(178, 139, 82, 0.34);
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: #d8c2a0;
+  background: rgba(13, 26, 25, 0.4);
+  font-size: 12px;
+}
+
+.artifact-card p,
+.artifact-card small {
+  margin: 0;
+  color: #d9ccb8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.artifact-card small {
+  color: #bfae91;
+}
+
+.artifact-progress {
+  height: 8px;
+  border: 1px solid rgba(178, 139, 82, 0.36);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(11, 18, 18, 0.62);
+}
+
+.artifact-progress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #8ea36d, #f0c774);
+}
+
+.artifact-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.artifact-meta-row span {
+  border: 1px solid rgba(92, 161, 138, 0.3);
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: #c5efe0;
+  background: rgba(24, 77, 67, 0.22);
+  font-size: 12px;
+}
+
+.artifact-warning {
+  border: 1px solid rgba(178, 139, 82, 0.24);
+  border-radius: 6px;
+  padding: 7px 8px;
+  color: #bfae91;
+  background: rgba(13, 26, 25, 0.32);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.artifact-warning.active {
+  border-color: rgba(201, 79, 61, 0.72);
+  color: #ffd1bb;
+  background: rgba(91, 33, 30, 0.36);
+}
+
 .reward-page {
   display: grid;
   gap: 12px;

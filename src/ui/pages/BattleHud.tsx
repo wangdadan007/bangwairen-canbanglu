@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import {
   advanceTutorialRun,
+  type ArtifactBattleProgressInput,
   completeCurrentRouteNode,
   createInitialBattleState,
   createInitialRouteState,
@@ -15,6 +16,7 @@ import {
   type BattleReducerContext,
 } from '../../core'
 import { gameData } from '../../data'
+import { ArtifactBar } from './ArtifactBar'
 import { RedInkPage } from './RedInkPage'
 import { RewardPage } from './RewardPage'
 import { RoutePage } from './RoutePage'
@@ -23,6 +25,7 @@ import { VerdictPage } from './VerdictPage'
 import type {
   ActionLogEntry,
   AbnormalMoveDefinition,
+  ArtifactDefinition,
   CardDefinition,
   CardInstance,
   CombatState,
@@ -62,6 +65,9 @@ const battleContext: BattleReducerContext = {
 }
 
 const enemyDefinitionsById = new Map(gameData.enemies.map((enemy) => [enemy.id, enemy]))
+const artifactDefinitionsById = new Map(
+  gameData.artifacts.map((artifact) => [artifact.id, artifact]),
+)
 const encounterDefinitionsById = new Map(
   gameData.encounters.map((encounter) => [encounter.id, encounter]),
 )
@@ -230,6 +236,7 @@ export function BattleHud() {
               revealedNameKeys: getRevealedNameKeys(defeatedEnemy),
             }
           : undefined,
+        defeatedEnemy ? createArtifactBattleProgress(current.battle, defeatedEnemy) : undefined,
       )
       const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
 
@@ -293,7 +300,7 @@ export function BattleHud() {
     <aside className="battle-hud" aria-label="前三场教学战">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">教学纵切 / T16</p>
+          <p className="panel-kicker">教学纵切 / T17</p>
           <h2>{currentEncounter ? t(currentEncounter.nameKey) : getRunHeadline(run.status)}</h2>
         </div>
         <div className="dev-controls">
@@ -320,6 +327,12 @@ export function BattleHud() {
 
       <TutorialRunPanel run={run} currentEncounter={currentEncounter} />
       <RoutePage route={tutorialRoute} routeState={viewState.route} t={t} />
+      <ArtifactBar
+        artifacts={run.artifacts}
+        artifactDefinitionsById={artifactDefinitionsById}
+        unlocks={run.unlocks}
+        t={t}
+      />
 
       {battle.result.status === 'victory' && run.status === 'active' && !hasPendingRunChoice(run) ? (
         <section className="result-banner" aria-live="polite">
@@ -527,6 +540,10 @@ function TutorialRunPanel({
         <span>榜裂 {run.verdict.fracture}</span>
         <span>登簿 {run.verdict.registerEntries.length}</span>
         <span>裁定 {run.verdict.records.length} 次</span>
+        <span>法宝 {run.artifacts.artifacts.length} 件</span>
+        <span>
+          认主 {run.artifacts.artifacts.filter((artifact) => artifact.bindingStatus === 'bound').length}
+        </span>
         <span>已领奖励 {run.rewards.length} 次</span>
         <span>朱批 {run.redInkRecords.filter((record) => !record.skipped).length} 次</span>
         {run.pendingVerdict ? <span>待裁定</span> : null}
@@ -672,7 +689,12 @@ function createCardInstanceMap(cards: readonly CardInstance[]) {
 }
 
 function createInitialTutorialBattleView(): TutorialBattleViewState {
-  const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
+  const run = createInitialTutorialRunState(
+    gameData.tutorialUnlocks,
+    undefined,
+    undefined,
+    gameData.artifacts,
+  )
   const encounter = getCurrentTutorialEncounter(run, gameData.encounters)
 
   if (!encounter) {
@@ -706,6 +728,24 @@ function createBattleForEncounter(
     run.deckCards,
     run.verdict.maxIncenseBonus,
   )
+}
+
+function createArtifactBattleProgress(
+  battle: CombatState,
+  defeatedEnemy: EnemyState,
+): ArtifactBattleProgressInput {
+  const askNameCount = battle.actionLog.filter(
+    (entry) => entry.type === 'NAME_ASKED' && entry.payload.result !== 'no_target',
+  ).length
+  const isNamedEnemy = defeatedEnemy.nameSlots.length > 0
+  const settlement = battle.result.status === 'victory' ? battle.result.settlement : undefined
+
+  return {
+    askNameCount,
+    catalogueNamedEnemyCount: settlement === 'catalogue' && isNamedEnemy ? 1 : 0,
+    vanquishNamedEnemyBeforeNamedCount:
+      settlement === 'vanquish' && isNamedEnemy && !defeatedEnemy.isNamed ? 1 : 0,
+  }
 }
 
 function hasPendingRunChoice(run: TutorialRunState) {

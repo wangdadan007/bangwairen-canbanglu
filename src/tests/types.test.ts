@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type {
   ActionLogEntry,
+  ArtifactCollectionState,
+  ArtifactDefinition,
   CardDefinition,
   CardInstance,
   CombatState,
@@ -57,6 +59,64 @@ describe('core type contracts', () => {
     expect(enemy.maxForm).toBe(18)
   })
 
+  it('accepts artifact definition and state contracts', () => {
+    const artifact = {
+      id: 'artifact_whip_fragment',
+      nameKey: 'artifact.whip_fragment.name',
+      descriptionKey: 'artifact.whip_fragment.description',
+      rulesTextKey: 'artifact.whip_fragment.rules',
+      triggerType: 'battle_trigger',
+      unlockStage: 'stage_red_ink_preview',
+      tags: ['chapter_one', 'break_form'],
+      baseEffect: {
+        type: 'next_break_shape_bonus',
+        amount: 2,
+        descriptionKey: 'artifact.whip_fragment.effect.base',
+      },
+      boundEffect: {
+        type: 'next_break_shape_bonus',
+        amount: 5,
+        descriptionKey: 'artifact.whip_fragment.effect.bound',
+      },
+      bindCondition: {
+        kind: 'catalogue_named_enemy',
+        requiredCount: 3,
+        descriptionKey: 'artifact.whip_fragment.bind',
+      },
+      overloadCondition: {
+        kind: 'vanquish_named_enemy_before_named',
+        descriptionKey: 'artifact.whip_fragment.overload',
+      },
+      backlashEffect: {
+        type: 'add_temporary_card',
+        amount: 1,
+        descriptionKey: 'artifact.whip_fragment.backlash',
+      },
+    } satisfies ArtifactDefinition
+
+    const artifactState = {
+      artifacts: [
+        {
+          id: artifact.id,
+          definitionId: artifact.id,
+          bindingStatus: 'unbound',
+          bindCondition: artifact.bindCondition,
+          bindProgress: 0,
+          overloadKind: artifact.overloadCondition.kind,
+          chargesRemaining: 0,
+          hasTriggeredThisBattle: false,
+          triggerCountThisBattle: 0,
+          hasOverloadedThisBattle: false,
+          consecutiveOverloadBattles: 0,
+          pendingBacklash: false,
+        },
+      ],
+    } satisfies ArtifactCollectionState
+
+    expect(artifact.triggerType).toBe('battle_trigger')
+    expect(artifactState.artifacts[0].bindingStatus).toBe('unbound')
+  })
+
   it('accepts the tutorial encounter and run contracts', () => {
     const encounter = {
       id: 'encounter_tutorial_paper_wraith',
@@ -82,6 +142,9 @@ describe('core type contracts', () => {
           annotations: [],
         },
       ],
+      artifacts: {
+        artifacts: [],
+      },
       unlocks: {
         stages: ['stage_core'],
         keywords: ['break_form'],

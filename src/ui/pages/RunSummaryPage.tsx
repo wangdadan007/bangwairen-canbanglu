@@ -36,6 +36,9 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
         <SummaryMetric label="削籍" value={summary.verdictEraseCount} />
         <SummaryMetric label="榜裂" value={summary.fracture} />
         <SummaryMetric label="牌组" value={summary.deckSize} />
+        <SummaryMetric label="法宝" value={summary.artifactCount} />
+        <SummaryMetric label="法宝认主" value={summary.boundArtifactCount} />
+        <SummaryMetric label="反噬预警" value={summary.pendingArtifactBacklashCount} />
       </div>
 
       <div className="result-actions">

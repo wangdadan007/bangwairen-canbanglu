@@ -1,4 +1,5 @@
 import type {
+  ArtifactDefinition,
   CardDefinition,
   CardId,
   EncounterDefinition,
@@ -12,6 +13,11 @@ import type {
   VictorySettlement,
 } from '../../types'
 import { DEFAULT_STARTER_DECK_IDS } from '../battle/battleState'
+import {
+  advanceArtifactsAfterBattle,
+  createInitialArtifactCollection,
+  type ArtifactBattleProgressInput,
+} from './artifactResolver'
 import { createRunDeckCards } from './deckResolver'
 import { createTutorialRewardOffer } from './rewardResolver'
 import {
@@ -30,6 +36,7 @@ export function createInitialTutorialRunState(
   tutorialUnlocks: readonly TutorialUnlockDefinition[],
   encounterIds: readonly EncounterId[] = TUTORIAL_ENCOUNTER_IDS,
   deckDefinitionIds: readonly CardId[] = DEFAULT_STARTER_DECK_IDS,
+  artifactDefinitions: readonly ArtifactDefinition[] = [],
 ): TutorialRunState {
   return {
     status: 'active',
@@ -39,6 +46,7 @@ export function createInitialTutorialRunState(
     settlements: [],
     deckDefinitionIds,
     deckCards: createRunDeckCards(deckDefinitionIds),
+    artifacts: createInitialArtifactCollection(artifactDefinitions),
     unlocks: createUnlockState(['stage_core'], tutorialUnlocks),
     verdict: createInitialTutorialVerdictState(),
     rewards: [],
@@ -65,6 +73,7 @@ export function advanceTutorialRun(
   settlement: VictorySettlement,
   cardDefinitions?: readonly CardDefinition[],
   verdictContext?: TutorialVerdictContext,
+  artifactProgress?: ArtifactBattleProgressInput,
 ): TutorialRunState {
   if (run.status !== 'active') {
     return run
@@ -102,6 +111,7 @@ export function advanceTutorialRun(
     currentEncounterIndex: isComplete ? run.currentEncounterIndex : nextEncounterIndex,
     completedEncounterIds: nextCompletedEncounterIds,
     settlements: nextSettlements,
+    artifacts: advanceArtifactsAfterBattle(run.artifacts, artifactProgress),
     unlocks: nextUnlocks,
     pendingVerdict: verdictContext
       ? createTutorialVerdictOffer({

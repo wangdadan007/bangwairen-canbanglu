@@ -19,5 +19,12 @@ export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSumm
     verdictEraseCount: run.verdict.records.filter((record) => record.choiceId === 'erase').length,
     fracture: run.verdict.fracture,
     deckSize: run.deckCards.length,
+    artifactCount: run.artifacts.artifacts.length,
+    boundArtifactCount: run.artifacts.artifacts.filter(
+      (artifact) => artifact.bindingStatus === 'bound',
+    ).length,
+    pendingArtifactBacklashCount: run.artifacts.artifacts.filter(
+      (artifact) => artifact.pendingBacklash,
+    ).length,
   }
 }

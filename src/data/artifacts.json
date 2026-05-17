@@ -1,0 +1,133 @@
+[
+  {
+    "id": "artifact_whip_fragment",
+    "nameKey": "artifact.whip_fragment.name",
+    "descriptionKey": "artifact.whip_fragment.description",
+    "rulesTextKey": "artifact.whip_fragment.rules",
+    "triggerType": "battle_trigger",
+    "unlockStage": "stage_core",
+    "tags": ["chapter_one", "break_form", "name_break"],
+    "baseEffect": {
+      "type": "next_break_shape_bonus",
+      "amount": 2,
+      "descriptionKey": "artifact.whip_fragment.effect.base"
+    },
+    "boundEffect": {
+      "type": "next_break_shape_bonus",
+      "amount": 5,
+      "descriptionKey": "artifact.whip_fragment.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "catalogue_named_enemy",
+      "requiredCount": 3,
+      "descriptionKey": "artifact.whip_fragment.bind"
+    },
+    "overloadCondition": {
+      "kind": "vanquish_named_enemy_before_named",
+      "descriptionKey": "artifact.whip_fragment.overload"
+    },
+    "backlashEffect": {
+      "type": "add_temporary_card",
+      "amount": 1,
+      "descriptionKey": "artifact.whip_fragment.backlash"
+    }
+  },
+  {
+    "id": "artifact_bone_mirror",
+    "nameKey": "artifact.bone_mirror.name",
+    "descriptionKey": "artifact.bone_mirror.description",
+    "rulesTextKey": "artifact.bone_mirror.rules",
+    "triggerType": "battle_trigger",
+    "unlockStage": "stage_core",
+    "tags": ["chapter_one", "ask_name", "intent"],
+    "baseEffect": {
+      "type": "peek_intent_after_ask_name",
+      "descriptionKey": "artifact.bone_mirror.effect.base"
+    },
+    "boundEffect": {
+      "type": "peek_intent_after_ask_name",
+      "amount": 1,
+      "descriptionKey": "artifact.bone_mirror.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "ask_name",
+      "requiredCount": 8,
+      "descriptionKey": "artifact.bone_mirror.bind"
+    },
+    "overloadCondition": {
+      "kind": "mirror_nameless_twice",
+      "descriptionKey": "artifact.bone_mirror.overload"
+    },
+    "backlashEffect": {
+      "type": "hide_intent_before_ask_name",
+      "descriptionKey": "artifact.bone_mirror.backlash"
+    }
+  },
+  {
+    "id": "artifact_cinnabar_dou",
+    "nameKey": "artifact.cinnabar_dou.name",
+    "descriptionKey": "artifact.cinnabar_dou.description",
+    "rulesTextKey": "artifact.cinnabar_dou.rules",
+    "triggerType": "active_charge",
+    "unlockStage": "stage_red_ink_preview",
+    "tags": ["chapter_one", "red_ink"],
+    "chargesPerBattle": 1,
+    "baseEffect": {
+      "type": "red_ink_annotation_bonus",
+      "amount": 1,
+      "descriptionKey": "artifact.cinnabar_dou.effect.base"
+    },
+    "boundEffect": {
+      "type": "red_ink_annotation_bonus",
+      "amount": 1,
+      "descriptionKey": "artifact.cinnabar_dou.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "red_ink_applied",
+      "requiredCount": 3,
+      "descriptionKey": "artifact.cinnabar_dou.bind"
+    },
+    "overloadCondition": {
+      "kind": "repeat_red_ink_same_card",
+      "descriptionKey": "artifact.cinnabar_dou.overload"
+    },
+    "backlashEffect": {
+      "type": "lock_red_ink_target",
+      "amount": 1,
+      "descriptionKey": "artifact.cinnabar_dou.backlash"
+    }
+  },
+  {
+    "id": "artifact_fracture_needle",
+    "nameKey": "artifact.fracture_needle.name",
+    "descriptionKey": "artifact.fracture_needle.description",
+    "rulesTextKey": "artifact.fracture_needle.rules",
+    "triggerType": "verdict_modifier",
+    "unlockStage": "stage_red_ink_preview",
+    "tags": ["chapter_one", "verdict", "erase"],
+    "baseEffect": {
+      "type": "erase_reward_bonus",
+      "amount": 1,
+      "descriptionKey": "artifact.fracture_needle.effect.base"
+    },
+    "boundEffect": {
+      "type": "erase_reward_bonus",
+      "amount": 2,
+      "descriptionKey": "artifact.fracture_needle.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "erase_verdict",
+      "requiredCount": 2,
+      "descriptionKey": "artifact.fracture_needle.bind"
+    },
+    "overloadCondition": {
+      "kind": "consecutive_erase_verdicts",
+      "descriptionKey": "artifact.fracture_needle.overload"
+    },
+    "backlashEffect": {
+      "type": "temporary_fracture",
+      "amount": 1,
+      "descriptionKey": "artifact.fracture_needle.backlash"
+    }
+  }
+]

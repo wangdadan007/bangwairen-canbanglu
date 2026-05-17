@@ -12,6 +12,7 @@ import type {
   TutorialVerdictState,
   VictorySettlement,
 } from '../../types'
+import { advanceArtifactProgress } from './artifactResolver'
 import { appendRunDeckCard } from './deckResolver'
 import { RED_INK_OPTIONS } from './redInkResolver'
 
@@ -130,6 +131,11 @@ export function resolveTutorialVerdict(
     ...run,
     deckDefinitionIds: [...run.deckDefinitionIds, VERDICT_ERASE_REWARD_CARD_ID],
     deckCards: appendRunDeckCard(run.deckCards, VERDICT_ERASE_REWARD_CARD_ID),
+    artifacts: advanceArtifactProgress(run.artifacts, [
+      {
+        kind: 'erase_verdict',
+      },
+    ]),
     pendingVerdict: undefined,
     verdict: {
       ...run.verdict,

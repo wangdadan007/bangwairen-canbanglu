@@ -1,3 +1,4 @@
+export * from './artifactResolver'
 export * from './deckResolver'
 export * from './redInkResolver'
 export * from './rewardResolver'

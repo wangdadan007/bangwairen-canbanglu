@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { getCardDefinition, getEnemyDefinition, loadGameData } from '../data'
+import { getArtifactDefinition, getCardDefinition, getEnemyDefinition, loadGameData } from '../data'
 
 describe('initial game data', () => {
   it('loads starter cards, tutorial enemy, unlocks, and localization', () => {
     const data = loadGameData()
 
+    expect(data.artifacts).toHaveLength(4)
     expect(data.cards).toHaveLength(18)
     expect(data.enemies).toHaveLength(5)
     expect(data.encounters).toHaveLength(3)
@@ -16,6 +17,7 @@ describe('initial game data', () => {
   it('keeps ids unique', () => {
     const data = loadGameData()
 
+    expect(new Set(data.artifacts.map((artifact) => artifact.id)).size).toBe(data.artifacts.length)
     expect(new Set(data.cards.map((card) => card.id)).size).toBe(data.cards.length)
     expect(new Set(data.enemies.map((enemy) => enemy.id)).size).toBe(data.enemies.length)
     expect(new Set(data.encounters.map((encounter) => encounter.id)).size).toBe(
@@ -28,6 +30,33 @@ describe('initial game data', () => {
     expect(new Set(data.tutorialUnlocks.map((unlock) => unlock.id)).size).toBe(
       data.tutorialUnlocks.length,
     )
+  })
+
+  it('contains the T17 starter artifact definitions outside the card pool', () => {
+    const data = loadGameData()
+    const artifactIds = data.artifacts.map((artifact) => artifact.id)
+    const cardIds = new Set(data.cards.map((card) => card.id))
+
+    expect(artifactIds).toEqual([
+      'artifact_whip_fragment',
+      'artifact_bone_mirror',
+      'artifact_cinnabar_dou',
+      'artifact_fracture_needle',
+    ])
+    expect(artifactIds.every((artifactId) => !cardIds.has(artifactId))).toBe(true)
+    expect(getArtifactDefinition('artifact_whip_fragment', data)?.triggerType).toBe(
+      'battle_trigger',
+    )
+    expect(getArtifactDefinition('artifact_cinnabar_dou', data)?.chargesPerBattle).toBe(1)
+    expect(getArtifactDefinition('artifact_fracture_needle', data)?.triggerType).toBe(
+      'verdict_modifier',
+    )
+    expect(data.artifacts.map((artifact) => artifact.bindCondition.kind)).toEqual([
+      'catalogue_named_enemy',
+      'ask_name',
+      'red_ink_applied',
+      'erase_verdict',
+    ])
   })
 
   it('contains starter cards, paper wraith, and abnormal move tutorial data', () => {
@@ -182,10 +211,27 @@ describe('initial game data', () => {
     const data = loadGameData()
 
     expect(hasNonAsciiKey(data.cards)).toBe(false)
+    expect(hasNonAsciiKey(data.artifacts)).toBe(false)
     expect(hasNonAsciiKey(data.enemies)).toBe(false)
     expect(hasNonAsciiKey(data.encounters)).toBe(false)
     expect(hasNonAsciiKey(data.routes)).toBe(false)
     expect(hasNonAsciiKey(data.tutorialUnlocks)).toBe(false)
+  })
+
+  it('keeps every artifact display key covered by localization', () => {
+    const data = loadGameData()
+    const artifactLocalizationKeys = data.artifacts.flatMap((artifact) => [
+      artifact.nameKey,
+      artifact.descriptionKey,
+      artifact.rulesTextKey,
+      artifact.baseEffect.descriptionKey,
+      artifact.boundEffect.descriptionKey,
+      artifact.bindCondition.descriptionKey,
+      ...(artifact.overloadCondition ? [artifact.overloadCondition.descriptionKey] : []),
+      ...(artifact.backlashEffect ? [artifact.backlashEffect.descriptionKey] : []),
+    ])
+
+    expect(artifactLocalizationKeys.every((key) => data.localization[key])).toBe(true)
   })
 
   it('keeps every card display key covered by localization', () => {

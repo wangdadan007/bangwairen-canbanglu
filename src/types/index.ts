@@ -1,3 +1,4 @@
+export type * from './artifact'
 export type * from './battle'
 export type * from './card'
 export type * from './common'

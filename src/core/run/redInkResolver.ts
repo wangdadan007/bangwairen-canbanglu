@@ -1,4 +1,5 @@
 import { annotateRunDeckCard } from './deckResolver'
+import { advanceArtifactProgress } from './artifactResolver'
 import type {
   RedInkAnnotationId,
   RunDeckCardId,
@@ -103,6 +104,11 @@ export function resolveTutorialRedInk(
   return {
     ...run,
     deckCards: annotateRunDeckCard(run.deckCards, targetCard.id, option.annotation),
+    artifacts: advanceArtifactProgress(run.artifacts, [
+      {
+        kind: 'red_ink_applied',
+      },
+    ]),
     pendingRedInk: undefined,
     redInkRecords: [...run.redInkRecords, record],
   }

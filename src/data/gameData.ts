@@ -1,3 +1,4 @@
+import rawArtifacts from './artifacts.json'
 import rawCards from './cards.json'
 import rawEnemies from './enemies.json'
 import rawEncounters from './encounters.json'
@@ -5,6 +6,7 @@ import rawRoutes from './routes.json'
 import rawTutorialUnlocks from './tutorial_unlocks.json'
 import rawZhCn from './localization/zh-CN.json'
 import type {
+  ArtifactDefinition,
   CardDefinition,
   EncounterDefinition,
   EnemyDefinition,
@@ -14,6 +16,7 @@ import type {
 } from '../types'
 
 export interface GameData {
+  readonly artifacts: readonly ArtifactDefinition[]
   readonly cards: readonly CardDefinition[]
   readonly enemies: readonly EnemyDefinition[]
   readonly encounters: readonly EncounterDefinition[]
@@ -22,6 +25,7 @@ export interface GameData {
   readonly localization: Readonly<Record<LocalizationKey, string>>
 }
 
+const artifacts = rawArtifacts as readonly ArtifactDefinition[]
 const cards = rawCards as readonly CardDefinition[]
 const enemies = rawEnemies as readonly EnemyDefinition[]
 const encounters = rawEncounters as readonly EncounterDefinition[]
@@ -30,6 +34,7 @@ const tutorialUnlocks = rawTutorialUnlocks as readonly TutorialUnlockDefinition[
 const zhCn = rawZhCn as Readonly<Record<LocalizationKey, string>>
 
 export function loadGameData(): GameData {
+  assertUniqueIds(artifacts, 'artifact')
   assertUniqueIds(cards, 'card')
   assertUniqueIds(enemies, 'enemy')
   assertUniqueIds(encounters, 'encounter')
@@ -38,6 +43,7 @@ export function loadGameData(): GameData {
   assertUniqueIds(tutorialUnlocks, 'tutorial unlock')
 
   return {
+    artifacts,
     cards,
     enemies,
     encounters,
@@ -45,6 +51,10 @@ export function loadGameData(): GameData {
     tutorialUnlocks,
     localization: zhCn,
   }
+}
+
+export function getArtifactDefinition(id: string, data: GameData = loadGameData()) {
+  return data.artifacts.find((artifact) => artifact.id === id)
 }
 
 export function getCardDefinition(id: string, data: GameData = loadGameData()) {

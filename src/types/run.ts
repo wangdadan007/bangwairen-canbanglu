@@ -1,3 +1,4 @@
+import type { ArtifactCollectionState } from './artifact'
 import type { CardId, EncounterId, LocalizationKey } from './common'
 import type { CardAnnotation } from './card'
 import type { UnlockState, VictorySettlement } from './battle'
@@ -72,6 +73,7 @@ export interface TutorialRunState {
   readonly settlements: readonly TutorialRunSettlementRecord[]
   readonly deckDefinitionIds: readonly CardId[]
   readonly deckCards: readonly RunDeckCard[]
+  readonly artifacts: ArtifactCollectionState
   readonly unlocks: UnlockState
   readonly verdict: TutorialVerdictState
   readonly pendingVerdict?: TutorialVerdictOffer
@@ -97,4 +99,7 @@ export interface TutorialRunSummary {
   readonly verdictEraseCount: number
   readonly fracture: number
   readonly deckSize: number
+  readonly artifactCount: number
+  readonly boundArtifactCount: number
+  readonly pendingArtifactBacklashCount: number
 }
