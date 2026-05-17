@@ -100,5 +100,19 @@
   "encounter.tutorial.bronze_bell_patrol.completion": "铜铃夜巡已收束，归册后可进入裁定，选择登簿、朱批或削籍。",
   "unlock.stage_core.name": "核心战斗",
   "unlock.stage_abnormal_boundary.name": "来势 / 异动边界",
-  "unlock.stage_red_ink_preview.name": "朱批入口"
+  "unlock.stage_red_ink_preview.name": "朱批入口",
+  "route.chapter_one_skeleton.name": "第一章：残榜初裂",
+  "route.chapter_one_skeleton.description": "残榜上先显出一条简易名路，前三个节点接入教学战，后续事件、休整和精英先作为占位。",
+  "route.node.tutorial_paper_wraith.name": "纸面鬼名页",
+  "route.node.tutorial_paper_wraith.description": "普通战：教学形、破形、问名、正名、伏诛与归册。",
+  "route.node.tutorial_incense_thief_mouse.name": "供案窃香",
+  "route.node.tutorial_incense_thief_mouse.description": "普通战：教学来势、异动、封势与断异动。",
+  "route.node.tutorial_bronze_bell_patrol.name": "铜铃夜巡",
+  "route.node.tutorial_bronze_bell_patrol.description": "普通战：稳定来势压力，并显出朱批入口。",
+  "route.node.first_event.name": "残榜空名",
+  "route.node.first_event.description": "事件占位：后续用于榜裂诱惑、删牌、给卡或特殊判词。",
+  "route.node.rest_site.name": "旧庙案前",
+  "route.node.rest_site.description": "休整占位：后续用于恢复、删牌、朱批或法宝相关操作。",
+  "route.node.first_elite.name": "窃香吏候审",
+  "route.node.first_elite.description": "精英占位：后续用于墨资源与更高风险的问名收益。"
 }

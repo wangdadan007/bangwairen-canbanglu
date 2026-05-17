@@ -1,0 +1,58 @@
+[
+  {
+    "id": "route_chapter_one_skeleton",
+    "nameKey": "route.chapter_one_skeleton.name",
+    "descriptionKey": "route.chapter_one_skeleton.description",
+    "startNodeId": "route_node_tutorial_paper_wraith",
+    "nodes": [
+      {
+        "id": "route_node_tutorial_paper_wraith",
+        "type": "normal_battle",
+        "nameKey": "route.node.tutorial_paper_wraith.name",
+        "descriptionKey": "route.node.tutorial_paper_wraith.description",
+        "encounterId": "encounter_tutorial_paper_wraith",
+        "nextNodeIds": ["route_node_tutorial_incense_thief_mouse"]
+      },
+      {
+        "id": "route_node_tutorial_incense_thief_mouse",
+        "type": "normal_battle",
+        "nameKey": "route.node.tutorial_incense_thief_mouse.name",
+        "descriptionKey": "route.node.tutorial_incense_thief_mouse.description",
+        "encounterId": "encounter_tutorial_incense_thief_mouse",
+        "nextNodeIds": ["route_node_tutorial_bronze_bell_patrol"]
+      },
+      {
+        "id": "route_node_tutorial_bronze_bell_patrol",
+        "type": "normal_battle",
+        "nameKey": "route.node.tutorial_bronze_bell_patrol.name",
+        "descriptionKey": "route.node.tutorial_bronze_bell_patrol.description",
+        "encounterId": "encounter_tutorial_bronze_bell_patrol",
+        "nextNodeIds": ["route_node_first_event"]
+      },
+      {
+        "id": "route_node_first_event",
+        "type": "event",
+        "nameKey": "route.node.first_event.name",
+        "descriptionKey": "route.node.first_event.description",
+        "nextNodeIds": ["route_node_rest_site"],
+        "isPlaceholder": true
+      },
+      {
+        "id": "route_node_rest_site",
+        "type": "rest",
+        "nameKey": "route.node.rest_site.name",
+        "descriptionKey": "route.node.rest_site.description",
+        "nextNodeIds": ["route_node_first_elite"],
+        "isPlaceholder": true
+      },
+      {
+        "id": "route_node_first_elite",
+        "type": "elite",
+        "nameKey": "route.node.first_elite.name",
+        "descriptionKey": "route.node.first_elite.description",
+        "nextNodeIds": [],
+        "isPlaceholder": true
+      }
+    ]
+  }
+]

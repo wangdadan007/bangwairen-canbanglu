@@ -8,6 +8,7 @@ describe('initial game data', () => {
     expect(data.cards).toHaveLength(18)
     expect(data.enemies).toHaveLength(5)
     expect(data.encounters).toHaveLength(3)
+    expect(data.routes).toHaveLength(1)
     expect(data.tutorialUnlocks).toHaveLength(3)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
   })
@@ -20,6 +21,10 @@ describe('initial game data', () => {
     expect(new Set(data.encounters.map((encounter) => encounter.id)).size).toBe(
       data.encounters.length,
     )
+    expect(new Set(data.routes.map((route) => route.id)).size).toBe(data.routes.length)
+    for (const route of data.routes) {
+      expect(new Set(route.nodes.map((node) => node.id)).size).toBe(route.nodes.length)
+    }
     expect(new Set(data.tutorialUnlocks.map((unlock) => unlock.id)).size).toBe(
       data.tutorialUnlocks.length,
     )
@@ -115,6 +120,32 @@ describe('initial game data', () => {
     ])
   })
 
+  it('contains a T16 route skeleton with battle and placeholder nodes', () => {
+    const data = loadGameData()
+    const route = data.routes[0]
+
+    expect(route.id).toBe('route_chapter_one_skeleton')
+    expect(route.startNodeId).toBe('route_node_tutorial_paper_wraith')
+    expect(route.nodes.map((node) => node.type)).toEqual([
+      'normal_battle',
+      'normal_battle',
+      'normal_battle',
+      'event',
+      'rest',
+      'elite',
+    ])
+    expect(route.nodes.filter((node) => node.isPlaceholder).map((node) => node.type)).toEqual([
+      'event',
+      'rest',
+      'elite',
+    ])
+    expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
+      'encounter_tutorial_paper_wraith',
+      'encounter_tutorial_incense_thief_mouse',
+      'encounter_tutorial_bronze_bell_patrol',
+    ])
+  })
+
   it('expands the early card pool across break form, ask name, and seal momentum', () => {
     const data = loadGameData()
     const cardsByDirection = {
@@ -153,6 +184,7 @@ describe('initial game data', () => {
     expect(hasNonAsciiKey(data.cards)).toBe(false)
     expect(hasNonAsciiKey(data.enemies)).toBe(false)
     expect(hasNonAsciiKey(data.encounters)).toBe(false)
+    expect(hasNonAsciiKey(data.routes)).toBe(false)
     expect(hasNonAsciiKey(data.tutorialUnlocks)).toBe(false)
   })
 
@@ -182,6 +214,17 @@ describe('initial game data', () => {
     ])
 
     expect(enemyLocalizationKeys.every((key) => data.localization[key])).toBe(true)
+  })
+
+  it('keeps every route display key covered by localization', () => {
+    const data = loadGameData()
+    const routeLocalizationKeys = data.routes.flatMap((route) => [
+      route.nameKey,
+      route.descriptionKey,
+      ...route.nodes.flatMap((node) => [node.nameKey, node.descriptionKey]),
+    ])
+
+    expect(routeLocalizationKeys.every((key) => data.localization[key])).toBe(true)
   })
 })
 

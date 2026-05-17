@@ -6,6 +6,8 @@ import type {
   CombatState,
   EncounterDefinition,
   EnemyDefinition,
+  RouteDefinition,
+  RouteState,
   TutorialRunState,
 } from '../types'
 
@@ -95,6 +97,43 @@ describe('core type contracts', () => {
     } satisfies TutorialRunState
 
     expect(run.encounterIds[0]).toBe(encounter.id)
+  })
+
+  it('accepts the route definition and state contracts', () => {
+    const route = {
+      id: 'route_chapter_one_skeleton',
+      nameKey: 'route.chapter_one_skeleton.name',
+      descriptionKey: 'route.chapter_one_skeleton.description',
+      startNodeId: 'route_node_tutorial_paper_wraith',
+      nodes: [
+        {
+          id: 'route_node_tutorial_paper_wraith',
+          type: 'normal_battle',
+          nameKey: 'route.node.tutorial_paper_wraith.name',
+          descriptionKey: 'route.node.tutorial_paper_wraith.description',
+          encounterId: 'encounter_tutorial_paper_wraith',
+          nextNodeIds: ['route_node_first_event'],
+        },
+        {
+          id: 'route_node_first_event',
+          type: 'event',
+          nameKey: 'route.node.first_event.name',
+          descriptionKey: 'route.node.first_event.description',
+          nextNodeIds: [],
+          isPlaceholder: true,
+        },
+      ],
+    } satisfies RouteDefinition
+
+    const routeState = {
+      routeId: route.id,
+      currentNodeId: route.startNodeId,
+      completedNodeIds: [],
+      reachableNodeIds: [route.startNodeId],
+    } satisfies RouteState
+
+    expect(route.nodes[0].type).toBe('normal_battle')
+    expect(routeState.currentNodeId).toBe(route.startNodeId)
   })
 
   it('accepts the first combat state contract', () => {

@@ -1,6 +1,7 @@
 export * from './deckResolver'
 export * from './redInkResolver'
 export * from './rewardResolver'
+export * from './routeResolver'
 export * from './runSummary'
 export * from './tutorialRun'
 export * from './verdictResolver'

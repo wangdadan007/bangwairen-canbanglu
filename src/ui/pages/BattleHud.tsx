@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
 import {
   advanceTutorialRun,
+  completeCurrentRouteNode,
   createInitialBattleState,
+  createInitialRouteState,
   createInitialTutorialRunState,
   createTutorialRunSummary,
   failTutorialRun,
@@ -15,6 +17,7 @@ import {
 import { gameData } from '../../data'
 import { RedInkPage } from './RedInkPage'
 import { RewardPage } from './RewardPage'
+import { RoutePage } from './RoutePage'
 import { RunSummaryPage } from './RunSummaryPage'
 import { VerdictPage } from './VerdictPage'
 import type {
@@ -28,6 +31,8 @@ import type {
   EnemyState,
   JsonValue,
   RedInkAnnotationId,
+  RouteDefinition,
+  RouteState,
   RunDeckCard,
   RunDeckCardId,
   TutorialVerdictChoiceId,
@@ -48,6 +53,7 @@ interface PressureFeedback {
 interface TutorialBattleViewState {
   readonly run: TutorialRunState
   readonly battle: CombatState
+  readonly route: RouteState
 }
 
 const battleContext: BattleReducerContext = {
@@ -59,6 +65,7 @@ const enemyDefinitionsById = new Map(gameData.enemies.map((enemy) => [enemy.id, 
 const encounterDefinitionsById = new Map(
   gameData.encounters.map((encounter) => [encounter.id, encounter]),
 )
+const tutorialRoute = getTutorialRoute(gameData.routes)
 
 function createBattle(
   enemyDefinition: EnemyDefinition,
@@ -224,10 +231,12 @@ export function BattleHud() {
             }
           : undefined,
       )
+      const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
 
       return {
         run: nextRun,
         battle: current.battle,
+        route: nextRoute,
       }
     })
   }
@@ -238,6 +247,7 @@ export function BattleHud() {
       const nextEncounter = getCurrentTutorialEncounter(nextRun, gameData.encounters)
 
       return {
+        ...current,
         run: nextRun,
         battle: nextEncounter && !hasPendingRunChoice(nextRun)
           ? createBattleForEncounter(nextEncounter, nextRun)
@@ -252,6 +262,7 @@ export function BattleHud() {
       const nextEncounter = getCurrentTutorialEncounter(nextRun, gameData.encounters)
 
       return {
+        ...current,
         run: nextRun,
         battle: nextEncounter && !hasPendingRunChoice(nextRun)
           ? createBattleForEncounter(nextEncounter, nextRun)
@@ -269,6 +280,7 @@ export function BattleHud() {
       const nextEncounter = getCurrentTutorialEncounter(nextRun, gameData.encounters)
 
       return {
+        ...current,
         run: nextRun,
         battle: nextEncounter && !hasPendingRunChoice(nextRun)
           ? createBattleForEncounter(nextEncounter, nextRun)
@@ -281,7 +293,7 @@ export function BattleHud() {
     <aside className="battle-hud" aria-label="前三场教学战">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">教学纵切 / T13</p>
+          <p className="panel-kicker">教学纵切 / T16</p>
           <h2>{currentEncounter ? t(currentEncounter.nameKey) : getRunHeadline(run.status)}</h2>
         </div>
         <div className="dev-controls">
@@ -307,6 +319,7 @@ export function BattleHud() {
       </header>
 
       <TutorialRunPanel run={run} currentEncounter={currentEncounter} />
+      <RoutePage route={tutorialRoute} routeState={viewState.route} t={t} />
 
       {battle.result.status === 'victory' && run.status === 'active' && !hasPendingRunChoice(run) ? (
         <section className="result-banner" aria-live="polite">
@@ -669,7 +682,18 @@ function createInitialTutorialBattleView(): TutorialBattleViewState {
   return {
     run,
     battle: createBattleForEncounter(encounter, run),
+    route: createInitialRouteState(tutorialRoute),
   }
+}
+
+function getTutorialRoute(routes: readonly RouteDefinition[]) {
+  const route = routes.find((candidate) => candidate.id === 'route_chapter_one_skeleton')
+
+  if (!route) {
+    throw new Error('Missing route definition: route_chapter_one_skeleton')
+  }
+
+  return route
 }
 
 function createBattleForEncounter(

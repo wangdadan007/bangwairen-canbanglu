@@ -334,6 +334,123 @@ button:disabled {
   font-size: 12px;
 }
 
+.route-page {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(178, 139, 82, 0.34);
+  border-left: 4px solid #8ea36d;
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(29, 34, 28, 0.76);
+}
+
+.route-page header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.route-page header span {
+  border: 1px solid rgba(178, 139, 82, 0.42);
+  border-radius: 999px;
+  padding: 4px 9px;
+  color: #f0d28d;
+  background: rgba(13, 26, 25, 0.45);
+  font-size: 12px;
+}
+
+.route-page p {
+  margin: 0;
+  color: #d9ccb8;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.route-node-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.route-node-list li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(178, 139, 82, 0.24);
+  border-radius: 6px;
+  padding: 9px;
+  background: rgba(14, 20, 19, 0.34);
+}
+
+.route-node-list li.current {
+  border-color: rgba(224, 180, 93, 0.62);
+  background: rgba(75, 58, 32, 0.32);
+}
+
+.route-node-list li.completed {
+  border-color: rgba(92, 161, 138, 0.62);
+  background: rgba(24, 77, 67, 0.28);
+}
+
+.route-node-list li.locked {
+  opacity: 0.68;
+}
+
+.route-node-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(178, 139, 82, 0.42);
+  border-radius: 50%;
+  color: #f3d482;
+  background: rgba(90, 66, 35, 0.26);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.route-node-list li.event .route-node-mark {
+  color: #c5efe0;
+  background: rgba(24, 77, 67, 0.34);
+}
+
+.route-node-list li.rest .route-node-mark {
+  color: #f0c774;
+  background: rgba(69, 53, 30, 0.42);
+}
+
+.route-node-list li.elite .route-node-mark {
+  color: #f3b7a7;
+  background: rgba(91, 33, 30, 0.42);
+}
+
+.route-node-list span,
+.route-node-list small,
+.route-node-list em {
+  color: #bfae91;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.route-node-list strong {
+  display: block;
+  margin: 2px 0;
+  color: #f0e2ca;
+  font-size: 14px;
+}
+
+.route-node-list em {
+  border: 1px solid rgba(178, 139, 82, 0.3);
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: rgba(13, 26, 25, 0.36);
+  font-style: normal;
+}
+
 .reward-page {
   display: grid;
   gap: 12px;
