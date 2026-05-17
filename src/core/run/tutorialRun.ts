@@ -11,7 +11,13 @@ import type {
   VictorySettlement,
 } from '../../types'
 import { DEFAULT_STARTER_DECK_IDS } from '../battle/battleState'
+import { createRunDeckCards } from './deckResolver'
 import { createTutorialRewardOffer } from './rewardResolver'
+import {
+  createInitialTutorialVerdictState,
+  createTutorialVerdictOffer,
+  type TutorialVerdictContext,
+} from './verdictResolver'
 
 export const TUTORIAL_ENCOUNTER_IDS: readonly EncounterId[] = [
   'encounter_tutorial_paper_wraith',
@@ -31,8 +37,11 @@ export function createInitialTutorialRunState(
     completedEncounterIds: [],
     settlements: [],
     deckDefinitionIds,
+    deckCards: createRunDeckCards(deckDefinitionIds),
     unlocks: createUnlockState(['stage_core'], tutorialUnlocks),
+    verdict: createInitialTutorialVerdictState(),
     rewards: [],
+    redInkRecords: [],
   }
 }
 
@@ -54,13 +63,14 @@ export function advanceTutorialRun(
   tutorialUnlocks: readonly TutorialUnlockDefinition[],
   settlement: VictorySettlement,
   cardDefinitions?: readonly CardDefinition[],
+  verdictContext?: TutorialVerdictContext,
 ): TutorialRunState {
   if (run.status === 'complete') {
     return run
   }
 
-  if (run.pendingReward) {
-    throw new Error('Resolve pending tutorial reward before advancing the run')
+  if (run.pendingVerdict || run.pendingReward || run.pendingRedInk) {
+    throw new Error('Resolve pending tutorial offer before advancing the run')
   }
 
   const currentEncounter = getCurrentTutorialEncounter(run, encounters)
@@ -92,6 +102,13 @@ export function advanceTutorialRun(
     completedEncounterIds: nextCompletedEncounterIds,
     settlements: nextSettlements,
     unlocks: nextUnlocks,
+    pendingVerdict: verdictContext
+      ? createTutorialVerdictOffer({
+          encounter: currentEncounter,
+          settlement,
+          ...verdictContext,
+        })
+      : undefined,
     pendingReward: cardDefinitions
       ? createTutorialRewardOffer({
           encounter: currentEncounter,

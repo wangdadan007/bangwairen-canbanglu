@@ -1,8 +1,12 @@
-import type { CardId, EncounterId } from './common'
+import type { CardId, EncounterId, LocalizationKey } from './common'
+import type { CardAnnotation } from './card'
 import type { UnlockState, VictorySettlement } from './battle'
+import type { TutorialVerdictOffer, TutorialVerdictState } from './verdict'
 
 export type TutorialRunStatus = 'active' | 'complete'
 export type RewardQuality = 'ordinary' | 'high'
+export type RunDeckCardId = string
+export type RedInkAnnotationId = string
 
 export interface TutorialRunSettlementRecord {
   readonly encounterId: EncounterId
@@ -32,6 +36,32 @@ export interface TutorialRewardRecord {
   readonly skipped: boolean
 }
 
+export interface RunDeckCard {
+  readonly id: RunDeckCardId
+  readonly definitionId: CardId
+  readonly annotations: readonly CardAnnotation[]
+}
+
+export interface TutorialRedInkOption {
+  readonly id: RedInkAnnotationId
+  readonly nameKey: LocalizationKey
+  readonly rulesTextKey: LocalizationKey
+  readonly annotation: CardAnnotation
+}
+
+export interface TutorialRedInkOffer {
+  readonly id: string
+  readonly options: readonly TutorialRedInkOption[]
+}
+
+export interface TutorialRedInkRecord {
+  readonly id: string
+  readonly deckCardId?: RunDeckCardId
+  readonly cardDefinitionId?: CardId
+  readonly annotationId?: RedInkAnnotationId
+  readonly skipped: boolean
+}
+
 export interface TutorialRunState {
   readonly status: TutorialRunStatus
   readonly currentEncounterIndex: number
@@ -39,7 +69,12 @@ export interface TutorialRunState {
   readonly completedEncounterIds: readonly EncounterId[]
   readonly settlements: readonly TutorialRunSettlementRecord[]
   readonly deckDefinitionIds: readonly CardId[]
+  readonly deckCards: readonly RunDeckCard[]
   readonly unlocks: UnlockState
+  readonly verdict: TutorialVerdictState
+  readonly pendingVerdict?: TutorialVerdictOffer
   readonly pendingReward?: TutorialRewardOffer
+  readonly pendingRedInk?: TutorialRedInkOffer
   readonly rewards: readonly TutorialRewardRecord[]
+  readonly redInkRecords: readonly TutorialRedInkRecord[]
 }

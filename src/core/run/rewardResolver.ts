@@ -10,6 +10,7 @@ import type {
   UnlockState,
   VictorySettlement,
 } from '../../types'
+import { appendRunDeckCard } from './deckResolver'
 
 const MECHANIC_TAGS = new Set([
   'break_form',
@@ -95,6 +96,9 @@ export function resolveTutorialReward(
     deckDefinitionIds: selectedCardDefinitionId
       ? [...run.deckDefinitionIds, selectedCardDefinitionId]
       : run.deckDefinitionIds,
+    deckCards: selectedCardDefinitionId
+      ? appendRunDeckCard(run.deckCards, selectedCardDefinitionId)
+      : run.deckCards,
     pendingReward: undefined,
     rewards: [...run.rewards, rewardRecord],
   }

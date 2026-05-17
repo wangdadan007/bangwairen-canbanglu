@@ -73,11 +73,25 @@ describe('core type contracts', () => {
       completedEncounterIds: [],
       settlements: [],
       deckDefinitionIds: ['card_zhu_fu'],
+      deckCards: [
+        {
+          id: 'run_card_001_card_zhu_fu',
+          definitionId: 'card_zhu_fu',
+          annotations: [],
+        },
+      ],
       unlocks: {
         stages: ['stage_core'],
         keywords: ['break_form'],
       },
+      verdict: {
+        fracture: 0,
+        maxIncenseBonus: 0,
+        registerEntries: [],
+        records: [],
+      },
       rewards: [],
+      redInkRecords: [],
     } satisfies TutorialRunState
 
     expect(run.encounterIds[0]).toBe(encounter.id)

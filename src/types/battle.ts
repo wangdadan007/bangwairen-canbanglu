@@ -56,6 +56,7 @@ export type ActionLogType =
   | 'TURN_ENDED'
   | 'CARD_DRAWN'
   | 'CARD_PLAYED'
+  | 'CARD_ANNOTATION_TRIGGERED'
   | 'CARD_PLAY_REJECTED'
   | 'CARD_DISCARDED'
   | 'CARD_EXHAUSTED'

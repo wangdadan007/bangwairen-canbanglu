@@ -3,6 +3,7 @@ import { drawCards } from './turnFlow'
 import { resolveAskName } from './nameResolver'
 import type {
   CardDefinition,
+  CardAnnotation,
   CardEffect,
   CardInstance,
   CombatState,
@@ -80,6 +81,7 @@ export function resolvePlayCard(state: CombatState, input: ResolveCardInput): Co
     payload: {
       cardDefinitionId: cardDefinition.id,
       cost: cardDefinition.cost,
+      annotationIds: card.annotations.map((annotation) => annotation.id),
     },
   })
 
@@ -99,6 +101,37 @@ function resolveCardEffects(
   let nextState = state
 
   for (const effect of cardDefinition.effects) {
+    if (!isEffectConditionMet(nextState, effect, targetEnemyInstanceId)) {
+      continue
+    }
+
+    nextState = resolveCardEffect(nextState, card, effect, targetEnemyInstanceId)
+  }
+
+  for (const annotation of card.annotations) {
+    nextState = resolveCardAnnotation(nextState, card, annotation, targetEnemyInstanceId)
+  }
+
+  return nextState
+}
+
+function resolveCardAnnotation(
+  state: CombatState,
+  card: CardInstance,
+  annotation: CardAnnotation,
+  targetEnemyInstanceId?: EnemyInstanceId,
+): CombatState {
+  let nextState = appendLog(state, {
+    type: 'CARD_ANNOTATION_TRIGGERED',
+    sourceId: card.instanceId,
+    targetId: targetEnemyInstanceId,
+    payload: {
+      annotationId: annotation.id,
+      nameKey: annotation.nameKey,
+    },
+  })
+
+  for (const effect of annotation.effects) {
     if (!isEffectConditionMet(nextState, effect, targetEnemyInstanceId)) {
       continue
     }

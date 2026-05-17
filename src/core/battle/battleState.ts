@@ -8,6 +8,7 @@ import type {
   EnemyDefinition,
   EnemyIntentDefinition,
   EnemyState,
+  RunDeckCard,
   UnlockState,
 } from '../../types'
 
@@ -33,22 +34,31 @@ export interface CreateBattleStateInput {
   readonly cardDefinitions: readonly CardDefinition[]
   readonly enemyDefinition: EnemyDefinition
   readonly deckDefinitionIds?: readonly CardId[]
+  readonly deckCards?: readonly RunDeckCard[]
+  readonly maxIncenseBonus?: number
   readonly unlocks?: UnlockState
 }
 
 export function createInitialBattleState(input: CreateBattleStateInput): CombatState {
   const deckDefinitionIds = input.deckDefinitionIds ?? DEFAULT_STARTER_DECK_IDS
-  assertDeckDefinitionsExist(deckDefinitionIds, input.cardDefinitions)
+  const deckCards = input.deckCards
+  assertDeckDefinitionsExist(
+    deckCards ? deckCards.map((card) => card.definitionId) : deckDefinitionIds,
+    input.cardDefinitions,
+  )
 
-  const deck = createCardInstances(deckDefinitionIds)
+  const deck = deckCards
+    ? createCardInstancesFromRunDeck(deckCards)
+    : createCardInstances(deckDefinitionIds)
   const enemy = createEnemyState(input.enemyDefinition, 0)
+  const maxIncense = DEFAULT_MAX_INCENSE + (input.maxIncenseBonus ?? 0)
 
   let state: CombatState = {
     turn: 1,
     phase: 'setup',
     player: {
       incense: 0,
-      maxIncense: DEFAULT_MAX_INCENSE,
+      maxIncense,
       deck,
       unlocks: input.unlocks ?? {
         stages: ['stage_core'],
@@ -87,6 +97,18 @@ export function createCardInstances(deckDefinitionIds: readonly CardId[]): reado
     owner: 'player',
     isTemporary: false,
     annotations: [],
+  }))
+}
+
+export function createCardInstancesFromRunDeck(
+  deckCards: readonly RunDeckCard[],
+): readonly CardInstance[] {
+  return deckCards.map((card, index) => ({
+    instanceId: `card_instance_${(index + 1).toString().padStart(3, '0')}_${card.id}`,
+    definitionId: card.definitionId,
+    owner: 'player',
+    isTemporary: false,
+    annotations: card.annotations,
   }))
 }
 

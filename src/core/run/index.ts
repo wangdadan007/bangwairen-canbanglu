@@ -1,2 +1,5 @@
+export * from './deckResolver'
+export * from './redInkResolver'
 export * from './rewardResolver'
 export * from './tutorialRun'
+export * from './verdictResolver'

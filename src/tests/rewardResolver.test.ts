@@ -89,6 +89,10 @@ describe('T10 tutorial rewards', () => {
 
     expect(rewardedRun.pendingReward).toBeUndefined()
     expect(rewardedRun.deckDefinitionIds).toEqual([...run.deckDefinitionIds, selectedCard])
+    expect(rewardedRun.deckCards.map((card) => card.definitionId)).toEqual([
+      ...run.deckDefinitionIds,
+      selectedCard,
+    ])
     expect(rewardedRun.rewards).toEqual([
       expect.objectContaining({
         encounterId: 'encounter_tutorial_paper_wraith',
@@ -115,6 +119,7 @@ describe('T10 tutorial rewards', () => {
     const skippedRun = resolveTutorialReward(advancedRun)
 
     expect(skippedRun.deckDefinitionIds).toEqual(run.deckDefinitionIds)
+    expect(skippedRun.deckCards).toEqual(run.deckCards)
     expect(skippedRun.rewards[0]).toEqual(
       expect.objectContaining({
         skipped: true,

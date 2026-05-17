@@ -23,6 +23,7 @@ export interface CardDefinition {
 export interface CardAnnotation {
   readonly id: string
   readonly nameKey: LocalizationKey
+  readonly rulesTextKey?: LocalizationKey
   readonly effects: readonly CardEffect[]
 }
 
