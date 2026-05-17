@@ -3,6 +3,8 @@ import {
   advanceTutorialRun,
   createInitialBattleState,
   createInitialTutorialRunState,
+  createTutorialRunSummary,
+  failTutorialRun,
   getCurrentTutorialEncounter,
   reduceBattleState,
   resolveTutorialRedInk,
@@ -13,6 +15,7 @@ import {
 import { gameData } from '../../data'
 import { RedInkPage } from './RedInkPage'
 import { RewardPage } from './RewardPage'
+import { RunSummaryPage } from './RunSummaryPage'
 import { VerdictPage } from './VerdictPage'
 import type {
   ActionLogEntry,
@@ -77,6 +80,7 @@ export function BattleHud() {
   const { battle, run } = viewState
   const currentEncounter = getCurrentTutorialEncounter(run, gameData.encounters)
   const enemy = battle.enemies[0]
+  const runSummary = useMemo(() => createTutorialRunSummary(run), [run])
   const cardDefinitionsById = useMemo(() => createCardDefinitionMap(gameData.cards), [])
   const allCardsByInstanceId = useMemo(() => createCardInstanceMap(battle.player.deck), [battle])
   const pressureFeedback = useMemo(
@@ -172,6 +176,20 @@ export function BattleHud() {
     setViewState(createInitialTutorialBattleView())
   }
 
+  function abandonTutorialRun() {
+    setViewState((current) => ({
+      ...current,
+      run: failTutorialRun(current.run, 'abandoned'),
+    }))
+  }
+
+  function settleBattleDefeat() {
+    setViewState((current) => ({
+      ...current,
+      run: failTutorialRun(current.run, 'battle_defeat'),
+    }))
+  }
+
   function advanceAfterVictory() {
     setViewState((current) => {
       const result = current.battle.result
@@ -263,8 +281,8 @@ export function BattleHud() {
     <aside className="battle-hud" aria-label="前三场教学战">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">教学纵切 / T12</p>
-          <h2>{currentEncounter ? t(currentEncounter.nameKey) : '前三战完成'}</h2>
+          <p className="panel-kicker">教学纵切 / T13</p>
+          <h2>{currentEncounter ? t(currentEncounter.nameKey) : getRunHeadline(run.status)}</h2>
         </div>
         <div className="dev-controls">
           <button
@@ -276,6 +294,14 @@ export function BattleHud() {
           </button>
           <button className="ghost-button" type="button" onClick={restartTutorialRun}>
             重开教学纵切
+          </button>
+          <button
+            className="ghost-button"
+            disabled={run.status !== 'active'}
+            type="button"
+            onClick={abandonTutorialRun}
+          >
+            放弃本局
           </button>
         </div>
       </header>
@@ -294,6 +320,19 @@ export function BattleHud() {
                 : isFinalEncounter(run)
                   ? '查看收束奖励'
                   : '查看战后奖励'}
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {battle.result.status === 'defeat' && run.status === 'active' ? (
+        <section className="result-banner run-failed" aria-live="polite">
+          <span>失败</span>
+          <strong>本场战斗已经失败。</strong>
+          <p>进入最小结算页，保留本局已经完成的伏诛、归册、奖励和裁定记录。</p>
+          <div className="result-actions">
+            <button type="button" onClick={settleBattleDefeat}>
+              查看结算
             </button>
           </div>
         </section>
@@ -329,17 +368,8 @@ export function BattleHud() {
         />
       ) : null}
 
-      {run.status === 'complete' && !hasPendingRunChoice(run) ? (
-        <section className="result-banner run-complete" aria-live="polite">
-          <span>教学纵切完成</span>
-          <strong>前三场固定教学战已跑通。</strong>
-          <p>归册后的裁定页已经接通，登簿、朱批、削籍三类入口都能完成最小结算。</p>
-          <div className="result-actions">
-            <button type="button" onClick={restartTutorialRun}>
-              重开教学纵切
-            </button>
-          </div>
-        </section>
+      {run.status !== 'active' && !hasPendingRunChoice(run) ? (
+        <RunSummaryPage summary={runSummary} onRestart={restartTutorialRun} />
       ) : null}
 
       {enemy ? <EnemyPanel enemy={enemy} /> : null}
@@ -445,7 +475,7 @@ function TutorialRunPanel({
     <section className="tutorial-run-panel" aria-label="教学战进度">
       <div className="section-title-row">
         <h3>前三场教学战</h3>
-        <span>{run.status === 'complete' ? '已完成' : `第 ${run.currentEncounterIndex + 1} / ${run.encounterIds.length} 场`}</span>
+        <span>{getRunProgressLabel(run)}</span>
       </div>
       <ol className="tutorial-steps">
         {run.encounterIds.map((encounterId, index) => {
@@ -688,6 +718,30 @@ function getUnlockStageName(stageId: string) {
   const stage = gameData.tutorialUnlocks.find((candidate) => candidate.id === stageId)
 
   return stage ? t(stage.nameKey) : stageId
+}
+
+function getRunHeadline(status: TutorialRunState['status']) {
+  if (status === 'complete') {
+    return '纵切完成'
+  }
+
+  if (status === 'failed') {
+    return '纵切中止'
+  }
+
+  return '前三战进行中'
+}
+
+function getRunProgressLabel(run: TutorialRunState) {
+  if (run.status === 'complete') {
+    return '已完成'
+  }
+
+  if (run.status === 'failed') {
+    return '已中止'
+  }
+
+  return `第 ${run.currentEncounterIndex + 1} / ${run.encounterIds.length} 场`
 }
 
 function isFinalEncounter(run: TutorialRunState) {

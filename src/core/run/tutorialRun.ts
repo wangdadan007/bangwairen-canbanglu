@@ -4,6 +4,7 @@ import type {
   EncounterDefinition,
   EncounterId,
   TutorialRunSettlementRecord,
+  TutorialRunFailureReason,
   TutorialRunState,
   TutorialUnlockDefinition,
   UnlockStageId,
@@ -49,7 +50,7 @@ export function getCurrentTutorialEncounter(
   run: TutorialRunState,
   encounters: readonly EncounterDefinition[],
 ): EncounterDefinition | undefined {
-  if (run.status === 'complete') {
+  if (run.status !== 'active') {
     return undefined
   }
 
@@ -65,7 +66,7 @@ export function advanceTutorialRun(
   cardDefinitions?: readonly CardDefinition[],
   verdictContext?: TutorialVerdictContext,
 ): TutorialRunState {
-  if (run.status === 'complete') {
+  if (run.status !== 'active') {
     return run
   }
 
@@ -117,6 +118,24 @@ export function advanceTutorialRun(
           cardDefinitions,
         })
       : undefined,
+  }
+}
+
+export function failTutorialRun(
+  run: TutorialRunState,
+  reason: TutorialRunFailureReason = 'abandoned',
+): TutorialRunState {
+  if (run.status !== 'active') {
+    return run
+  }
+
+  return {
+    ...run,
+    status: 'failed',
+    failureReason: reason,
+    pendingVerdict: undefined,
+    pendingReward: undefined,
+    pendingRedInk: undefined,
   }
 }
 

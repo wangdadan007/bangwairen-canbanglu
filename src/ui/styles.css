@@ -218,6 +218,11 @@ button:disabled {
   background: rgba(24, 77, 67, 0.34);
 }
 
+.run-failed {
+  border-left-color: #d5794e;
+  background: rgba(77, 45, 24, 0.34);
+}
+
 .tutorial-run-panel {
   display: grid;
   gap: 12px;
@@ -446,6 +451,48 @@ button:disabled {
   color: #d9ccb8;
   font-size: 12px;
   line-height: 1.45;
+}
+
+.run-summary-page {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(178, 139, 82, 0.36);
+  border-left: 4px solid #5ca18a;
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(24, 77, 67, 0.28);
+}
+
+.run-summary-page.failed {
+  border-left-color: #d5794e;
+  background: rgba(77, 45, 24, 0.34);
+}
+
+.run-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.run-summary-grid div {
+  display: grid;
+  gap: 4px;
+  min-height: 62px;
+  border: 1px solid rgba(178, 139, 82, 0.28);
+  border-radius: 6px;
+  padding: 9px;
+  background: rgba(14, 20, 19, 0.34);
+}
+
+.run-summary-grid span {
+  color: #d8c2a0;
+  font-size: 12px;
+}
+
+.run-summary-grid strong {
+  color: #f3d482;
+  font-size: 20px;
+  line-height: 1;
 }
 
 .reward-copy {
@@ -963,7 +1010,8 @@ button:disabled {
   .resource-grid,
   .name-slots,
   .intent-detail-grid,
-  .intent-rule-grid {
+  .intent-rule-grid,
+  .run-summary-grid {
     grid-template-columns: 1fr 1fr;
   }
 

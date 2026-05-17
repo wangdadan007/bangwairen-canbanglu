@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   advanceTutorialRun,
+  createTutorialRunSummary,
   createInitialTutorialRunState,
+  failTutorialRun,
   getCurrentTutorialEncounter,
 } from '../core'
 import { gameData } from '../data'
@@ -91,5 +93,63 @@ describe('T09 tutorial run sequence', () => {
       'catalogue',
       'catalogue',
     ])
+  })
+
+  it('can end the tutorial run as failed and hides the current encounter', () => {
+    const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const failedRun = failTutorialRun(run, 'abandoned')
+
+    expect(failedRun.status).toBe('failed')
+    expect(failedRun.failureReason).toBe('abandoned')
+    expect(getCurrentTutorialEncounter(failedRun, gameData.encounters)).toBeUndefined()
+    expect(advanceTutorialRun(
+      failedRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )).toBe(failedRun)
+  })
+
+  it('summarizes the fixed tutorial flow after completion or failure', () => {
+    const firstRun = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const secondRun = advanceTutorialRun(
+      firstRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+    const thirdRun = advanceTutorialRun(
+      secondRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'catalogue',
+    )
+    const completedRun = advanceTutorialRun(
+      thirdRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'catalogue',
+    )
+    const failedRun = failTutorialRun(secondRun, 'battle_defeat')
+
+    expect(createTutorialRunSummary(completedRun)).toEqual(
+      expect.objectContaining({
+        status: 'complete',
+        completedEncounterCount: 3,
+        totalEncounterCount: 3,
+        vanquishCount: 1,
+        catalogueCount: 2,
+        deckSize: completedRun.deckCards.length,
+      }),
+    )
+    expect(createTutorialRunSummary(failedRun)).toEqual(
+      expect.objectContaining({
+        status: 'failed',
+        failureReason: 'battle_defeat',
+        completedEncounterCount: 1,
+        totalEncounterCount: 3,
+        vanquishCount: 1,
+      }),
+    )
   })
 })

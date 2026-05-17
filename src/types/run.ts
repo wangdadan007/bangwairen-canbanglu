@@ -3,7 +3,8 @@ import type { CardAnnotation } from './card'
 import type { UnlockState, VictorySettlement } from './battle'
 import type { TutorialVerdictOffer, TutorialVerdictState } from './verdict'
 
-export type TutorialRunStatus = 'active' | 'complete'
+export type TutorialRunStatus = 'active' | 'complete' | 'failed'
+export type TutorialRunFailureReason = 'abandoned' | 'battle_defeat'
 export type RewardQuality = 'ordinary' | 'high'
 export type RunDeckCardId = string
 export type RedInkAnnotationId = string
@@ -64,6 +65,7 @@ export interface TutorialRedInkRecord {
 
 export interface TutorialRunState {
   readonly status: TutorialRunStatus
+  readonly failureReason?: TutorialRunFailureReason
   readonly currentEncounterIndex: number
   readonly encounterIds: readonly EncounterId[]
   readonly completedEncounterIds: readonly EncounterId[]
@@ -77,4 +79,22 @@ export interface TutorialRunState {
   readonly pendingRedInk?: TutorialRedInkOffer
   readonly rewards: readonly TutorialRewardRecord[]
   readonly redInkRecords: readonly TutorialRedInkRecord[]
+}
+
+export interface TutorialRunSummary {
+  readonly status: TutorialRunStatus
+  readonly failureReason?: TutorialRunFailureReason
+  readonly completedEncounterCount: number
+  readonly totalEncounterCount: number
+  readonly vanquishCount: number
+  readonly catalogueCount: number
+  readonly rewardTakenCount: number
+  readonly rewardSkippedCount: number
+  readonly redInkAppliedCount: number
+  readonly redInkSkippedCount: number
+  readonly verdictRegisterCount: number
+  readonly verdictRedInkCount: number
+  readonly verdictEraseCount: number
+  readonly fracture: number
+  readonly deckSize: number
 }
