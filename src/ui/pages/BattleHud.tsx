@@ -16,6 +16,15 @@ import type {
   VictorySettlement,
 } from '../../types'
 
+type PressureFeedbackTone = 'incoming' | 'sealed' | 'abnormal' | 'countered'
+
+interface PressureFeedback {
+  readonly tone: PressureFeedbackTone
+  readonly label: string
+  readonly title: string
+  readonly detail: string
+}
+
 const battleContext: BattleReducerContext = {
   cardDefinitions: gameData.cards,
   enemyDefinitions: gameData.enemies,
@@ -37,6 +46,10 @@ export function BattleHud() {
   const enemy = battle.enemies[0]
   const cardDefinitionsById = useMemo(() => createCardDefinitionMap(gameData.cards), [])
   const allCardsByInstanceId = useMemo(() => createCardInstanceMap(battle.player.deck), [battle])
+  const pressureFeedback = useMemo(
+    () => createPressureFeedback(battle, cardDefinitionsById, allCardsByInstanceId),
+    [allCardsByInstanceId, battle, cardDefinitionsById],
+  )
   const latestLog = battle.actionLog.slice(-14).reverse()
   const canAct = battle.phase === 'player_turn' && battle.result.status === 'ongoing'
 
@@ -120,6 +133,7 @@ export function BattleHud() {
       ) : null}
 
       {enemy ? <EnemyPanel enemy={enemy} /> : null}
+      {pressureFeedback ? <PressureFeedbackPanel feedback={pressureFeedback} /> : null}
 
       <section className="hud-section">
         <div className="section-title-row">
@@ -161,6 +175,13 @@ export function BattleHud() {
                   <span className="card-rules">
                     {definition ? t(definition.rulesTextKey) : '缺少卡牌定义'}
                   </span>
+                  {definition ? (
+                    <span className="card-tags" aria-label="卡牌效果">
+                      {getCardEffectLabels(definition).map((label) => (
+                        <span key={label}>{label}</span>
+                      ))}
+                    </span>
+                  ) : null}
                   {!isAffordable && definition ? (
                     <span className="card-state">香火不足</span>
                   ) : null}
@@ -186,7 +207,7 @@ export function BattleHud() {
         </div>
         <ol className="log-list" aria-label="战斗日志">
           {latestLog.map((entry) => (
-            <li key={entry.id}>
+            <li className={getLogEntryClassName(entry)} key={entry.id}>
               {formatLogEntry(entry, battle, cardDefinitionsById, allCardsByInstanceId)}
             </li>
           ))}
@@ -200,12 +221,21 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
   const formPercent = Math.max(0, Math.min(100, (enemy.currentForm / enemy.maxForm) * 100))
   const intentLabel = enemy.currentIntent ? t(enemy.currentIntent.nameKey) : '无'
   const abnormalMove = getCurrentAbnormalMove(enemy)
+  const hasPreparedCounter = abnormalMove
+    ? enemy.blockedAbnormalMoveTypes.includes(abnormalMove.type)
+    : false
   const intentKind =
     enemy.currentIntent?.kind === 'abnormal_move'
       ? '异动'
       : enemy.currentIntent?.kind === 'incoming_force'
         ? '来势'
         : '待定'
+  const intentTone =
+    enemy.currentIntent?.kind === 'abnormal_move'
+      ? 'abnormal'
+      : enemy.incomingForce > 0
+        ? 'incoming'
+        : 'quiet'
 
   return (
     <section className="enemy-panel" aria-label="敌人状态">
@@ -241,13 +271,22 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
         )}
       </div>
 
-      <div className="intent-row">
-        <span>{intentKind}</span>
+      <div className={`intent-banner ${intentTone}`} aria-label="敌人下一次行动">
+        <span>{intentKind === '来势' ? '直接冲击（来势）' : intentKind === '异动' ? '特殊行为（异动）' : '行动'}</span>
         <strong>{intentLabel}</strong>
+        <small>
+          {abnormalMove
+            ? hasPreparedCounter
+              ? '专门处理已布置'
+              : '需要专门效果处理'
+            : enemy.incomingForce > 0
+              ? '可被封势降低'
+              : '暂无直接来势'}
+        </small>
       </div>
       <div className="intent-detail-grid" aria-label="敌人意图详情">
         <div>
-          <span>当前来势</span>
+          <span>当前来势值</span>
           <strong>{enemy.incomingForce}</strong>
         </div>
         <div className={abnormalMove ? 'intent-alert active' : 'intent-alert'}>
@@ -255,6 +294,42 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
           <strong>{abnormalMove ? t(abnormalMove.descriptionKey) : '无'}</strong>
         </div>
       </div>
+      <div className="intent-rule-grid" aria-label="来势与异动处理状态">
+        <div className={enemy.incomingForce > 0 ? 'rule-note active' : 'rule-note'}>
+          <span>压住来势（封势）</span>
+          <strong>
+            {enemy.incomingForce > 0
+              ? `可处理 ${enemy.incomingForce} 点`
+              : abnormalMove
+                ? '本次不是来势'
+                : '暂无来势'}
+          </strong>
+        </div>
+        <div
+          className={
+            abnormalMove ? (hasPreparedCounter ? 'rule-note secured' : 'rule-note danger') : 'rule-note'
+          }
+        >
+          <span>专门处理（断异动）</span>
+          <strong>
+            {abnormalMove
+              ? hasPreparedCounter
+                ? `已盯住${getMoveLabel(abnormalMove.type)}`
+                : `${getMoveLabel(abnormalMove.type)}未处理`
+              : '暂无异动'}
+          </strong>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function PressureFeedbackPanel({ feedback }: { readonly feedback: PressureFeedback }) {
+  return (
+    <section className={`pressure-feedback ${feedback.tone}`} aria-live="polite">
+      <span>{feedback.label}</span>
+      <strong>{feedback.title}</strong>
+      <p>{feedback.detail}</p>
     </section>
   )
 }
@@ -298,6 +373,85 @@ function getEnemyDefinition(definitionId: string) {
 
 function getCurrentAbnormalMove(enemy: EnemyState): AbnormalMoveDefinition | undefined {
   return enemy.currentIntent?.effects.find((effect) => effect.type === 'ABNORMAL_MOVE')?.move
+}
+
+function createPressureFeedback(
+  battle: CombatState,
+  cardDefinitionsById: ReadonlyMap<string, CardDefinition>,
+  allCardsByInstanceId: ReadonlyMap<string, CardInstance>,
+): PressureFeedback | undefined {
+  const entry = battle.actionLog
+    .slice()
+    .reverse()
+    .find((candidate) =>
+      [
+        'INCOMING_FORCE_SEALED',
+        'ABNORMAL_MOVE_COUNTERED',
+        'ABNORMAL_MOVE_EXECUTED',
+        'INCOMING_FORCE_CREATED',
+      ].includes(candidate.type),
+    )
+
+  if (!entry) {
+    return undefined
+  }
+
+  const sourceCardName = getCardName(entry.sourceId, cardDefinitionsById, allCardsByInstanceId)
+  const sourceName = sourceCardName ?? sourceEnemyName(entry.sourceId, battle) ?? '敌方'
+
+  if (entry.type === 'INCOMING_FORCE_SEALED') {
+    const amount = getPayloadNumber(entry.payload.amount) ?? 0
+    const remaining = getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0
+
+    return {
+      tone: 'sealed',
+      label: '封势反馈',
+      title: amount > 0 ? `${sourceName}压住 ${amount} 点来势` : `${sourceName}未压住来势`,
+      detail: amount > 0 ? `敌方当前剩余来势 ${remaining}。` : '当前没有可被封势处理的直接来势。',
+    }
+  }
+
+  if (entry.type === 'ABNORMAL_MOVE_COUNTERED') {
+    const moveLabel = getMoveLabel(getPayloadString(entry.payload.moveType))
+    const result = getPayloadString(entry.payload.result)
+
+    return {
+      tone: 'countered',
+      label: result === 'prevented' ? '断异动成功' : '断异动已布置',
+      title:
+        result === 'prevented'
+          ? `${moveLabel}已被专门效果处理`
+          : `${sourceName}准备处理${moveLabel}`,
+      detail:
+        result === 'prevented'
+          ? '本次异动没有生效。'
+          : '敌人行动时若发动对应异动，会被这次布置阻止。',
+    }
+  }
+
+  if (entry.type === 'ABNORMAL_MOVE_EXECUTED') {
+    const moveLabel = getMoveLabel(getPayloadString(entry.payload.moveType))
+    const incensePenalty = getPayloadNumber(entry.payload.nextTurnIncensePenalty) ?? 0
+
+    return {
+      tone: 'abnormal',
+      label: '异动生效',
+      title: `${sourceName}发动${moveLabel}`,
+      detail:
+        incensePenalty > 0
+          ? `下回合香火将受扰 -${incensePenalty}。`
+          : '本次异动已经结算。',
+    }
+  }
+
+  const amount = getPayloadNumber(entry.payload.amount) ?? 0
+
+  return {
+    tone: 'incoming',
+    label: '来势结算',
+    title: amount > 0 ? `${sourceName}来势 ${amount}` : '来势已被压住',
+    detail: amount > 0 ? '未被封掉的来势进入敌方行动结算。' : '敌人的直接来势没有形成压力。',
+  }
 }
 
 function formatLogEntry(
@@ -394,21 +548,28 @@ function formatLogEntry(
   }
 
   if (entry.type === 'INCOMING_FORCE_CREATED') {
-    return `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}来势 ${
-      getPayloadNumber(entry.payload.amount) ?? 0
-    }。`
+    const amount = getPayloadNumber(entry.payload.amount) ?? 0
+
+    return amount > 0
+      ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}来势结算 ${amount}。`
+      : `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}来势已被完全压住。`
   }
 
   if (entry.type === 'INCOMING_FORCE_SEALED') {
-    return `${sourceCardName ?? '符诏'}封势 ${
-      getPayloadNumber(entry.payload.amount) ?? 0
-    }，剩余来势 ${getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0}。`
+    const amount = getPayloadNumber(entry.payload.amount) ?? 0
+    const remaining = getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0
+
+    return amount > 0
+      ? `${sourceCardName ?? '符诏'}封势 ${amount}，剩余来势 ${remaining}。`
+      : `${sourceCardName ?? '符诏'}封势未生效：当前没有可压住的来势。`
   }
 
   if (entry.type === 'ABNORMAL_MOVE_EXECUTED') {
+    const incensePenalty = getPayloadNumber(entry.payload.nextTurnIncensePenalty) ?? 0
+
     return `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}发动异动：${getMoveLabel(
       getPayloadString(entry.payload.moveType),
-    )}。`
+    )}${incensePenalty > 0 ? `，下回合香火受扰 -${incensePenalty}` : ''}。`
   }
 
   if (entry.type === 'ABNORMAL_MOVE_COUNTERED') {
@@ -476,6 +637,68 @@ function getPayloadNumber(value: JsonValue | undefined) {
 
 function getPayloadString(value: JsonValue | undefined) {
   return typeof value === 'string' ? value : undefined
+}
+
+function getCardEffectLabels(definition: CardDefinition) {
+  return Array.from(
+    new Set(
+      definition.effects.map((effect) => {
+        if (effect.type === 'BREAK_SHAPE') {
+          return '破形'
+        }
+
+        if (effect.type === 'ASK_NAME') {
+          return '问名'
+        }
+
+        if (effect.type === 'SEAL_MOMENTUM') {
+          return '封势'
+        }
+
+        if (effect.type === 'COUNTER_ABNORMAL_MOVE') {
+          return '断异动'
+        }
+
+        if (effect.type === 'DRAW') {
+          return '抽牌'
+        }
+
+        return '香火'
+      }),
+    ),
+  )
+}
+
+function getLogEntryClassName(entry: ActionLogEntry) {
+  if (entry.type === 'INCOMING_FORCE_CREATED') {
+    return 'log-entry incoming'
+  }
+
+  if (entry.type === 'INCOMING_FORCE_SEALED') {
+    return 'log-entry sealed'
+  }
+
+  if (entry.type === 'ABNORMAL_MOVE_EXECUTED') {
+    return 'log-entry abnormal'
+  }
+
+  if (entry.type === 'ABNORMAL_MOVE_COUNTERED') {
+    return 'log-entry countered'
+  }
+
+  if (entry.type === 'FORM_BROKEN' || entry.type === 'NAME_BREAK_TRIGGERED') {
+    return 'log-entry form'
+  }
+
+  if (
+    entry.type === 'NAME_ASKED' ||
+    entry.type === 'NAME_SLOT_REVEALED' ||
+    entry.type === 'ENEMY_NAMED'
+  ) {
+    return 'log-entry name'
+  }
+
+  return 'log-entry'
 }
 
 function getSettlementLabel(settlement: VictorySettlement) {
