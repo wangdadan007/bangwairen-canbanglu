@@ -44,7 +44,7 @@ describe('T16 route skeleton', () => {
     expect(getCurrentRouteNode(route, fourth)?.isPlaceholder).toBe(true)
   })
 
-  it('supports event, rest, and elite placeholder progression without resolving gameplay', () => {
+  it('supports event and rest placeholders before entering the first elite encounter', () => {
     const firstBattleDone = completeCurrentRouteNode(route, createInitialRouteState(route))
     const secondBattleDone = completeCurrentRouteNode(route, firstBattleDone)
     const stateAfterTutorialBattles = completeCurrentRouteNode(route, secondBattleDone)
@@ -54,6 +54,7 @@ describe('T16 route skeleton', () => {
     expect(getCurrentRouteNode(route, stateAfterTutorialBattles)?.type).toBe('event')
     expect(getCurrentRouteNode(route, restState)?.type).toBe('rest')
     expect(getCurrentRouteNode(route, eliteState)?.type).toBe('elite')
-    expect(getCurrentRouteNode(route, eliteState)?.isPlaceholder).toBe(true)
+    expect(getCurrentRouteNode(route, eliteState)?.isPlaceholder).toBeUndefined()
+    expect(getCurrentRouteNode(route, eliteState)?.encounterId).toBe('encounter_elite_incense_clerk')
   })
 })

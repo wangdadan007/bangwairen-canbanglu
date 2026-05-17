@@ -7,8 +7,8 @@ describe('initial game data', () => {
 
     expect(data.artifacts).toHaveLength(4)
     expect(data.cards).toHaveLength(18)
-    expect(data.enemies).toHaveLength(5)
-    expect(data.encounters).toHaveLength(3)
+    expect(data.enemies).toHaveLength(7)
+    expect(data.encounters).toHaveLength(5)
     expect(data.routes).toHaveLength(1)
     expect(data.tutorialUnlocks).toHaveLength(3)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
@@ -142,14 +142,50 @@ describe('initial game data', () => {
       'abnormal_move',
     ])
 
+    const incenseClerk = getEnemyDefinition('enemy_incense_clerk', data)
+    expect(incenseClerk?.tier).toBe('elite')
+    expect(incenseClerk?.maxForm).toBe(38)
+    expect(incenseClerk?.nameSlots).toBe(3)
+    expect(incenseClerk?.intents.map((intent) => intent.kind)).toEqual([
+      'incoming_force',
+      'abnormal_move',
+      'incoming_force',
+    ])
+
+    const registryThief = getEnemyDefinition('enemy_registry_thief', data)
+    expect(registryThief?.tier).toBe('boss')
+    expect(registryThief?.maxForm).toBe(72)
+    expect(registryThief?.nameSlots).toBe(3)
+    expect(registryThief?.intents.map((intent) => intent.kind)).toEqual([
+      'incoming_force',
+      'abnormal_move',
+    ])
+
     expect(data.encounters.map((encounter) => encounter.enemyDefinitionId)).toEqual([
       'enemy_paper_wraith',
       'enemy_incense_thief_mouse',
       'enemy_bronze_bell_patrol',
+      'enemy_incense_clerk',
+      'enemy_registry_thief',
     ])
   })
 
-  it('contains a T16 route skeleton with battle and placeholder nodes', () => {
+  it('keeps encounter enemy and route encounter references valid', () => {
+    const data = loadGameData()
+    const enemyIds = new Set(data.enemies.map((enemy) => enemy.id))
+    const encounterIds = new Set(data.encounters.map((encounter) => encounter.id))
+
+    expect(data.encounters.every((encounter) => enemyIds.has(encounter.enemyDefinitionId))).toBe(
+      true,
+    )
+    expect(
+      data.routes.every((route) =>
+        route.nodes.every((node) => !node.encounterId || encounterIds.has(node.encounterId)),
+      ),
+    ).toBe(true)
+  })
+
+  it('contains the route skeleton with T18 elite encounter wiring', () => {
     const data = loadGameData()
     const route = data.routes[0]
 
@@ -166,12 +202,12 @@ describe('initial game data', () => {
     expect(route.nodes.filter((node) => node.isPlaceholder).map((node) => node.type)).toEqual([
       'event',
       'rest',
-      'elite',
     ])
     expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
+      'encounter_elite_incense_clerk',
     ])
   })
 
@@ -260,6 +296,17 @@ describe('initial game data', () => {
     ])
 
     expect(enemyLocalizationKeys.every((key) => data.localization[key])).toBe(true)
+  })
+
+  it('keeps every encounter display key covered by localization', () => {
+    const data = loadGameData()
+    const encounterLocalizationKeys = data.encounters.flatMap((encounter) => [
+      encounter.nameKey,
+      encounter.lessonKey,
+      encounter.completionKey,
+    ])
+
+    expect(encounterLocalizationKeys.every((key) => data.localization[key])).toBe(true)
   })
 
   it('keeps every route display key covered by localization', () => {

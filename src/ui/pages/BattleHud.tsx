@@ -300,7 +300,7 @@ export function BattleHud() {
     <aside className="battle-hud" aria-label="前三场教学战">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">教学纵切 / T17</p>
+          <p className="panel-kicker">教学纵切 / T18</p>
           <h2>{currentEncounter ? t(currentEncounter.nameKey) : getRunHeadline(run.status)}</h2>
         </div>
         <div className="dev-controls">

@@ -39,7 +39,9 @@ export function loadGameData(): GameData {
   assertUniqueIds(enemies, 'enemy')
   assertUniqueIds(encounters, 'encounter')
   assertUniqueIds(routes, 'route')
+  assertEncounterEnemyIds(encounters, enemies)
   assertRouteNodeIds(routes)
+  assertRouteReferences(routes, encounters)
   assertUniqueIds(tutorialUnlocks, 'tutorial unlock')
 
   return {
@@ -88,6 +90,48 @@ function assertUniqueIds(items: readonly { readonly id: string }[], label: strin
 function assertRouteNodeIds(routes: readonly RouteDefinition[]) {
   for (const route of routes) {
     assertUniqueIds(route.nodes, `${route.id} route node`)
+  }
+}
+
+function assertEncounterEnemyIds(
+  encounters: readonly EncounterDefinition[],
+  enemies: readonly EnemyDefinition[],
+) {
+  const enemyIds = new Set(enemies.map((enemy) => enemy.id))
+
+  for (const encounter of encounters) {
+    if (!enemyIds.has(encounter.enemyDefinitionId)) {
+      throw new Error(
+        `Encounter ${encounter.id} references missing enemy ${encounter.enemyDefinitionId}`,
+      )
+    }
+  }
+}
+
+function assertRouteReferences(
+  routes: readonly RouteDefinition[],
+  encounters: readonly EncounterDefinition[],
+) {
+  const encounterIds = new Set(encounters.map((encounter) => encounter.id))
+
+  for (const route of routes) {
+    const nodeIds = new Set(route.nodes.map((node) => node.id))
+
+    if (!nodeIds.has(route.startNodeId)) {
+      throw new Error(`Route ${route.id} references missing start node ${route.startNodeId}`)
+    }
+
+    for (const node of route.nodes) {
+      if (node.encounterId && !encounterIds.has(node.encounterId)) {
+        throw new Error(`Route node ${node.id} references missing encounter ${node.encounterId}`)
+      }
+
+      for (const nextNodeId of node.nextNodeIds) {
+        if (!nodeIds.has(nextNodeId)) {
+          throw new Error(`Route node ${node.id} references missing next node ${nextNodeId}`)
+        }
+      }
+    }
   }
 }
 

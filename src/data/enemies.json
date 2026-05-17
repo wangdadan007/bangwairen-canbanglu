@@ -206,5 +206,140 @@
         ]
       }
     ]
+  },
+  {
+    "id": "enemy_incense_clerk",
+    "nameKey": "enemy.incense_clerk.name",
+    "maxForm": 38,
+    "nameSlots": 3,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.incense_clerk.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.incense_clerk.name_slot.1"
+      },
+      {
+        "index": 2,
+        "nameKey": "enemy.incense_clerk.name_slot.2"
+      }
+    ],
+    "tier": "elite",
+    "traits": ["chapter_one", "elite", "abnormal_move", "steal_incense", "ask_name_reward"],
+    "intents": [
+      {
+        "id": "intent_incense_clerk_lift_censer",
+        "nameKey": "enemy.incense_clerk.intent.lift_censer",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 7
+          }
+        ]
+      },
+      {
+        "id": "intent_incense_clerk_audit_offering",
+        "nameKey": "enemy.incense_clerk.intent.audit_offering",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "steal_incense",
+              "amount": 1,
+              "descriptionKey": "enemy.incense_clerk.intent.audit_offering.description"
+            }
+          }
+        ]
+      },
+      {
+        "id": "intent_incense_clerk_stamp_case",
+        "nameKey": "enemy.incense_clerk.intent.stamp_case",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 6
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_incense_clerk_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.incense_clerk.reward.vanquish"
+      },
+      {
+        "id": "reward_incense_clerk_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.incense_clerk.reward.catalogue"
+      }
+    ]
+  },
+  {
+    "id": "enemy_registry_thief",
+    "nameKey": "enemy.registry_thief.name",
+    "maxForm": 72,
+    "nameSlots": 3,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.registry_thief.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.registry_thief.name_slot.1"
+      },
+      {
+        "index": 2,
+        "nameKey": "enemy.registry_thief.name_slot.2"
+      }
+    ],
+    "tier": "boss",
+    "traits": ["chapter_one", "boss", "placeholder", "steal_incense"],
+    "intents": [
+      {
+        "id": "intent_registry_thief_press_registry",
+        "nameKey": "enemy.registry_thief.intent.press_registry",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 8
+          }
+        ]
+      },
+      {
+        "id": "intent_registry_thief_pinch_offering",
+        "nameKey": "enemy.registry_thief.intent.pinch_offering",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "steal_incense",
+              "amount": 1,
+              "descriptionKey": "enemy.registry_thief.intent.pinch_offering.description"
+            }
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_registry_thief_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.registry_thief.reward.vanquish"
+      },
+      {
+        "id": "reward_registry_thief_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.registry_thief.reward.catalogue"
+      }
+    ]
   }
 ]

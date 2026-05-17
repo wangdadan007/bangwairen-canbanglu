@@ -25,5 +25,23 @@
     "lessonKey": "encounter.tutorial.bronze_bell_patrol.lesson",
     "completionKey": "encounter.tutorial.bronze_bell_patrol.completion",
     "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_elite_incense_clerk",
+    "nameKey": "encounter.elite.incense_clerk.name",
+    "enemyDefinitionId": "enemy_incense_clerk",
+    "tutorialOrder": 5,
+    "lessonKey": "encounter.elite.incense_clerk.lesson",
+    "completionKey": "encounter.elite.incense_clerk.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_boss_registry_thief",
+    "nameKey": "encounter.boss.registry_thief.name",
+    "enemyDefinitionId": "enemy_registry_thief",
+    "tutorialOrder": 99,
+    "lessonKey": "encounter.boss.registry_thief.lesson",
+    "completionKey": "encounter.boss.registry_thief.completion",
+    "unlocksOnVictory": []
   }
 ]

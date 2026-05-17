@@ -50,8 +50,8 @@
         "type": "elite",
         "nameKey": "route.node.first_elite.name",
         "descriptionKey": "route.node.first_elite.description",
-        "nextNodeIds": [],
-        "isPlaceholder": true
+        "encounterId": "encounter_elite_incense_clerk",
+        "nextNodeIds": []
       }
     ]
   }
