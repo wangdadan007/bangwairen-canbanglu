@@ -70,6 +70,14 @@
         "nameKey": "route.node.first_elite.name",
         "descriptionKey": "route.node.first_elite.description",
         "encounterId": "encounter_elite_incense_clerk",
+        "nextNodeIds": ["route_node_boss_registry_thief"]
+      },
+      {
+        "id": "route_node_boss_registry_thief",
+        "type": "boss",
+        "nameKey": "route.node.boss_registry_thief.name",
+        "descriptionKey": "route.node.boss_registry_thief.description",
+        "encounterId": "encounter_boss_registry_thief",
         "nextNodeIds": []
       }
     ]

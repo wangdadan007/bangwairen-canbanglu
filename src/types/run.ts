@@ -133,4 +133,7 @@ export interface TutorialRunSummary {
   readonly artifactCount: number
   readonly boundArtifactCount: number
   readonly pendingArtifactBacklashCount: number
+  readonly bossCleared: boolean
+  readonly bossEncounterId?: EncounterId
+  readonly bossSettlement?: VictorySettlement
 }

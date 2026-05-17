@@ -1,9 +1,35 @@
-export function TitlePage() {
+interface TitlePageProps {
+  readonly hasSave: boolean
+  readonly saveLabel: string
+  readonly onNewGame: () => void
+  readonly onContinue: () => void
+  readonly onOpenSettings: () => void
+}
+
+export function TitlePage({
+  hasSave,
+  saveLabel,
+  onNewGame,
+  onContinue,
+  onOpenSettings,
+}: TitlePageProps) {
   return (
     <header className="title-page">
-      <p className="eyebrow">第一章扩展打底 / T23</p>
+      <p className="eyebrow">第一章 Demo 闭环 / T30</p>
       <h1>榜外人：残榜录</h1>
-      <p>案上初开，路线已能驱动战斗、事件、商店、休整与精英雏形，墨、劫数和榜裂也已进入本局记录。</p>
+      <p>残榜名路已接入 Boss、结算、设置和本地继续入口。当前目标是公开 Demo 前的可玩骨架。</p>
+      <div className="title-actions" aria-label="标题页操作">
+        <button type="button" onClick={onNewGame}>
+          新开本局
+        </button>
+        <button className="ghost-button" disabled={!hasSave} type="button" onClick={onContinue}>
+          继续游戏
+        </button>
+        <button className="ghost-button" type="button" onClick={onOpenSettings}>
+          设置
+        </button>
+      </div>
+      <p className="save-status">{saveLabel}</p>
     </header>
   )
 }

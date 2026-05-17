@@ -235,8 +235,8 @@
   "encounter.elite.incense_clerk.lesson": "精英雏形：更高形、更长问名链，并复用来势、偷香异动与断异动处理。",
   "encounter.elite.incense_clerk.completion": "窃香吏已候入残榜，墨资源入口留待后续任务展开。",
   "encounter.boss.registry_thief.name": "Boss：窃榜使",
-  "encounter.boss.registry_thief.lesson": "Boss 占位：先提供单套可运行行为，后续再展开偷名、撕榜和多变体。",
-  "encounter.boss.registry_thief.completion": "窃榜使基础占位已收束，第一章 Boss 闭环留待后续任务接入。",
+  "encounter.boss.registry_thief.lesson": "Boss：第一章综合考核，复用来势、偷香异动、三格名和归册节奏。",
+  "encounter.boss.registry_thief.completion": "窃榜使已收束，第一章进入本局结算。",
   "event.mid_ink_pool.name": "墨池逆签",
   "event.mid_ink_pool.description": "旧庙后有一方干裂墨池，池底压着几张倒签。墨可续名与朱批，劫数能换来短时急势。",
   "event.mid_ink_pool.option.grind_ink.name": "研开残墨",
@@ -306,7 +306,7 @@
   "unlock.stage_human_altar.name": "人坛",
   "unlock.stage_three_altars.name": "天地人三坛",
   "route.chapter_one_skeleton.name": "第一章：残榜初裂",
-  "route.chapter_one_skeleton.description": "残榜上先显出一条简易名路，前三个节点接入教学战，第四战后进入事件页、商店页、休整页和精英雏形。",
+  "route.chapter_one_skeleton.description": "残榜上显出一条可收束名路：教学战、中段节点、事件、商店、休整、精英与 Boss。",
   "route.node.tutorial_paper_wraith.name": "纸面鬼名页",
   "route.node.tutorial_paper_wraith.description": "普通战：教学形、破形、问名、正名、伏诛与归册。",
   "route.node.tutorial_incense_thief_mouse.name": "供案窃香",
@@ -322,5 +322,7 @@
   "route.node.rest_site.name": "旧庙案前",
   "route.node.rest_site.description": "休整：删去旧符或进入朱批，并查看当前牌组、榜裂、法宝认主和反噬预警。",
   "route.node.first_elite.name": "窃香吏候审",
-  "route.node.first_elite.description": "精英战：接入窃香吏雏形，先考验更高形、三格名和偷香压力。"
+  "route.node.first_elite.description": "精英战：接入窃香吏雏形，先考验更高形、三格名和偷香压力。",
+  "route.node.boss_registry_thief.name": "窃榜使终审",
+  "route.node.boss_registry_thief.description": "Boss 战：第一章最小闭环终点，胜利后进入伏诛 / 归册与本局记录结算。"
 }

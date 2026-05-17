@@ -11,7 +11,9 @@ import type {
   EventDefinition,
   RouteDefinition,
   RouteState,
+  SettingsState,
   TutorialRestOption,
+  TutorialSaveData,
   TutorialShopItemDefinition,
   TutorialRunState,
 } from '../types'
@@ -293,6 +295,85 @@ describe('core type contracts', () => {
 
     expect(route.nodes[0].type).toBe('normal_battle')
     expect(routeState.currentNodeId).toBe(route.startNodeId)
+  })
+
+  it('accepts settings and local save contracts', () => {
+    const settings = {
+      audio: {
+        masterVolume: 80,
+        musicVolume: 70,
+        sfxVolume: 80,
+      },
+      display: {
+        windowMode: 'windowed',
+        resolution: '1920x1080',
+      },
+      language: 'zh-CN',
+      animationsEnabled: true,
+      compactTerms: false,
+    } satisfies SettingsState
+
+    const save = {
+      version: 1,
+      savedAt: '2026-05-17T12:00:00.000Z',
+      run: {
+        status: 'active',
+        currentEncounterIndex: 0,
+        encounterIds: ['encounter_tutorial_paper_wraith'],
+        completedEncounterIds: [],
+        settlements: [],
+        deckDefinitionIds: ['card_zhu_fu'],
+        deckCards: [
+          {
+            id: 'run_card_001_card_zhu_fu',
+            definitionId: 'card_zhu_fu',
+            annotations: [],
+          },
+        ],
+        artifacts: {
+          artifacts: [],
+        },
+        currency: {
+          incenseMoney: 100,
+        },
+        resources: {
+          ink: 0,
+          doom: 0,
+          fracture: 0,
+        },
+        unlocks: {
+          stages: ['stage_core'],
+          keywords: ['break_form'],
+        },
+        verdict: {
+          maxIncenseBonus: 0,
+          registerEntries: [],
+          records: [],
+        },
+        events: {
+          completedEventIds: [],
+          records: [],
+        },
+        rests: {
+          records: [],
+        },
+        shops: {
+          purchasedItemIds: [],
+          records: [],
+        },
+        rewards: [],
+        redInkRecords: [],
+      },
+      route: {
+        routeId: 'route_chapter_one_skeleton',
+        currentNodeId: 'route_node_tutorial_paper_wraith',
+        completedNodeIds: [],
+        reachableNodeIds: ['route_node_tutorial_paper_wraith'],
+      },
+    } satisfies TutorialSaveData
+
+    expect(settings.language).toBe('zh-CN')
+    expect(save.version).toBe(1)
   })
 
   it('accepts the first combat state contract', () => {

@@ -9,11 +9,11 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
   const isComplete = summary.status === 'complete'
 
   return (
-    <section className={isComplete ? 'run-summary-page complete' : 'run-summary-page failed'} aria-label="教学纵切结算">
+    <section className={isComplete ? 'run-summary-page complete' : 'run-summary-page failed'} aria-label="第一章结算">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">纵切结算 / T13</p>
-          <h3>{isComplete ? '教学纵切完成' : '教学纵切中止'}</h3>
+          <p className="panel-kicker">第一章结算 / T28</p>
+          <h3>{isComplete ? '残榜初裂已收束' : '本局中止'}</h3>
         </div>
         <span>
           {summary.completedEncounterCount} / {summary.totalEncounterCount} 场
@@ -22,9 +22,14 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
 
       <p className="reward-copy">
         {isComplete
-          ? '战斗、奖励、裁定和下一战流程已经串通。'
+          ? '路线、Boss、奖励、裁定与本局记录已经闭合。'
           : getFailureText(summary.failureReason)}
       </p>
+
+      <div className={summary.bossCleared ? 'boss-summary cleared' : 'boss-summary'}>
+        <span>Boss 结算</span>
+        <strong>{getBossSettlementText(summary)}</strong>
+      </div>
 
       <div className="run-summary-grid" aria-label="本局记录">
         <SummaryMetric label="伏诛" value={summary.vanquishCount} />
@@ -70,4 +75,12 @@ function getFailureText(reason: TutorialRunSummary['failureReason']) {
   }
 
   return '本局已放弃，当前进度和成长记录已收束。'
+}
+
+function getBossSettlementText(summary: TutorialRunSummary) {
+  if (!summary.bossCleared) {
+    return '未抵达窃榜使'
+  }
+
+  return summary.bossSettlement === 'catalogue' ? '窃榜使归册' : '窃榜使伏诛'
 }

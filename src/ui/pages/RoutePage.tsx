@@ -30,7 +30,7 @@ export function RoutePage({ route, routeState, t }: RoutePageProps) {
     <section className="route-page" aria-label="路线与节点">
       <header>
         <div>
-          <p className="panel-kicker">路线分流 / T22</p>
+          <p className="panel-kicker">路线闭环 / T28</p>
           <h3>{t(route.nameKey)}</h3>
         </div>
         <span>{currentNode ? nodeTypeLabels[currentNode.type] : '收束'}</span>

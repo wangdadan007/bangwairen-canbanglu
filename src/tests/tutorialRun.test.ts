@@ -141,6 +141,7 @@ describe('T09 tutorial run sequence', () => {
         vanquishCount: 1,
         catalogueCount: 2,
         deckSize: completedRun.deckCards.length,
+        bossCleared: false,
       }),
     )
     expect(createTutorialRunSummary(failedRun)).toEqual(
@@ -150,6 +151,7 @@ describe('T09 tutorial run sequence', () => {
         completedEncounterCount: 1,
         totalEncounterCount: 3,
         vanquishCount: 1,
+        bossCleared: false,
       }),
     )
   })
@@ -181,6 +183,12 @@ describe('T09 tutorial run sequence', () => {
       gameData.tutorialUnlocks,
       'vanquish',
     )
+    const sixthRun = advanceTutorialRun(
+      fifthRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'catalogue',
+    )
 
     expect(routeEncounterIds).toEqual([
       'encounter_tutorial_paper_wraith',
@@ -188,6 +196,7 @@ describe('T09 tutorial run sequence', () => {
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
+      'encounter_boss_registry_thief',
     ])
     expect(getCurrentTutorialEncounter(fourthRun, gameData.encounters)?.id).toBe(
       'encounter_mid_unlit_temple_warden',
@@ -196,6 +205,10 @@ describe('T09 tutorial run sequence', () => {
       'encounter_elite_incense_clerk',
     )
     expect(fifthRun.status).toBe('active')
+    expect(getCurrentTutorialEncounter(sixthRun, gameData.encounters)?.id).toBe(
+      'encounter_boss_registry_thief',
+    )
+    expect(sixthRun.status).toBe('active')
     expect(fifthRun.unlocks.stages).toContain('stage_run_resources')
     expect(fifthRun.completedEncounterIds).toEqual([
       'encounter_tutorial_paper_wraith',
@@ -203,5 +216,46 @@ describe('T09 tutorial run sequence', () => {
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
     ])
+  })
+
+  it('summarizes boss settlement when the first chapter route is complete', () => {
+    const routeEncounterIds = getRouteBattleEncounterIds(gameData.routes[0])
+    const completedRun = routeEncounterIds.reduce(
+      (currentRun, _encounterId, index) =>
+        advanceTutorialRun(
+          currentRun,
+          gameData.encounters,
+          gameData.tutorialUnlocks,
+          index === routeEncounterIds.length - 1 ? 'catalogue' : 'vanquish',
+        ),
+      createInitialTutorialRunState(gameData.tutorialUnlocks, routeEncounterIds),
+    )
+    const failedBeforeBoss = failTutorialRun(
+      advanceTutorialRun(
+        createInitialTutorialRunState(gameData.tutorialUnlocks, routeEncounterIds),
+        gameData.encounters,
+        gameData.tutorialUnlocks,
+        'vanquish',
+      ),
+      'abandoned',
+    )
+
+    expect(createTutorialRunSummary(completedRun)).toEqual(
+      expect.objectContaining({
+        status: 'complete',
+        completedEncounterCount: routeEncounterIds.length,
+        totalEncounterCount: routeEncounterIds.length,
+        bossCleared: true,
+        bossEncounterId: 'encounter_boss_registry_thief',
+        bossSettlement: 'catalogue',
+      }),
+    )
+    expect(createTutorialRunSummary(failedBeforeBoss)).toEqual(
+      expect.objectContaining({
+        status: 'failed',
+        bossCleared: false,
+        bossSettlement: undefined,
+      }),
+    )
   })
 })

@@ -1,6 +1,12 @@
 import type { TutorialRunState, TutorialRunSummary } from '../../types'
 
+export const CHAPTER_ONE_BOSS_ENCOUNTER_ID = 'encounter_boss_registry_thief'
+
 export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSummary {
+  const bossRecord = run.settlements.find(
+    (record) => record.encounterId === CHAPTER_ONE_BOSS_ENCOUNTER_ID,
+  )
+
   return {
     status: run.status,
     failureReason: run.failureReason,
@@ -31,5 +37,8 @@ export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSumm
     pendingArtifactBacklashCount: run.artifacts.artifacts.filter(
       (artifact) => artifact.pendingBacklash,
     ).length,
+    bossCleared: Boolean(bossRecord),
+    bossEncounterId: bossRecord?.encounterId,
+    bossSettlement: bossRecord?.settlement,
   }
 }

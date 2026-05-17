@@ -271,7 +271,7 @@ describe('initial game data', () => {
     ).toBe(true)
   })
 
-  it('contains the route skeleton with T22 event, shop, and rest wiring', () => {
+  it('contains the route skeleton with T28 boss closure wiring', () => {
     const data = loadGameData()
     const route = data.routes[0]
 
@@ -286,6 +286,7 @@ describe('initial game data', () => {
       'shop',
       'rest',
       'elite',
+      'boss',
     ])
     expect(route.nodes.filter((node) => node.isPlaceholder).map((node) => node.type)).toEqual([])
     expect(route.nodes.find((node) => node.type === 'event')?.eventPoolIds).toEqual([
@@ -300,12 +301,17 @@ describe('initial game data', () => {
     expect(route.nodes.find((node) => node.type === 'shop')?.nextNodeIds).toEqual([
       'route_node_rest_site',
     ])
+    expect(route.nodes.find((node) => node.type === 'elite')?.nextNodeIds).toEqual([
+      'route_node_boss_registry_thief',
+    ])
+    expect(route.nodes.find((node) => node.type === 'boss')?.nextNodeIds).toEqual([])
     expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
+      'encounter_boss_registry_thief',
     ])
   })
 

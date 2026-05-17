@@ -27,7 +27,7 @@ describe('T18 elite and boss encounter skeletons', () => {
     expect(battle.enemies[0].incomingForce).toBe(7)
   })
 
-  it('keeps the registry thief boss as a data-only encounter until the route closes later', () => {
+  it('wires the registry thief boss into the first chapter route closure', () => {
     const bossEncounter = getEncounterDefinition('encounter_boss_registry_thief', gameData)
     const boss = bossEncounter
       ? getEnemyDefinition(bossEncounter.enemyDefinitionId, gameData)
@@ -37,7 +37,7 @@ describe('T18 elite and boss encounter skeletons', () => {
     expect(bossEncounter?.enemyDefinitionId).toBe('enemy_registry_thief')
     expect(boss?.tier).toBe('boss')
     expect(boss?.intents).toHaveLength(2)
-    expect(routeEncounterIds).not.toContain('encounter_boss_registry_thief')
+    expect(routeEncounterIds[routeEncounterIds.length - 1]).toBe('encounter_boss_registry_thief')
 
     const battle = createInitialBattleState({
       cardDefinitions: gameData.cards,

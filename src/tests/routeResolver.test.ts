@@ -12,7 +12,7 @@ import { gameData } from '../data'
 
 const route = gameData.routes[0]
 
-describe('T22 route skeleton', () => {
+describe('T28 chapter one route closure', () => {
   it('starts at the first tutorial battle node', () => {
     const state = createInitialRouteState(route)
     const currentNode = getCurrentRouteNode(route, state)
@@ -60,7 +60,7 @@ describe('T22 route skeleton', () => {
     ])
   })
 
-  it('supports the event, shop, and rest nodes before entering the first elite encounter', () => {
+  it('supports event, shop, rest, elite, and boss nodes before route completion', () => {
     const firstBattleDone = completeCurrentRouteNode(route, createInitialRouteState(route))
     const secondBattleDone = completeCurrentRouteNode(route, firstBattleDone)
     const thirdBattleDone = completeCurrentRouteNode(route, secondBattleDone)
@@ -68,6 +68,8 @@ describe('T22 route skeleton', () => {
     const shopState = completeCurrentRouteNode(route, stateAfterFourthBattle)
     const restState = completeCurrentRouteNode(route, shopState)
     const eliteState = completeCurrentRouteNode(route, restState)
+    const bossState = completeCurrentRouteNode(route, eliteState)
+    const completeState = completeCurrentRouteNode(route, bossState)
 
     expect(getCurrentRouteNode(route, stateAfterFourthBattle)?.type).toBe('event')
     expect(getCurrentRouteNode(route, stateAfterFourthBattle)?.isPlaceholder).toBeUndefined()
@@ -78,6 +80,11 @@ describe('T22 route skeleton', () => {
     expect(getCurrentRouteNode(route, eliteState)?.type).toBe('elite')
     expect(getCurrentRouteNode(route, eliteState)?.isPlaceholder).toBeUndefined()
     expect(getCurrentRouteNode(route, eliteState)?.encounterId).toBe('encounter_elite_incense_clerk')
+    expect(getCurrentRouteNode(route, bossState)?.type).toBe('boss')
+    expect(getCurrentRouteNode(route, bossState)?.encounterId).toBe(
+      'encounter_boss_registry_thief',
+    )
+    expect(getCurrentRouteFlowKind(route, completeState)).toBe('complete')
   })
 
   it('reports the current route flow and current encounter from route state', () => {
@@ -89,6 +96,7 @@ describe('T22 route skeleton', () => {
     const shopState = completeCurrentRouteNode(route, eventState)
     const restState = completeCurrentRouteNode(route, shopState)
     const eliteState = completeCurrentRouteNode(route, restState)
+    const bossState = completeCurrentRouteNode(route, eliteState)
 
     expect(getRouteBattleEncounterIds(route)).toEqual([
       'encounter_tutorial_paper_wraith',
@@ -96,6 +104,7 @@ describe('T22 route skeleton', () => {
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
+      'encounter_boss_registry_thief',
     ])
     expect(getCurrentRouteFlowKind(route, first)).toBe('battle')
     expect(getCurrentRouteEncounter(route, fourth, gameData.encounters)?.id).toBe(
@@ -106,5 +115,9 @@ describe('T22 route skeleton', () => {
     expect(getCurrentRouteFlowKind(route, shopState)).toBe('shop')
     expect(getCurrentRouteFlowKind(route, restState)).toBe('rest')
     expect(getCurrentRouteFlowKind(route, eliteState)).toBe('battle')
+    expect(getCurrentRouteFlowKind(route, bossState)).toBe('battle')
+    expect(getCurrentRouteEncounter(route, bossState, gameData.encounters)?.id).toBe(
+      'encounter_boss_registry_thief',
+    )
   })
 })

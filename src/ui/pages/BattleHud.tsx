@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   advanceTutorialRun,
   type ArtifactBacklashRecord,
@@ -56,9 +56,11 @@ import type {
   RouteState,
   RunDeckCard,
   RunDeckCardId,
+  SettingsState,
   TutorialVerdictChoiceId,
   TutorialRestOptionId,
   TutorialRunState,
+  TutorialSaveData,
   UnlockState,
   VictorySettlement,
 } from '../../types'
@@ -76,6 +78,12 @@ interface TutorialBattleViewState {
   readonly run: TutorialRunState
   readonly battle: CombatState
   readonly route: RouteState
+}
+
+interface BattleHudProps {
+  readonly initialSave?: TutorialSaveData
+  readonly settings?: SettingsState
+  readonly onSaveChange?: (run: TutorialRunState, route: RouteState) => void
 }
 
 const battleContext: BattleReducerContext = {
@@ -125,8 +133,8 @@ function createBattle(
   })
 }
 
-export function BattleHud() {
-  const [viewState, setViewState] = useState(createInitialTutorialBattleView)
+export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProps) {
+  const [viewState, setViewState] = useState(() => createInitialTutorialBattleView(initialSave))
   const { battle, run } = viewState
   const currentRouteNode = getCurrentRouteNode(tutorialRoute, viewState.route)
   const currentRouteFlowKind = getCurrentRouteFlowKind(tutorialRoute, viewState.route)
@@ -178,6 +186,10 @@ export function BattleHud() {
     run.status === 'active' &&
     battle.phase === 'player_turn' &&
     battle.result.status === 'ongoing'
+
+  useEffect(() => {
+    onSaveChange?.(viewState.run, viewState.route)
+  }, [onSaveChange, viewState.route, viewState.run])
 
   function playCard(card: CardInstance) {
     setViewState((current) => {
@@ -516,10 +528,13 @@ export function BattleHud() {
   }
 
   return (
-    <aside className="battle-hud" aria-label="第一章路线纵切">
+    <aside
+      className={settings?.compactTerms ? 'battle-hud compact-terms' : 'battle-hud'}
+      aria-label="第一章路线纵切"
+    >
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">路线纵切 / T23</p>
+          <p className="panel-kicker">第一章闭环 / T30</p>
           <h2>{currentHeading}</h2>
         </div>
         <div className="dev-controls">
@@ -1045,21 +1060,43 @@ function createCardInstanceMap(cards: readonly CardInstance[]) {
   return new Map(cards.map((card) => [card.instanceId, card]))
 }
 
-function createInitialTutorialBattleView(): TutorialBattleViewState {
-  const route = createInitialRouteState(tutorialRoute)
-  const run = createInitialTutorialRunState(
-    gameData.tutorialUnlocks,
-    getRouteBattleEncounterIds(tutorialRoute),
-    undefined,
-    gameData.artifacts,
+function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattleViewState {
+  const route =
+    save?.route.routeId === tutorialRoute.id ? save.route : createInitialRouteState(tutorialRoute)
+  const run =
+    save?.route.routeId === tutorialRoute.id
+      ? save.run
+      : createInitialTutorialRunState(
+          gameData.tutorialUnlocks,
+          getRouteBattleEncounterIds(tutorialRoute),
+          undefined,
+          gameData.artifacts,
+        )
+  const currentEncounter = getCurrentRouteEncounter(tutorialRoute, route, gameData.encounters)
+  const fallbackEncounter = getCurrentRouteEncounter(
+    tutorialRoute,
+    createInitialRouteState(tutorialRoute),
+    gameData.encounters,
   )
-  const encounter = getCurrentRouteEncounter(tutorialRoute, route, gameData.encounters)
 
-  if (!encounter) {
+  if (!currentEncounter && !fallbackEncounter) {
     throw new Error('Missing first route encounter')
   }
 
-  const battleView = createBattleForEncounter(encounter, run)
+  const battleView = currentEncounter
+    ? createBattleForEncounter(currentEncounter, run)
+    : {
+        run,
+        battle: createBattle(
+          getEnemyDefinition(fallbackEncounter!.enemyDefinitionId),
+          run.unlocks,
+          run.deckCards,
+          run.verdict.maxIncenseBonus,
+          run.resources,
+          undefined,
+          run.artifacts,
+        ),
+      }
 
   return {
     run: battleView.run,
