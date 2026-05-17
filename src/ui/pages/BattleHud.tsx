@@ -9,6 +9,7 @@ import {
   createTutorialRunSummary,
   failTutorialRun,
   getAvailableEventOptions,
+  getAvailableRestOptions,
   getCurrentRouteEvent,
   getCurrentRouteEncounter,
   getCurrentRouteFlowKind,
@@ -17,6 +18,7 @@ import {
   reduceBattleState,
   resolveTutorialEvent,
   resolveTutorialRedInk,
+  resolveTutorialRest,
   resolveTutorialReward,
   resolveTutorialVerdict,
   type BattleReducerContext,
@@ -26,6 +28,7 @@ import { gameData } from '../../data'
 import { ArtifactBar } from './ArtifactBar'
 import { EventPage } from './EventPage'
 import { RedInkPage } from './RedInkPage'
+import { RestPage } from './RestPage'
 import { RewardPage } from './RewardPage'
 import { RoutePage } from './RoutePage'
 import { RunSummaryPage } from './RunSummaryPage'
@@ -48,6 +51,7 @@ import type {
   RunDeckCard,
   RunDeckCardId,
   TutorialVerdictChoiceId,
+  TutorialRestOptionId,
   TutorialRunState,
   UnlockState,
   VictorySettlement,
@@ -102,15 +106,21 @@ export function BattleHud() {
   const { battle, run } = viewState
   const currentRouteNode = getCurrentRouteNode(tutorialRoute, viewState.route)
   const currentRouteFlowKind = getCurrentRouteFlowKind(tutorialRoute, viewState.route)
-  const currentEncounter = getCurrentRouteEncounter(tutorialRoute, viewState.route, gameData.encounters)
+  const currentEncounter = hasPendingRunChoice(run)
+    ? undefined
+    : getCurrentRouteEncounter(tutorialRoute, viewState.route, gameData.encounters)
   const currentRouteEvent = getCurrentRouteEvent(currentRouteNode, gameData.events, run)
   const currentEventOptions = currentRouteEvent
     ? getAvailableEventOptions(currentRouteEvent, run)
     : []
+  const currentRestOptions =
+    currentRouteFlowKind === 'rest' ? getAvailableRestOptions(run) : []
   const currentHeading = currentEncounter
     ? t(currentEncounter.nameKey)
     : currentRouteEvent
       ? t(currentRouteEvent.nameKey)
+      : currentRouteFlowKind === 'rest' && currentRouteNode
+        ? t(currentRouteNode.nameKey)
       : getRunHeadline(run.status)
   const enemy = currentEncounter ? battle.enemies[0] : undefined
   const runSummary = useMemo(() => createTutorialRunSummary(run), [run])
@@ -347,6 +357,37 @@ export function BattleHud() {
     })
   }
 
+  function chooseRest(optionId: TutorialRestOptionId, deckCardId?: RunDeckCardId) {
+    setViewState((current) => {
+      if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
+        return current
+      }
+
+      const node = getCurrentRouteNode(tutorialRoute, current.route)
+
+      if (node?.type !== 'rest' || node.isPlaceholder) {
+        return current
+      }
+
+      const nextRun = resolveTutorialRest(current.run, {
+        optionId,
+        deckCardId,
+        routeNodeId: node.id,
+      })
+      const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
+      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
+
+      return {
+        run: nextRun,
+        route: nextRoute,
+        battle:
+          nextEncounter && !hasPendingRunChoice(nextRun)
+            ? createBattleForEncounter(nextEncounter, nextRun)
+            : current.battle,
+      }
+    })
+  }
+
   function advancePlaceholderNode() {
     setViewState((current) => {
       if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
@@ -368,7 +409,7 @@ export function BattleHud() {
     <aside className="battle-hud" aria-label="第一章路线纵切">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">路线纵切 / T20</p>
+          <p className="panel-kicker">路线纵切 / T21</p>
           <h2>{currentHeading}</h2>
         </div>
         <div className="dev-controls">
@@ -482,9 +523,25 @@ export function BattleHud() {
       ) : null}
 
       {!currentEncounter &&
+      currentRouteFlowKind === 'rest' &&
+      !hasPendingRunChoice(run) &&
+      run.status === 'active' ? (
+        <RestPage
+          artifactDefinitionsById={artifactDefinitionsById}
+          cardDefinitionsById={cardDefinitionsById}
+          deckCards={run.deckCards}
+          options={currentRestOptions}
+          run={run}
+          t={t}
+          onChoose={chooseRest}
+        />
+      ) : null}
+
+      {!currentEncounter &&
       currentRouteNode &&
       currentRouteFlowKind !== 'complete' &&
       (currentRouteFlowKind !== 'event' || !currentRouteEvent) &&
+      currentRouteFlowKind !== 'rest' &&
       !hasPendingRunChoice(run) &&
       run.status === 'active' ? (
         <RoutePlaceholderPanel
@@ -682,6 +739,7 @@ function TutorialRunPanel({
         </span>
         <span>已领奖励 {run.rewards.length} 次</span>
         <span>事件 {run.events.records.length} 次</span>
+        <span>休整 {run.rests.records.length} 次</span>
         <span>朱批 {run.redInkRecords.filter((record) => !record.skipped).length} 次</span>
         {run.pendingVerdict ? <span>待裁定</span> : null}
         {run.pendingReward ? <span>待选奖励</span> : null}
@@ -1303,6 +1361,10 @@ function getSettlementText(settlement: VictorySettlement) {
 function getRouteFlowLabel(flowKind: RouteFlowKind) {
   if (flowKind === 'event') {
     return '事件节点'
+  }
+
+  if (flowKind === 'rest') {
+    return '休整节点'
   }
 
   if (flowKind === 'event_placeholder') {

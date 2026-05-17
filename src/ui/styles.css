@@ -609,6 +609,16 @@ button:disabled {
   background: rgba(24, 77, 67, 0.28);
 }
 
+.rest-page {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(178, 139, 82, 0.42);
+  border-left: 4px solid #b28b52;
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(44, 38, 28, 0.72);
+}
+
 .red-ink-page {
   display: grid;
   gap: 12px;
@@ -790,19 +800,128 @@ button:disabled {
   line-height: 1.55;
 }
 
-.event-state-row {
+.rest-copy {
+  margin: 0;
+  color: #d9ccb8;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.event-state-row,
+.rest-state-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.event-state-row span {
+.event-state-row span,
+.rest-state-row span {
   border: 1px solid rgba(92, 161, 138, 0.36);
   border-radius: 999px;
   padding: 3px 8px;
   color: #c5efe0;
   background: rgba(24, 77, 67, 0.26);
   font-size: 12px;
+}
+
+.rest-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.rest-column {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.rest-column h4 {
+  margin: 0;
+  color: #f0d28d;
+  font-size: 13px;
+}
+
+.rest-deck-list,
+.rest-artifact-list,
+.rest-options {
+  display: grid;
+  gap: 8px;
+}
+
+.rest-deck-card,
+.rest-option {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  color: #eadfca;
+  background: rgba(47, 37, 31, 0.86);
+  text-align: left;
+}
+
+.rest-deck-card {
+  min-height: 62px;
+}
+
+.rest-deck-card.selected {
+  border-color: rgba(240, 199, 116, 0.78);
+  background: rgba(67, 50, 35, 0.95);
+}
+
+.rest-deck-card span,
+.rest-deck-card small {
+  color: #d9ccb8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.rest-deck-card span {
+  color: #f2ddac;
+  font-weight: 800;
+}
+
+.rest-artifact-card {
+  display: grid;
+  gap: 7px;
+  border: 1px solid rgba(178, 139, 82, 0.28);
+  border-radius: 7px;
+  padding: 10px;
+  background: rgba(14, 20, 19, 0.34);
+}
+
+.rest-artifact-card.bound {
+  border-color: rgba(92, 161, 138, 0.52);
+}
+
+.rest-artifact-card.backlash {
+  border-color: rgba(201, 79, 61, 0.7);
+  background: rgba(72, 30, 27, 0.32);
+}
+
+.rest-artifact-card small {
+  color: #d9ccb8;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.rest-option {
+  min-height: 116px;
+}
+
+.rest-option:hover {
+  background: rgba(66, 48, 38, 0.96);
+}
+
+.rest-option.red-ink {
+  border-color: rgba(201, 79, 61, 0.55);
+  background: rgba(72, 30, 27, 0.42);
+}
+
+.rest-option-copy {
+  color: #d9ccb8;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .event-options {
@@ -1348,7 +1467,8 @@ button:disabled {
     grid-template-columns: 1fr 1fr;
   }
 
-  .red-ink-grid {
+  .red-ink-grid,
+  .rest-layout {
     grid-template-columns: 1fr;
   }
 

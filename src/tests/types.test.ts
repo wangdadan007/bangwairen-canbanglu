@@ -11,6 +11,7 @@ import type {
   EventDefinition,
   RouteDefinition,
   RouteState,
+  TutorialRestOption,
   TutorialRunState,
 } from '../types'
 
@@ -160,6 +161,9 @@ describe('core type contracts', () => {
         completedEventIds: [],
         records: [],
       },
+      rests: {
+        records: [],
+      },
       rewards: [],
       redInkRecords: [],
     } satisfies TutorialRunState
@@ -208,6 +212,19 @@ describe('core type contracts', () => {
 
     expect(event.options[0].effects[0].type).toBe('ADD_CARD')
     expect(event.options[1].flags).toContain('fracture')
+  })
+
+  it('accepts rest option contracts', () => {
+    const restOption = {
+      id: 'remove_card',
+      nameKey: 'rest.option.remove_card.name',
+      descriptionKey: 'rest.option.remove_card.description',
+      rewardKey: 'rest.option.remove_card.reward',
+      costKey: 'rest.option.remove_card.cost',
+      requiredUnlockStages: ['stage_core'],
+    } satisfies TutorialRestOption
+
+    expect(restOption.id).toBe('remove_card')
   })
 
   it('accepts the route definition and state contracts', () => {

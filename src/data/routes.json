@@ -54,8 +54,7 @@
         "type": "rest",
         "nameKey": "route.node.rest_site.name",
         "descriptionKey": "route.node.rest_site.description",
-        "nextNodeIds": ["route_node_first_elite"],
-        "isPlaceholder": true
+        "nextNodeIds": ["route_node_first_elite"]
       },
       {
         "id": "route_node_first_elite",

@@ -4,13 +4,12 @@ import type {
   EventEffect,
   EventOptionDefinition,
   RouteNodeDefinition,
-  RunDeckCard,
   RunDeckCardId,
   TutorialEventRecord,
   TutorialEventState,
   TutorialRunState,
 } from '../../types'
-import { appendRunDeckCard } from './deckResolver'
+import { appendRunDeckCard, removeFirstMatchingRunDeckCard } from './deckResolver'
 import { RED_INK_OPTIONS } from './redInkResolver'
 
 export function createInitialTutorialEventState(): TutorialEventState {
@@ -147,7 +146,7 @@ function isEventEffectAvailable(effect: EventEffect, run: TutorialRunState) {
 
 interface EventEffectResult {
   readonly deckDefinitionIds: readonly CardId[]
-  readonly deckCards: readonly RunDeckCard[]
+  readonly deckCards: TutorialRunState['deckCards']
   readonly addedCardDefinitionIds: readonly CardId[]
   readonly removedDeckCardIds: readonly RunDeckCardId[]
   readonly removedCardDefinitionIds: readonly CardId[]
@@ -175,7 +174,11 @@ function applyEventEffects(
     }
 
     if (effect.type === 'REMOVE_CARD') {
-      const removal = removeFirstRunDeckCard(deckDefinitionIds, deckCards, effect.cardDefinitionId)
+      const removal = removeFirstMatchingRunDeckCard(
+        deckDefinitionIds,
+        deckCards,
+        effect.cardDefinitionId,
+      )
 
       deckDefinitionIds = removal.deckDefinitionIds
       deckCards = removal.deckCards
@@ -200,38 +203,6 @@ function applyEventEffects(
     removedCardDefinitionIds,
     fractureDelta,
     createdRedInkOffer,
-  }
-}
-
-function removeFirstRunDeckCard(
-  deckDefinitionIds: readonly CardId[],
-  deckCards: readonly RunDeckCard[],
-  cardDefinitionId?: CardId,
-) {
-  const cardIndex = deckCards.findIndex(
-    (card) => !cardDefinitionId || card.definitionId === cardDefinitionId,
-  )
-
-  if (cardIndex < 0) {
-    throw new Error(`No run deck card is available for event removal: ${cardDefinitionId ?? 'any'}`)
-  }
-
-  const removedCard = deckCards[cardIndex]
-  const definitionIndex = deckDefinitionIds.findIndex((candidate) =>
-    cardDefinitionId ? candidate === cardDefinitionId : candidate === removedCard.definitionId,
-  )
-
-  return {
-    deckDefinitionIds:
-      definitionIndex >= 0
-        ? [
-            ...deckDefinitionIds.slice(0, definitionIndex),
-            ...deckDefinitionIds.slice(definitionIndex + 1),
-          ]
-        : deckDefinitionIds,
-    deckCards: [...deckCards.slice(0, cardIndex), ...deckCards.slice(cardIndex + 1)],
-    removedDeckCardId: removedCard.id,
-    removedCardDefinitionId: removedCard.definitionId,
   }
 }
 

@@ -219,7 +219,7 @@ describe('initial game data', () => {
     ).toBe(true)
   })
 
-  it('contains the route skeleton with T20 event wiring', () => {
+  it('contains the route skeleton with T21 event and rest wiring', () => {
     const data = loadGameData()
     const route = data.routes[0]
 
@@ -234,9 +234,7 @@ describe('initial game data', () => {
       'rest',
       'elite',
     ])
-    expect(route.nodes.filter((node) => node.isPlaceholder).map((node) => node.type)).toEqual([
-      'rest',
-    ])
+    expect(route.nodes.filter((node) => node.isPlaceholder).map((node) => node.type)).toEqual([])
     expect(route.nodes.find((node) => node.type === 'event')?.eventPoolIds).toEqual([
       'event_abandoned_registry_desk',
       'event_ash_altar_lamp',

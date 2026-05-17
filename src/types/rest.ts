@@ -1,0 +1,26 @@
+import type { CardId, LocalizationKey, RouteNodeId, UnlockStageId } from './common'
+import type { RunDeckCardId } from './run'
+
+export type TutorialRestOptionId = 'remove_card' | 'red_ink_service'
+
+export interface TutorialRestOption {
+  readonly id: TutorialRestOptionId
+  readonly nameKey: LocalizationKey
+  readonly descriptionKey: LocalizationKey
+  readonly rewardKey: LocalizationKey
+  readonly costKey: LocalizationKey
+  readonly requiredUnlockStages?: readonly UnlockStageId[]
+}
+
+export interface TutorialRestRecord {
+  readonly id: string
+  readonly routeNodeId?: RouteNodeId
+  readonly optionId: TutorialRestOptionId
+  readonly removedDeckCardId?: RunDeckCardId
+  readonly removedCardDefinitionId?: CardId
+  readonly createdRedInkOffer: boolean
+}
+
+export interface TutorialRestState {
+  readonly records: readonly TutorialRestRecord[]
+}

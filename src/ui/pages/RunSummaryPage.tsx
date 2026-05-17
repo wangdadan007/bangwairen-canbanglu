@@ -34,6 +34,7 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
         <SummaryMetric label="登簿" value={summary.verdictRegisterCount} />
         <SummaryMetric label="朱批" value={summary.redInkAppliedCount} />
         <SummaryMetric label="削籍" value={summary.verdictEraseCount} />
+        <SummaryMetric label="休整" value={summary.restCount} />
         <SummaryMetric label="榜裂" value={summary.fracture} />
         <SummaryMetric label="牌组" value={summary.deckSize} />
         <SummaryMetric label="法宝" value={summary.artifactCount} />

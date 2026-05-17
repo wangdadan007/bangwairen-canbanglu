@@ -26,6 +26,7 @@ import {
   type TutorialVerdictContext,
 } from './verdictResolver'
 import { createInitialTutorialEventState } from './eventResolver'
+import { createInitialTutorialRestState } from './restResolver'
 
 export const TUTORIAL_ENCOUNTER_IDS: readonly EncounterId[] = [
   'encounter_tutorial_paper_wraith',
@@ -51,6 +52,7 @@ export function createInitialTutorialRunState(
     unlocks: createUnlockState(['stage_core'], tutorialUnlocks),
     verdict: createInitialTutorialVerdictState(),
     events: createInitialTutorialEventState(),
+    rests: createInitialTutorialRestState(),
     rewards: [],
     redInkRecords: [],
   }

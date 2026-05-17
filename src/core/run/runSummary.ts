@@ -17,6 +17,7 @@ export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSumm
     verdictRedInkCount: run.verdict.records.filter((record) => record.choiceId === 'red_ink')
       .length,
     verdictEraseCount: run.verdict.records.filter((record) => record.choiceId === 'erase').length,
+    restCount: run.rests.records.length,
     fracture: run.verdict.fracture,
     deckSize: run.deckCards.length,
     artifactCount: run.artifacts.artifacts.length,
