@@ -4,6 +4,7 @@ import {
   createTutorialRunSummary,
   createInitialTutorialRunState,
   failTutorialRun,
+  getRouteBattleEncounterIds,
   getCurrentTutorialEncounter,
 } from '../core'
 import { gameData } from '../data'
@@ -151,5 +152,55 @@ describe('T09 tutorial run sequence', () => {
         vanquishCount: 1,
       }),
     )
+  })
+
+  it('can use route battle encounter ids for the T19 route-driven sequence', () => {
+    const routeEncounterIds = getRouteBattleEncounterIds(gameData.routes[0])
+    const firstRun = createInitialTutorialRunState(gameData.tutorialUnlocks, routeEncounterIds)
+    const secondRun = advanceTutorialRun(
+      firstRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+    const thirdRun = advanceTutorialRun(
+      secondRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+    const fourthRun = advanceTutorialRun(
+      thirdRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+    const fifthRun = advanceTutorialRun(
+      fourthRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+
+    expect(routeEncounterIds).toEqual([
+      'encounter_tutorial_paper_wraith',
+      'encounter_tutorial_incense_thief_mouse',
+      'encounter_tutorial_bronze_bell_patrol',
+      'encounter_mid_unlit_temple_warden',
+      'encounter_elite_incense_clerk',
+    ])
+    expect(getCurrentTutorialEncounter(fourthRun, gameData.encounters)?.id).toBe(
+      'encounter_mid_unlit_temple_warden',
+    )
+    expect(getCurrentTutorialEncounter(fifthRun, gameData.encounters)?.id).toBe(
+      'encounter_elite_incense_clerk',
+    )
+    expect(fifthRun.status).toBe('active')
+    expect(fifthRun.completedEncounterIds).toEqual([
+      'encounter_tutorial_paper_wraith',
+      'encounter_tutorial_incense_thief_mouse',
+      'encounter_tutorial_bronze_bell_patrol',
+      'encounter_mid_unlit_temple_warden',
+    ])
   })
 })

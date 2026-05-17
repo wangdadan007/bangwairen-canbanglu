@@ -1,10 +1,19 @@
 import type {
+  EncounterDefinition,
+  EncounterId,
   RouteDefinition,
   RouteNodeDefinition,
   RouteNodeId,
   RouteNodeStatus,
   RouteState,
 } from '../../types'
+
+export type RouteFlowKind =
+  | 'battle'
+  | 'event_placeholder'
+  | 'rest_placeholder'
+  | 'shop_placeholder'
+  | 'complete'
 
 export function createInitialRouteState(route: RouteDefinition): RouteState {
   assertRouteHasNode(route, route.startNodeId)
@@ -30,6 +39,62 @@ export function getCurrentRouteNode(
 ): RouteNodeDefinition | undefined {
   assertRouteStateMatchesDefinition(route, state)
   return getRouteNode(route, state.currentNodeId)
+}
+
+export function isRouteBattleNode(node: RouteNodeDefinition | undefined): boolean {
+  return Boolean(
+    node?.encounterId &&
+      (node.type === 'normal_battle' || node.type === 'elite' || node.type === 'boss'),
+  )
+}
+
+export function getRouteBattleEncounterIds(route: RouteDefinition): readonly EncounterId[] {
+  return route.nodes.flatMap((node) =>
+    isRouteBattleNode(node) && node.encounterId ? [node.encounterId] : [],
+  )
+}
+
+export function getCurrentRouteEncounter(
+  route: RouteDefinition,
+  state: RouteState,
+  encounters: readonly EncounterDefinition[],
+): EncounterDefinition | undefined {
+  const node = getCurrentRouteNode(route, state)
+
+  if (!isRouteBattleNode(node) || !node?.encounterId) {
+    return undefined
+  }
+
+  return encounters.find((encounter) => encounter.id === node.encounterId)
+}
+
+export function getCurrentRouteFlowKind(
+  route: RouteDefinition,
+  state: RouteState,
+): RouteFlowKind {
+  const node = getCurrentRouteNode(route, state)
+
+  if (!node) {
+    return 'complete'
+  }
+
+  if (isRouteBattleNode(node)) {
+    return 'battle'
+  }
+
+  if (node.isPlaceholder && node.type === 'event') {
+    return 'event_placeholder'
+  }
+
+  if (node.isPlaceholder && node.type === 'rest') {
+    return 'rest_placeholder'
+  }
+
+  if (node.isPlaceholder && node.type === 'shop') {
+    return 'shop_placeholder'
+  }
+
+  return 'complete'
 }
 
 export function getRouteNodeStatus(state: RouteState, nodeId: RouteNodeId): RouteNodeStatus {

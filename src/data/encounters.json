@@ -27,6 +27,15 @@
     "unlocksOnVictory": []
   },
   {
+    "id": "encounter_mid_unlit_temple_warden",
+    "nameKey": "encounter.mid.unlit_temple_warden.name",
+    "enemyDefinitionId": "enemy_unlit_temple_warden",
+    "tutorialOrder": 4,
+    "lessonKey": "encounter.mid.unlit_temple_warden.lesson",
+    "completionKey": "encounter.mid.unlit_temple_warden.completion",
+    "unlocksOnVictory": []
+  },
+  {
     "id": "encounter_elite_incense_clerk",
     "nameKey": "encounter.elite.incense_clerk.name",
     "enemyDefinitionId": "enemy_incense_clerk",

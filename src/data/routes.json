@@ -27,6 +27,14 @@
         "nameKey": "route.node.tutorial_bronze_bell_patrol.name",
         "descriptionKey": "route.node.tutorial_bronze_bell_patrol.description",
         "encounterId": "encounter_tutorial_bronze_bell_patrol",
+        "nextNodeIds": ["route_node_unlit_temple_warden"]
+      },
+      {
+        "id": "route_node_unlit_temple_warden",
+        "type": "normal_battle",
+        "nameKey": "route.node.unlit_temple_warden.name",
+        "descriptionKey": "route.node.unlit_temple_warden.description",
+        "encounterId": "encounter_mid_unlit_temple_warden",
         "nextNodeIds": ["route_node_first_event"]
       },
       {

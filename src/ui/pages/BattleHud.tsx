@@ -8,12 +8,16 @@ import {
   createInitialTutorialRunState,
   createTutorialRunSummary,
   failTutorialRun,
-  getCurrentTutorialEncounter,
+  getCurrentRouteEncounter,
+  getCurrentRouteFlowKind,
+  getCurrentRouteNode,
+  getRouteBattleEncounterIds,
   reduceBattleState,
   resolveTutorialRedInk,
   resolveTutorialReward,
   resolveTutorialVerdict,
   type BattleReducerContext,
+  type RouteFlowKind,
 } from '../../core'
 import { gameData } from '../../data'
 import { ArtifactBar } from './ArtifactBar'
@@ -35,6 +39,7 @@ import type {
   JsonValue,
   RedInkAnnotationId,
   RouteDefinition,
+  RouteNodeDefinition,
   RouteState,
   RunDeckCard,
   RunDeckCardId,
@@ -91,8 +96,10 @@ function createBattle(
 export function BattleHud() {
   const [viewState, setViewState] = useState(createInitialTutorialBattleView)
   const { battle, run } = viewState
-  const currentEncounter = getCurrentTutorialEncounter(run, gameData.encounters)
-  const enemy = battle.enemies[0]
+  const currentRouteNode = getCurrentRouteNode(tutorialRoute, viewState.route)
+  const currentRouteFlowKind = getCurrentRouteFlowKind(tutorialRoute, viewState.route)
+  const currentEncounter = getCurrentRouteEncounter(tutorialRoute, viewState.route, gameData.encounters)
+  const enemy = currentEncounter ? battle.enemies[0] : undefined
   const runSummary = useMemo(() => createTutorialRunSummary(run), [run])
   const cardDefinitionsById = useMemo(() => createCardDefinitionMap(gameData.cards), [])
   const allCardsByInstanceId = useMemo(() => createCardInstanceMap(battle.player.deck), [battle])
@@ -105,6 +112,7 @@ export function BattleHud() {
     !run.pendingVerdict &&
     !run.pendingReward &&
     !run.pendingRedInk &&
+    Boolean(currentEncounter) &&
     run.status === 'active' &&
     battle.phase === 'player_turn' &&
     battle.result.status === 'ongoing'
@@ -172,7 +180,7 @@ export function BattleHud() {
         return current
       }
 
-      const encounter = getCurrentTutorialEncounter(current.run, gameData.encounters)
+      const encounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
 
       if (!encounter) {
         return createInitialTutorialBattleView()
@@ -206,12 +214,14 @@ export function BattleHud() {
   function advanceAfterVictory() {
     setViewState((current) => {
       const result = current.battle.result
+      const encounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
 
       if (
         current.run.pendingVerdict ||
         current.run.pendingReward ||
         current.run.pendingRedInk ||
         current.run.status !== 'active' ||
+        !encounter ||
         result.status !== 'victory'
       ) {
         return current
@@ -251,7 +261,7 @@ export function BattleHud() {
   function chooseReward(cardDefinitionId?: string) {
     setViewState((current) => {
       const nextRun = resolveTutorialReward(current.run, cardDefinitionId)
-      const nextEncounter = getCurrentTutorialEncounter(nextRun, gameData.encounters)
+      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
 
       return {
         ...current,
@@ -266,7 +276,7 @@ export function BattleHud() {
   function chooseVerdict(choiceId: TutorialVerdictChoiceId) {
     setViewState((current) => {
       const nextRun = resolveTutorialVerdict(current.run, choiceId)
-      const nextEncounter = getCurrentTutorialEncounter(nextRun, gameData.encounters)
+      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
 
       return {
         ...current,
@@ -284,7 +294,7 @@ export function BattleHud() {
         deckCardId && annotationId
           ? resolveTutorialRedInk(current.run, { deckCardId, annotationId })
           : resolveTutorialRedInk(current.run)
-      const nextEncounter = getCurrentTutorialEncounter(nextRun, gameData.encounters)
+      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
 
       return {
         ...current,
@@ -296,23 +306,41 @@ export function BattleHud() {
     })
   }
 
+  function advancePlaceholderNode() {
+    setViewState((current) => {
+      if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
+        return current
+      }
+
+      const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
+      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
+
+      return {
+        ...current,
+        route: nextRoute,
+        battle: nextEncounter ? createBattleForEncounter(nextEncounter, current.run) : current.battle,
+      }
+    })
+  }
+
   return (
-    <aside className="battle-hud" aria-label="前三场教学战">
+    <aside className="battle-hud" aria-label="第一章路线纵切">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">教学纵切 / T18</p>
+          <p className="panel-kicker">路线纵切 / T19</p>
           <h2>{currentEncounter ? t(currentEncounter.nameKey) : getRunHeadline(run.status)}</h2>
         </div>
         <div className="dev-controls">
           <button
             className="ghost-button"
+            disabled={!currentEncounter || hasPendingRunChoice(run)}
             type="button"
             onClick={restartCurrentBattle}
           >
             重开当前战斗
           </button>
           <button className="ghost-button" type="button" onClick={restartTutorialRun}>
-            重开教学纵切
+            重开路线纵切
           </button>
           <button
             className="ghost-button"
@@ -334,7 +362,10 @@ export function BattleHud() {
         t={t}
       />
 
-      {battle.result.status === 'victory' && run.status === 'active' && !hasPendingRunChoice(run) ? (
+      {currentEncounter &&
+      battle.result.status === 'victory' &&
+      run.status === 'active' &&
+      !hasPendingRunChoice(run) ? (
         <section className="result-banner" aria-live="polite">
           <span>{getSettlementLabel(battle.result.settlement)}</span>
           <strong>{getSettlementText(battle.result.settlement)}</strong>
@@ -351,7 +382,7 @@ export function BattleHud() {
         </section>
       ) : null}
 
-      {battle.result.status === 'defeat' && run.status === 'active' ? (
+      {currentEncounter && battle.result.status === 'defeat' && run.status === 'active' ? (
         <section className="result-banner run-failed" aria-live="polite">
           <span>失败</span>
           <strong>本场战斗已经失败。</strong>
@@ -394,13 +425,25 @@ export function BattleHud() {
         />
       ) : null}
 
+      {!currentEncounter && currentRouteNode && currentRouteFlowKind !== 'complete' && !hasPendingRunChoice(run) && run.status === 'active' ? (
+        <RoutePlaceholderPanel
+          node={currentRouteNode}
+          flowKind={currentRouteFlowKind}
+          t={t}
+          onContinue={advancePlaceholderNode}
+        />
+      ) : null}
+
       {run.status !== 'active' && !hasPendingRunChoice(run) ? (
         <RunSummaryPage summary={runSummary} onRestart={restartTutorialRun} />
       ) : null}
 
       {enemy ? <EnemyPanel enemy={enemy} /> : null}
-      {pressureFeedback ? <PressureFeedbackPanel feedback={pressureFeedback} /> : null}
+      {currentEncounter && pressureFeedback ? (
+        <PressureFeedbackPanel feedback={pressureFeedback} />
+      ) : null}
 
+      {currentEncounter ? (
       <section className="hud-section">
         <div className="section-title-row">
           <h3>案前</h3>
@@ -413,7 +456,9 @@ export function BattleHud() {
           <Metric label="消耗区" value={battle.exhaustPile.length.toString()} />
         </div>
       </section>
+      ) : null}
 
+      {currentEncounter ? (
       <section className="hud-section">
         <div className="section-title-row">
           <h3>手牌</h3>
@@ -466,13 +511,17 @@ export function BattleHud() {
           )}
         </div>
       </section>
+      ) : null}
 
+      {currentEncounter ? (
       <footer className="hud-actions">
         <button type="button" disabled={!canAct} onClick={endTurn}>
           结束回合
         </button>
       </footer>
+      ) : null}
 
+      {currentEncounter ? (
       <section className="hud-section log-section">
         <div className="section-title-row">
           <h3>战斗日志</h3>
@@ -486,7 +535,33 @@ export function BattleHud() {
           ))}
         </ol>
       </section>
+      ) : null}
     </aside>
+  )
+}
+
+function RoutePlaceholderPanel({
+  node,
+  flowKind,
+  t,
+  onContinue,
+}: {
+  readonly node: RouteNodeDefinition
+  readonly flowKind: RouteFlowKind
+  readonly t: (key: string | undefined) => string
+  readonly onContinue: () => void
+}) {
+  return (
+    <section className="result-banner route-placeholder" aria-live="polite">
+      <span>{getRouteFlowLabel(flowKind)}</span>
+      <strong>{t(node.nameKey)}</strong>
+      <p>{t(node.descriptionKey)}</p>
+      <div className="result-actions">
+        <button type="button" onClick={onContinue}>
+          略过占位节点
+        </button>
+      </div>
+    </section>
   )
 }
 
@@ -498,9 +573,9 @@ function TutorialRunPanel({
   readonly currentEncounter?: EncounterDefinition
 }) {
   return (
-    <section className="tutorial-run-panel" aria-label="教学战进度">
+    <section className="tutorial-run-panel" aria-label="路线战斗进度">
       <div className="section-title-row">
-        <h3>前三场教学战</h3>
+        <h3>路线战斗进度</h3>
         <span>{getRunProgressLabel(run)}</span>
       </div>
       <ol className="tutorial-steps">
@@ -689,22 +764,23 @@ function createCardInstanceMap(cards: readonly CardInstance[]) {
 }
 
 function createInitialTutorialBattleView(): TutorialBattleViewState {
+  const route = createInitialRouteState(tutorialRoute)
   const run = createInitialTutorialRunState(
     gameData.tutorialUnlocks,
-    undefined,
+    getRouteBattleEncounterIds(tutorialRoute),
     undefined,
     gameData.artifacts,
   )
-  const encounter = getCurrentTutorialEncounter(run, gameData.encounters)
+  const encounter = getCurrentRouteEncounter(tutorialRoute, route, gameData.encounters)
 
   if (!encounter) {
-    throw new Error('Missing first tutorial encounter')
+    throw new Error('Missing first route encounter')
   }
 
   return {
     run,
     battle: createBattleForEncounter(encounter, run),
-    route: createInitialRouteState(tutorialRoute),
+    route,
   }
 }
 
@@ -786,14 +862,14 @@ function getUnlockStageName(stageId: string) {
 
 function getRunHeadline(status: TutorialRunState['status']) {
   if (status === 'complete') {
-    return '纵切完成'
+    return '路线收束'
   }
 
   if (status === 'failed') {
-    return '纵切中止'
+    return '路线中止'
   }
 
-  return '前三战进行中'
+  return '路线推进中'
 }
 
 function getRunProgressLabel(run: TutorialRunState) {
@@ -1160,6 +1236,26 @@ function getSettlementText(settlement: VictorySettlement) {
   return settlement === 'catalogue'
     ? '真名入卷，先入裁定，再领取高质量奖励。'
     : '敌形已散，获得普通奖励。'
+}
+
+function getRouteFlowLabel(flowKind: RouteFlowKind) {
+  if (flowKind === 'event_placeholder') {
+    return '事件占位'
+  }
+
+  if (flowKind === 'rest_placeholder') {
+    return '休整占位'
+  }
+
+  if (flowKind === 'shop_placeholder') {
+    return '商店占位'
+  }
+
+  if (flowKind === 'battle') {
+    return '战斗节点'
+  }
+
+  return '路线收束'
 }
 
 function getMoveLabel(moveType: string | undefined) {

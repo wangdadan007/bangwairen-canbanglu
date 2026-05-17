@@ -208,6 +208,60 @@
     ]
   },
   {
+    "id": "enemy_unlit_temple_warden",
+    "nameKey": "enemy.unlit_temple_warden.name",
+    "maxForm": 24,
+    "nameSlots": 2,
+    "nameSlotDefinitions": [
+      {
+        "index": 0,
+        "nameKey": "enemy.unlit_temple_warden.name_slot.0"
+      },
+      {
+        "index": 1,
+        "nameKey": "enemy.unlit_temple_warden.name_slot.1"
+      }
+    ],
+    "tier": "normal",
+    "traits": ["chapter_one", "mid_chapter", "human_altar_preview", "incoming_force"],
+    "intents": [
+      {
+        "id": "intent_unlit_temple_warden_sweep_ashes",
+        "nameKey": "enemy.unlit_temple_warden.intent.sweep_ashes",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 5
+          }
+        ]
+      },
+      {
+        "id": "intent_unlit_temple_warden_ring_table",
+        "nameKey": "enemy.unlit_temple_warden.intent.ring_table",
+        "kind": "incoming_force",
+        "effects": [
+          {
+            "type": "INCOMING_FORCE",
+            "amount": 6
+          }
+        ]
+      }
+    ],
+    "rewards": [
+      {
+        "id": "reward_unlit_temple_warden_vanquish",
+        "quality": "normal",
+        "descriptionKey": "enemy.unlit_temple_warden.reward.vanquish"
+      },
+      {
+        "id": "reward_unlit_temple_warden_catalogue",
+        "quality": "high",
+        "descriptionKey": "enemy.unlit_temple_warden.reward.catalogue"
+      }
+    ]
+  },
+  {
     "id": "enemy_incense_clerk",
     "nameKey": "enemy.incense_clerk.name",
     "maxForm": 38,

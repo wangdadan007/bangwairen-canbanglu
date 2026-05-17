@@ -7,8 +7,8 @@ describe('initial game data', () => {
 
     expect(data.artifacts).toHaveLength(4)
     expect(data.cards).toHaveLength(18)
-    expect(data.enemies).toHaveLength(7)
-    expect(data.encounters).toHaveLength(5)
+    expect(data.enemies).toHaveLength(8)
+    expect(data.encounters).toHaveLength(6)
     expect(data.routes).toHaveLength(1)
     expect(data.tutorialUnlocks).toHaveLength(3)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
@@ -142,6 +142,14 @@ describe('initial game data', () => {
       'abnormal_move',
     ])
 
+    const unlitTempleWarden = getEnemyDefinition('enemy_unlit_temple_warden', data)
+    expect(unlitTempleWarden?.tier).toBe('normal')
+    expect(unlitTempleWarden?.maxForm).toBe(24)
+    expect(unlitTempleWarden?.nameSlots).toBe(2)
+    expect(unlitTempleWarden?.intents.every((intent) => intent.kind === 'incoming_force')).toBe(
+      true,
+    )
+
     const incenseClerk = getEnemyDefinition('enemy_incense_clerk', data)
     expect(incenseClerk?.tier).toBe('elite')
     expect(incenseClerk?.maxForm).toBe(38)
@@ -165,6 +173,7 @@ describe('initial game data', () => {
       'enemy_paper_wraith',
       'enemy_incense_thief_mouse',
       'enemy_bronze_bell_patrol',
+      'enemy_unlit_temple_warden',
       'enemy_incense_clerk',
       'enemy_registry_thief',
     ])
@@ -185,13 +194,14 @@ describe('initial game data', () => {
     ).toBe(true)
   })
 
-  it('contains the route skeleton with T18 elite encounter wiring', () => {
+  it('contains the route skeleton with T19 fourth battle and elite encounter wiring', () => {
     const data = loadGameData()
     const route = data.routes[0]
 
     expect(route.id).toBe('route_chapter_one_skeleton')
     expect(route.startNodeId).toBe('route_node_tutorial_paper_wraith')
     expect(route.nodes.map((node) => node.type)).toEqual([
+      'normal_battle',
       'normal_battle',
       'normal_battle',
       'normal_battle',
@@ -207,6 +217,7 @@ describe('initial game data', () => {
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
+      'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
     ])
   })
