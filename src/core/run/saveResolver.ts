@@ -1,12 +1,16 @@
 import type { RouteState, TutorialRunState, TutorialSaveData } from '../../types'
 import {
   type KeyValueStorage,
+  removeStorageItem,
   readJsonFromStorage,
   writeJsonToStorage,
 } from './storageResolver'
 
-export const TUTORIAL_SAVE_VERSION = 1
-export const TUTORIAL_SAVE_STORAGE_KEY = 'bangwairen.tutorial.save.v1'
+export const TUTORIAL_SAVE_VERSION = 2
+export const TUTORIAL_SAVE_STORAGE_KEY = 'bangwairen.tutorial.save.v2'
+export const LEGACY_TUTORIAL_SAVE_STORAGE_KEYS: readonly string[] = [
+  'bangwairen.tutorial.save.v1',
+]
 
 export interface CreateTutorialSaveDataInput {
   readonly run: TutorialRunState
@@ -28,7 +32,21 @@ export function createTutorialSaveData({
 }
 
 export function readTutorialSaveData(storage: KeyValueStorage): TutorialSaveData | undefined {
-  return normalizeTutorialSaveData(readJsonFromStorage(storage, TUTORIAL_SAVE_STORAGE_KEY))
+  const currentSave = normalizeTutorialSaveData(readJsonFromStorage(storage, TUTORIAL_SAVE_STORAGE_KEY))
+
+  if (currentSave) {
+    return currentSave
+  }
+
+  for (const legacyKey of LEGACY_TUTORIAL_SAVE_STORAGE_KEYS) {
+    const legacySave = normalizeTutorialSaveData(readJsonFromStorage(storage, legacyKey))
+
+    if (legacySave) {
+      return legacySave
+    }
+  }
+
+  return undefined
 }
 
 export function writeTutorialSaveData(storage: KeyValueStorage, save: TutorialSaveData) {
@@ -36,11 +54,15 @@ export function writeTutorialSaveData(storage: KeyValueStorage, save: TutorialSa
 }
 
 export function clearTutorialSaveData(storage: KeyValueStorage) {
-  storage.removeItem(TUTORIAL_SAVE_STORAGE_KEY)
+  removeStorageItem(storage, TUTORIAL_SAVE_STORAGE_KEY)
+
+  for (const legacyKey of LEGACY_TUTORIAL_SAVE_STORAGE_KEYS) {
+    removeStorageItem(storage, legacyKey)
+  }
 }
 
 export function normalizeTutorialSaveData(value: unknown): TutorialSaveData | undefined {
-  if (!isRecord(value) || value.version !== TUTORIAL_SAVE_VERSION) {
+  if (!isRecord(value) || (value.version !== TUTORIAL_SAVE_VERSION && value.version !== 1)) {
     return undefined
   }
 
@@ -51,8 +73,8 @@ export function normalizeTutorialSaveData(value: unknown): TutorialSaveData | un
   return {
     version: TUTORIAL_SAVE_VERSION,
     savedAt: typeof value.savedAt === 'string' ? value.savedAt : new Date(0).toISOString(),
-    run: value.run,
-    route: value.route,
+    run: normalizeTutorialRunState(value.run),
+    route: normalizeRouteState(value.route),
   }
 }
 
@@ -89,4 +111,19 @@ function isRouteStateLike(value: unknown): value is RouteState {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
+  return {
+    ...value,
+    rewards: value.rewards ?? [],
+    redInkRecords: value.redInkRecords ?? [],
+  }
+}
+
+function normalizeRouteState(value: RouteState): RouteState {
+  return {
+    ...value,
+    encounterSelections: value.encounterSelections ?? {},
+  }
 }

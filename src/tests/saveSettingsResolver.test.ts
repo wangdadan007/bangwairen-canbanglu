@@ -9,6 +9,7 @@ import {
   normalizeSettingsState,
   readSettingsState,
   readTutorialSaveData,
+  LEGACY_TUTORIAL_SAVE_STORAGE_KEYS,
   TUTORIAL_SAVE_STORAGE_KEY,
   TUTORIAL_SAVE_VERSION,
   writeSettingsState,
@@ -107,6 +108,45 @@ describe('T29 settings and local save MVP', () => {
     clearTutorialSaveData(storage)
     expect(readTutorialSaveData(storage)).toBeUndefined()
   })
+
+  it('migrates compatible legacy saves to the current normalized version', () => {
+    const storage = createMemoryStorage()
+    const legacySave = {
+      version: 1,
+      savedAt: '2026-05-17T12:00:00.000Z',
+      run: createInitialTutorialRunState(gameData.tutorialUnlocks),
+      route: createInitialRouteState(gameData.routes[0]),
+    }
+
+    storage.setItem(LEGACY_TUTORIAL_SAVE_STORAGE_KEYS[0], JSON.stringify(legacySave))
+
+    expect(readTutorialSaveData(storage)).toEqual({
+      ...legacySave,
+      version: TUTORIAL_SAVE_VERSION,
+      route: {
+        ...legacySave.route,
+        encounterSelections: legacySave.route.encounterSelections ?? {},
+      },
+    })
+  })
+
+  it('treats storage read and write exceptions as safe fallbacks', () => {
+    const throwingStorage = createThrowingStorage()
+
+    expect(readSettingsState(throwingStorage)).toEqual(createDefaultSettingsState())
+    expect(readTutorialSaveData(throwingStorage)).toBeUndefined()
+    expect(() => writeSettingsState(throwingStorage, createDefaultSettingsState())).not.toThrow()
+    expect(() =>
+      writeTutorialSaveData(
+        throwingStorage,
+        createTutorialSaveData({
+          run: createInitialTutorialRunState(gameData.tutorialUnlocks),
+          route: createInitialRouteState(gameData.routes[0]),
+        }),
+      ),
+    ).not.toThrow()
+    expect(() => clearTutorialSaveData(throwingStorage)).not.toThrow()
+  })
 })
 
 function createMemoryStorage(): KeyValueStorage {
@@ -121,6 +161,20 @@ function createMemoryStorage(): KeyValueStorage {
     },
     removeItem(key) {
       values.delete(key)
+    },
+  }
+}
+
+function createThrowingStorage(): KeyValueStorage {
+  return {
+    getItem() {
+      throw new Error('storage read unavailable')
+    },
+    setItem() {
+      throw new Error('storage write unavailable')
+    },
+    removeItem() {
+      throw new Error('storage remove unavailable')
     },
   }
 }

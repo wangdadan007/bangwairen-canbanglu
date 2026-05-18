@@ -36,7 +36,8 @@ export const DEFAULT_STARTER_DECK_IDS: readonly CardId[] = [
 
 export interface CreateBattleStateInput {
   readonly cardDefinitions: readonly CardDefinition[]
-  readonly enemyDefinition: EnemyDefinition
+  readonly enemyDefinition?: EnemyDefinition
+  readonly enemyDefinitions?: readonly EnemyDefinition[]
   readonly deckDefinitionIds?: readonly CardId[]
   readonly deckCards?: readonly RunDeckCard[]
   readonly maxIncenseBonus?: number
@@ -64,7 +65,15 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     ? createCardInstancesFromRunDeck(deckCards)
     : createCardInstances(deckDefinitionIds)
   const extraHandCards = createTemporaryCardInstances(extraHandDefinitionIds)
-  const enemy = createEnemyState(input.enemyDefinition, 0)
+  const enemyDefinitions = input.enemyDefinitions ?? (input.enemyDefinition ? [input.enemyDefinition] : [])
+
+  if (enemyDefinitions.length === 0) {
+    throw new Error('createInitialBattleState requires at least one enemy definition')
+  }
+
+  const enemies = enemyDefinitions.map((enemyDefinition, index) =>
+    createEnemyState(enemyDefinition, index),
+  )
   const maxIncense = DEFAULT_MAX_INCENSE + (input.maxIncenseBonus ?? 0)
 
   let state: CombatState = {
@@ -79,7 +88,7 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
         keywords: ['break_form', 'ask_name', 'seal_momentum', 'draw', 'gain_incense'],
       },
     },
-    enemies: [enemy],
+    enemies,
     drawPile: deck,
     hand: extraHandCards,
     discardPile: [],
@@ -99,9 +108,11 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
   state = appendLog(state, {
     type: 'BATTLE_STARTED',
     sourceId: 'system',
-    targetId: enemy.instanceId,
+    targetId: enemies[0]?.instanceId,
     payload: {
-      enemyDefinitionId: input.enemyDefinition.id,
+      enemyDefinitionId: enemyDefinitions[0]?.id,
+      enemyDefinitionIds: enemyDefinitions.map((enemyDefinition) => enemyDefinition.id),
+      enemyCount: enemyDefinitions.length,
       deckSize: deck.length,
     },
   })

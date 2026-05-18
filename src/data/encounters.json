@@ -162,6 +162,69 @@
     "unlocksOnVictory": []
   },
   {
+    "id": "encounter_multi_paper_wraith_imp",
+    "nameKey": "encounter.multi.paper_wraith_imp.name",
+    "enemyDefinitionId": "enemy_paper_wraith",
+    "enemySlots": [
+      {
+        "id": "primary",
+        "enemyDefinitionId": "enemy_paper_wraith",
+        "role": "primary"
+      },
+      {
+        "id": "paper_imp",
+        "enemyDefinitionId": "enemy_nameless_paper_imp",
+        "role": "support"
+      }
+    ],
+    "tutorialOrder": 22,
+    "lessonKey": "encounter.multi.paper_wraith_imp.lesson",
+    "completionKey": "encounter.multi.paper_wraith_imp.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_multi_thief_mouse_louse",
+    "nameKey": "encounter.multi.thief_mouse_louse.name",
+    "enemyDefinitionId": "enemy_incense_thief_mouse",
+    "enemySlots": [
+      {
+        "id": "primary",
+        "enemyDefinitionId": "enemy_incense_thief_mouse",
+        "role": "primary"
+      },
+      {
+        "id": "ash_louse",
+        "enemyDefinitionId": "enemy_incense_ash_louse",
+        "role": "support"
+      }
+    ],
+    "tutorialOrder": 23,
+    "lessonKey": "encounter.multi.thief_mouse_louse.lesson",
+    "completionKey": "encounter.multi.thief_mouse_louse.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_multi_offering_table_mouse",
+    "nameKey": "encounter.multi.offering_table_mouse.name",
+    "enemyDefinitionId": "enemy_incense_thief_mouse",
+    "enemySlots": [
+      {
+        "id": "primary",
+        "enemyDefinitionId": "enemy_incense_thief_mouse",
+        "role": "primary"
+      },
+      {
+        "id": "offering_table",
+        "enemyDefinitionId": "enemy_offering_table_afterimage",
+        "role": "support"
+      }
+    ],
+    "tutorialOrder": 24,
+    "lessonKey": "encounter.multi.offering_table_mouse.lesson",
+    "completionKey": "encounter.multi.offering_table_mouse.completion",
+    "unlocksOnVictory": []
+  },
+  {
     "id": "encounter_elite_incense_clerk",
     "nameKey": "encounter.elite.incense_clerk.name",
     "enemyDefinitionId": "enemy_incense_clerk",

@@ -380,7 +380,13 @@ function selectEnemyTargets(
   }
 
   if (targetEnemyInstanceId) {
-    return enemies.filter((enemy) => enemy.instanceId === targetEnemyInstanceId)
+    const selectedEnemy = enemies.find(
+      (enemy) => enemy.instanceId === targetEnemyInstanceId && enemy.currentForm > 0,
+    )
+
+    if (selectedEnemy) {
+      return [selectedEnemy]
+    }
   }
 
   const firstLivingEnemy = enemies.find((enemy) => enemy.currentForm > 0)

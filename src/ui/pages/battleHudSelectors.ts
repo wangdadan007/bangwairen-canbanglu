@@ -38,7 +38,13 @@ export function selectBattleHudState(viewState: TutorialBattleViewState) {
         : currentRouteFlowKind === 'rest' && currentRouteNode
           ? t(currentRouteNode.nameKey)
           : getRunHeadline(run.status)
-  const enemy = currentEncounter ? battle.enemies[0] : undefined
+  const selectedEnemy = battle.enemies.find(
+    (candidate) =>
+      candidate.instanceId === viewState.selectedEnemyInstanceId && candidate.currentForm > 0,
+  )
+  const enemy = currentEncounter
+    ? selectedEnemy ?? battle.enemies.find((candidate) => candidate.currentForm > 0)
+    : undefined
   const canAct =
     !hasPendingRunChoice(run) &&
     Boolean(currentEncounter) &&

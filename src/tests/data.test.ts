@@ -8,7 +8,7 @@ describe('initial game data', () => {
     expect(data.artifacts).toHaveLength(8)
     expect(data.cards).toHaveLength(44)
     expect(data.enemies).toHaveLength(16)
-    expect(data.encounters).toHaveLength(22)
+    expect(data.encounters).toHaveLength(25)
     expect(data.events).toHaveLength(9)
     expect(data.routes).toHaveLength(1)
     expect(data.shopItems).toHaveLength(5)
@@ -293,6 +293,9 @@ describe('initial game data', () => {
       'enemy_scroll_stuffer_clerk',
       'enemy_fleeing_name_paper_horse',
       'enemy_offering_table_afterimage',
+      'enemy_paper_wraith',
+      'enemy_incense_thief_mouse',
+      'enemy_incense_thief_mouse',
       'enemy_incense_clerk',
       'enemy_fire_fleeing_name',
       'enemy_dipper_empty_shell',
@@ -310,6 +313,11 @@ describe('initial game data', () => {
     expect(data.encounters.every((encounter) => enemyIds.has(encounter.enemyDefinitionId))).toBe(
       true,
     )
+    expect(
+      data.encounters.every((encounter) =>
+        (encounter.enemySlots ?? []).every((slot) => enemyIds.has(slot.enemyDefinitionId)),
+      ),
+    ).toBe(true)
     expect(
       data.events.every((event) =>
         event.options.every((option) =>
@@ -383,6 +391,26 @@ describe('initial game data', () => {
     ])
     expect(route.nodes.find((node) => node.type === 'elite')?.nextNodeIds).toEqual([
       'route_node_mid_event',
+    ])
+    expect(
+      route.nodes.find((node) => node.id === 'route_node_unlit_temple_warden')
+        ?.encounterPoolIds,
+    ).toEqual([
+      'encounter_mid_unlit_temple_warden',
+      'encounter_mid_fortune_breaker',
+      'encounter_mid_ash_altar_child',
+      'encounter_pool_bronze_bell_patrol_return',
+      'encounter_multi_paper_wraith_imp',
+      'encounter_multi_thief_mouse_louse',
+    ])
+    expect(
+      route.nodes.find((node) => node.id === 'route_node_late_fleeing_name_paper_horse')
+        ?.encounterPoolIds,
+    ).toEqual([
+      'encounter_late_fleeing_name_paper_horse',
+      'encounter_pool_fleeing_name_paper_horse_return',
+      'encounter_pool_offering_table_afterimage_return',
+      'encounter_multi_offering_table_mouse',
     ])
     expect(
       route.nodes.filter((node) => node.type === 'event').map((node) => node.eventPoolIds?.length),

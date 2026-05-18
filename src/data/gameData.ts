@@ -127,6 +127,21 @@ function assertEncounterEnemyIds(
         `Encounter ${encounter.id} references missing enemy ${encounter.enemyDefinitionId}`,
       )
     }
+
+    const enemySlots = encounter.enemySlots ?? [
+      {
+        id: 'primary',
+        enemyDefinitionId: encounter.enemyDefinitionId,
+      },
+    ]
+
+    for (const slot of enemySlots) {
+      if (!enemyIds.has(slot.enemyDefinitionId)) {
+        throw new Error(
+          `Encounter ${encounter.id} slot ${slot.id} references missing enemy ${slot.enemyDefinitionId}`,
+        )
+      }
+    }
   }
 }
 

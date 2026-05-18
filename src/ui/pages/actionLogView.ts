@@ -148,7 +148,10 @@ export function formatLogEntry(
   const targetEnemyName = getEnemyName(entry.targetId, battle)
 
   if (entry.type === 'BATTLE_STARTED') {
-    return `开战：${targetEnemyName ?? '纸面鬼'}入案。`
+    const enemyCount = getPayloadNumber(entry.payload.enemyCount) ?? 1
+    return enemyCount > 1
+      ? `开战：${enemyCount} 名敌方入案。`
+      : `开战：${targetEnemyName ?? '纸面鬼'}入案。`
   }
 
   if (entry.type === 'TURN_STARTED') {
@@ -321,6 +324,11 @@ export function formatLogEntry(
     }。`
   }
 
+  if (entry.type === 'ENEMY_SETTLED') {
+    const settlement = getPayloadString(entry.payload.settlement) as VictorySettlement | undefined
+    return `${targetEnemyName ?? '敌方'}已${settlement ? getSettlementLabel(settlement) : '收束'}。`
+  }
+
   if (entry.type === 'INCOMING_FORCE_CREATED') {
     const amount = getPayloadNumber(entry.payload.amount) ?? 0
 
@@ -430,7 +438,11 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     return 'log-entry countered'
   }
 
-  if (entry.type === 'FORM_BROKEN' || entry.type === 'NAME_BREAK_TRIGGERED') {
+  if (
+    entry.type === 'FORM_BROKEN' ||
+    entry.type === 'NAME_BREAK_TRIGGERED' ||
+    entry.type === 'ENEMY_SETTLED'
+  ) {
     return 'log-entry form'
   }
 

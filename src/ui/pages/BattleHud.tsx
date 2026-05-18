@@ -71,6 +71,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
   } = selectBattleHudState(viewState)
   const {
     playCard,
+    selectEnemyTarget,
     endTurn,
     restartCurrentBattle,
     restartTutorialRun,
@@ -109,7 +110,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
     >
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">第一章闭环 / T30</p>
+          <p className="panel-kicker">第一章闭环 / T43</p>
           <h2>{currentHeading}</h2>
         </div>
         <div className="dev-controls">
@@ -273,7 +274,14 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
         <RunSummaryPage summary={runSummary} onRestart={restartTutorialRun} />
       ) : null}
 
-      {enemy ? <EnemyPanel enemy={enemy} /> : null}
+      {currentEncounter ? (
+        <EnemyListPanel
+          enemies={battle.enemies}
+          selectedEnemyInstanceId={enemy?.instanceId}
+          canSelect={canAct}
+          onSelect={selectEnemyTarget}
+        />
+      ) : null}
       {currentEncounter && pressureFeedback ? (
         <PressureFeedbackPanel feedback={pressureFeedback} />
       ) : null}
@@ -502,7 +510,49 @@ function getEncounterDefinition(encounterId: string) {
   return encounter
 }
 
-function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
+function EnemyListPanel({
+  enemies,
+  selectedEnemyInstanceId,
+  canSelect,
+  onSelect,
+}: {
+  readonly enemies: readonly EnemyState[]
+  readonly selectedEnemyInstanceId?: string
+  readonly canSelect: boolean
+  readonly onSelect: (enemyInstanceId: string) => void
+}) {
+  return (
+    <section className="enemy-list-panel" aria-label="敌方目标">
+      <div className="section-title-row">
+        <h3>敌方</h3>
+        <span>{enemies.length > 1 ? `多敌遭遇 ${enemies.length} 名` : '单敌遭遇'}</span>
+      </div>
+      <div className="enemy-list">
+        {enemies.map((enemy) => (
+          <EnemyPanel
+            canSelect={canSelect && enemy.currentForm > 0}
+            enemy={enemy}
+            isSelected={enemy.instanceId === selectedEnemyInstanceId}
+            key={enemy.instanceId}
+            onSelect={() => onSelect(enemy.instanceId)}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function EnemyPanel({
+  enemy,
+  isSelected,
+  canSelect,
+  onSelect,
+}: {
+  readonly enemy: EnemyState
+  readonly isSelected: boolean
+  readonly canSelect: boolean
+  readonly onSelect: () => void
+}) {
   const formPercent = Math.max(0, Math.min(100, (enemy.currentForm / enemy.maxForm) * 100))
   const intentLabel = enemy.currentIntent ? t(enemy.currentIntent.nameKey) : '无'
   const abnormalMove = getCurrentAbnormalMove(enemy)
@@ -523,7 +573,16 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
         : 'quiet'
 
   return (
-    <section className="enemy-panel" aria-label="敌人状态">
+    <article
+      className={[
+        'enemy-panel',
+        isSelected ? 'selected' : '',
+        enemy.currentForm <= 0 ? 'settled' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      aria-label="敌人状态"
+    >
       <div className="section-title-row">
         <div>
           <p className="panel-kicker" title={getTermTooltip('shape')}>
@@ -531,12 +590,22 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
           </p>
           <h3>{getEnemyDefinitionName(enemy.definitionId)}</h3>
         </div>
-        <span
-          className={enemy.isNamed ? 'status-pill named' : 'status-pill'}
-          title={getTermTooltip('named')}
-        >
-          {enemy.isNamed ? '正名' : '未正名'}
-        </span>
+        <div className="enemy-panel-actions">
+          <span
+            className={enemy.isNamed ? 'status-pill named' : 'status-pill'}
+            title={getTermTooltip('named')}
+          >
+            {enemy.isNamed ? '正名' : enemy.currentForm <= 0 ? '已收束' : '未正名'}
+          </span>
+          <button
+            className="ghost-button target-button"
+            disabled={!canSelect || isSelected}
+            type="button"
+            onClick={onSelect}
+          >
+            {isSelected ? '当前目标' : '设为目标'}
+          </button>
+        </div>
       </div>
 
       <div className="form-meter" aria-label={`形 ${enemy.currentForm} / ${enemy.maxForm}`}>
@@ -620,7 +689,7 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
           </strong>
         </div>
       </div>
-    </section>
+    </article>
   )
 }
 

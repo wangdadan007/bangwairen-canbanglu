@@ -39,7 +39,9 @@
           "encounter_mid_unlit_temple_warden",
           "encounter_mid_fortune_breaker",
           "encounter_mid_ash_altar_child",
-          "encounter_pool_bronze_bell_patrol_return"
+          "encounter_pool_bronze_bell_patrol_return",
+          "encounter_multi_paper_wraith_imp",
+          "encounter_multi_thief_mouse_louse"
         ],
         "nextNodeIds": ["route_node_first_event"]
       },
@@ -157,7 +159,8 @@
         "encounterPoolIds": [
           "encounter_late_fleeing_name_paper_horse",
           "encounter_pool_fleeing_name_paper_horse_return",
-          "encounter_pool_offering_table_afterimage_return"
+          "encounter_pool_offering_table_afterimage_return",
+          "encounter_multi_offering_table_mouse"
         ],
         "nextNodeIds": ["route_node_boss_registry_thief"]
       },

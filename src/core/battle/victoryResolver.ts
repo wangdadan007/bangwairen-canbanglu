@@ -1,29 +1,69 @@
 import { appendLog } from '../log/actionLog'
-import type { CombatState } from '../../types'
+import type { CombatState, EnemyState, VictorySettlement } from '../../types'
 
 export function settleVictoryIfNeeded(state: CombatState): CombatState {
-  const defeatedEnemy = state.enemies.find((enemy) => enemy.currentForm <= 0)
+  let nextState = logNewEnemySettlements(state)
+  const allEnemiesDefeated =
+    nextState.enemies.length > 0 && nextState.enemies.every((enemy) => enemy.currentForm <= 0)
 
-  if (!defeatedEnemy || state.result.status !== 'ongoing') {
-    return state
+  if (!allEnemiesDefeated || nextState.result.status !== 'ongoing') {
+    return nextState
   }
 
-  const settlement = defeatedEnemy.isNamed ? 'catalogue' : 'vanquish'
-  const nextState: CombatState = {
-    ...state,
+  const decisiveEnemy = selectDecisiveEnemy(nextState.enemies)
+  const settlement = getEnemySettlement(decisiveEnemy)
+
+  nextState = {
+    ...nextState,
     phase: 'victory',
     result: {
       status: 'victory',
       settlement,
-      enemyInstanceId: defeatedEnemy.instanceId,
+      enemyInstanceId: decisiveEnemy.instanceId,
     },
   }
 
   return appendLog(nextState, {
     type: 'VICTORY_SETTLED',
-    sourceId: defeatedEnemy.instanceId,
+    sourceId: decisiveEnemy.instanceId,
     payload: {
       settlement,
+      defeatedEnemyInstanceIds: nextState.enemies.map((enemy) => enemy.instanceId),
+      enemyCount: nextState.enemies.length,
     },
   })
+}
+
+function logNewEnemySettlements(state: CombatState): CombatState {
+  const settledEnemyIds = new Set(
+    state.actionLog
+      .filter((entry) => entry.type === 'ENEMY_SETTLED' && typeof entry.targetId === 'string')
+      .map((entry) => entry.targetId as string),
+  )
+  let nextState = state
+
+  for (const enemy of state.enemies) {
+    if (enemy.currentForm > 0 || settledEnemyIds.has(enemy.instanceId)) {
+      continue
+    }
+
+    nextState = appendLog(nextState, {
+      type: 'ENEMY_SETTLED',
+      sourceId: enemy.instanceId,
+      targetId: enemy.instanceId,
+      payload: {
+        settlement: getEnemySettlement(enemy),
+      },
+    })
+  }
+
+  return nextState
+}
+
+function selectDecisiveEnemy(enemies: readonly EnemyState[]): EnemyState {
+  return enemies[0] ?? enemies.find((enemy) => enemy.currentForm <= 0)!
+}
+
+function getEnemySettlement(enemy: EnemyState): VictorySettlement {
+  return enemy.isNamed ? 'catalogue' : 'vanquish'
 }

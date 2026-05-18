@@ -1,5 +1,6 @@
 export * from './artifactResolver'
 export * from './deckResolver'
+export * from './encounterResolver'
 export * from './eventResolver'
 export * from './redInkResolver'
 export * from './restResolver'

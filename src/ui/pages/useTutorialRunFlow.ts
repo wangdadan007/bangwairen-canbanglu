@@ -8,6 +8,7 @@ import {
   createInitialRouteState,
   createInitialTutorialRunState,
   failTutorialRun,
+  getEncounterEnemyDefinitionIds,
   getCurrentRouteEncounter,
   getCurrentRouteEvent,
   getCurrentRouteNode,
@@ -48,6 +49,7 @@ export interface TutorialBattleViewState {
   readonly run: TutorialRunState
   readonly battle: CombatState
   readonly route: RouteState
+  readonly selectedEnemyInstanceId?: string
 }
 
 export interface BattleHudProps {
@@ -82,7 +84,7 @@ export function useTutorialRunFlow({
 
   function playCard(card: CardInstance) {
     setViewState((current) => {
-      const currentEnemy = current.battle.enemies[0]
+      const currentEnemy = getSelectedLivingEnemy(current.battle, current.selectedEnemyInstanceId)
 
       if (
         !currentEnemy ||
@@ -105,6 +107,21 @@ export function useTutorialRunFlow({
           },
           battleContext,
         ),
+      }
+    })
+  }
+
+  function selectEnemyTarget(enemyInstanceId: string) {
+    setViewState((current) => {
+      if (!current.battle.enemies.some(
+        (enemy) => enemy.instanceId === enemyInstanceId && enemy.currentForm > 0,
+      )) {
+        return current
+      }
+
+      return {
+        ...current,
+        selectedEnemyInstanceId: enemyInstanceId,
       }
     })
   }
@@ -151,6 +168,7 @@ export function useTutorialRunFlow({
         ...current,
         run: nextBattleView.run,
         battle: nextBattleView.battle,
+        selectedEnemyInstanceId: getFirstLivingEnemy(nextBattleView.battle)?.instanceId,
       }
     })
   }
@@ -232,6 +250,9 @@ export function useTutorialRunFlow({
         ...current,
         run: nextBattleView?.run ?? nextRun,
         battle: nextBattleView?.battle ?? current.battle,
+        selectedEnemyInstanceId: nextBattleView
+          ? getFirstLivingEnemy(nextBattleView.battle)?.instanceId
+          : current.selectedEnemyInstanceId,
       }
     })
   }
@@ -249,6 +270,9 @@ export function useTutorialRunFlow({
         ...current,
         run: nextBattleView?.run ?? nextRun,
         battle: nextBattleView?.battle ?? current.battle,
+        selectedEnemyInstanceId: nextBattleView
+          ? getFirstLivingEnemy(nextBattleView.battle)?.instanceId
+          : current.selectedEnemyInstanceId,
       }
     })
   }
@@ -269,6 +293,9 @@ export function useTutorialRunFlow({
         ...current,
         run: nextBattleView?.run ?? nextRun,
         battle: nextBattleView?.battle ?? current.battle,
+        selectedEnemyInstanceId: nextBattleView
+          ? getFirstLivingEnemy(nextBattleView.battle)?.instanceId
+          : current.selectedEnemyInstanceId,
       }
     })
   }
@@ -298,6 +325,9 @@ export function useTutorialRunFlow({
         run: nextBattleView?.run ?? nextRun,
         route: nextRoute,
         battle: nextBattleView?.battle ?? current.battle,
+        selectedEnemyInstanceId: nextBattleView
+          ? getFirstLivingEnemy(nextBattleView.battle)?.instanceId
+          : current.selectedEnemyInstanceId,
       }
     })
   }
@@ -330,6 +360,9 @@ export function useTutorialRunFlow({
         run: nextBattleView?.run ?? nextRun,
         route: nextRoute,
         battle: nextBattleView?.battle ?? current.battle,
+        selectedEnemyInstanceId: nextBattleView
+          ? getFirstLivingEnemy(nextBattleView.battle)?.instanceId
+          : current.selectedEnemyInstanceId,
       }
     })
   }
@@ -385,6 +418,9 @@ export function useTutorialRunFlow({
         route: nextRoute,
         run: nextBattleView?.run ?? current.run,
         battle: nextBattleView?.battle ?? current.battle,
+        selectedEnemyInstanceId: nextBattleView
+          ? getFirstLivingEnemy(nextBattleView.battle)?.instanceId
+          : current.selectedEnemyInstanceId,
       }
     })
   }
@@ -406,6 +442,9 @@ export function useTutorialRunFlow({
         route: nextRoute,
         run: nextBattleView?.run ?? current.run,
         battle: nextBattleView?.battle ?? current.battle,
+        selectedEnemyInstanceId: nextBattleView
+          ? getFirstLivingEnemy(nextBattleView.battle)?.instanceId
+          : current.selectedEnemyInstanceId,
       }
     })
   }
@@ -414,6 +453,7 @@ export function useTutorialRunFlow({
     viewState,
     actions: {
       playCard,
+      selectEnemyTarget,
       endTurn,
       restartCurrentBattle,
       restartTutorialRun,
@@ -449,7 +489,7 @@ export function isFinalEncounter(run: TutorialRunState) {
 }
 
 function createBattle(
-  enemyDefinition: EnemyDefinition,
+  enemyDefinitions: readonly EnemyDefinition[],
   unlocks: UnlockState,
   deckCards?: readonly RunDeckCard[],
   maxIncenseBonus = 0,
@@ -469,7 +509,7 @@ function createBattle(
 ) {
   return createInitialBattleState({
     cardDefinitions: gameData.cards,
-    enemyDefinition,
+    enemyDefinitions,
     unlocks,
     deckCards,
     maxIncenseBonus,
@@ -505,24 +545,25 @@ function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattl
   }
 
   const battleView = currentEncounter
-    ? createBattleForEncounter(currentEncounter, run)
-    : {
-        run,
-        battle: createBattle(
-          getEnemyDefinition(fallbackEncounter!.enemyDefinitionId),
-          run.unlocks,
-          run.deckCards,
-          run.verdict.maxIncenseBonus,
-          run.resources,
-          undefined,
-          run.artifacts,
-        ),
-      }
+      ? createBattleForEncounter(currentEncounter, run)
+      : {
+          run,
+          battle: createBattle(
+            [getEnemyDefinition(fallbackEncounter!.enemyDefinitionId)],
+            run.unlocks,
+            run.deckCards,
+            run.verdict.maxIncenseBonus,
+            run.resources,
+            undefined,
+            run.artifacts,
+          ),
+        }
 
   return {
     run: battleView.run,
     battle: battleView.battle,
     route,
+    selectedEnemyInstanceId: getFirstLivingEnemy(battleView.battle)?.instanceId,
   }
 }
 
@@ -549,7 +590,9 @@ function createBattleForEncounter(
   return {
     run: nextRun,
     battle: createBattle(
-      getEnemyDefinition(encounter.enemyDefinitionId),
+      getEncounterEnemyDefinitionIds(encounter).map((enemyDefinitionId) =>
+        getEnemyDefinition(enemyDefinitionId),
+      ),
       nextRun.unlocks,
       nextRun.deckCards,
       nextRun.verdict.maxIncenseBonus,
@@ -560,6 +603,21 @@ function createBattleForEncounter(
       backlashResolution.records,
     ),
   }
+}
+
+function getSelectedLivingEnemy(
+  battle: CombatState,
+  selectedEnemyInstanceId: string | undefined,
+) {
+  return (
+    battle.enemies.find(
+      (enemy) => enemy.instanceId === selectedEnemyInstanceId && enemy.currentForm > 0,
+    ) ?? getFirstLivingEnemy(battle)
+  )
+}
+
+function getFirstLivingEnemy(battle: CombatState) {
+  return battle.enemies.find((enemy) => enemy.currentForm > 0)
 }
 
 function createArtifactBattleProgress(

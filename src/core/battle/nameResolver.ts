@@ -185,7 +185,13 @@ function selectNameTarget(
   targetEnemyInstanceId?: EnemyInstanceId,
 ): EnemyState | undefined {
   if (targetEnemyInstanceId) {
-    return enemies.find((enemy) => enemy.instanceId === targetEnemyInstanceId)
+    const selectedEnemy = enemies.find(
+      (enemy) => enemy.instanceId === targetEnemyInstanceId && enemy.currentForm > 0,
+    )
+
+    if (selectedEnemy) {
+      return selectedEnemy
+    }
   }
 
   return enemies.find((enemy) => enemy.currentForm > 0)

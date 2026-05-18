@@ -175,20 +175,20 @@ describe('T28 chapter one route closure', () => {
       'encounter_elite_fire_fleeing_name',
       'encounter_pool_offering_table_afterimage_return',
       'encounter_elite_dipper_empty_shell',
-      'encounter_pool_fleeing_name_paper_horse_return',
+      'encounter_multi_offering_table_mouse',
       'encounter_boss_registry_thief',
     ])
     expect(getRouteBattleEncounterIds(route, secondRouteState)).toEqual([
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
-      'encounter_mid_unlit_temple_warden',
+      'encounter_multi_paper_wraith_imp',
       'encounter_elite_incense_clerk',
       'encounter_late_offering_table_afterimage',
       'encounter_elite_fire_fleeing_name',
       'encounter_pool_scroll_stuffer_clerk_return',
       'encounter_elite_dipper_empty_shell',
-      'encounter_late_fleeing_name_paper_horse',
+      'encounter_pool_offering_table_afterimage_return',
       'encounter_boss_registry_thief',
     ])
   })
