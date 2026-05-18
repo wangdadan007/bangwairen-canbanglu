@@ -139,7 +139,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
     <aside className={hudClassName} aria-label="第一章路线纵切">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">第一章闭环 / T46</p>
+          <p className="panel-kicker">第一章候选版</p>
           <h2>{currentHeading}</h2>
         </div>
         <div className="dev-controls">
@@ -152,7 +152,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
             重开当前战斗
           </button>
           <button className="ghost-button" type="button" onClick={restartTutorialRun}>
-            重开路线纵切
+            重开第一章路线
           </button>
           <button
             className="ghost-button"
@@ -199,7 +199,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
         <section className="result-banner run-failed" aria-live="polite">
           <span>失败</span>
           <strong>本场战斗已经失败。</strong>
-          <p>进入最小结算页，保留本局已经完成的伏诛、归册、奖励和裁定记录。</p>
+          <p>进入第一章结算页，保留本局已经完成的伏诛、归册、奖励和裁定记录。</p>
           <div className="result-actions">
             <button type="button" onClick={settleBattleDefeat}>
               查看结算

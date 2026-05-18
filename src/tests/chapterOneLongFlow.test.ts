@@ -37,7 +37,7 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
 
     expect(gameData.cards).toHaveLength(44)
     expect(rewardCards).toHaveLength(35)
-    expect(gameData.artifacts).toHaveLength(8)
+    expect(gameData.artifacts).toHaveLength(10)
     expect(gameData.events).toHaveLength(9)
     expect(gameData.enemies.filter((enemy) => enemy.tier === 'elite')).toHaveLength(3)
     expect(gameData.enemies.filter((enemy) => enemy.tier === 'boss')).toHaveLength(1)

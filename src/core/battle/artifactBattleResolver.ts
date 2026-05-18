@@ -1,19 +1,52 @@
 import { appendLog } from '../log/actionLog'
-import { BONE_MIRROR_ARTIFACT_ID, WHIP_FRAGMENT_ARTIFACT_ID } from '../run/artifactResolver'
-import type { CombatState, EnemyInstanceId, GameEntityId } from '../../types'
+import {
+  BONE_MIRROR_ARTIFACT_ID,
+  COURT_CHIME_ARTIFACT_ID,
+  NAME_TETHER_SPINDLE_ARTIFACT_ID,
+  REGISTRY_INKSTONE_ARTIFACT_ID,
+  WHIP_FRAGMENT_ARTIFACT_ID,
+} from '../run/artifactResolver'
+import type {
+  ArtifactId,
+  CombatState,
+  EnemyInstanceId,
+  GameEntityId,
+  UnlockStageId,
+} from '../../types'
+
+interface AskNameArtifactTrigger {
+  readonly artifactId: ArtifactId
+  readonly unlockStage: UnlockStageId
+  readonly boundBonus: number
+}
+
+const ASK_NAME_PEEK_ARTIFACTS: readonly AskNameArtifactTrigger[] = [
+  {
+    artifactId: BONE_MIRROR_ARTIFACT_ID,
+    unlockStage: 'stage_core',
+    boundBonus: 1,
+  },
+  {
+    artifactId: COURT_CHIME_ARTIFACT_ID,
+    unlockStage: 'stage_abnormal_boundary',
+    boundBonus: 1,
+  },
+  {
+    artifactId: REGISTRY_INKSTONE_ARTIFACT_ID,
+    unlockStage: 'stage_run_resources',
+    boundBonus: 2,
+  },
+  {
+    artifactId: NAME_TETHER_SPINDLE_ARTIFACT_ID,
+    unlockStage: 'stage_three_altars',
+    boundBonus: 2,
+  },
+]
 
 export function triggerArtifactsAfterAskName(
   state: CombatState,
   sourceId: GameEntityId,
 ): CombatState {
-  const boneMirror = state.artifacts.artifacts.find(
-    (artifact) => artifact.definitionId === BONE_MIRROR_ARTIFACT_ID,
-  )
-
-  if (!boneMirror || state.triggeredArtifactIds.includes(boneMirror.id)) {
-    return state
-  }
-
   const askNameEntry = state.actionLog
     .slice()
     .reverse()
@@ -29,34 +62,52 @@ export function triggerArtifactsAfterAskName(
   }
 
   const target = state.enemies.find((enemy) => enemy.instanceId === askNameEntry.targetId)
-  const nextState: CombatState = {
-    ...state,
-    artifacts: {
-      artifacts: state.artifacts.artifacts.map((artifact) =>
-        artifact.id === boneMirror.id
-          ? {
-              ...artifact,
-              hasTriggeredThisBattle: true,
-              triggerCountThisBattle: artifact.triggerCountThisBattle + 1,
-            }
-          : artifact,
-      ),
-    },
-    triggeredArtifactIds: [...state.triggeredArtifactIds, boneMirror.id],
+  let nextState = state
+
+  for (const trigger of ASK_NAME_PEEK_ARTIFACTS) {
+    const artifact = nextState.artifacts.artifacts.find(
+      (candidate) => candidate.definitionId === trigger.artifactId,
+    )
+
+    if (
+      !artifact ||
+      nextState.triggeredArtifactIds.includes(artifact.id) ||
+      !nextState.player.unlocks.stages.includes(trigger.unlockStage)
+    ) {
+      continue
+    }
+
+    nextState = {
+      ...nextState,
+      artifacts: {
+        artifacts: nextState.artifacts.artifacts.map((candidate) =>
+          candidate.id === artifact.id
+            ? {
+                ...candidate,
+                hasTriggeredThisBattle: true,
+                triggerCountThisBattle: candidate.triggerCountThisBattle + 1,
+              }
+            : candidate,
+        ),
+      },
+      triggeredArtifactIds: [...nextState.triggeredArtifactIds, artifact.id],
+    }
+
+    nextState = appendLog(nextState, {
+      type: 'ARTIFACT_TRIGGERED',
+      sourceId: artifact.id,
+      targetId: target?.instanceId,
+      payload: {
+        effectType: 'peek_intent_after_ask_name',
+        result: 'peeked',
+        intentId: target?.currentIntent?.id ?? null,
+        intentKind: target?.currentIntent?.kind ?? null,
+        boundBonus: artifact.bindingStatus === 'bound' ? trigger.boundBonus : 0,
+      },
+    })
   }
 
-  return appendLog(nextState, {
-    type: 'ARTIFACT_TRIGGERED',
-    sourceId: boneMirror.id,
-    targetId: target?.instanceId,
-    payload: {
-      effectType: 'peek_intent_after_ask_name',
-      result: 'peeked',
-      intentId: target?.currentIntent?.id ?? null,
-      intentKind: target?.currentIntent?.kind ?? null,
-      boundBonus: boneMirror.bindingStatus === 'bound' ? 1 : 0,
-    },
-  })
+  return nextState
 }
 
 export function triggerArtifactsAfterEnemyNamed(

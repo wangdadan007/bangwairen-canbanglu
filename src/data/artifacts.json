@@ -64,6 +64,70 @@
     }
   },
   {
+    "id": "artifact_court_chime",
+    "nameKey": "artifact.court_chime.name",
+    "descriptionKey": "artifact.court_chime.description",
+    "rulesTextKey": "artifact.court_chime.rules",
+    "triggerType": "battle_trigger",
+    "unlockStage": "stage_abnormal_boundary",
+    "tags": ["chapter_one", "intent", "seal_momentum"],
+    "baseEffect": {
+      "type": "peek_intent_after_ask_name",
+      "amount": 1,
+      "descriptionKey": "artifact.court_chime.effect.base"
+    },
+    "boundEffect": {
+      "type": "peek_intent_after_ask_name",
+      "amount": 1,
+      "descriptionKey": "artifact.court_chime.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "ask_name",
+      "requiredCount": 5,
+      "descriptionKey": "artifact.court_chime.bind"
+    },
+    "overloadCondition": {
+      "kind": "mirror_nameless_twice",
+      "descriptionKey": "artifact.court_chime.overload"
+    },
+    "backlashEffect": {
+      "type": "hide_intent_before_ask_name",
+      "descriptionKey": "artifact.court_chime.backlash"
+    }
+  },
+  {
+    "id": "artifact_name_tether_spindle",
+    "nameKey": "artifact.name_tether_spindle.name",
+    "descriptionKey": "artifact.name_tether_spindle.description",
+    "rulesTextKey": "artifact.name_tether_spindle.rules",
+    "triggerType": "battle_trigger",
+    "unlockStage": "stage_three_altars",
+    "tags": ["chapter_one", "ask_name", "catalogue", "altar"],
+    "baseEffect": {
+      "type": "peek_intent_after_ask_name",
+      "amount": 1,
+      "descriptionKey": "artifact.name_tether_spindle.effect.base"
+    },
+    "boundEffect": {
+      "type": "peek_intent_after_ask_name",
+      "amount": 2,
+      "descriptionKey": "artifact.name_tether_spindle.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "ask_name",
+      "requiredCount": 10,
+      "descriptionKey": "artifact.name_tether_spindle.bind"
+    },
+    "overloadCondition": {
+      "kind": "mirror_nameless_twice",
+      "descriptionKey": "artifact.name_tether_spindle.overload"
+    },
+    "backlashEffect": {
+      "type": "hide_intent_before_ask_name",
+      "descriptionKey": "artifact.name_tether_spindle.backlash"
+    }
+  },
+  {
     "id": "artifact_cinnabar_dou",
     "nameKey": "artifact.cinnabar_dou.name",
     "descriptionKey": "artifact.cinnabar_dou.description",

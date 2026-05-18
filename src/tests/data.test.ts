@@ -5,7 +5,7 @@ describe('initial game data', () => {
   it('loads starter cards, tutorial enemy, unlocks, and localization', () => {
     const data = loadGameData()
 
-    expect(data.artifacts).toHaveLength(8)
+    expect(data.artifacts).toHaveLength(10)
     expect(data.cards).toHaveLength(44)
     expect(data.enemies).toHaveLength(16)
     expect(data.encounters).toHaveLength(25)
@@ -44,6 +44,8 @@ describe('initial game data', () => {
     expect(artifactIds).toEqual([
       'artifact_whip_fragment',
       'artifact_bone_mirror',
+      'artifact_court_chime',
+      'artifact_name_tether_spindle',
       'artifact_cinnabar_dou',
       'artifact_fracture_needle',
       'artifact_registry_inkstone',
@@ -61,6 +63,8 @@ describe('initial game data', () => {
     )
     expect(data.artifacts.map((artifact) => artifact.bindCondition.kind)).toEqual([
       'catalogue_named_enemy',
+      'ask_name',
+      'ask_name',
       'ask_name',
       'red_ink_applied',
       'erase_verdict',

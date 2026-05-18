@@ -23,7 +23,7 @@ export function ArtifactBar({ artifacts, artifactDefinitionsById, unlocks, t }: 
     <section className="artifact-bar" aria-label="法宝栏">
       <header>
         <div>
-          <p className="panel-kicker">法宝栏 / T17</p>
+          <p className="panel-kicker">法宝栏</p>
           <h3>牌组外器物</h3>
         </div>
         <span>{visibleArtifacts.length} 件</span>

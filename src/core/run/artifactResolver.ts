@@ -12,8 +12,11 @@ import { applyTutorialResourceDelta } from './resourceResolver'
 
 export const WHIP_FRAGMENT_ARTIFACT_ID: ArtifactId = 'artifact_whip_fragment'
 export const BONE_MIRROR_ARTIFACT_ID: ArtifactId = 'artifact_bone_mirror'
+export const COURT_CHIME_ARTIFACT_ID: ArtifactId = 'artifact_court_chime'
+export const NAME_TETHER_SPINDLE_ARTIFACT_ID: ArtifactId = 'artifact_name_tether_spindle'
 export const CINNABAR_DOU_ARTIFACT_ID: ArtifactId = 'artifact_cinnabar_dou'
 export const FRACTURE_NEEDLE_ARTIFACT_ID: ArtifactId = 'artifact_fracture_needle'
+export const REGISTRY_INKSTONE_ARTIFACT_ID: ArtifactId = 'artifact_registry_inkstone'
 export const WHIP_BACKLASH_CARD_ID: CardId = 'card_cracked_whip_echo'
 
 export interface ArtifactProgressEvent {

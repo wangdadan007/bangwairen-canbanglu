@@ -35,6 +35,8 @@ describe('T17 artifact foundation', () => {
     expect(artifactIds).toEqual([
       'artifact_whip_fragment',
       'artifact_bone_mirror',
+      'artifact_court_chime',
+      'artifact_name_tether_spindle',
       'artifact_cinnabar_dou',
       'artifact_fracture_needle',
       'artifact_registry_inkstone',
@@ -201,6 +203,87 @@ describe('T17 artifact foundation', () => {
     expect(
       afterAsk.artifacts.artifacts.find(
         (artifact) => artifact.definitionId === 'artifact_bone_mirror',
+      )?.triggerCountThisBattle,
+    ).toBe(1)
+  })
+
+  it('triggers T49A ask-name artifacts only after their unlock stages are visible', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[0],
+      deckDefinitionIds: ['card_ask_name'],
+      artifacts: createInitialArtifactCollection(gameData.artifacts),
+      unlocks: {
+        stages: ['stage_core', 'stage_abnormal_boundary'],
+        keywords: ['break_form', 'ask_name', 'intent', 'seal_momentum'],
+      },
+    })
+    const askName = getHandCard(state, 'card_ask_name')
+    const afterAsk = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: askName.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const artifactLogSourceIds = afterAsk.actionLog
+      .filter((entry) => entry.type === 'ARTIFACT_TRIGGERED')
+      .map((entry) => entry.sourceId)
+
+    expect(artifactLogSourceIds).toContain('artifact_bone_mirror')
+    expect(artifactLogSourceIds).toContain('artifact_court_chime')
+    expect(artifactLogSourceIds).not.toContain('artifact_name_tether_spindle')
+    expect(
+      afterAsk.artifacts.artifacts.find(
+        (artifact) => artifact.definitionId === 'artifact_court_chime',
+      )?.triggerCountThisBattle,
+    ).toBe(1)
+  })
+
+  it('shows the late T49A name tether spindle as an actual ask-name feedback artifact', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[0],
+      deckDefinitionIds: ['card_ask_name'],
+      artifacts: createInitialArtifactCollection(gameData.artifacts),
+      unlocks: {
+        stages: [
+          'stage_core',
+          'stage_abnormal_boundary',
+          'stage_run_resources',
+          'stage_three_altars',
+        ],
+        keywords: ['break_form', 'ask_name', 'intent', 'seal_momentum', 'ink', 'altar'],
+      },
+    })
+    const askName = getHandCard(state, 'card_ask_name')
+    const afterAsk = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: askName.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const nameTetherLog = afterAsk.actionLog.find(
+      (entry) =>
+        entry.type === 'ARTIFACT_TRIGGERED' &&
+        entry.sourceId === 'artifact_name_tether_spindle',
+    )
+
+    expect(nameTetherLog?.payload).toEqual(
+      expect.objectContaining({
+        effectType: 'peek_intent_after_ask_name',
+        result: 'peeked',
+        intentKind: 'incoming_force',
+      }),
+    )
+    expect(
+      afterAsk.artifacts.artifacts.find(
+        (artifact) => artifact.definitionId === 'artifact_name_tether_spindle',
       )?.triggerCountThisBattle,
     ).toBe(1)
   })

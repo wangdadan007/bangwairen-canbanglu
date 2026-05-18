@@ -512,6 +512,13 @@ export function formatLogEntry(
   if (entry.type === 'ARTIFACT_TRIGGERED') {
     const artifactName = getArtifactName(entry.sourceId)
     const result = getPayloadString(entry.payload.result)
+    const effectType = getPayloadString(entry.payload.effectType)
+
+    if (effectType === 'peek_intent_after_ask_name') {
+      return `${artifactName}照见下一动：${getIntentKindLabel(
+        getPayloadString(entry.payload.intentKind),
+      )}。`
+    }
 
     if (result === 'prepared') {
       return `${artifactName}触发：下一次破形额外 +${
@@ -806,6 +813,18 @@ export function getAltarEffectLabel(altar: AltarState) {
   }
 
   return '下回合问名得墨'
+}
+
+function getIntentKindLabel(intentKind: string | undefined) {
+  if (intentKind === 'incoming_force') {
+    return '来势'
+  }
+
+  if (intentKind === 'abnormal_move') {
+    return '异动'
+  }
+
+  return '未记名行动'
 }
 
 export function getEnemyDefinitionName(definitionId: string) {

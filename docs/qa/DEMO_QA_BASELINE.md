@@ -79,3 +79,13 @@ Node 版本：22。
 - T42A 已新增多敌遭遇 MVP，详见 `docs/qa/CHAPTER_ONE_LONG_FLOW_BASELINE.md`。
 - T42 已新增纯逻辑长流程 smoke，覆盖伏诛通关路线和偏归册路线。
 - T43 已补存档 v1 -> v2 迁移、坏档 fallback 和 storage 读写异常兜底。
+
+## 8. T47-T50 候选版收口更新
+
+日期：2026-05-18
+
+- T47 已润色第一章卡牌、敌人、遭遇、Boss、日志和结算页文案，去掉玩家可见的开发占位口吻。
+- T48 的发布前 QA、截图级检查目标、T40 UI 边界回查和剩余风险已整理到 `docs/qa/CHAPTER_ONE_CANDIDATE_RELEASE_CHECKLIST.md`。
+- T49 已完成 Electron / Tauri 桌面打包方案评估；本轮不新增生产依赖、不实现桌面打包。
+- T49A 已把法宝池从 8 件补到 10 件，并补 localization、候选资产记录、解锁过滤和法宝触发测试。
+- T50 候选版收口状态、素材授权、`OPEN_QUESTIONS.md` 清理状态和下一阶段风险已记录到候选版 QA 清单。

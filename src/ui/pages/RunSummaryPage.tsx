@@ -12,7 +12,7 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
     <section className={isComplete ? 'run-summary-page complete' : 'run-summary-page failed'} aria-label="第一章结算">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">第一章结算 / T28</p>
+          <p className="panel-kicker">第一章结算</p>
           <h3>{isComplete ? '残榜初裂已收束' : '本局中止'}</h3>
         </div>
         <span>
@@ -22,7 +22,7 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
 
       <p className="reward-copy">
         {isComplete
-          ? '路线、Boss、奖励、裁定与本局记录已经闭合。'
+          ? '残榜初裂已写完本局记录，伏诛、归册、裁定与法宝痕迹均已留档。'
           : getFailureText(summary.failureReason)}
       </p>
 
@@ -53,7 +53,7 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
 
       <div className="result-actions">
         <button type="button" onClick={onRestart}>
-          重开教学纵切
+          重开第一章
         </button>
       </div>
     </section>
