@@ -44,16 +44,22 @@ export function EventPage({
       </div>
 
       <div className="event-options">
-        {options.map((option) => (
+        {event.options.map((option) => {
+          const isAvailable = options.some((availableOption) => availableOption.id === option.id)
+          const unavailableReason = isAvailable ? undefined : getUnavailableOptionReason(option, run)
+
+          return (
           <button
             className={option.flags.includes('fracture') ? 'event-option fracture' : 'event-option'}
+            disabled={!isAvailable}
             key={option.id}
+            title={unavailableReason}
             type="button"
             onClick={() => onChoose(option.id)}
           >
             <span className="card-topline">
               <strong>{t(option.nameKey)}</strong>
-              <span>{getOptionFlagLabel(option.flags)}</span>
+              <span>{isAvailable ? getOptionFlagLabel(option.flags) : unavailableReason}</span>
             </span>
             <span className="event-option-copy">{t(option.descriptionKey)}</span>
             <span className="event-result-grid">
@@ -72,7 +78,8 @@ export function EventPage({
               ))}
             </span>
           </button>
-        ))}
+          )
+        })}
       </div>
     </section>
   )
@@ -134,4 +141,33 @@ function getOptionEffectLabels(
 
     return '进入朱批'
   })
+}
+
+function getUnavailableOptionReason(option: EventOptionDefinition, run: TutorialRunState) {
+  const missingStage = (option.requiredUnlockStages ?? []).find(
+    (stageId) => !run.unlocks.stages.includes(stageId),
+  )
+
+  if (missingStage) {
+    return '机制尚未解锁'
+  }
+
+  const spendInk = option.effects.find((effect) => effect.type === 'SPEND_INK')
+
+  if (spendInk && run.resources.ink < spendInk.amount) {
+    return `墨不足：需要 ${spendInk.amount}`
+  }
+
+  const removeCard = option.effects.find((effect) => effect.type === 'REMOVE_CARD')
+
+  if (
+    removeCard &&
+    !run.deckCards.some(
+      (card) => !removeCard.cardDefinitionId || card.definitionId === removeCard.cardDefinitionId,
+    )
+  ) {
+    return '牌组里没有可删目标'
+  }
+
+  return '当前不能选择'
 }

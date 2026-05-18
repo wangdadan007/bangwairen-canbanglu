@@ -18,7 +18,7 @@ export type RouteFlowKind =
   | 'shop_placeholder'
   | 'complete'
 
-export function createInitialRouteState(route: RouteDefinition): RouteState {
+export function createInitialRouteState(route: RouteDefinition, seed = createRouteSeed()): RouteState {
   assertRouteHasNode(route, route.startNodeId)
 
   return {
@@ -26,6 +26,7 @@ export function createInitialRouteState(route: RouteDefinition): RouteState {
     currentNodeId: route.startNodeId,
     completedNodeIds: [],
     reachableNodeIds: [route.startNodeId],
+    encounterSelections: createEncounterSelections(route, seed),
   }
 }
 
@@ -46,14 +47,19 @@ export function getCurrentRouteNode(
 
 export function isRouteBattleNode(node: RouteNodeDefinition | undefined): boolean {
   return Boolean(
-    node?.encounterId &&
+    (node?.encounterId || node?.encounterPoolIds?.length) &&
       (node.type === 'normal_battle' || node.type === 'elite' || node.type === 'boss'),
   )
 }
 
-export function getRouteBattleEncounterIds(route: RouteDefinition): readonly EncounterId[] {
+export function getRouteBattleEncounterIds(
+  route: RouteDefinition,
+  state?: RouteState,
+): readonly EncounterId[] {
   return route.nodes.flatMap((node) =>
-    isRouteBattleNode(node) && node.encounterId ? [node.encounterId] : [],
+    isRouteBattleNode(node)
+      ? [getSelectedEncounterId(node, state)].filter((id): id is EncounterId => Boolean(id))
+      : [],
   )
 }
 
@@ -64,11 +70,13 @@ export function getCurrentRouteEncounter(
 ): EncounterDefinition | undefined {
   const node = getCurrentRouteNode(route, state)
 
-  if (!isRouteBattleNode(node) || !node?.encounterId) {
+  if (!node || !isRouteBattleNode(node)) {
     return undefined
   }
 
-  return encounters.find((encounter) => encounter.id === node.encounterId)
+  const encounterId = getSelectedEncounterId(node, state)
+
+  return encounters.find((encounter) => encounter.id === encounterId)
 }
 
 export function getCurrentRouteFlowKind(
@@ -174,4 +182,43 @@ function addUnique(nodeIds: readonly RouteNodeId[], nodeId: RouteNodeId) {
 
 function uniqueRouteNodeIds(nodeIds: readonly RouteNodeId[]) {
   return Array.from(new Set(nodeIds))
+}
+
+function createEncounterSelections(route: RouteDefinition, seed: number) {
+  const selections: Record<RouteNodeId, EncounterId> = {}
+  let battleNodeIndex = 0
+
+  for (const node of route.nodes) {
+    if (!isRouteBattleNode(node)) {
+      continue
+    }
+
+    const pool = node.encounterPoolIds
+
+    if (pool?.length) {
+      selections[node.id] = pool[getSeededIndex(seed, battleNodeIndex, pool.length)]
+    } else if (node.encounterId) {
+      selections[node.id] = node.encounterId
+    }
+
+    battleNodeIndex += 1
+  }
+
+  return selections
+}
+
+function getSelectedEncounterId(
+  node: RouteNodeDefinition,
+  state?: RouteState,
+): EncounterId | undefined {
+  return state?.encounterSelections?.[node.id] ?? node.encounterId ?? node.encounterPoolIds?.[0]
+}
+
+function getSeededIndex(seed: number, offset: number, length: number) {
+  const mixedSeed = Math.sin(seed + offset * 97.13) * 10000
+  return Math.abs(Math.floor(mixedSeed)) % length
+}
+
+function createRouteSeed() {
+  return Date.now() + Math.floor(Math.random() * 100000)
 }

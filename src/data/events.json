@@ -176,5 +176,231 @@
         ]
       }
     ]
+  },
+  {
+    "id": "event_cracked_registry_needle",
+    "nameKey": "event.cracked_registry_needle.name",
+    "descriptionKey": "event.cracked_registry_needle.description",
+    "unlockStage": "stage_run_resources",
+    "tags": ["chapter_one", "mid", "fracture", "doom", "card_gain"],
+    "options": [
+      {
+        "id": "event_cracked_registry_needle_take_splinter",
+        "nameKey": "event.cracked_registry_needle.option.take_splinter.name",
+        "descriptionKey": "event.cracked_registry_needle.option.take_splinter.description",
+        "rewardKey": "event.cracked_registry_needle.option.take_splinter.reward",
+        "costKey": "event.cracked_registry_needle.option.take_splinter.cost",
+        "requiredUnlockStages": ["stage_run_resources"],
+        "flags": ["fracture"],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_registry_splinter"
+          },
+          {
+            "type": "ADD_FRACTURE",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "event_cracked_registry_needle_copy_ink",
+        "nameKey": "event.cracked_registry_needle.option.copy_ink.name",
+        "descriptionKey": "event.cracked_registry_needle.option.copy_ink.description",
+        "rewardKey": "event.cracked_registry_needle.option.copy_ink.reward",
+        "costKey": "event.cracked_registry_needle.option.copy_ink.cost",
+        "requiredUnlockStages": ["stage_run_resources"],
+        "flags": ["ink", "doom"],
+        "effects": [
+          {
+            "type": "ADD_INK",
+            "amount": 1
+          },
+          {
+            "type": "ADD_DOOM",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "event_lost_altar_bell",
+    "nameKey": "event.lost_altar_bell.name",
+    "descriptionKey": "event.lost_altar_bell.description",
+    "unlockStage": "stage_three_altars",
+    "tags": ["chapter_one", "mid", "altar", "ink", "card_gain"],
+    "options": [
+      {
+        "id": "event_lost_altar_bell_take_heaven_trace",
+        "nameKey": "event.lost_altar_bell.option.take_heaven_trace.name",
+        "descriptionKey": "event.lost_altar_bell.option.take_heaven_trace.description",
+        "rewardKey": "event.lost_altar_bell.option.take_heaven_trace.reward",
+        "costKey": "event.lost_altar_bell.option.take_heaven_trace.cost",
+        "requiredUnlockStages": ["stage_three_altars"],
+        "flags": ["ink"],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_heaven_trace_edict"
+          },
+          {
+            "type": "ADD_INK",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "event_lost_altar_bell_take_earth_counter",
+        "nameKey": "event.lost_altar_bell.option.take_earth_counter.name",
+        "descriptionKey": "event.lost_altar_bell.option.take_earth_counter.description",
+        "rewardKey": "event.lost_altar_bell.option.take_earth_counter.reward",
+        "costKey": "event.lost_altar_bell.option.take_earth_counter.cost",
+        "requiredUnlockStages": ["stage_three_altars"],
+        "flags": [],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_earth_counter_charm"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "event_bound_artifact_case",
+    "nameKey": "event.bound_artifact_case.name",
+    "descriptionKey": "event.bound_artifact_case.description",
+    "unlockStage": "stage_three_altars",
+    "tags": ["chapter_one", "mid_late", "artifact", "ink", "red_ink"],
+    "options": [
+      {
+        "id": "event_bound_artifact_case_polish",
+        "nameKey": "event.bound_artifact_case.option.polish.name",
+        "descriptionKey": "event.bound_artifact_case.option.polish.description",
+        "rewardKey": "event.bound_artifact_case.option.polish.reward",
+        "costKey": "event.bound_artifact_case.option.polish.cost",
+        "requiredUnlockStages": ["stage_three_altars"],
+        "flags": ["ink"],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_artifact_polish_slip"
+          },
+          {
+            "type": "ADD_INK",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "event_bound_artifact_case_spend_ink_red_ink",
+        "nameKey": "event.bound_artifact_case.option.spend_ink_red_ink.name",
+        "descriptionKey": "event.bound_artifact_case.option.spend_ink_red_ink.description",
+        "rewardKey": "event.bound_artifact_case.option.spend_ink_red_ink.reward",
+        "costKey": "event.bound_artifact_case.option.spend_ink_red_ink.cost",
+        "requiredUnlockStages": ["stage_three_altars", "stage_red_ink_preview"],
+        "flags": ["ink", "red_ink"],
+        "effects": [
+          {
+            "type": "SPEND_INK",
+            "amount": 1
+          },
+          {
+            "type": "CREATE_RED_INK_OFFER"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "event_fouled_page_bundle",
+    "nameKey": "event.fouled_page_bundle.name",
+    "descriptionKey": "event.fouled_page_bundle.description",
+    "unlockStage": "stage_run_resources",
+    "tags": ["chapter_one", "late", "fouled_scroll", "fracture", "card_remove"],
+    "options": [
+      {
+        "id": "event_fouled_page_bundle_cleanse_scroll",
+        "nameKey": "event.fouled_page_bundle.option.cleanse_scroll.name",
+        "descriptionKey": "event.fouled_page_bundle.option.cleanse_scroll.description",
+        "rewardKey": "event.fouled_page_bundle.option.cleanse_scroll.reward",
+        "costKey": "event.fouled_page_bundle.option.cleanse_scroll.cost",
+        "requiredUnlockStages": ["stage_run_resources"],
+        "flags": ["ink"],
+        "effects": [
+          {
+            "type": "ADD_INK",
+            "amount": 1
+          },
+          {
+            "type": "REMOVE_CARD",
+            "cardDefinitionId": "card_fouled_scroll"
+          }
+        ]
+      },
+      {
+        "id": "event_fouled_page_bundle_bind_dirty_page",
+        "nameKey": "event.fouled_page_bundle.option.bind_dirty_page.name",
+        "descriptionKey": "event.fouled_page_bundle.option.bind_dirty_page.description",
+        "rewardKey": "event.fouled_page_bundle.option.bind_dirty_page.reward",
+        "costKey": "event.fouled_page_bundle.option.bind_dirty_page.cost",
+        "requiredUnlockStages": ["stage_run_resources"],
+        "flags": ["fracture"],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_clean_scroll_charm"
+          },
+          {
+            "type": "ADD_FRACTURE",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "event_covered_name_stable",
+    "nameKey": "event.covered_name_stable.name",
+    "descriptionKey": "event.covered_name_stable.description",
+    "unlockStage": "stage_three_altars",
+    "tags": ["chapter_one", "late", "ask_name", "cover_name", "card_gain"],
+    "options": [
+      {
+        "id": "event_covered_name_stable_take_name_net",
+        "nameKey": "event.covered_name_stable.option.take_name_net.name",
+        "descriptionKey": "event.covered_name_stable.option.take_name_net.description",
+        "rewardKey": "event.covered_name_stable.option.take_name_net.reward",
+        "costKey": "event.covered_name_stable.option.take_name_net.cost",
+        "requiredUnlockStages": ["stage_three_altars"],
+        "flags": [],
+        "effects": [
+          {
+            "type": "ADD_CARD",
+            "cardDefinitionId": "card_name_net_talisman"
+          }
+        ]
+      },
+      {
+        "id": "event_covered_name_stable_break_ink",
+        "nameKey": "event.covered_name_stable.option.break_ink.name",
+        "descriptionKey": "event.covered_name_stable.option.break_ink.description",
+        "rewardKey": "event.covered_name_stable.option.break_ink.reward",
+        "costKey": "event.covered_name_stable.option.break_ink.cost",
+        "requiredUnlockStages": ["stage_three_altars"],
+        "flags": ["ink", "doom"],
+        "effects": [
+          {
+            "type": "ADD_INK",
+            "amount": 2
+          },
+          {
+            "type": "ADD_DOOM",
+            "amount": 1
+          }
+        ]
+      }
+    ]
   }
 ]

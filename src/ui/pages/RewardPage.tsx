@@ -1,4 +1,5 @@
 import type { CardDefinition, CardId, TutorialRewardOffer } from '../../types'
+import { getTermTooltip } from './actionLogView'
 
 export interface RewardPageProps {
   readonly offer: TutorialRewardOffer
@@ -55,7 +56,9 @@ export function RewardPage({
                   {definition.tags
                     .filter((tag) => tag !== 'reward' && tag !== 'catalogue_reward')
                     .map((tag) => (
-                      <span key={tag}>{getTagLabel(tag)}</span>
+                      <span key={tag} title={getTagTooltip(tag)}>
+                        {getTagLabel(tag)}
+                      </span>
                     ))}
                 </span>
               ) : null}
@@ -104,6 +107,46 @@ function getTagLabel(tag: string) {
 
   if (tag === 'exhaust') {
     return '消耗'
+  }
+
+  return tag
+}
+
+function getTagTooltip(tag: string) {
+  if (tag === 'break_form') {
+    return getTermTooltip('break_form')
+  }
+
+  if (tag === 'ask_name') {
+    return getTermTooltip('ask_name')
+  }
+
+  if (tag === 'seal_momentum' || tag === 'incoming_force') {
+    return getTermTooltip('seal_momentum')
+  }
+
+  if (tag === 'counter_abnormal_move' || tag === 'abnormal_move') {
+    return getTermTooltip('counter_abnormal_move')
+  }
+
+  if (tag === 'ink') {
+    return getTermTooltip('ink')
+  }
+
+  if (tag === 'doom') {
+    return getTermTooltip('doom')
+  }
+
+  if (tag === 'fracture') {
+    return getTermTooltip('fracture')
+  }
+
+  if (tag.includes('altar')) {
+    return getTermTooltip('altar')
+  }
+
+  if (tag === 'artifact') {
+    return getTermTooltip('artifact')
   }
 
   return tag

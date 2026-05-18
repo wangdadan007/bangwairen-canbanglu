@@ -192,6 +192,12 @@ function assertRouteReferences(
         throw new Error(`Route node ${node.id} references missing encounter ${node.encounterId}`)
       }
 
+      for (const encounterId of node.encounterPoolIds ?? []) {
+        if (!encounterIds.has(encounterId)) {
+          throw new Error(`Route node ${node.id} references missing encounter pool item ${encounterId}`)
+        }
+      }
+
       for (const eventId of node.eventPoolIds ?? []) {
         if (!eventIds.has(eventId)) {
           throw new Error(`Route node ${node.id} references missing event ${eventId}`)

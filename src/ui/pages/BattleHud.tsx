@@ -1,33 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import {
-  advanceTutorialRun,
-  type ArtifactBacklashRecord,
-  type ArtifactBattleProgressInput,
-  completeCurrentRouteNode,
-  createInitialBattleState,
-  createInitialRouteState,
-  createInitialTutorialRunState,
-  createTutorialRunSummary,
-  failTutorialRun,
-  getAvailableEventOptions,
-  getAvailableRestOptions,
-  getAvailableShopItems,
-  getCurrentRouteEvent,
-  getCurrentRouteEncounter,
-  getCurrentRouteFlowKind,
-  getCurrentRouteNode,
-  getRouteBattleEncounterIds,
-  reduceBattleState,
-  resolveArtifactBacklashesAtBattleStart,
-  resolveTutorialEvent,
-  resolveTutorialRedInk,
-  resolveTutorialRest,
-  resolveTutorialReward,
-  resolveTutorialShopPurchase,
-  resolveTutorialVerdict,
-  type BattleReducerContext,
-  type RouteFlowKind,
-} from '../../core'
+import { useMemo } from 'react'
+import type { RouteFlowKind } from '../../core'
 import { gameData } from '../../data'
 import { ArtifactBar } from './ArtifactBar'
 import { EventPage } from './EventPage'
@@ -38,130 +10,82 @@ import { RoutePage } from './RoutePage'
 import { RunSummaryPage } from './RunSummaryPage'
 import { ShopPage } from './ShopPage'
 import { VerdictPage } from './VerdictPage'
+import {
+  createPressureFeedback,
+  formatLogEntry,
+  getAltarEffectLabel,
+  getAltarSlotLabel,
+  getCardEffectLabels,
+  getCurrentAbnormalMove,
+  getEnemyDefinitionName,
+  getLogEntryClassName,
+  getMoveLabel,
+  getRouteFlowLabel,
+  getRunProgressLabel,
+  getSettlementLabel,
+  getSettlementText,
+  getTermTooltip,
+  getUnlockStageName,
+  t,
+  type PressureFeedback,
+} from './actionLogView'
+import { selectBattleHudState } from './battleHudSelectors'
+import {
+  artifactDefinitionsById,
+  createCardDefinitionMap,
+  createCardInstanceMap,
+  encounterDefinitionsById,
+  hasPendingRunChoice,
+  isFinalEncounter,
+  tutorialRoute,
+  useTutorialRunFlow,
+  type BattleHudProps,
+} from './useTutorialRunFlow'
 import type {
-  ActionLogEntry,
-  AbnormalMoveDefinition,
   AltarState,
   CardDefinition,
-  CardId,
   CardInstance,
   CombatState,
   EncounterDefinition,
-  EnemyDefinition,
   EnemyState,
-  JsonValue,
-  RedInkAnnotationId,
-  RouteDefinition,
   RouteNodeDefinition,
-  RouteState,
-  RunDeckCard,
-  RunDeckCardId,
-  SettingsState,
-  TutorialVerdictChoiceId,
-  TutorialRestOptionId,
   TutorialRunState,
-  TutorialSaveData,
-  UnlockState,
-  VictorySettlement,
 } from '../../types'
 
-type PressureFeedbackTone = 'incoming' | 'sealed' | 'abnormal' | 'countered'
-
-interface PressureFeedback {
-  readonly tone: PressureFeedbackTone
-  readonly label: string
-  readonly title: string
-  readonly detail: string
-}
-
-interface TutorialBattleViewState {
-  readonly run: TutorialRunState
-  readonly battle: CombatState
-  readonly route: RouteState
-}
-
-interface BattleHudProps {
-  readonly initialSave?: TutorialSaveData
-  readonly settings?: SettingsState
-  readonly onSaveChange?: (run: TutorialRunState, route: RouteState) => void
-}
-
-const battleContext: BattleReducerContext = {
-  cardDefinitions: gameData.cards,
-  enemyDefinitions: gameData.enemies,
-}
-
-const enemyDefinitionsById = new Map(gameData.enemies.map((enemy) => [enemy.id, enemy]))
-const artifactDefinitionsById = new Map(
-  gameData.artifacts.map((artifact) => [artifact.id, artifact]),
-)
-const encounterDefinitionsById = new Map(
-  gameData.encounters.map((encounter) => [encounter.id, encounter]),
-)
-const tutorialRoute = getTutorialRoute(gameData.routes)
-
-function createBattle(
-  enemyDefinition: EnemyDefinition,
-  unlocks: UnlockState,
-  deckCards?: readonly RunDeckCard[],
-  maxIncenseBonus = 0,
-  resources = {
-    ink: 0,
-    doom: 0,
-    fracture: 0,
-  },
-  temporaryResourceDelta = {
-    ink: 0,
-    doom: 0,
-    fracture: 0,
-  },
-  artifacts?: TutorialRunState['artifacts'],
-  extraHandDefinitionIds: readonly CardId[] = [],
-  artifactBacklashRecords: readonly ArtifactBacklashRecord[] = [],
-) {
-  return createInitialBattleState({
-    cardDefinitions: gameData.cards,
-    enemyDefinition,
-    unlocks,
-    deckCards,
-    maxIncenseBonus,
-    resources,
-    temporaryResourceDelta,
-    artifacts,
-    extraHandDefinitionIds,
-    artifactBacklashRecords,
-  })
-}
-
 export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProps) {
-  const [viewState, setViewState] = useState(() => createInitialTutorialBattleView(initialSave))
+  const { viewState, actions } = useTutorialRunFlow({ initialSave, onSaveChange })
   const { battle, run } = viewState
-  const currentRouteNode = getCurrentRouteNode(tutorialRoute, viewState.route)
-  const currentRouteFlowKind = getCurrentRouteFlowKind(tutorialRoute, viewState.route)
-  const currentEncounter = hasPendingRunChoice(run)
-    ? undefined
-    : getCurrentRouteEncounter(tutorialRoute, viewState.route, gameData.encounters)
-  const currentRouteEvent = getCurrentRouteEvent(currentRouteNode, gameData.events, run)
-  const currentEventOptions = currentRouteEvent
-    ? getAvailableEventOptions(currentRouteEvent, run)
-    : []
-  const currentRestOptions =
-    currentRouteFlowKind === 'rest' ? getAvailableRestOptions(run) : []
-  const currentShopItems =
-    currentRouteFlowKind === 'shop'
-      ? getAvailableShopItems(run, gameData.shopItems, gameData.cards)
-      : []
-  const currentHeading = currentEncounter
-    ? t(currentEncounter.nameKey)
-    : currentRouteEvent
-      ? t(currentRouteEvent.nameKey)
-      : currentRouteFlowKind === 'shop' && currentRouteNode
-        ? t(currentRouteNode.nameKey)
-      : currentRouteFlowKind === 'rest' && currentRouteNode
-        ? t(currentRouteNode.nameKey)
-      : getRunHeadline(run.status)
-  const enemy = currentEncounter ? battle.enemies[0] : undefined
-  const runSummary = useMemo(() => createTutorialRunSummary(run), [run])
+  const {
+    currentRouteNode,
+    currentRouteFlowKind,
+    currentEncounter,
+    currentRouteEvent,
+    currentEventOptions,
+    currentRestOptions,
+    currentShopItems,
+    currentHeading,
+    enemy,
+    canAct,
+    latestLog,
+    runSummary,
+  } = selectBattleHudState(viewState)
+  const {
+    playCard,
+    endTurn,
+    restartCurrentBattle,
+    restartTutorialRun,
+    abandonTutorialRun,
+    settleBattleDefeat,
+    advanceAfterVictory,
+    chooseReward,
+    chooseVerdict,
+    applyRedInk,
+    chooseEvent,
+    chooseRest,
+    buyShopItem,
+    leaveShop,
+    advancePlaceholderNode,
+  } = actions
   const cardDefinitionsById = useMemo(() => createCardDefinitionMap(gameData.cards), [])
   const allCardsByInstanceId = useMemo(
     () =>
@@ -177,355 +101,6 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
     () => createPressureFeedback(battle, cardDefinitionsById, allCardsByInstanceId),
     [allCardsByInstanceId, battle, cardDefinitionsById],
   )
-  const latestLog = battle.actionLog.slice(-14).reverse()
-  const canAct =
-    !run.pendingVerdict &&
-    !run.pendingReward &&
-    !run.pendingRedInk &&
-    Boolean(currentEncounter) &&
-    run.status === 'active' &&
-    battle.phase === 'player_turn' &&
-    battle.result.status === 'ongoing'
-
-  useEffect(() => {
-    onSaveChange?.(viewState.run, viewState.route)
-  }, [onSaveChange, viewState.route, viewState.run])
-
-  function playCard(card: CardInstance) {
-    setViewState((current) => {
-      const currentEnemy = current.battle.enemies[0]
-
-      if (
-        !currentEnemy ||
-        current.run.pendingVerdict ||
-        current.run.pendingReward ||
-        current.run.pendingRedInk ||
-        current.run.status !== 'active' ||
-        current.battle.phase !== 'player_turn' ||
-        current.battle.result.status !== 'ongoing'
-      ) {
-        return current
-      }
-
-      return {
-        ...current,
-        battle: reduceBattleState(
-          current.battle,
-          {
-            type: 'PLAY_CARD',
-            cardInstanceId: card.instanceId,
-            targetEnemyInstanceId: currentEnemy.instanceId,
-          },
-          battleContext,
-        ),
-      }
-    })
-  }
-
-  function endTurn() {
-    setViewState((current) => {
-      if (
-        current.run.pendingReward ||
-        current.run.pendingVerdict ||
-        current.run.pendingRedInk ||
-        current.run.status !== 'active' ||
-        current.battle.phase !== 'player_turn' ||
-        current.battle.result.status !== 'ongoing'
-      ) {
-        return current
-      }
-
-      return {
-        ...current,
-        battle: reduceBattleState(
-          current.battle,
-          {
-            type: 'END_TURN',
-          },
-          battleContext,
-        ),
-      }
-    })
-  }
-
-  function restartCurrentBattle() {
-    setViewState((current) => {
-      if (current.run.pendingVerdict || current.run.pendingReward || current.run.pendingRedInk) {
-        return current
-      }
-
-      const encounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
-
-      if (!encounter) {
-        return createInitialTutorialBattleView()
-      }
-
-      const nextBattleView = createBattleForEncounter(encounter, current.run)
-
-      return {
-        ...current,
-        run: nextBattleView.run,
-        battle: nextBattleView.battle,
-      }
-    })
-  }
-
-  function restartTutorialRun() {
-    setViewState(createInitialTutorialBattleView())
-  }
-
-  function abandonTutorialRun() {
-    setViewState((current) => ({
-      ...current,
-      run: failTutorialRun(current.run, 'abandoned'),
-    }))
-  }
-
-  function settleBattleDefeat() {
-    setViewState((current) => ({
-      ...current,
-      run: failTutorialRun(current.run, 'battle_defeat'),
-    }))
-  }
-
-  function advanceAfterVictory() {
-    setViewState((current) => {
-      const result = current.battle.result
-      const encounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
-
-      if (
-        current.run.pendingVerdict ||
-        current.run.pendingReward ||
-        current.run.pendingRedInk ||
-        current.run.status !== 'active' ||
-        !encounter ||
-        result.status !== 'victory'
-      ) {
-        return current
-      }
-
-      const defeatedEnemy = current.battle.enemies.find(
-        (candidate) => candidate.instanceId === result.enemyInstanceId,
-      )
-      const defeatedEnemyDefinition = defeatedEnemy
-        ? getEnemyDefinition(defeatedEnemy.definitionId)
-        : undefined
-      const nextRun = advanceTutorialRun(
-        current.run,
-        gameData.encounters,
-        gameData.tutorialUnlocks,
-        result.settlement,
-        gameData.cards,
-        defeatedEnemy && defeatedEnemyDefinition
-          ? {
-              enemyDefinitionId: defeatedEnemy.definitionId,
-              enemyNameKey: defeatedEnemyDefinition.nameKey,
-              revealedNameKeys: getRevealedNameKeys(defeatedEnemy),
-            }
-          : undefined,
-        defeatedEnemy ? createArtifactBattleProgress(current.battle, defeatedEnemy) : undefined,
-        getPersistentBattleResources(current.battle),
-      )
-      const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
-
-      return {
-        run: nextRun,
-        battle: current.battle,
-        route: nextRoute,
-      }
-    })
-  }
-
-  function chooseReward(cardDefinitionId?: string) {
-    setViewState((current) => {
-      const nextRun = resolveTutorialReward(current.run, cardDefinitionId)
-      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
-      const nextBattleView =
-        nextEncounter && !hasPendingRunChoice(nextRun)
-          ? createBattleForEncounter(nextEncounter, nextRun)
-          : undefined
-
-      return {
-        ...current,
-        run: nextBattleView?.run ?? nextRun,
-        battle: nextBattleView?.battle ?? current.battle,
-      }
-    })
-  }
-
-  function chooseVerdict(choiceId: TutorialVerdictChoiceId) {
-    setViewState((current) => {
-      const nextRun = resolveTutorialVerdict(current.run, choiceId)
-      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
-      const nextBattleView =
-        nextEncounter && !hasPendingRunChoice(nextRun)
-          ? createBattleForEncounter(nextEncounter, nextRun)
-          : undefined
-
-      return {
-        ...current,
-        run: nextBattleView?.run ?? nextRun,
-        battle: nextBattleView?.battle ?? current.battle,
-      }
-    })
-  }
-
-  function applyRedInk(deckCardId?: RunDeckCardId, annotationId?: RedInkAnnotationId) {
-    setViewState((current) => {
-      const nextRun =
-        deckCardId && annotationId
-          ? resolveTutorialRedInk(current.run, { deckCardId, annotationId })
-          : resolveTutorialRedInk(current.run)
-      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
-      const nextBattleView =
-        nextEncounter && !hasPendingRunChoice(nextRun)
-          ? createBattleForEncounter(nextEncounter, nextRun)
-          : undefined
-
-      return {
-        ...current,
-        run: nextBattleView?.run ?? nextRun,
-        battle: nextBattleView?.battle ?? current.battle,
-      }
-    })
-  }
-
-  function chooseEvent(optionId: string) {
-    setViewState((current) => {
-      if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
-        return current
-      }
-
-      const node = getCurrentRouteNode(tutorialRoute, current.route)
-      const event = getCurrentRouteEvent(node, gameData.events, current.run)
-
-      if (!event) {
-        return current
-      }
-
-      const nextRun = resolveTutorialEvent(current.run, event, optionId)
-      const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
-      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
-      const nextBattleView =
-        nextEncounter && !hasPendingRunChoice(nextRun)
-          ? createBattleForEncounter(nextEncounter, nextRun)
-          : undefined
-
-      return {
-        run: nextBattleView?.run ?? nextRun,
-        route: nextRoute,
-        battle: nextBattleView?.battle ?? current.battle,
-      }
-    })
-  }
-
-  function chooseRest(optionId: TutorialRestOptionId, deckCardId?: RunDeckCardId) {
-    setViewState((current) => {
-      if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
-        return current
-      }
-
-      const node = getCurrentRouteNode(tutorialRoute, current.route)
-
-      if (node?.type !== 'rest' || node.isPlaceholder) {
-        return current
-      }
-
-      const nextRun = resolveTutorialRest(current.run, {
-        optionId,
-        deckCardId,
-        routeNodeId: node.id,
-      })
-      const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
-      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
-      const nextBattleView =
-        nextEncounter && !hasPendingRunChoice(nextRun)
-          ? createBattleForEncounter(nextEncounter, nextRun)
-          : undefined
-
-      return {
-        run: nextBattleView?.run ?? nextRun,
-        route: nextRoute,
-        battle: nextBattleView?.battle ?? current.battle,
-      }
-    })
-  }
-
-  function buyShopItem(itemId: string, deckCardId?: RunDeckCardId) {
-    setViewState((current) => {
-      if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
-        return current
-      }
-
-      const node = getCurrentRouteNode(tutorialRoute, current.route)
-
-      if (node?.type !== 'shop' || node.isPlaceholder) {
-        return current
-      }
-
-      return {
-        ...current,
-        run: resolveTutorialShopPurchase(
-          current.run,
-          {
-            itemId,
-            deckCardId,
-            routeNodeId: node.id,
-          },
-          gameData.shopItems,
-          gameData.cards,
-        ),
-      }
-    })
-  }
-
-  function leaveShop() {
-    setViewState((current) => {
-      if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
-        return current
-      }
-
-      const node = getCurrentRouteNode(tutorialRoute, current.route)
-
-      if (node?.type !== 'shop' || node.isPlaceholder) {
-        return current
-      }
-
-      const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
-      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
-      const nextBattleView = nextEncounter
-        ? createBattleForEncounter(nextEncounter, current.run)
-        : undefined
-
-      return {
-        ...current,
-        route: nextRoute,
-        run: nextBattleView?.run ?? current.run,
-        battle: nextBattleView?.battle ?? current.battle,
-      }
-    })
-  }
-
-  function advancePlaceholderNode() {
-    setViewState((current) => {
-      if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
-        return current
-      }
-
-      const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
-      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
-      const nextBattleView = nextEncounter
-        ? createBattleForEncounter(nextEncounter, current.run)
-        : undefined
-
-      return {
-        ...current,
-        route: nextRoute,
-        run: nextBattleView?.run ?? current.run,
-        battle: nextBattleView?.battle ?? current.battle,
-      }
-    })
-  }
 
   return (
     <aside
@@ -710,10 +285,14 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
           <span className="turn-pill">第 {battle.turn} 回合</span>
         </div>
         <div className="resource-grid" aria-label="玩家资源">
-          <Metric label="香火" value={`${battle.player.incense} / ${battle.player.maxIncense}`} />
-          <Metric label="墨" value={battle.resources.ink.toString()} />
-          <Metric label="劫数" value={battle.resources.doom.toString()} />
-          <Metric label="榜裂" value={battle.resources.fracture.toString()} />
+          <Metric
+            label="香火"
+            tooltip={getTermTooltip('incense')}
+            value={`${battle.player.incense} / ${battle.player.maxIncense}`}
+          />
+          <Metric label="墨" tooltip={getTermTooltip('ink')} value={battle.resources.ink.toString()} />
+          <Metric label="劫数" tooltip={getTermTooltip('doom')} value={battle.resources.doom.toString()} />
+          <Metric label="榜裂" tooltip={getTermTooltip('fracture')} value={battle.resources.fracture.toString()} />
           <Metric label="抽牌堆" value={battle.drawPile.length.toString()} />
           <Metric label="弃牌堆" value={battle.discardPile.length.toString()} />
           <Metric label="消耗区" value={battle.exhaustPile.length.toString()} />
@@ -734,12 +313,21 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
               const definition = cardDefinitionsById.get(card.definitionId)
               const isAffordable = definition ? definition.cost <= battle.player.incense : false
               const isDisabled = !canAct || !definition || !isAffordable
+              const disabledReason = getCardDisabledReason({
+                battle,
+                canAct,
+                definition,
+                enemy,
+                isAffordable,
+                run,
+              })
 
               return (
                 <button
                   className="card-button"
                   disabled={isDisabled}
                   key={card.instanceId}
+                  title={disabledReason}
                   type="button"
                   onClick={() => playCard(card)}
                 >
@@ -753,7 +341,9 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
                   {definition ? (
                     <span className="card-tags" aria-label="卡牌效果">
                       {getCardEffectLabels(definition, card).map((label) => (
-                        <span key={label}>{label}</span>
+                        <span key={label} title={getEffectTooltip(label)}>
+                          {label}
+                        </span>
                       ))}
                     </span>
                   ) : null}
@@ -766,6 +356,9 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
                   ) : null}
                   {!isAffordable && definition ? (
                     <span className="card-state">香火不足</span>
+                  ) : null}
+                  {isDisabled && disabledReason && isAffordable ? (
+                    <span className="card-state">{disabledReason}</span>
                   ) : null}
                 </button>
               )
@@ -899,6 +492,16 @@ function TutorialRunPanel({
   )
 }
 
+function getEncounterDefinition(encounterId: string) {
+  const encounter = encounterDefinitionsById.get(encounterId)
+
+  if (!encounter) {
+    throw new Error(`Missing encounter definition: ${encounterId}`)
+  }
+
+  return encounter
+}
+
 function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
   const formPercent = Math.max(0, Math.min(100, (enemy.currentForm / enemy.maxForm) * 100))
   const intentLabel = enemy.currentIntent ? t(enemy.currentIntent.nameKey) : '无'
@@ -923,10 +526,15 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
     <section className="enemy-panel" aria-label="敌人状态">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">敌形（形）</p>
+          <p className="panel-kicker" title={getTermTooltip('shape')}>
+            敌形（形）
+          </p>
           <h3>{getEnemyDefinitionName(enemy.definitionId)}</h3>
         </div>
-        <span className={enemy.isNamed ? 'status-pill named' : 'status-pill'}>
+        <span
+          className={enemy.isNamed ? 'status-pill named' : 'status-pill'}
+          title={getTermTooltip('named')}
+        >
           {enemy.isNamed ? '正名' : '未正名'}
         </span>
       </div>
@@ -935,7 +543,7 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
         <span style={{ width: `${formPercent}%` }} />
       </div>
       <div className="form-row">
-        <span>形</span>
+        <span title={getTermTooltip('shape')}>形</span>
         <strong>
           {enemy.currentForm} / {enemy.maxForm}
         </strong>
@@ -954,7 +562,17 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
       </div>
 
       <div className={`intent-banner ${intentTone}`} aria-label="敌人下一次行动">
-        <span>{intentKind === '来势' ? '直接冲击（来势）' : intentKind === '异动' ? '特殊行为（异动）' : '行动'}</span>
+        <span
+          title={
+            intentKind === '来势'
+              ? getTermTooltip('incoming_force')
+              : intentKind === '异动'
+                ? getTermTooltip('abnormal_move')
+                : undefined
+          }
+        >
+          {intentKind === '来势' ? '直接冲击（来势）' : intentKind === '异动' ? '特殊行为（异动）' : '行动'}
+        </span>
         <strong>{intentLabel}</strong>
         <small>
           {abnormalMove
@@ -968,17 +586,17 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
       </div>
       <div className="intent-detail-grid" aria-label="敌人意图详情">
         <div>
-          <span>当前来势值</span>
+          <span title={getTermTooltip('incoming_force')}>当前来势值</span>
           <strong>{enemy.incomingForce}</strong>
         </div>
         <div className={abnormalMove ? 'intent-alert active' : 'intent-alert'}>
-          <span>异动预警</span>
+          <span title={getTermTooltip('abnormal_move')}>异动预警</span>
           <strong>{abnormalMove ? t(abnormalMove.descriptionKey) : '无'}</strong>
         </div>
       </div>
       <div className="intent-rule-grid" aria-label="来势与异动处理状态">
         <div className={enemy.incomingForce > 0 ? 'rule-note active' : 'rule-note'}>
-          <span>压住来势（封势）</span>
+          <span title={getTermTooltip('seal_momentum')}>压住来势（封势）</span>
           <strong>
             {enemy.incomingForce > 0
               ? `可处理 ${enemy.incomingForce} 点`
@@ -992,7 +610,7 @@ function EnemyPanel({ enemy }: { readonly enemy: EnemyState }) {
             abnormalMove ? (hasPreparedCounter ? 'rule-note secured' : 'rule-note danger') : 'rule-note'
           }
         >
-          <span>专门处理（断异动）</span>
+          <span title={getTermTooltip('counter_abnormal_move')}>专门处理（断异动）</span>
           <strong>
             {abnormalMove
               ? hasPreparedCounter
@@ -1016,13 +634,99 @@ function PressureFeedbackPanel({ feedback }: { readonly feedback: PressureFeedba
   )
 }
 
-function Metric({ label, value }: { readonly label: string; readonly value: string }) {
+function Metric({
+  label,
+  tooltip,
+  value,
+}: {
+  readonly label: string
+  readonly tooltip?: string
+  readonly value: string
+}) {
   return (
-    <div className="metric">
+    <div className="metric" title={tooltip}>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
   )
+}
+
+function getCardDisabledReason({
+  battle,
+  canAct,
+  definition,
+  enemy,
+  isAffordable,
+  run,
+}: {
+  readonly battle: CombatState
+  readonly canAct: boolean
+  readonly definition?: CardDefinition
+  readonly enemy?: EnemyState
+  readonly isAffordable: boolean
+  readonly run: TutorialRunState
+}) {
+  if (!definition) {
+    return '缺少卡牌定义'
+  }
+
+  if (!enemy) {
+    return '当前没有可选目标'
+  }
+
+  if (!isAffordable) {
+    return `香火不足：需要 ${definition.cost}，当前 ${battle.player.incense}`
+  }
+
+  if (hasPendingRunChoice(run)) {
+    return '请先处理待裁定 / 奖励 / 朱批'
+  }
+
+  if (run.status !== 'active') {
+    return '本局不在进行中'
+  }
+
+  if (battle.phase !== 'player_turn') {
+    return '当前不是玩家回合'
+  }
+
+  if (battle.result.status !== 'ongoing') {
+    return '本场已经结算'
+  }
+
+  return canAct ? undefined : '当前不能出牌'
+}
+
+function getEffectTooltip(label: string) {
+  if (label === '破形') {
+    return getTermTooltip('break_form')
+  }
+
+  if (label === '问名') {
+    return getTermTooltip('ask_name')
+  }
+
+  if (label === '封势') {
+    return getTermTooltip('seal_momentum')
+  }
+
+  if (label === '断异动') {
+    return getTermTooltip('counter_abnormal_move')
+  }
+
+  if (label === '墨') {
+    return getTermTooltip('ink')
+  }
+
+  if (label === '劫数') {
+    return getTermTooltip('doom')
+  }
+
+  if (label === '奉坛') {
+    return getTermTooltip('altar')
+  }
+
+  return label
 }
 
 function AltarPanel({
@@ -1050,738 +754,4 @@ function AltarPanel({
       })}
     </div>
   )
-}
-
-function createCardDefinitionMap(cards: readonly CardDefinition[]) {
-  return new Map(cards.map((card) => [card.id, card]))
-}
-
-function createCardInstanceMap(cards: readonly CardInstance[]) {
-  return new Map(cards.map((card) => [card.instanceId, card]))
-}
-
-function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattleViewState {
-  const route =
-    save?.route.routeId === tutorialRoute.id ? save.route : createInitialRouteState(tutorialRoute)
-  const run =
-    save?.route.routeId === tutorialRoute.id
-      ? save.run
-      : createInitialTutorialRunState(
-          gameData.tutorialUnlocks,
-          getRouteBattleEncounterIds(tutorialRoute),
-          undefined,
-          gameData.artifacts,
-        )
-  const currentEncounter = getCurrentRouteEncounter(tutorialRoute, route, gameData.encounters)
-  const fallbackEncounter = getCurrentRouteEncounter(
-    tutorialRoute,
-    createInitialRouteState(tutorialRoute),
-    gameData.encounters,
-  )
-
-  if (!currentEncounter && !fallbackEncounter) {
-    throw new Error('Missing first route encounter')
-  }
-
-  const battleView = currentEncounter
-    ? createBattleForEncounter(currentEncounter, run)
-    : {
-        run,
-        battle: createBattle(
-          getEnemyDefinition(fallbackEncounter!.enemyDefinitionId),
-          run.unlocks,
-          run.deckCards,
-          run.verdict.maxIncenseBonus,
-          run.resources,
-          undefined,
-          run.artifacts,
-        ),
-      }
-
-  return {
-    run: battleView.run,
-    battle: battleView.battle,
-    route,
-  }
-}
-
-function getTutorialRoute(routes: readonly RouteDefinition[]) {
-  const route = routes.find((candidate) => candidate.id === 'route_chapter_one_skeleton')
-
-  if (!route) {
-    throw new Error('Missing route definition: route_chapter_one_skeleton')
-  }
-
-  return route
-}
-
-function createBattleForEncounter(
-  encounter: EncounterDefinition,
-  run: TutorialRunState,
-) {
-  const backlashResolution = resolveArtifactBacklashesAtBattleStart(run.artifacts, run.resources)
-  const nextRun = {
-    ...run,
-    artifacts: backlashResolution.artifacts,
-  }
-
-  return {
-    run: nextRun,
-    battle: createBattle(
-      getEnemyDefinition(encounter.enemyDefinitionId),
-      nextRun.unlocks,
-      nextRun.deckCards,
-      nextRun.verdict.maxIncenseBonus,
-      backlashResolution.resources,
-      backlashResolution.temporaryResourceDelta,
-      nextRun.artifacts,
-      backlashResolution.extraHandDefinitionIds,
-      backlashResolution.records,
-    ),
-  }
-}
-
-function createArtifactBattleProgress(
-  battle: CombatState,
-  defeatedEnemy: EnemyState,
-): ArtifactBattleProgressInput {
-  const askNameCount = battle.actionLog.filter(
-    (entry) => entry.type === 'NAME_ASKED' && entry.payload.result !== 'no_target',
-  ).length
-  const isNamedEnemy = defeatedEnemy.nameSlots.length > 0
-  const settlement = battle.result.status === 'victory' ? battle.result.settlement : undefined
-
-  return {
-    askNameCount,
-    catalogueNamedEnemyCount: settlement === 'catalogue' && isNamedEnemy ? 1 : 0,
-    vanquishNamedEnemyBeforeNamedCount:
-      settlement === 'vanquish' && isNamedEnemy && !defeatedEnemy.isNamed ? 1 : 0,
-  }
-}
-
-function getPersistentBattleResources(battle: CombatState) {
-  return {
-    ink: battle.resources.ink - battle.temporaryResourceDelta.ink,
-    doom: battle.resources.doom - battle.temporaryResourceDelta.doom,
-    fracture: battle.resources.fracture - battle.temporaryResourceDelta.fracture,
-  }
-}
-
-function hasPendingRunChoice(run: TutorialRunState) {
-  return Boolean(run.pendingVerdict || run.pendingRedInk || run.pendingReward)
-}
-
-function getRevealedNameKeys(enemy: EnemyState) {
-  return enemy.nameSlots
-    .filter((slot) => slot.isRevealed && slot.nameKey)
-    .map((slot) => slot.nameKey as string)
-}
-
-function getEncounterDefinition(encounterId: string) {
-  const encounter = encounterDefinitionsById.get(encounterId)
-
-  if (!encounter) {
-    throw new Error(`Missing encounter definition: ${encounterId}`)
-  }
-
-  return encounter
-}
-
-function getEnemyDefinition(definitionId: string) {
-  const enemy = enemyDefinitionsById.get(definitionId)
-
-  if (!enemy) {
-    throw new Error(`Missing enemy definition: ${definitionId}`)
-  }
-
-  return enemy
-}
-
-function getUnlockStageName(stageId: string) {
-  const stage = gameData.tutorialUnlocks.find((candidate) => candidate.id === stageId)
-
-  return stage ? t(stage.nameKey) : stageId
-}
-
-function getRunHeadline(status: TutorialRunState['status']) {
-  if (status === 'complete') {
-    return '路线收束'
-  }
-
-  if (status === 'failed') {
-    return '路线中止'
-  }
-
-  return '路线推进中'
-}
-
-function getRunProgressLabel(run: TutorialRunState) {
-  if (run.status === 'complete') {
-    return '已完成'
-  }
-
-  if (run.status === 'failed') {
-    return '已中止'
-  }
-
-  return `第 ${run.currentEncounterIndex + 1} / ${run.encounterIds.length} 场`
-}
-
-function isFinalEncounter(run: TutorialRunState) {
-  return run.currentEncounterIndex >= run.encounterIds.length - 1
-}
-
-function getCurrentAbnormalMove(enemy: EnemyState): AbnormalMoveDefinition | undefined {
-  return enemy.currentIntent?.effects.find((effect) => effect.type === 'ABNORMAL_MOVE')?.move
-}
-
-function createPressureFeedback(
-  battle: CombatState,
-  cardDefinitionsById: ReadonlyMap<string, CardDefinition>,
-  allCardsByInstanceId: ReadonlyMap<string, CardInstance>,
-): PressureFeedback | undefined {
-  const entry = battle.actionLog
-    .slice()
-    .reverse()
-    .find((candidate) =>
-      [
-        'INCOMING_FORCE_SEALED',
-        'ABNORMAL_MOVE_COUNTERED',
-        'ABNORMAL_MOVE_EXECUTED',
-        'INCOMING_FORCE_CREATED',
-      ].includes(candidate.type),
-    )
-
-  if (!entry) {
-    return undefined
-  }
-
-  const sourceCardName = getCardName(entry.sourceId, cardDefinitionsById, allCardsByInstanceId)
-  const sourceName = sourceCardName ?? sourceEnemyName(entry.sourceId, battle) ?? '敌方'
-
-  if (entry.type === 'INCOMING_FORCE_SEALED') {
-    const amount = getPayloadNumber(entry.payload.amount) ?? 0
-    const remaining = getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0
-
-    return {
-      tone: 'sealed',
-      label: '封势反馈',
-      title: amount > 0 ? `${sourceName}压住 ${amount} 点来势` : `${sourceName}未压住来势`,
-      detail: amount > 0 ? `敌方当前剩余来势 ${remaining}。` : '当前没有可被封势处理的直接来势。',
-    }
-  }
-
-  if (entry.type === 'ABNORMAL_MOVE_COUNTERED') {
-    const moveLabel = getMoveLabel(getPayloadString(entry.payload.moveType))
-    const result = getPayloadString(entry.payload.result)
-
-    return {
-      tone: 'countered',
-      label: result === 'prevented' ? '断异动成功' : '断异动已布置',
-      title:
-        result === 'prevented'
-          ? `${moveLabel}已被专门效果处理`
-          : `${sourceName}准备处理${moveLabel}`,
-      detail:
-        result === 'prevented'
-          ? '本次异动没有生效。'
-          : '敌人行动时若发动对应异动，会被这次布置阻止。',
-    }
-  }
-
-  if (entry.type === 'ABNORMAL_MOVE_EXECUTED') {
-    const moveLabel = getMoveLabel(getPayloadString(entry.payload.moveType))
-    const incensePenalty = getPayloadNumber(entry.payload.nextTurnIncensePenalty) ?? 0
-
-    return {
-      tone: 'abnormal',
-      label: '异动生效',
-      title: `${sourceName}发动${moveLabel}`,
-      detail:
-        incensePenalty > 0
-          ? `下回合香火将受扰 -${incensePenalty}。`
-          : '本次异动已经结算。',
-    }
-  }
-
-  const amount = getPayloadNumber(entry.payload.amount) ?? 0
-
-  return {
-    tone: 'incoming',
-    label: '来势结算',
-    title: amount > 0 ? `${sourceName}来势 ${amount}` : '来势已被压住',
-    detail: amount > 0 ? '未被封掉的来势进入敌方行动结算。' : '敌人的直接来势没有形成压力。',
-  }
-}
-
-function formatLogEntry(
-  entry: ActionLogEntry,
-  battle: CombatState,
-  cardDefinitionsById: ReadonlyMap<string, CardDefinition>,
-  allCardsByInstanceId: ReadonlyMap<string, CardInstance>,
-) {
-  const sourceCardName = getCardName(entry.sourceId, cardDefinitionsById, allCardsByInstanceId)
-  const targetEnemyName = getEnemyName(entry.targetId, battle)
-
-  if (entry.type === 'BATTLE_STARTED') {
-    return `开战：${targetEnemyName ?? '纸面鬼'}入案。`
-  }
-
-  if (entry.type === 'TURN_STARTED') {
-    return `第 ${entry.turn} 回合开始。`
-  }
-
-  if (entry.type === 'TURN_ENDED') {
-    return `第 ${entry.turn} 回合结束。`
-  }
-
-  if (entry.type === 'CARD_DRAWN') {
-    return `抽入：${sourceCardName ?? getCardNameFromPayload(entry, cardDefinitionsById)}。`
-  }
-
-  if (entry.type === 'CARD_PLAYED') {
-    return `出牌：${sourceCardName ?? getCardNameFromPayload(entry, cardDefinitionsById)}。`
-  }
-
-  if (entry.type === 'CARD_ANNOTATION_TRIGGERED') {
-    return `朱批触发：${t(getPayloadString(entry.payload.nameKey))}。`
-  }
-
-  if (entry.type === 'CARD_PLAY_REJECTED') {
-    return getPayloadString(entry.payload.reason) === 'not_enough_incense'
-      ? '香火不足，未能出牌。'
-      : '当前不能出牌。'
-  }
-
-  if (entry.type === 'CARD_DISCARDED') {
-    return `弃置：${sourceCardName ?? getCardNameFromPayload(entry, cardDefinitionsById)}。`
-  }
-
-  if (entry.type === 'CARD_EXHAUSTED') {
-    return `移入消耗区：${sourceCardName ?? getCardNameFromPayload(entry, cardDefinitionsById)}。`
-  }
-
-  if (entry.type === 'PILE_SHUFFLED') {
-    return `弃牌堆回洗，共 ${getPayloadNumber(entry.payload.count) ?? 0} 张。`
-  }
-
-  if (entry.type === 'INCENSE_GAINED') {
-    const incensePenalty = getPayloadNumber(entry.payload.incensePenalty) ?? 0
-
-    if (incensePenalty > 0) {
-      return `香火受扰 -${incensePenalty}，本回合获得 ${
-        getPayloadNumber(entry.payload.amount) ?? 0
-      }，当前 ${getPayloadNumber(entry.payload.currentIncense) ?? 0}。`
-    }
-
-    return `香火 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
-      getPayloadNumber(entry.payload.currentIncense) ?? 0
-    }。`
-  }
-
-  if (entry.type === 'INCENSE_SPENT') {
-    return `香火 -${getPayloadNumber(entry.payload.amount) ?? 0}，余 ${
-      getPayloadNumber(entry.payload.currentIncense) ?? 0
-    }。`
-  }
-
-  if (entry.type === 'INK_GAINED') {
-    return `墨 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
-      getPayloadNumber(entry.payload.currentInk) ?? 0
-    }。`
-  }
-
-  if (entry.type === 'DOOM_GAINED') {
-    return `劫数 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
-      getPayloadNumber(entry.payload.currentDoom) ?? 0
-    }。`
-  }
-
-  if (entry.type === 'ALTAR_PLACED') {
-    const sourceDefinitionId = getPayloadString(entry.payload.sourceCardDefinitionId)
-    const sourceDefinition = sourceDefinitionId
-      ? cardDefinitionsById.get(sourceDefinitionId)
-      : undefined
-
-    return `奉坛：${getAltarSlotLabel(getPayloadString(entry.payload.slot))}置入${
-      sourceDefinition ? t(sourceDefinition.nameKey) : '符诏'
-    }。`
-  }
-
-  if (entry.type === 'ALTAR_TRIGGERED') {
-    const slotLabel = getAltarSlotLabel(getPayloadString(entry.payload.slot))
-    const result = getPayloadString(entry.payload.result)
-
-    if (result === 'gain_ink') {
-      return `${slotLabel}触发：墨 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
-        getPayloadNumber(entry.payload.currentInk) ?? 0
-      }。`
-    }
-
-    if (result === 'counter_abnormal') {
-      return `${slotLabel}触发：准备断异动 ${getMoveLabel(
-        getPayloadString(entry.payload.moveType),
-      )}。`
-    }
-
-    if (result === 'ask_name') {
-      return `${slotLabel}触发：问名 ${getPayloadNumber(entry.payload.amount) ?? 0}。`
-    }
-
-    return `${slotLabel}未触发。`
-  }
-
-  if (entry.type === 'ALTAR_EXPIRED') {
-    return `${getAltarSlotLabel(getPayloadString(entry.payload.slot))}归寂。`
-  }
-
-  if (entry.type === 'ARTIFACT_TRIGGERED') {
-    const artifactName = getArtifactName(entry.sourceId)
-    const result = getPayloadString(entry.payload.result)
-
-    if (result === 'prepared') {
-      return `${artifactName}触发：下一次破形额外 +${
-        getPayloadNumber(entry.payload.amount) ?? 0
-      }。`
-    }
-
-    if (result === 'consumed') {
-      return `${artifactName}借势：本次破形额外 +${
-        getPayloadNumber(entry.payload.amount) ?? 0
-      }。`
-    }
-
-    return `${artifactName}触发。`
-  }
-
-  if (entry.type === 'ARTIFACT_BACKLASH_TRIGGERED') {
-    const artifactName = getArtifactName(entry.sourceId)
-    const cardDefinitionId = getPayloadString(entry.payload.cardDefinitionId)
-    const cardDefinition = cardDefinitionId ? cardDefinitionsById.get(cardDefinitionId) : undefined
-    const fractureDelta = getPayloadNumber(entry.payload.fractureDelta) ?? 0
-
-    if (cardDefinition) {
-      return `${artifactName}反噬：${t(cardDefinition.nameKey)}临时入手。`
-    }
-
-    if (fractureDelta > 0) {
-      return `${artifactName}反噬：本场开始时榜裂 +${fractureDelta}。`
-    }
-
-    return `${artifactName}反噬已结算。`
-  }
-
-  if (entry.type === 'FORM_BROKEN') {
-    return `${sourceCardName ?? '符诏'}破形 ${getPayloadNumber(entry.payload.amount) ?? 0}，${
-      targetEnemyName ?? '敌方'
-    }余形 ${getPayloadNumber(entry.payload.currentForm) ?? 0}。`
-  }
-
-  if (entry.type === 'NAME_ASKED') {
-    return getPayloadString(entry.payload.result) === 'discern_intent'
-      ? `${sourceCardName ?? '问名'}转为辨势。`
-      : `${sourceCardName ?? '问名'}查明真名（问名）。`
-  }
-
-  if (entry.type === 'NAME_SLOT_REVEALED') {
-    return `名格显现：${t(getPayloadString(entry.payload.nameKey))}。`
-  }
-
-  if (entry.type === 'ENEMY_NAMED') {
-    return `${targetEnemyName ?? '敌方'}真名已明（正名）。`
-  }
-
-  if (entry.type === 'NAME_BREAK_TRIGGERED') {
-    return `名破 ${getPayloadNumber(entry.payload.amount) ?? 0}，余形 ${
-      getPayloadNumber(entry.payload.currentForm) ?? 0
-    }。`
-  }
-
-  if (entry.type === 'INCOMING_FORCE_CREATED') {
-    const amount = getPayloadNumber(entry.payload.amount) ?? 0
-
-    return amount > 0
-      ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}来势结算 ${amount}。`
-      : `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}来势已被完全压住。`
-  }
-
-  if (entry.type === 'INCOMING_FORCE_SEALED') {
-    const amount = getPayloadNumber(entry.payload.amount) ?? 0
-    const remaining = getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0
-
-    return amount > 0
-      ? `${sourceCardName ?? '符诏'}封势 ${amount}，剩余来势 ${remaining}。`
-      : `${sourceCardName ?? '符诏'}封势未生效：当前没有可压住的来势。`
-  }
-
-  if (entry.type === 'ABNORMAL_MOVE_EXECUTED') {
-    const incensePenalty = getPayloadNumber(entry.payload.nextTurnIncensePenalty) ?? 0
-
-    return `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}发动异动：${getMoveLabel(
-      getPayloadString(entry.payload.moveType),
-    )}${incensePenalty > 0 ? `，下回合香火受扰 -${incensePenalty}` : ''}。`
-  }
-
-  if (entry.type === 'ABNORMAL_MOVE_COUNTERED') {
-    const result = getPayloadString(entry.payload.result)
-
-    return result === 'prevented'
-      ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${getMoveLabel(
-          getPayloadString(entry.payload.moveType),
-        )}被断异动阻止。`
-      : `${sourceCardName ?? '符诏'}准备断异动：${getMoveLabel(
-          getPayloadString(entry.payload.moveType),
-        )}。`
-  }
-
-  if (entry.type === 'VICTORY_SETTLED') {
-    const settlement = getPayloadString(entry.payload.settlement) as VictorySettlement | undefined
-    return `战斗结算：${settlement ? getSettlementLabel(settlement) : '已结算'}。`
-  }
-
-  return entry.type
-}
-
-function getCardName(
-  sourceId: string | undefined,
-  cardDefinitionsById: ReadonlyMap<string, CardDefinition>,
-  allCardsByInstanceId: ReadonlyMap<string, CardInstance>,
-) {
-  if (!sourceId) {
-    return undefined
-  }
-
-  const instance = allCardsByInstanceId.get(sourceId)
-  const definition = instance ? cardDefinitionsById.get(instance.definitionId) : undefined
-
-  return definition ? t(definition.nameKey) : undefined
-}
-
-function getCardNameFromPayload(
-  entry: ActionLogEntry,
-  cardDefinitionsById: ReadonlyMap<string, CardDefinition>,
-) {
-  const cardDefinitionId = getPayloadString(entry.payload.cardDefinitionId)
-  const definition = cardDefinitionId ? cardDefinitionsById.get(cardDefinitionId) : undefined
-
-  return definition ? t(definition.nameKey) : '未知牌'
-}
-
-function getEnemyName(targetId: string | undefined, battle: CombatState) {
-  if (!targetId) {
-    return undefined
-  }
-
-  const enemy = battle.enemies.find((candidate) => candidate.instanceId === targetId)
-
-  return enemy ? getEnemyDefinitionName(enemy.definitionId) : undefined
-}
-
-function sourceEnemyName(sourceId: string | undefined, battle: CombatState) {
-  return getEnemyName(sourceId, battle)
-}
-
-function getArtifactName(sourceId: string | undefined) {
-  const artifact = sourceId ? artifactDefinitionsById.get(sourceId) : undefined
-
-  return artifact ? t(artifact.nameKey) : '法宝'
-}
-
-function getPayloadNumber(value: JsonValue | undefined) {
-  return typeof value === 'number' ? value : undefined
-}
-
-function getPayloadString(value: JsonValue | undefined) {
-  return typeof value === 'string' ? value : undefined
-}
-
-function getCardEffectLabels(definition: CardDefinition, card?: CardInstance) {
-  const effects = [
-    ...definition.effects,
-    ...(card?.annotations.flatMap((annotation) => annotation.effects) ?? []),
-  ]
-
-  return Array.from(
-    new Set(
-      effects.map((effect) => {
-        if (effect.type === 'BREAK_SHAPE') {
-          return '破形'
-        }
-
-        if (effect.type === 'ASK_NAME') {
-          return '问名'
-        }
-
-        if (effect.type === 'SEAL_MOMENTUM') {
-          return '封势'
-        }
-
-        if (effect.type === 'COUNTER_ABNORMAL_MOVE') {
-          return '断异动'
-        }
-
-        if (effect.type === 'DRAW') {
-          return '抽牌'
-        }
-
-        if (effect.type === 'GAIN_INCENSE') {
-          return '香火'
-        }
-
-        if (effect.type === 'GAIN_INK') {
-          return '墨'
-        }
-
-        if (effect.type === 'GAIN_DOOM') {
-          return '劫数'
-        }
-
-        return '奉坛'
-      }),
-    ),
-  )
-}
-
-function getLogEntryClassName(entry: ActionLogEntry) {
-  if (entry.type === 'INCOMING_FORCE_CREATED') {
-    return 'log-entry incoming'
-  }
-
-  if (entry.type === 'INCOMING_FORCE_SEALED') {
-    return 'log-entry sealed'
-  }
-
-  if (entry.type === 'ABNORMAL_MOVE_EXECUTED') {
-    return 'log-entry abnormal'
-  }
-
-  if (entry.type === 'ABNORMAL_MOVE_COUNTERED') {
-    return 'log-entry countered'
-  }
-
-  if (entry.type === 'FORM_BROKEN' || entry.type === 'NAME_BREAK_TRIGGERED') {
-    return 'log-entry form'
-  }
-
-  if (
-    entry.type === 'NAME_ASKED' ||
-    entry.type === 'NAME_SLOT_REVEALED' ||
-    entry.type === 'ENEMY_NAMED' ||
-    entry.type === 'CARD_ANNOTATION_TRIGGERED' ||
-    entry.type === 'INK_GAINED' ||
-    entry.type === 'DOOM_GAINED' ||
-    entry.type === 'ALTAR_PLACED' ||
-    entry.type === 'ALTAR_TRIGGERED' ||
-    entry.type === 'ALTAR_EXPIRED' ||
-    entry.type === 'ARTIFACT_TRIGGERED' ||
-    entry.type === 'ARTIFACT_BACKLASH_TRIGGERED'
-  ) {
-    return 'log-entry name'
-  }
-
-  return 'log-entry'
-}
-
-function getSettlementLabel(settlement: VictorySettlement) {
-  return settlement === 'catalogue' ? '归册' : '伏诛'
-}
-
-function getSettlementText(settlement: VictorySettlement) {
-  return settlement === 'catalogue'
-    ? '真名入卷，先入裁定，再领取高质量奖励。'
-    : '敌形已散，获得普通奖励。'
-}
-
-function getRouteFlowLabel(flowKind: RouteFlowKind) {
-  if (flowKind === 'event') {
-    return '事件节点'
-  }
-
-  if (flowKind === 'rest') {
-    return '休整节点'
-  }
-
-  if (flowKind === 'shop') {
-    return '商店节点'
-  }
-
-  if (flowKind === 'event_placeholder') {
-    return '事件占位'
-  }
-
-  if (flowKind === 'rest_placeholder') {
-    return '休整占位'
-  }
-
-  if (flowKind === 'shop_placeholder') {
-    return '商店占位'
-  }
-
-  if (flowKind === 'battle') {
-    return '战斗节点'
-  }
-
-  return '路线收束'
-}
-
-function getMoveLabel(moveType: string | undefined) {
-  if (moveType === 'steal_incense') {
-    return '偷香'
-  }
-
-  if (moveType === 'add_fouled_scroll') {
-    return '塞污卷'
-  }
-
-  if (moveType === 'cover_name') {
-    return '遮名'
-  }
-
-  if (moveType === 'heal_form') {
-    return '回形'
-  }
-
-  return moveType ?? '异动'
-}
-
-function getAltarSlotLabel(slot: string | undefined) {
-  if (slot === 'human') {
-    return '人坛'
-  }
-
-  if (slot === 'earth') {
-    return '地坛'
-  }
-
-  if (slot === 'heaven') {
-    return '天坛'
-  }
-
-  return '坛位'
-}
-
-function getAltarEffectLabel(altar: AltarState) {
-  if (altar.effect.type === 'gain_ink_for_name_progress') {
-    return '回合末问名得墨'
-  }
-
-  if (altar.effect.type === 'counter_abnormal_or_gain_ink') {
-    return '敌方回合断异动'
-  }
-
-  return '下回合问名得墨'
-}
-
-function getEnemyDefinitionName(definitionId: string) {
-  const definition = enemyDefinitionsById.get(definitionId)
-
-  return definition ? t(definition.nameKey) : definitionId
-}
-
-function t(key: string | undefined) {
-  if (!key) {
-    return '未记名'
-  }
-
-  return gameData.localization[key] ?? key
 }

@@ -8,6 +8,7 @@ export interface RouteNodeDefinition {
   readonly nameKey: LocalizationKey
   readonly descriptionKey: LocalizationKey
   readonly encounterId?: EncounterId
+  readonly encounterPoolIds?: readonly EncounterId[]
   readonly eventPoolIds?: readonly EventId[]
   readonly nextNodeIds: readonly RouteNodeId[]
   readonly isPlaceholder?: boolean
@@ -26,6 +27,7 @@ export interface RouteState {
   readonly currentNodeId?: RouteNodeId
   readonly completedNodeIds: readonly RouteNodeId[]
   readonly reachableNodeIds: readonly RouteNodeId[]
+  readonly encounterSelections?: Readonly<Record<RouteNodeId, EncounterId>>
 }
 
 export type RouteNodeStatus = 'completed' | 'current' | 'reachable' | 'locked'

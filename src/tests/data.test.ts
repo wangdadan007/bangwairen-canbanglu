@@ -6,10 +6,10 @@ describe('initial game data', () => {
     const data = loadGameData()
 
     expect(data.artifacts).toHaveLength(8)
-    expect(data.cards).toHaveLength(32)
+    expect(data.cards).toHaveLength(44)
     expect(data.enemies).toHaveLength(16)
     expect(data.encounters).toHaveLength(22)
-    expect(data.events).toHaveLength(4)
+    expect(data.events).toHaveLength(9)
     expect(data.routes).toHaveLength(1)
     expect(data.shopItems).toHaveLength(5)
     expect(data.tutorialUnlocks).toHaveLength(6)
@@ -335,6 +335,8 @@ describe('initial game data', () => {
         route.nodes.every(
           (node) =>
             (!node.encounterId || encounterIds.has(node.encounterId)) &&
+            (node.encounterPoolIds?.every((encounterId) => encounterIds.has(encounterId)) ??
+              true) &&
             (node.eventPoolIds?.every((eventId) => eventIds.has(eventId)) ?? true),
         ),
       ),
@@ -356,10 +358,12 @@ describe('initial game data', () => {
       'shop',
       'rest',
       'elite',
+      'event',
       'normal_battle',
       'elite',
       'normal_battle',
       'elite',
+      'event',
       'normal_battle',
       'boss',
     ])
@@ -369,6 +373,7 @@ describe('initial game data', () => {
       'event_abandoned_registry_desk',
       'event_ash_altar_lamp',
       'event_cinnabar_scribe',
+      'event_cracked_registry_needle',
     ])
     expect(route.nodes.find((node) => node.type === 'event')?.nextNodeIds).toEqual([
       'route_node_first_shop',
@@ -377,8 +382,11 @@ describe('initial game data', () => {
       'route_node_rest_site',
     ])
     expect(route.nodes.find((node) => node.type === 'elite')?.nextNodeIds).toEqual([
-      'route_node_late_plague_paper_figure',
+      'route_node_mid_event',
     ])
+    expect(
+      route.nodes.filter((node) => node.type === 'event').map((node) => node.eventPoolIds?.length),
+    ).toEqual([5, 4, 5])
     expect(route.nodes.find((node) => node.type === 'boss')?.nextNodeIds).toEqual([])
     expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
       'encounter_tutorial_paper_wraith',
@@ -403,10 +411,10 @@ describe('initial game data', () => {
       sealMomentum: data.cards.filter((card) => card.tags.includes('seal_momentum')),
     }
 
-    expect(cardsByDirection.breakForm).toHaveLength(10)
-    expect(cardsByDirection.askName).toHaveLength(10)
-    expect(cardsByDirection.sealMomentum).toHaveLength(5)
-    expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(23)
+    expect(cardsByDirection.breakForm).toHaveLength(13)
+    expect(cardsByDirection.askName).toHaveLength(15)
+    expect(cardsByDirection.sealMomentum).toHaveLength(9)
+    expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(35)
   })
 
   it('keeps early chapter reward numbers within the current enemy curve', () => {

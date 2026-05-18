@@ -78,7 +78,68 @@ describe('T10 tutorial rewards', () => {
       resourceUnlocks,
       'ordinary',
     ).map((card) => card.id)).toEqual(
-      expect.arrayContaining(['card_ink_rubbing_slip', 'card_borrowed_doom_talisman']),
+      expect.arrayContaining([
+        'card_ink_rubbing_slip',
+        'card_borrowed_doom_talisman',
+        'card_clean_scroll_charm',
+      ]),
+    )
+  })
+
+  it('keeps T37 and T38 card additions gated by stage and reward quality', () => {
+    const resourceUnlocks = createUnlockState(
+      ['stage_core', 'stage_abnormal_boundary', 'stage_red_ink_preview', 'stage_run_resources'],
+      gameData.tutorialUnlocks,
+    )
+    const altarUnlocks = createUnlockState(
+      [
+        'stage_core',
+        'stage_abnormal_boundary',
+        'stage_red_ink_preview',
+        'stage_run_resources',
+        'stage_human_altar',
+        'stage_three_altars',
+      ],
+      gameData.tutorialUnlocks,
+    )
+    const resourceOrdinaryIds = getAvailableTutorialRewardCards(
+      gameData.cards,
+      resourceUnlocks,
+      'ordinary',
+    ).map((card) => card.id)
+    const altarOrdinaryIds = getAvailableTutorialRewardCards(
+      gameData.cards,
+      altarUnlocks,
+      'ordinary',
+    ).map((card) => card.id)
+    const altarHighIds = getAvailableTutorialRewardCards(
+      gameData.cards,
+      altarUnlocks,
+      'high',
+    ).map((card) => card.id)
+
+    expect(resourceOrdinaryIds).toEqual(
+      expect.arrayContaining([
+        'card_clean_scroll_charm',
+        'card_doom_account_tally',
+        'card_fracture_guard_talisman',
+      ]),
+    )
+    expect(resourceOrdinaryIds).not.toContain('card_name_net_talisman')
+    expect(altarOrdinaryIds).toEqual(
+      expect.arrayContaining([
+        'card_name_net_talisman',
+        'card_ash_lamp_counterseal',
+        'card_altar_threefold_sigil',
+      ]),
+    )
+    expect(altarHighIds).toEqual(
+      expect.arrayContaining([
+        'card_mirror_bind_edict',
+        'card_whip_follow_charm',
+        'card_registry_rewrite_edict',
+        'card_heaven_ink_decree',
+      ]),
     )
   })
 

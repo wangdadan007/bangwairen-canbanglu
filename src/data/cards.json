@@ -633,6 +633,312 @@
     ]
   },
   {
+    "id": "card_clean_scroll_charm",
+    "nameKey": "card.clean_scroll_charm.name",
+    "descriptionKey": "card.clean_scroll_charm.description",
+    "rulesTextKey": "card.clean_scroll_charm.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "counter_abnormal_move", "abnormal_move", "draw", "fouled_scroll"],
+    "effects": [
+      {
+        "type": "COUNTER_ABNORMAL_MOVE",
+        "target": "selected_enemy",
+        "moveType": "add_fouled_scroll"
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "card_name_net_talisman",
+    "nameKey": "card.name_net_talisman.name",
+    "descriptionKey": "card.name_net_talisman.description",
+    "rulesTextKey": "card.name_net_talisman.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_three_altars",
+    "tags": ["reward", "ask_name", "seal_momentum", "counter_abnormal_move"],
+    "effects": [
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      },
+      {
+        "type": "SEAL_MOMENTUM",
+        "target": "selected_enemy",
+        "amount": 2
+      },
+      {
+        "type": "COUNTER_ABNORMAL_MOVE",
+        "target": "selected_enemy",
+        "moveType": "cover_name"
+      }
+    ]
+  },
+  {
+    "id": "card_mirror_bind_edict",
+    "nameKey": "card.mirror_bind_edict.name",
+    "descriptionKey": "card.mirror_bind_edict.description",
+    "rulesTextKey": "card.mirror_bind_edict.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_three_altars",
+    "tags": ["reward", "catalogue_reward", "artifact", "ask_name", "ink"],
+    "effects": [
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      },
+      {
+        "type": "GAIN_INK",
+        "target": "self",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "card_sealback_talisman",
+    "nameKey": "card.sealback_talisman.name",
+    "descriptionKey": "card.sealback_talisman.description",
+    "rulesTextKey": "card.sealback_talisman.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_abnormal_boundary",
+    "tags": ["reward", "seal_momentum", "incoming_force", "draw"],
+    "effects": [
+      {
+        "type": "SEAL_MOMENTUM",
+        "target": "selected_enemy",
+        "amount": 4
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1,
+        "condition": {
+          "type": "TARGET_HAS_REVEALED_NAME_SLOT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_cinnabar_return_slip",
+    "nameKey": "card.cinnabar_return_slip.name",
+    "descriptionKey": "card.cinnabar_return_slip.description",
+    "rulesTextKey": "card.cinnabar_return_slip.rules",
+    "cost": 0,
+    "type": "ritual",
+    "unlockStage": "stage_red_ink_preview",
+    "tags": ["reward", "red_ink_preview", "gain_incense", "draw", "exhaust"],
+    "effects": [
+      {
+        "type": "GAIN_INCENSE",
+        "target": "self",
+        "amount": 1
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1,
+        "condition": {
+          "type": "THIS_TURN_NAMED_ENEMY"
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_doom_account_tally",
+    "nameKey": "card.doom_account_tally.name",
+    "descriptionKey": "card.doom_account_tally.description",
+    "rulesTextKey": "card.doom_account_tally.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "doom", "ask_name", "draw"],
+    "effects": [
+      {
+        "type": "GAIN_DOOM",
+        "target": "self",
+        "amount": 1
+      },
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "id": "card_whip_follow_charm",
+    "nameKey": "card.whip_follow_charm.name",
+    "descriptionKey": "card.whip_follow_charm.description",
+    "rulesTextKey": "card.whip_follow_charm.rules",
+    "cost": 1,
+    "type": "talisman",
+    "unlockStage": "stage_three_altars",
+    "tags": ["reward", "catalogue_reward", "artifact", "break_form", "ask_name"],
+    "effects": [
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 5
+      },
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1,
+        "condition": {
+          "type": "TARGET_HAS_REVEALED_NAME_SLOT"
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_ash_lamp_counterseal",
+    "nameKey": "card.ash_lamp_counterseal.name",
+    "descriptionKey": "card.ash_lamp_counterseal.description",
+    "rulesTextKey": "card.ash_lamp_counterseal.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_three_altars",
+    "tags": ["reward", "seal_momentum", "counter_abnormal_move", "ink"],
+    "effects": [
+      {
+        "type": "SEAL_MOMENTUM",
+        "target": "selected_enemy",
+        "amount": 3
+      },
+      {
+        "type": "COUNTER_ABNORMAL_MOVE",
+        "target": "selected_enemy",
+        "moveType": "heal_form"
+      },
+      {
+        "type": "GAIN_INK",
+        "target": "self",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "card_registry_rewrite_edict",
+    "nameKey": "card.registry_rewrite_edict.name",
+    "descriptionKey": "card.registry_rewrite_edict.description",
+    "rulesTextKey": "card.registry_rewrite_edict.rules",
+    "cost": 2,
+    "type": "edict",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "catalogue_reward", "fracture", "break_form", "draw"],
+    "effects": [
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 7
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1,
+        "condition": {
+          "type": "THIS_TURN_NAMED_ENEMY"
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_heaven_ink_decree",
+    "nameKey": "card.heaven_ink_decree.name",
+    "descriptionKey": "card.heaven_ink_decree.description",
+    "rulesTextKey": "card.heaven_ink_decree.rules",
+    "cost": 1,
+    "type": "edict",
+    "unlockStage": "stage_three_altars",
+    "tags": ["reward", "catalogue_reward", "heaven_altar", "ask_name", "ink"],
+    "effects": [
+      {
+        "type": "ASK_NAME",
+        "target": "selected_enemy",
+        "amount": 1
+      },
+      {
+        "type": "GAIN_INK",
+        "target": "self",
+        "amount": 1
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1,
+        "condition": {
+          "type": "THIS_TURN_NAMED_ENEMY"
+        }
+      }
+    ]
+  },
+  {
+    "id": "card_altar_threefold_sigil",
+    "nameKey": "card.altar_threefold_sigil.name",
+    "descriptionKey": "card.altar_threefold_sigil.description",
+    "rulesTextKey": "card.altar_threefold_sigil.rules",
+    "cost": 2,
+    "type": "ritual",
+    "unlockStage": "stage_three_altars",
+    "tags": ["reward", "altar", "human_altar", "earth_altar", "heaven_altar", "ink"],
+    "effects": [
+      {
+        "type": "PLACE_ALTAR",
+        "target": "selected_enemy",
+        "altarSlot": "human",
+        "altarEffect": {
+          "type": "gain_ink_for_name_progress",
+          "amount": 1
+        }
+      },
+      {
+        "type": "GAIN_INK",
+        "target": "self",
+        "amount": 1
+      }
+    ]
+  },
+  {
+    "id": "card_fracture_guard_talisman",
+    "nameKey": "card.fracture_guard_talisman.name",
+    "descriptionKey": "card.fracture_guard_talisman.description",
+    "rulesTextKey": "card.fracture_guard_talisman.rules",
+    "cost": 1,
+    "type": "counter",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "fracture", "seal_momentum", "break_form"],
+    "effects": [
+      {
+        "type": "SEAL_MOMENTUM",
+        "target": "selected_enemy",
+        "amount": 3
+      },
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 3,
+        "condition": {
+          "type": "TARGET_HAS_REVEALED_NAME_SLOT"
+        }
+      }
+    ]
+  },
+  {
     "id": "card_fouled_scroll",
     "nameKey": "card.fouled_scroll.name",
     "descriptionKey": "card.fouled_scroll.description",

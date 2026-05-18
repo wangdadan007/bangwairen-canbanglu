@@ -35,6 +35,12 @@
         "nameKey": "route.node.unlit_temple_warden.name",
         "descriptionKey": "route.node.unlit_temple_warden.description",
         "encounterId": "encounter_mid_unlit_temple_warden",
+        "encounterPoolIds": [
+          "encounter_mid_unlit_temple_warden",
+          "encounter_mid_fortune_breaker",
+          "encounter_mid_ash_altar_child",
+          "encounter_pool_bronze_bell_patrol_return"
+        ],
         "nextNodeIds": ["route_node_first_event"]
       },
       {
@@ -46,7 +52,8 @@
           "event_mid_ink_pool",
           "event_abandoned_registry_desk",
           "event_ash_altar_lamp",
-          "event_cinnabar_scribe"
+          "event_cinnabar_scribe",
+          "event_cracked_registry_needle"
         ],
         "nextNodeIds": ["route_node_first_shop"]
       },
@@ -70,6 +77,19 @@
         "nameKey": "route.node.first_elite.name",
         "descriptionKey": "route.node.first_elite.description",
         "encounterId": "encounter_elite_incense_clerk",
+        "nextNodeIds": ["route_node_mid_event"]
+      },
+      {
+        "id": "route_node_mid_event",
+        "type": "event",
+        "nameKey": "route.node.mid_event.name",
+        "descriptionKey": "route.node.mid_event.description",
+        "eventPoolIds": [
+          "event_mid_ink_pool",
+          "event_lost_altar_bell",
+          "event_bound_artifact_case",
+          "event_cracked_registry_needle"
+        ],
         "nextNodeIds": ["route_node_late_plague_paper_figure"]
       },
       {
@@ -78,6 +98,11 @@
         "nameKey": "route.node.late_plague_paper_figure.name",
         "descriptionKey": "route.node.late_plague_paper_figure.description",
         "encounterId": "encounter_late_plague_paper_figure",
+        "encounterPoolIds": [
+          "encounter_late_plague_paper_figure",
+          "encounter_late_offering_table_afterimage",
+          "encounter_pool_plague_paper_figure_return"
+        ],
         "nextNodeIds": ["route_node_second_elite"]
       },
       {
@@ -94,6 +119,11 @@
         "nameKey": "route.node.late_scroll_stuffer_clerk.name",
         "descriptionKey": "route.node.late_scroll_stuffer_clerk.description",
         "encounterId": "encounter_late_scroll_stuffer_clerk",
+        "encounterPoolIds": [
+          "encounter_late_scroll_stuffer_clerk",
+          "encounter_pool_scroll_stuffer_clerk_return",
+          "encounter_pool_offering_table_afterimage_return"
+        ],
         "nextNodeIds": ["route_node_third_elite"]
       },
       {
@@ -102,6 +132,20 @@
         "nameKey": "route.node.third_elite.name",
         "descriptionKey": "route.node.third_elite.description",
         "encounterId": "encounter_elite_dipper_empty_shell",
+        "nextNodeIds": ["route_node_late_event"]
+      },
+      {
+        "id": "route_node_late_event",
+        "type": "event",
+        "nameKey": "route.node.late_event.name",
+        "descriptionKey": "route.node.late_event.description",
+        "eventPoolIds": [
+          "event_fouled_page_bundle",
+          "event_covered_name_stable",
+          "event_bound_artifact_case",
+          "event_lost_altar_bell",
+          "event_cracked_registry_needle"
+        ],
         "nextNodeIds": ["route_node_late_fleeing_name_paper_horse"]
       },
       {
@@ -110,6 +154,11 @@
         "nameKey": "route.node.late_fleeing_name_paper_horse.name",
         "descriptionKey": "route.node.late_fleeing_name_paper_horse.description",
         "encounterId": "encounter_late_fleeing_name_paper_horse",
+        "encounterPoolIds": [
+          "encounter_late_fleeing_name_paper_horse",
+          "encounter_pool_fleeing_name_paper_horse_return",
+          "encounter_pool_offering_table_afterimage_return"
+        ],
         "nextNodeIds": ["route_node_boss_registry_thief"]
       },
       {

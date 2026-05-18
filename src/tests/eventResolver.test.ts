@@ -48,6 +48,7 @@ describe('T20 event resolver', () => {
       'event_abandoned_registry_desk',
       'event_ash_altar_lamp',
       'event_cinnabar_scribe',
+      'event_cracked_registry_needle',
     ])
   })
 
@@ -190,6 +191,58 @@ describe('T20 event resolver', () => {
         createdRedInkOffer: true,
       }),
     )
+  })
+
+  it('offers T36 mid and late event pools with readable resource feedback records', () => {
+    const resourceRun = createResourceRun()
+    const midEventNode = route.nodes.find((node) => node.id === 'route_node_mid_event')
+    const lateEventNode = route.nodes.find((node) => node.id === 'route_node_late_event')
+
+    expect(getRouteEventCandidates(midEventNode, gameData.events, resourceRun).map((event) => event.id)).toEqual([
+      'event_mid_ink_pool',
+      'event_cracked_registry_needle',
+      'event_lost_altar_bell',
+      'event_bound_artifact_case',
+    ])
+    expect(getRouteEventCandidates(lateEventNode, gameData.events, resourceRun).map((event) => event.id)).toEqual([
+      'event_cracked_registry_needle',
+      'event_lost_altar_bell',
+      'event_bound_artifact_case',
+      'event_fouled_page_bundle',
+      'event_covered_name_stable',
+    ])
+
+    const crackedNeedle = gameData.events.find((event) => event.id === 'event_cracked_registry_needle')
+    const coveredStable = gameData.events.find((event) => event.id === 'event_covered_name_stable')
+
+    if (!crackedNeedle || !coveredStable) {
+      throw new Error('Missing T36 event definitions')
+    }
+
+    const splinterRun = resolveTutorialEvent(
+      resourceRun,
+      crackedNeedle,
+      'event_cracked_registry_needle_take_splinter',
+    )
+    const nameNetRun = resolveTutorialEvent(
+      resourceRun,
+      coveredStable,
+      'event_covered_name_stable_take_name_net',
+    )
+
+    expect(splinterRun.deckDefinitionIds).toContain('card_registry_splinter')
+    expect(splinterRun.resources.fracture).toBe(resourceRun.resources.fracture + 1)
+    expect(splinterRun.events.records[0]).toEqual(
+      expect.objectContaining({
+        eventId: 'event_cracked_registry_needle',
+        addedCardDefinitionIds: ['card_registry_splinter'],
+        fractureDelta: 1,
+      }),
+    )
+    expect(nameNetRun.deckDefinitionIds).toContain('card_name_net_talisman')
+    expect(nameNetRun.events.records[0].addedCardDefinitionIds).toEqual([
+      'card_name_net_talisman',
+    ])
   })
 })
 
