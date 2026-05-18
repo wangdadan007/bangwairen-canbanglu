@@ -303,6 +303,7 @@ describe('core type contracts', () => {
         masterVolume: 80,
         musicVolume: 70,
         sfxVolume: 80,
+        muted: false,
       },
       display: {
         windowMode: 'windowed',

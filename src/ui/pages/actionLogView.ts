@@ -12,14 +12,35 @@ import type {
   TutorialRunState,
   VictorySettlement,
 } from '../../types'
+import type { AudioCueKind } from '../audio/audioCues'
 
 export type PressureFeedbackTone = 'incoming' | 'sealed' | 'abnormal' | 'countered'
+export type RitualFeedbackTone =
+  | 'break'
+  | 'ask'
+  | 'named'
+  | 'settlement'
+  | 'verdict'
+  | 'artifact'
+  | 'backlash'
+  | 'boss'
 
 export interface PressureFeedback {
+  readonly id: string
   readonly tone: PressureFeedbackTone
   readonly label: string
   readonly title: string
   readonly detail: string
+  readonly audioCue: AudioCueKind
+}
+
+export interface RitualFeedback {
+  readonly id: string
+  readonly tone: RitualFeedbackTone
+  readonly label: string
+  readonly title: string
+  readonly detail: string
+  readonly audioCue: AudioCueKind
 }
 
 const enemyDefinitionsById = new Map(gameData.enemies.map((enemy) => [enemy.id, enemy]))
@@ -88,10 +109,12 @@ export function createPressureFeedback(
     const remaining = getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0
 
     return {
+      id: entry.id,
       tone: 'sealed',
       label: '封势反馈',
       title: amount > 0 ? `${sourceName}压住 ${amount} 点来势` : `${sourceName}未压住来势`,
       detail: amount > 0 ? `敌方当前剩余来势 ${remaining}。` : '当前没有可被封势处理的直接来势。',
+      audioCue: 'pressure',
     }
   }
 
@@ -100,6 +123,7 @@ export function createPressureFeedback(
     const result = getPayloadString(entry.payload.result)
 
     return {
+      id: entry.id,
       tone: 'countered',
       label: result === 'prevented' ? '断异动成功' : '断异动已布置',
       title:
@@ -110,6 +134,7 @@ export function createPressureFeedback(
         result === 'prevented'
           ? '本次异动没有生效。'
           : '敌人行动时若发动对应异动，会被这次布置阻止。',
+      audioCue: 'pressure',
     }
   }
 
@@ -118,6 +143,7 @@ export function createPressureFeedback(
     const incensePenalty = getPayloadNumber(entry.payload.nextTurnIncensePenalty) ?? 0
 
     return {
+      id: entry.id,
       tone: 'abnormal',
       label: '异动生效',
       title: `${sourceName}发动${moveLabel}`,
@@ -125,16 +151,237 @@ export function createPressureFeedback(
         incensePenalty > 0
           ? `下回合香火将受扰 -${incensePenalty}。`
           : '本次异动已经结算。',
+      audioCue: 'pressure',
     }
   }
 
   const amount = getPayloadNumber(entry.payload.amount) ?? 0
 
   return {
+    id: entry.id,
     tone: 'incoming',
     label: '来势结算',
     title: amount > 0 ? `${sourceName}来势 ${amount}` : '来势已被压住',
     detail: amount > 0 ? '未被封掉的来势进入敌方行动结算。' : '敌人的直接来势没有形成压力。',
+    audioCue: 'pressure',
+  }
+}
+
+export function createRitualFeedback(
+  battle: CombatState,
+  cardDefinitionsById: ReadonlyMap<string, CardDefinition>,
+  allCardsByInstanceId: ReadonlyMap<string, CardInstance>,
+): RitualFeedback | undefined {
+  const entry = battle.actionLog
+    .slice()
+    .reverse()
+    .find((candidate) =>
+      [
+        'FORM_BROKEN',
+        'NAME_ASKED',
+        'NAME_SLOT_REVEALED',
+        'ENEMY_NAMED',
+        'NAME_BREAK_TRIGGERED',
+        'ENEMY_SETTLED',
+        'VICTORY_SETTLED',
+        'ARTIFACT_TRIGGERED',
+        'ARTIFACT_BACKLASH_TRIGGERED',
+      ].includes(candidate.type),
+    )
+
+  if (!entry) {
+    return undefined
+  }
+
+  const sourceCardName = getCardName(entry.sourceId, cardDefinitionsById, allCardsByInstanceId)
+  const targetEnemyName = getEnemyName(entry.targetId, battle) ?? '敌方'
+
+  if (entry.type === 'FORM_BROKEN') {
+    const amount = getPayloadNumber(entry.payload.amount) ?? 0
+    const currentForm = getPayloadNumber(entry.payload.currentForm) ?? 0
+
+    return {
+      id: entry.id,
+      tone: 'break',
+      label: '破形反馈',
+      title: `${sourceCardName ?? '符诏'}击破敌形 ${amount}`,
+      detail: `${targetEnemyName}余形 ${currentForm}，战斗结果不因表现层改变。`,
+      audioCue: 'break',
+    }
+  }
+
+  if (entry.type === 'NAME_ASKED' || entry.type === 'NAME_SLOT_REVEALED') {
+    const revealedName = t(getPayloadString(entry.payload.nameKey))
+
+    return {
+      id: entry.id,
+      tone: 'ask',
+      label: '问名反馈',
+      title:
+        entry.type === 'NAME_SLOT_REVEALED'
+          ? `名格显现：${revealedName}`
+          : `${sourceCardName ?? '问名'}落笔查名`,
+      detail:
+        getPayloadString(entry.payload.result) === 'discern_intent'
+          ? '无名目标转为辨势，仍保留弱收益。'
+          : '名格揭示会推动正名与归册收益。',
+      audioCue: 'ask_name',
+    }
+  }
+
+  if (entry.type === 'ENEMY_NAMED' || entry.type === 'NAME_BREAK_TRIGGERED') {
+    const amount = getPayloadNumber(entry.payload.amount) ?? 0
+
+    return {
+      id: entry.id,
+      tone: 'named',
+      label: '正名反馈',
+      title: entry.type === 'ENEMY_NAMED' ? `${targetEnemyName}真名已明` : `名破 ${amount}`,
+      detail:
+        entry.type === 'ENEMY_NAMED'
+          ? '朱砂落印，目标进入高收益归册窗口。'
+          : `名破后余形 ${getPayloadNumber(entry.payload.currentForm) ?? 0}。`,
+      audioCue: 'named',
+    }
+  }
+
+  if (entry.type === 'ENEMY_SETTLED' || entry.type === 'VICTORY_SETTLED') {
+    const settlement = getPayloadString(entry.payload.settlement) as VictorySettlement | undefined
+    const label = settlement ? getSettlementLabel(settlement) : '结算'
+
+    return {
+      id: entry.id,
+      tone: 'settlement',
+      label: `${label}反馈`,
+      title:
+        settlement === 'catalogue'
+          ? `${targetEnemyName}归入残榜`
+          : settlement === 'vanquish'
+            ? `${targetEnemyName}伏诛收束`
+            : '战斗已经结算',
+      detail: settlement ? getSettlementText(settlement) : '结算结果已写入战斗状态。',
+      audioCue: 'settlement',
+    }
+  }
+
+  if (entry.type === 'ARTIFACT_BACKLASH_TRIGGERED') {
+    return {
+      id: entry.id,
+      tone: 'backlash',
+      label: '法宝反噬',
+      title: `${getArtifactName(entry.sourceId)}裂响回案`,
+      detail: formatLogEntry(entry, battle, cardDefinitionsById, allCardsByInstanceId),
+      audioCue: 'backlash',
+    }
+  }
+
+  return {
+    id: entry.id,
+    tone: 'artifact',
+    label: '法宝触发',
+    title: `${getArtifactName(entry.sourceId)}应声`,
+    detail: formatLogEntry(entry, battle, cardDefinitionsById, allCardsByInstanceId),
+    audioCue: 'artifact',
+  }
+}
+
+export function createRunRitualFeedback(run: TutorialRunState): RitualFeedback | undefined {
+  if (run.pendingVerdict) {
+    return {
+      id: run.pendingVerdict.id,
+      tone: 'verdict',
+      label: '裁定反馈',
+      title: `${t(run.pendingVerdict.enemyNameKey)}待裁定`,
+      detail: '归册对象已入案，下一步只能在登簿、朱批、削籍中选择。',
+      audioCue: 'verdict',
+    }
+  }
+
+  const latestVerdictRecord = run.verdict.records[run.verdict.records.length - 1]
+
+  if (!latestVerdictRecord) {
+    return undefined
+  }
+
+  return {
+    id: latestVerdictRecord.id,
+    tone: 'verdict',
+    label: '裁定反馈',
+    title: getVerdictChoiceLabel(latestVerdictRecord.choiceId),
+    detail: getVerdictRecordDetail(latestVerdictRecord),
+    audioCue: 'verdict',
+  }
+}
+
+export function createBossPressureFeedback(battle: CombatState): RitualFeedback | undefined {
+  const bossEnemy = battle.enemies.find((enemy) => isBossEnemyDefinition(enemy.definitionId))
+
+  if (!bossEnemy) {
+    return undefined
+  }
+
+  const bossName = getEnemyDefinitionName(bossEnemy.definitionId)
+  const abnormalMove = getCurrentAbnormalMove(bossEnemy)
+  const latestBossLog = battle.actionLog
+    .slice()
+    .reverse()
+    .find(
+      (entry) =>
+        (entry.sourceId === bossEnemy.instanceId || entry.targetId === bossEnemy.instanceId) &&
+        [
+          'INCOMING_FORCE_CREATED',
+          'ABNORMAL_MOVE_EXECUTED',
+          'ABNORMAL_MOVE_COUNTERED',
+          'NAME_BREAK_TRIGGERED',
+          'ENEMY_SETTLED',
+        ].includes(entry.type),
+    )
+  const cueId =
+    latestBossLog?.id ??
+    `boss_pressure_${bossEnemy.instanceId}_${battle.turn}_${bossEnemy.currentForm}_${
+      bossEnemy.incomingForce
+    }_${bossEnemy.currentIntent?.id ?? 'none'}`
+
+  if (bossEnemy.currentForm <= 0) {
+    return {
+      id: cueId,
+      tone: 'boss',
+      label: 'Boss 压力',
+      title: `${bossName}已收束`,
+      detail: '本章终点压力解除，等待伏诛或归册结算。',
+      audioCue: 'settlement',
+    }
+  }
+
+  if (abnormalMove) {
+    return {
+      id: cueId,
+      tone: 'boss',
+      label: 'Boss 压力',
+      title: `${bossName}异动：${getMoveLabel(abnormalMove.type)}`,
+      detail: 'Boss 行动会优先压迫问名、归册或榜裂节奏，需要专门处理。',
+      audioCue: 'pressure',
+    }
+  }
+
+  if (bossEnemy.incomingForce > 0) {
+    return {
+      id: cueId,
+      tone: 'boss',
+      label: 'Boss 压力',
+      title: `${bossName}来势 ${bossEnemy.incomingForce}`,
+      detail: '这股直接冲击可以被封势压住，但不会处理潜在异动。',
+      audioCue: 'pressure',
+    }
+  }
+
+  return {
+    id: cueId,
+    tone: 'boss',
+    label: 'Boss 压力',
+    title: `${bossName}正在改写残榜`,
+    detail: 'Boss 仍在场，问名、正名、法宝反噬和榜裂都会影响收束质量。',
+    audioCue: 'pressure',
   }
 }
 
@@ -446,6 +693,14 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     return 'log-entry form'
   }
 
+  if (entry.type === 'ARTIFACT_TRIGGERED') {
+    return 'log-entry artifact'
+  }
+
+  if (entry.type === 'ARTIFACT_BACKLASH_TRIGGERED') {
+    return 'log-entry backlash'
+  }
+
   if (
     entry.type === 'NAME_ASKED' ||
     entry.type === 'NAME_SLOT_REVEALED' ||
@@ -455,9 +710,7 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     entry.type === 'DOOM_GAINED' ||
     entry.type === 'ALTAR_PLACED' ||
     entry.type === 'ALTAR_TRIGGERED' ||
-    entry.type === 'ALTAR_EXPIRED' ||
-    entry.type === 'ARTIFACT_TRIGGERED' ||
-    entry.type === 'ARTIFACT_BACKLASH_TRIGGERED'
+    entry.type === 'ALTAR_EXPIRED'
   ) {
     return 'log-entry name'
   }
@@ -589,6 +842,34 @@ export function getRunProgressLabel(run: TutorialRunState) {
   }
 
   return `第 ${run.currentEncounterIndex + 1} / ${run.encounterIds.length} 场`
+}
+
+export function isBossEnemyDefinition(definitionId: string) {
+  return enemyDefinitionsById.get(definitionId)?.tier === 'boss'
+}
+
+function getVerdictChoiceLabel(choiceId: TutorialRunState['verdict']['records'][number]['choiceId']) {
+  if (choiceId === 'register') {
+    return '写入榜册（登簿）'
+  }
+
+  if (choiceId === 'red_ink') {
+    return '批改卡牌（朱批）'
+  }
+
+  return '抹去名籍（削籍）'
+}
+
+function getVerdictRecordDetail(record: TutorialRunState['verdict']['records'][number]) {
+  if (record.choiceId === 'register') {
+    return `后续战斗香火上限 +${record.maxIncenseBonusDelta}。`
+  }
+
+  if (record.choiceId === 'red_ink') {
+    return '裁定转入朱批服务，本局卡牌改造记录已更新。'
+  }
+
+  return `榜裂 +${record.fractureDelta}，强收益已经写入牌组。`
 }
 
 function getCardName(

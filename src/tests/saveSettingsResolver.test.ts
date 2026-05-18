@@ -25,6 +25,7 @@ describe('T29 settings and local save MVP', () => {
         masterVolume: 120,
         musicVolume: -5,
         sfxVolume: 63.6,
+        muted: true,
       },
       display: {
         windowMode: 'invalid',
@@ -39,6 +40,7 @@ describe('T29 settings and local save MVP', () => {
       masterVolume: 100,
       musicVolume: 0,
       sfxVolume: 64,
+      muted: true,
     })
     expect(settings.display).toEqual({
       windowMode: 'windowed',
@@ -57,6 +59,7 @@ describe('T29 settings and local save MVP', () => {
         masterVolume: 55,
         musicVolume: 40,
         sfxVolume: 65,
+        muted: true,
       },
     }
 

@@ -1,4 +1,5 @@
 import type { SettingsState, SupportedResolution, WindowMode } from '../../types'
+import { playPreviewAudioCue, playPreviewMusicCue } from '../audio/audioCues'
 
 interface SettingsPageProps {
   readonly settings: SettingsState
@@ -49,7 +50,7 @@ export function SettingsPage({ settings, onChange, onClose }: SettingsPageProps)
     <section className="settings-page" aria-label="设置">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">设置 / T29</p>
+          <p className="panel-kicker">设置 / T46</p>
           <h2>案前设置</h2>
         </div>
         <button className="ghost-button" type="button" onClick={onClose}>
@@ -58,6 +59,49 @@ export function SettingsPage({ settings, onChange, onClose }: SettingsPageProps)
       </div>
 
       <div className="settings-grid">
+        <label className="setting-toggle">
+          <input
+            checked={settings.audio.muted}
+            type="checkbox"
+            onChange={(event) =>
+              onChange({
+                ...settings,
+                audio: {
+                  ...settings.audio,
+                  muted: event.currentTarget.checked,
+                },
+              })
+            }
+          />
+          <span>静音</span>
+        </label>
+
+        <button
+          className="ghost-button setting-preview-button"
+          disabled={
+            settings.audio.muted ||
+            settings.audio.masterVolume <= 0 ||
+            settings.audio.sfxVolume <= 0
+          }
+          type="button"
+          onClick={() => playPreviewAudioCue(settings)}
+        >
+          试听音效
+        </button>
+
+        <button
+          className="ghost-button setting-preview-button"
+          disabled={
+            settings.audio.muted ||
+            settings.audio.masterVolume <= 0 ||
+            settings.audio.musicVolume <= 0
+          }
+          type="button"
+          onClick={() => playPreviewMusicCue(settings)}
+        >
+          试听音乐
+        </button>
+
         <SliderSetting
           label="主音量"
           value={settings.audio.masterVolume}

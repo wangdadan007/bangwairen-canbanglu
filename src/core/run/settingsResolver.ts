@@ -22,6 +22,7 @@ export function createDefaultSettingsState(): SettingsState {
       masterVolume: 80,
       musicVolume: 70,
       sfxVolume: 80,
+      muted: false,
     },
     display: {
       windowMode: 'windowed',
@@ -56,6 +57,7 @@ export function normalizeSettingsState(value: unknown): SettingsState {
       masterVolume: clampVolume(audio.masterVolume, defaults.audio.masterVolume),
       musicVolume: clampVolume(audio.musicVolume, defaults.audio.musicVolume),
       sfxVolume: clampVolume(audio.sfxVolume, defaults.audio.sfxVolume),
+      muted: typeof audio.muted === 'boolean' ? audio.muted : defaults.audio.muted,
     },
     display: {
       windowMode: pickString(display.windowMode, WINDOW_MODES, defaults.display.windowMode),

@@ -731,6 +731,10 @@ button:disabled {
   accent-color: #c94f3d;
 }
 
+.setting-preview-button {
+  min-height: 100%;
+}
+
 .verdict-target {
   display: grid;
   gap: 4px;
@@ -1219,6 +1223,13 @@ button:disabled {
   background: rgba(75, 58, 32, 0.28);
 }
 
+.enemy-panel.boss-pressure {
+  border-color: rgba(201, 79, 61, 0.62);
+  background:
+    linear-gradient(180deg, rgba(112, 33, 28, 0.24), rgba(14, 20, 19, 0.34)),
+    rgba(14, 20, 19, 0.28);
+}
+
 .enemy-panel.settled {
   opacity: 0.7;
 }
@@ -1270,6 +1281,10 @@ button:disabled {
   display: block;
   height: 100%;
   background: linear-gradient(90deg, #b73e35, #e0b45d);
+}
+
+.enemy-panel.boss-pressure .form-meter span {
+  background: linear-gradient(90deg, #7e2e2a, #d5794e, #f0c774);
 }
 
 .form-row {
@@ -1418,7 +1433,8 @@ button:disabled {
   line-height: 1.35;
 }
 
-.pressure-feedback {
+.pressure-feedback,
+.ritual-feedback {
   display: grid;
   gap: 5px;
   border: 1px solid rgba(178, 139, 82, 0.32);
@@ -1444,22 +1460,96 @@ button:disabled {
   background: rgba(91, 33, 30, 0.36);
 }
 
-.pressure-feedback span {
+.ritual-feedback.break {
+  border-left-color: #d5794e;
+  background: rgba(91, 48, 30, 0.34);
+}
+
+.ritual-feedback.ask {
+  border-left-color: #f0c774;
+  background: rgba(75, 58, 32, 0.28);
+}
+
+.ritual-feedback.named,
+.ritual-feedback.settlement {
+  border-left-color: #c94f3d;
+  background: rgba(91, 33, 30, 0.36);
+}
+
+.ritual-feedback.verdict {
+  border-left-color: #8ea36d;
+  background: rgba(24, 77, 67, 0.28);
+}
+
+.ritual-feedback.artifact {
+  border-left-color: #b28b52;
+  background: rgba(75, 58, 32, 0.28);
+}
+
+.ritual-feedback.backlash,
+.ritual-feedback.boss {
+  border-left-color: #c94f3d;
+  background: rgba(91, 33, 30, 0.42);
+}
+
+.battle-hud:not(.animations-off) .ritual-feedback {
+  animation: ritual-feedback-pulse 620ms ease-out;
+}
+
+.battle-hud:not(.animations-off) .log-entry.form,
+.battle-hud:not(.animations-off) .log-entry.name,
+.battle-hud:not(.animations-off) .log-entry.abnormal,
+.battle-hud:not(.animations-off) .log-entry.artifact,
+.battle-hud:not(.animations-off) .log-entry.backlash {
+  animation: log-entry-flash 520ms ease-out;
+}
+
+.pressure-feedback span,
+.ritual-feedback span {
   color: #d8c2a0;
   font-size: 12px;
   font-weight: 700;
 }
 
-.pressure-feedback strong {
+.pressure-feedback strong,
+.ritual-feedback strong {
   color: #f3d482;
   font-size: 15px;
 }
 
-.pressure-feedback p {
+.pressure-feedback p,
+.ritual-feedback p {
   margin: 0;
   color: #d9ccb8;
   font-size: 13px;
   line-height: 1.45;
+}
+
+@keyframes ritual-feedback-pulse {
+  0% {
+    box-shadow: 0 0 0 rgba(240, 199, 116, 0);
+    transform: translateY(0);
+  }
+
+  36% {
+    box-shadow: 0 0 18px rgba(240, 199, 116, 0.28);
+    transform: translateY(-1px);
+  }
+
+  100% {
+    box-shadow: 0 0 0 rgba(240, 199, 116, 0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes log-entry-flash {
+  0% {
+    background: rgba(240, 199, 116, 0.22);
+  }
+
+  100% {
+    background: transparent;
+  }
 }
 
 .resource-grid {
@@ -1648,6 +1738,14 @@ button:disabled {
 
 .log-entry.name {
   border-left-color: #f0c774;
+}
+
+.log-entry.artifact {
+  border-left-color: #b28b52;
+}
+
+.log-entry.backlash {
+  border-left-color: #c94f3d;
 }
 
 @media (max-width: 840px) {

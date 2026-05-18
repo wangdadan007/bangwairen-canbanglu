@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { RouteFlowKind } from '../../core'
 import { gameData } from '../../data'
+import { useAudioCue, type AudioCue } from '../audio/audioCues'
 import { ArtifactBar } from './ArtifactBar'
 import { EventPage } from './EventPage'
 import { RedInkPage } from './RedInkPage'
@@ -12,6 +13,9 @@ import { ShopPage } from './ShopPage'
 import { VerdictPage } from './VerdictPage'
 import {
   createPressureFeedback,
+  createBossPressureFeedback,
+  createRitualFeedback,
+  createRunRitualFeedback,
   formatLogEntry,
   getAltarEffectLabel,
   getAltarSlotLabel,
@@ -26,8 +30,10 @@ import {
   getSettlementText,
   getTermTooltip,
   getUnlockStageName,
+  isBossEnemyDefinition,
   t,
   type PressureFeedback,
+  type RitualFeedback,
 } from './actionLogView'
 import { selectBattleHudState } from './battleHudSelectors'
 import {
@@ -102,15 +108,38 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
     () => createPressureFeedback(battle, cardDefinitionsById, allCardsByInstanceId),
     [allCardsByInstanceId, battle, cardDefinitionsById],
   )
+  const ritualFeedback = useMemo(
+    () => createRitualFeedback(battle, cardDefinitionsById, allCardsByInstanceId),
+    [allCardsByInstanceId, battle, cardDefinitionsById],
+  )
+  const runRitualFeedback = useMemo(() => createRunRitualFeedback(run), [run])
+  const bossPressureFeedback = useMemo(() => createBossPressureFeedback(battle), [battle])
+  const audioCue = useMemo<AudioCue | undefined>(() => {
+    const feedback = ritualFeedback ?? pressureFeedback ?? runRitualFeedback ?? bossPressureFeedback
+
+    return feedback
+      ? {
+          id: feedback.id,
+          kind: feedback.audioCue,
+        }
+      : undefined
+  }, [bossPressureFeedback, pressureFeedback, ritualFeedback, runRitualFeedback])
+  const hudClassName = [
+    'battle-hud',
+    settings?.compactTerms ? 'compact-terms' : '',
+    settings?.animationsEnabled === false ? 'animations-off' : '',
+    settings?.audio.muted ? 'audio-muted' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  useAudioCue(audioCue, settings)
 
   return (
-    <aside
-      className={settings?.compactTerms ? 'battle-hud compact-terms' : 'battle-hud'}
-      aria-label="第一章路线纵切"
-    >
+    <aside className={hudClassName} aria-label="第一章路线纵切">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">第一章闭环 / T43</p>
+          <p className="panel-kicker">第一章闭环 / T46</p>
           <h2>{currentHeading}</h2>
         </div>
         <div className="dev-controls">
@@ -144,6 +173,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
         unlocks={run.unlocks}
         t={t}
       />
+      {runRitualFeedback ? <RitualFeedbackPanel feedback={runRitualFeedback} /> : null}
 
       {currentEncounter &&
       battle.result.status === 'victory' &&
@@ -284,6 +314,12 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
       ) : null}
       {currentEncounter && pressureFeedback ? (
         <PressureFeedbackPanel feedback={pressureFeedback} />
+      ) : null}
+      {currentEncounter && ritualFeedback ? (
+        <RitualFeedbackPanel feedback={ritualFeedback} />
+      ) : null}
+      {currentEncounter && bossPressureFeedback ? (
+        <RitualFeedbackPanel feedback={bossPressureFeedback} />
       ) : null}
 
       {currentEncounter ? (
@@ -577,6 +613,7 @@ function EnemyPanel({
       className={[
         'enemy-panel',
         isSelected ? 'selected' : '',
+        isBossEnemyDefinition(enemy.definitionId) ? 'boss-pressure' : '',
         enemy.currentForm <= 0 ? 'settled' : '',
       ]
         .filter(Boolean)
@@ -696,6 +733,16 @@ function EnemyPanel({
 function PressureFeedbackPanel({ feedback }: { readonly feedback: PressureFeedback }) {
   return (
     <section className={`pressure-feedback ${feedback.tone}`} aria-live="polite">
+      <span>{feedback.label}</span>
+      <strong>{feedback.title}</strong>
+      <p>{feedback.detail}</p>
+    </section>
+  )
+}
+
+function RitualFeedbackPanel({ feedback }: { readonly feedback: RitualFeedback }) {
+  return (
+    <section className={`ritual-feedback ${feedback.tone}`} aria-live="polite">
       <span>{feedback.label}</span>
       <strong>{feedback.title}</strong>
       <p>{feedback.detail}</p>

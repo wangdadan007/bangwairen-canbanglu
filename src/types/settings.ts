@@ -6,6 +6,7 @@ export interface AudioSettingsState {
   readonly masterVolume: number
   readonly musicVolume: number
   readonly sfxVolume: number
+  readonly muted: boolean
 }
 
 export interface DisplaySettingsState {
