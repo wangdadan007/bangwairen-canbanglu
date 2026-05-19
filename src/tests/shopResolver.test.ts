@@ -166,6 +166,8 @@ describe('T22 shop resolver', () => {
     expect(nextRun.pendingRedInk?.options.map((option) => option.id)).toEqual([
       'red_ink_return_incense',
       'red_ink_trace_name',
+      'red_ink_named_draw',
+      'red_ink_press_momentum',
     ])
     expect(nextRun.shops.records[0]).toEqual(
       expect.objectContaining({
@@ -175,5 +177,66 @@ describe('T22 shop resolver', () => {
         createdRedInkOffer: true,
       }),
     )
+  })
+
+  it('buys an unlocked artifact without putting it into the deck', () => {
+    const coreRun = createInitialTutorialRunState(
+      gameData.tutorialUnlocks,
+      undefined,
+      undefined,
+      gameData.artifacts,
+    )
+    const abnormalRun = advanceTutorialRun(
+      coreRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+
+    expect(
+      getAvailableShopItems(
+        abnormalRun,
+        gameData.shopItems,
+        gameData.cards,
+        gameData.artifacts,
+      ).map((item) => item.id),
+    ).toContain('shop_artifact_seal_door_tablet')
+
+    const nextRun = resolveTutorialShopPurchase(
+      abnormalRun,
+      {
+        itemId: 'shop_artifact_seal_door_tablet',
+        routeNodeId: shopRouteNodeId,
+      },
+      gameData.shopItems,
+      gameData.cards,
+      gameData.artifacts,
+    )
+
+    expect(nextRun.currency.incenseMoney).toBe(abnormalRun.currency.incenseMoney - 55)
+    expect(nextRun.artifacts.artifacts.map((artifact) => artifact.definitionId)).toContain(
+      'artifact_seal_door_tablet',
+    )
+    expect(nextRun.deckDefinitionIds).not.toContain('artifact_seal_door_tablet')
+    expect(nextRun.deckCards.map((card) => card.definitionId)).not.toContain(
+      'artifact_seal_door_tablet',
+    )
+    expect(nextRun.shops.records[0]).toEqual(
+      expect.objectContaining({
+        itemId: 'shop_artifact_seal_door_tablet',
+        kind: 'artifact',
+        cost: 55,
+        purchasedArtifactDefinitionId: 'artifact_seal_door_tablet',
+        createdRedInkOffer: false,
+      }),
+    )
+    expect(
+      getAvailableShopItems(
+        nextRun,
+        gameData.shopItems,
+        gameData.cards,
+        gameData.artifacts,
+      ).map((item) => item.id),
+    ).not.toContain('shop_artifact_seal_door_tablet')
   })
 })

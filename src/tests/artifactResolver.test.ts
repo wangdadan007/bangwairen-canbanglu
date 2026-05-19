@@ -22,7 +22,7 @@ const battleContext: BattleReducerContext = {
 }
 
 describe('T17 artifact foundation', () => {
-  it('creates artifact state as out-of-deck run equipment', () => {
+  it('creates starter artifact state as out-of-deck run equipment', () => {
     const run = createInitialTutorialRunState(
       gameData.tutorialUnlocks,
       undefined,
@@ -36,13 +36,7 @@ describe('T17 artifact foundation', () => {
       'artifact_whip_fragment',
       'artifact_bone_mirror',
       'artifact_court_chime',
-      'artifact_name_tether_spindle',
       'artifact_cinnabar_dou',
-      'artifact_fracture_needle',
-      'artifact_registry_inkstone',
-      'artifact_seal_door_tablet',
-      'artifact_ash_lamp',
-      'artifact_doom_bell',
     ])
     expect(artifactIds.every((artifactId) => !deckIds.has(artifactId))).toBe(true)
     expect(run.artifacts.artifacts.every((artifact) => artifact.bindingStatus === 'unbound')).toBe(
@@ -242,6 +236,57 @@ describe('T17 artifact foundation', () => {
     ).toBe(1)
   })
 
+  it('applies T54 ask-name artifact rewards as seal momentum and ink gain', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[0],
+      deckDefinitionIds: ['card_ask_name'],
+      artifacts: createInitialArtifactCollection(gameData.artifacts),
+      unlocks: {
+        stages: ['stage_core', 'stage_abnormal_boundary', 'stage_run_resources'],
+        keywords: ['break_form', 'ask_name', 'intent', 'seal_momentum', 'ink'],
+      },
+    })
+    const askName = getHandCard(state, 'card_ask_name')
+    const afterAsk = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: askName.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const courtChimeLog = afterAsk.actionLog.find(
+      (entry) =>
+        entry.type === 'ARTIFACT_TRIGGERED' &&
+        entry.sourceId === 'artifact_court_chime',
+    )
+    const registryInkstoneLog = afterAsk.actionLog.find(
+      (entry) =>
+        entry.type === 'ARTIFACT_TRIGGERED' &&
+        entry.sourceId === 'artifact_registry_inkstone',
+    )
+
+    expect(afterAsk.enemies[0].incomingForce).toBe(state.enemies[0].incomingForce - 1)
+    expect(afterAsk.resources.ink).toBe(1)
+    expect(courtChimeLog?.payload).toEqual(
+      expect.objectContaining({
+        effectType: 'seal_momentum_after_ask_name',
+        result: 'sealed',
+        amount: 1,
+      }),
+    )
+    expect(registryInkstoneLog?.payload).toEqual(
+      expect.objectContaining({
+        effectType: 'gain_ink_after_ask_name',
+        result: 'gain_ink',
+        amount: 1,
+        currentInk: 1,
+      }),
+    )
+  })
+
   it('shows the late T49A name tether spindle as an actual ask-name feedback artifact', () => {
     const state = createInitialBattleState({
       cardDefinitions: gameData.cards,
@@ -289,12 +334,7 @@ describe('T17 artifact foundation', () => {
   })
 
   it('uses fracture needle to improve erase verdict card rewards', () => {
-    const initialRun = createInitialTutorialRunState(
-      gameData.tutorialUnlocks,
-      undefined,
-      undefined,
-      gameData.artifacts,
-    )
+    const initialRun = createRunWithAllArtifacts()
     const afterBattle = advanceTutorialRun(
       initialRun,
       gameData.encounters,
@@ -316,12 +356,7 @@ describe('T17 artifact foundation', () => {
   })
 
   it('advances artifact progress from battle, red ink, and erase verdict records', () => {
-    const initialRun = createInitialTutorialRunState(
-      gameData.tutorialUnlocks,
-      undefined,
-      undefined,
-      gameData.artifacts,
-    )
+    const initialRun = createRunWithAllArtifacts()
     const afterBattle = advanceTutorialRun(
       initialRun,
       gameData.encounters,
@@ -410,6 +445,18 @@ function getArtifactProgress(run: ReturnType<typeof createInitialTutorialRunStat
   }
 
   return artifact.bindProgress
+}
+
+function createRunWithAllArtifacts() {
+  return {
+    ...createInitialTutorialRunState(
+      gameData.tutorialUnlocks,
+      undefined,
+      undefined,
+      gameData.artifacts,
+    ),
+    artifacts: createInitialArtifactCollection(gameData.artifacts),
+  }
 }
 
 function createVerdictContext(enemy: EnemyDefinition) {

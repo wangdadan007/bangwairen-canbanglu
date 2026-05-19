@@ -77,6 +77,7 @@ export interface NameSlotState {
 export interface EnemyState {
   readonly instanceId: EnemyInstanceId
   readonly definitionId: EnemyId
+  readonly tier: EnemyTier
   readonly maxForm: number
   readonly currentForm: number
   readonly nameSlots: readonly NameSlotState[]

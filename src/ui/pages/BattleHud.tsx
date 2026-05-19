@@ -93,6 +93,13 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
     leaveShop,
     advancePlaceholderNode,
   } = actions
+  const hasPendingChoice = hasPendingRunChoice(run)
+  const showActiveBattlePanels = Boolean(
+    currentEncounter &&
+      run.status === 'active' &&
+      !hasPendingChoice &&
+      battle.result.status === 'ongoing',
+  )
   const cardDefinitionsById = useMemo(() => createCardDefinitionMap(gameData.cards), [])
   const allCardsByInstanceId = useMemo(
     () =>
@@ -139,13 +146,13 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
     <aside className={hudClassName} aria-label="第一章路线纵切">
       <header className="hud-header">
         <div>
-          <p className="panel-kicker">第一章候选版</p>
+          <p className="panel-kicker">第一章完整可玩版</p>
           <h2>{currentHeading}</h2>
         </div>
         <div className="dev-controls">
           <button
             className="ghost-button"
-            disabled={!currentEncounter || hasPendingRunChoice(run)}
+            disabled={!currentEncounter || hasPendingChoice}
             type="button"
             onClick={restartCurrentBattle}
           >
@@ -178,7 +185,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
       {currentEncounter &&
       battle.result.status === 'victory' &&
       run.status === 'active' &&
-      !hasPendingRunChoice(run) ? (
+      !hasPendingChoice ? (
         <section className="result-banner" aria-live="polite">
           <span>{getSettlementLabel(battle.result.settlement)}</span>
           <strong>{getSettlementText(battle.result.settlement)}</strong>
@@ -242,7 +249,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
       {!currentEncounter &&
       currentRouteFlowKind === 'event' &&
       currentRouteEvent &&
-      !hasPendingRunChoice(run) &&
+      !hasPendingChoice &&
       run.status === 'active' ? (
         <EventPage
           cardDefinitionsById={cardDefinitionsById}
@@ -256,9 +263,10 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
 
       {!currentEncounter &&
       currentRouteFlowKind === 'shop' &&
-      !hasPendingRunChoice(run) &&
+      !hasPendingChoice &&
       run.status === 'active' ? (
         <ShopPage
+          artifactDefinitionsById={artifactDefinitionsById}
           cardDefinitionsById={cardDefinitionsById}
           deckCards={run.deckCards}
           items={currentShopItems}
@@ -271,7 +279,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
 
       {!currentEncounter &&
       currentRouteFlowKind === 'rest' &&
-      !hasPendingRunChoice(run) &&
+      !hasPendingChoice &&
       run.status === 'active' ? (
         <RestPage
           artifactDefinitionsById={artifactDefinitionsById}
@@ -290,7 +298,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
       (currentRouteFlowKind !== 'event' || !currentRouteEvent) &&
       currentRouteFlowKind !== 'shop' &&
       currentRouteFlowKind !== 'rest' &&
-      !hasPendingRunChoice(run) &&
+      !hasPendingChoice &&
       run.status === 'active' ? (
         <RoutePlaceholderPanel
           node={currentRouteNode}
@@ -300,11 +308,11 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
         />
       ) : null}
 
-      {run.status !== 'active' && !hasPendingRunChoice(run) ? (
+      {run.status !== 'active' && !hasPendingChoice ? (
         <RunSummaryPage summary={runSummary} onRestart={restartTutorialRun} />
       ) : null}
 
-      {currentEncounter ? (
+      {showActiveBattlePanels ? (
         <EnemyListPanel
           enemies={battle.enemies}
           selectedEnemyInstanceId={enemy?.instanceId}
@@ -312,135 +320,135 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
           onSelect={selectEnemyTarget}
         />
       ) : null}
-      {currentEncounter && pressureFeedback ? (
+      {showActiveBattlePanels && pressureFeedback ? (
         <PressureFeedbackPanel feedback={pressureFeedback} />
       ) : null}
-      {currentEncounter && ritualFeedback ? (
+      {showActiveBattlePanels && ritualFeedback ? (
         <RitualFeedbackPanel feedback={ritualFeedback} />
       ) : null}
-      {currentEncounter && bossPressureFeedback ? (
+      {showActiveBattlePanels && bossPressureFeedback ? (
         <RitualFeedbackPanel feedback={bossPressureFeedback} />
       ) : null}
 
-      {currentEncounter ? (
-      <section className="hud-section">
-        <div className="section-title-row">
-          <h3>案前</h3>
-          <span className="turn-pill">第 {battle.turn} 回合</span>
-        </div>
-        <div className="resource-grid" aria-label="玩家资源">
-          <Metric
-            label="己形"
-            tooltip={getTermTooltip('player_shape')}
-            value={`${battle.player.currentForm} / ${battle.player.maxForm}`}
-          />
-          <Metric
-            label="香火"
-            tooltip={getTermTooltip('incense')}
-            value={`${battle.player.incense} / ${battle.player.maxIncense}`}
-          />
-          <Metric label="墨" tooltip={getTermTooltip('ink')} value={battle.resources.ink.toString()} />
-          <Metric label="劫数" tooltip={getTermTooltip('doom')} value={battle.resources.doom.toString()} />
-          <Metric label="榜裂" tooltip={getTermTooltip('fracture')} value={battle.resources.fracture.toString()} />
-          <Metric label="抽牌堆" value={battle.drawPile.length.toString()} />
-          <Metric label="弃牌堆" value={battle.discardPile.length.toString()} />
-          <Metric label="消耗区" value={battle.exhaustPile.length.toString()} />
-        </div>
-        <AltarPanel altars={battle.altars} cardDefinitionsById={cardDefinitionsById} />
-      </section>
+      {showActiveBattlePanels ? (
+        <section className="hud-section">
+          <div className="section-title-row">
+            <h3>案前</h3>
+            <span className="turn-pill">第 {battle.turn} 回合</span>
+          </div>
+          <div className="resource-grid" aria-label="玩家资源">
+            <Metric
+              label="己形"
+              tooltip={getTermTooltip('player_shape')}
+              value={`${battle.player.currentForm} / ${battle.player.maxForm}`}
+            />
+            <Metric
+              label="香火"
+              tooltip={getTermTooltip('incense')}
+              value={`${battle.player.incense} / ${battle.player.maxIncense}`}
+            />
+            <Metric label="墨" tooltip={getTermTooltip('ink')} value={battle.resources.ink.toString()} />
+            <Metric label="劫数" tooltip={getTermTooltip('doom')} value={battle.resources.doom.toString()} />
+            <Metric label="榜裂" tooltip={getTermTooltip('fracture')} value={battle.resources.fracture.toString()} />
+            <Metric label="抽牌堆" value={battle.drawPile.length.toString()} />
+            <Metric label="弃牌堆" value={battle.discardPile.length.toString()} />
+            <Metric label="消耗区" value={battle.exhaustPile.length.toString()} />
+          </div>
+          <AltarPanel altars={battle.altars} cardDefinitionsById={cardDefinitionsById} />
+        </section>
       ) : null}
 
-      {currentEncounter ? (
-      <section className="hud-section">
-        <div className="section-title-row">
-          <h3>手牌</h3>
-          <span className="target-note">目标：{enemy ? getEnemyDefinitionName(enemy.definitionId) : '无'}</span>
-        </div>
-        <div className="hand-list" aria-label="玩家手牌">
-          {battle.hand.length > 0 ? (
-            battle.hand.map((card) => {
-              const definition = cardDefinitionsById.get(card.definitionId)
-              const isAffordable = definition ? definition.cost <= battle.player.incense : false
-              const isDisabled = !canAct || !definition || !isAffordable
-              const disabledReason = getCardDisabledReason({
-                battle,
-                canAct,
-                definition,
-                enemy,
-                isAffordable,
-                run,
+      {showActiveBattlePanels ? (
+        <section className="hud-section">
+          <div className="section-title-row">
+            <h3>手牌</h3>
+            <span className="target-note">目标：{enemy ? getEnemyDefinitionName(enemy.definitionId) : '无'}</span>
+          </div>
+          <div className="hand-list" aria-label="玩家手牌">
+            {battle.hand.length > 0 ? (
+              battle.hand.map((card) => {
+                const definition = cardDefinitionsById.get(card.definitionId)
+                const isAffordable = definition ? definition.cost <= battle.player.incense : false
+                const isDisabled = !canAct || !definition || !isAffordable
+                const disabledReason = getCardDisabledReason({
+                  battle,
+                  canAct,
+                  definition,
+                  enemy,
+                  isAffordable,
+                  run,
+                })
+
+                return (
+                  <button
+                    className="card-button"
+                    disabled={isDisabled}
+                    key={card.instanceId}
+                    title={disabledReason}
+                    type="button"
+                    onClick={() => playCard(card)}
+                  >
+                    <span className="card-topline">
+                      <strong>{definition ? t(definition.nameKey) : card.definitionId}</strong>
+                      <span>{definition?.cost ?? '?'} 香火</span>
+                    </span>
+                    <span className="card-rules">
+                      {definition ? t(definition.rulesTextKey) : '缺少卡牌定义'}
+                    </span>
+                    {definition ? (
+                      <span className="card-tags" aria-label="卡牌效果">
+                        {getCardEffectLabels(definition, card).map((label) => (
+                          <span key={label} title={getEffectTooltip(label)}>
+                            {label}
+                          </span>
+                        ))}
+                      </span>
+                    ) : null}
+                    {card.annotations.length > 0 ? (
+                      <span className="annotation-row" aria-label="朱批词条">
+                        {card.annotations.map((annotation) => (
+                          <span key={annotation.id}>朱批：{t(annotation.nameKey)}</span>
+                        ))}
+                      </span>
+                    ) : null}
+                    {!isAffordable && definition ? (
+                      <span className="card-state">香火不足</span>
+                    ) : null}
+                    {isDisabled && disabledReason && isAffordable ? (
+                      <span className="card-state">{disabledReason}</span>
+                    ) : null}
+                  </button>
+                )
               })
-
-              return (
-                <button
-                  className="card-button"
-                  disabled={isDisabled}
-                  key={card.instanceId}
-                  title={disabledReason}
-                  type="button"
-                  onClick={() => playCard(card)}
-                >
-                  <span className="card-topline">
-                    <strong>{definition ? t(definition.nameKey) : card.definitionId}</strong>
-                    <span>{definition?.cost ?? '?'} 香火</span>
-                  </span>
-                  <span className="card-rules">
-                    {definition ? t(definition.rulesTextKey) : '缺少卡牌定义'}
-                  </span>
-                  {definition ? (
-                    <span className="card-tags" aria-label="卡牌效果">
-                      {getCardEffectLabels(definition, card).map((label) => (
-                        <span key={label} title={getEffectTooltip(label)}>
-                          {label}
-                        </span>
-                      ))}
-                    </span>
-                  ) : null}
-                  {card.annotations.length > 0 ? (
-                    <span className="annotation-row" aria-label="朱批词条">
-                      {card.annotations.map((annotation) => (
-                        <span key={annotation.id}>朱批：{t(annotation.nameKey)}</span>
-                      ))}
-                    </span>
-                  ) : null}
-                  {!isAffordable && definition ? (
-                    <span className="card-state">香火不足</span>
-                  ) : null}
-                  {isDisabled && disabledReason && isAffordable ? (
-                    <span className="card-state">{disabledReason}</span>
-                  ) : null}
-                </button>
-              )
-            })
-          ) : (
-            <p className="empty-state">案上暂无手牌。</p>
-          )}
-        </div>
-      </section>
+            ) : (
+              <p className="empty-state">案上暂无手牌。</p>
+            )}
+          </div>
+        </section>
       ) : null}
 
-      {currentEncounter ? (
-      <footer className="hud-actions">
-        <button type="button" disabled={!canAct} onClick={endTurn}>
-          结束回合
-        </button>
-      </footer>
+      {showActiveBattlePanels ? (
+        <footer className="hud-actions">
+          <button type="button" disabled={!canAct} onClick={endTurn}>
+            结束回合
+          </button>
+        </footer>
       ) : null}
 
-      {currentEncounter ? (
-      <section className="hud-section log-section">
-        <div className="section-title-row">
-          <h3>战斗日志</h3>
-          <span>{battle.actionLog.length} 条</span>
-        </div>
-        <ol className="log-list" aria-label="战斗日志">
-          {latestLog.map((entry) => (
-            <li className={getLogEntryClassName(entry)} key={entry.id}>
-              {formatLogEntry(entry, battle, cardDefinitionsById, allCardsByInstanceId)}
-            </li>
-          ))}
-        </ol>
-      </section>
+      {showActiveBattlePanels ? (
+        <section className="hud-section log-section">
+          <div className="section-title-row">
+            <h3>战斗日志</h3>
+            <span>{battle.actionLog.length} 条</span>
+          </div>
+          <ol className="log-list" aria-label="战斗日志">
+            {latestLog.map((entry) => (
+              <li className={getLogEntryClassName(entry)} key={entry.id}>
+                {formatLogEntry(entry, battle, cardDefinitionsById, allCardsByInstanceId)}
+              </li>
+            ))}
+          </ol>
+        </section>
       ) : null}
     </aside>
   )
@@ -464,7 +472,7 @@ function RoutePlaceholderPanel({
       <p>{t(node.descriptionKey)}</p>
       <div className="result-actions">
         <button type="button" onClick={onContinue}>
-          略过占位节点
+          继续前行
         </button>
       </div>
     </section>

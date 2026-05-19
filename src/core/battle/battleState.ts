@@ -199,6 +199,7 @@ export function createEnemyState(definition: EnemyDefinition, index: number): En
   return {
     instanceId: `enemy_instance_${(index + 1).toString().padStart(3, '0')}_${definition.id}`,
     definitionId: definition.id,
+    tier: definition.tier,
     maxForm: definition.maxForm,
     currentForm: definition.maxForm,
     nameSlots,

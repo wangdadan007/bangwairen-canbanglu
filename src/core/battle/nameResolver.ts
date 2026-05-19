@@ -3,9 +3,15 @@ import {
   triggerArtifactsAfterAskName,
   triggerArtifactsAfterEnemyNamed,
 } from './artifactBattleResolver'
-import type { CombatState, EnemyInstanceId, EnemyState, GameEntityId } from '../../types'
+import type { CombatState, EnemyInstanceId, EnemyState, EnemyTier, GameEntityId } from '../../types'
 
-const NORMAL_NAME_BREAK_RATIO = 0.33
+const NAME_BREAK_RATIOS: Readonly<Record<EnemyTier, number>> = {
+  minion: 0.33,
+  normal: 0.33,
+  key_normal: 0.33,
+  elite: 0.24,
+  boss: 0.2,
+}
 
 export interface AskNameInput {
   readonly sourceId: GameEntityId
@@ -144,7 +150,8 @@ function triggerNameBreak(
     return state
   }
 
-  const amount = Math.ceil(target.maxForm * NORMAL_NAME_BREAK_RATIO)
+  const ratio = getNameBreakRatio(target)
+  const amount = Math.ceil(target.maxForm * ratio)
   const nextCurrentForm = Math.max(0, target.currentForm - amount)
   const brokenAmount = target.currentForm - nextCurrentForm
   const nextState = {
@@ -167,9 +174,13 @@ function triggerNameBreak(
     payload: {
       amount: brokenAmount,
       currentForm: nextCurrentForm,
-      ratio: NORMAL_NAME_BREAK_RATIO,
+      ratio,
     },
   })
+}
+
+function getNameBreakRatio(enemy: EnemyState) {
+  return NAME_BREAK_RATIOS[enemy.tier]
 }
 
 function shouldTriggerNaming(enemy: EnemyState): boolean {

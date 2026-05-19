@@ -32,7 +32,7 @@ export function RedInkPage({
     <section className="red-ink-page" aria-label="批改卡牌（朱批）">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">批改卡牌（朱批） / T11</p>
+          <p className="panel-kicker">批改卡牌（朱批）</p>
           <h3>给一张牌写入永久词条</h3>
         </div>
         <span>当前牌组 {deckCards.length} 张 / {offer.options.length} 种朱批</span>

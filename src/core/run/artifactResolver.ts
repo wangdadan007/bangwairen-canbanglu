@@ -19,6 +19,13 @@ export const FRACTURE_NEEDLE_ARTIFACT_ID: ArtifactId = 'artifact_fracture_needle
 export const REGISTRY_INKSTONE_ARTIFACT_ID: ArtifactId = 'artifact_registry_inkstone'
 export const WHIP_BACKLASH_CARD_ID: CardId = 'card_cracked_whip_echo'
 
+export const STARTER_ARTIFACT_DEFINITION_IDS: readonly ArtifactId[] = [
+  WHIP_FRAGMENT_ARTIFACT_ID,
+  BONE_MIRROR_ARTIFACT_ID,
+  COURT_CHIME_ARTIFACT_ID,
+  CINNABAR_DOU_ARTIFACT_ID,
+]
+
 export interface ArtifactProgressEvent {
   readonly kind: ArtifactProgressKind
   readonly amount?: number
@@ -54,20 +61,59 @@ export function createInitialArtifactCollection(
   artifactDefinitions: readonly ArtifactDefinition[] = [],
 ): ArtifactCollectionState {
   return {
-    artifacts: artifactDefinitions.map((definition) => ({
-      id: definition.id,
-      definitionId: definition.id,
-      bindingStatus: 'unbound',
-      bindCondition: definition.bindCondition,
-      bindProgress: 0,
-      overloadKind: definition.overloadCondition?.kind,
-      chargesRemaining: definition.chargesPerBattle ?? 0,
-      hasTriggeredThisBattle: false,
-      triggerCountThisBattle: 0,
-      hasOverloadedThisBattle: false,
-      consecutiveOverloadBattles: 0,
-      pendingBacklash: false,
-    })),
+    artifacts: artifactDefinitions.map((definition) => createArtifactState(definition)),
+  }
+}
+
+export function createStarterArtifactCollection(
+  artifactDefinitions: readonly ArtifactDefinition[] = [],
+): ArtifactCollectionState {
+  const starterIds = new Set(STARTER_ARTIFACT_DEFINITION_IDS)
+
+  return createInitialArtifactCollection(
+    artifactDefinitions.filter((definition) => starterIds.has(definition.id)),
+  )
+}
+
+export function addArtifactToCollection(
+  collection: ArtifactCollectionState,
+  definition: ArtifactDefinition,
+): ArtifactCollectionState {
+  if (collection.artifacts.some((artifact) => artifact.definitionId === definition.id)) {
+    return collection
+  }
+
+  return {
+    artifacts: [...collection.artifacts, createArtifactState(definition)],
+  }
+}
+
+export function clearFirstPendingArtifactBacklash(collection: ArtifactCollectionState): {
+  readonly artifacts: ArtifactCollectionState
+  readonly clearedArtifact?: ArtifactState
+} {
+  const target = collection.artifacts.find((artifact) => artifact.pendingBacklash)
+
+  if (!target) {
+    return {
+      artifacts: collection,
+    }
+  }
+
+  return {
+    artifacts: {
+      artifacts: collection.artifacts.map((artifact) =>
+        artifact.id === target.id
+          ? {
+              ...artifact,
+              pendingBacklash: false,
+              consecutiveOverloadBattles: 0,
+              hasOverloadedThisBattle: false,
+            }
+          : artifact,
+      ),
+    },
+    clearedArtifact: target,
   }
 }
 
@@ -258,5 +304,22 @@ function advanceSingleArtifactProgress(
     bindingStatus:
       nextProgress >= artifact.bindCondition.requiredCount ? 'bound' : artifact.bindingStatus,
     bindProgress: nextProgress,
+  }
+}
+
+function createArtifactState(definition: ArtifactDefinition): ArtifactState {
+  return {
+    id: definition.id,
+    definitionId: definition.id,
+    bindingStatus: 'unbound',
+    bindCondition: definition.bindCondition,
+    bindProgress: 0,
+    overloadKind: definition.overloadCondition?.kind,
+    chargesRemaining: definition.chargesPerBattle ?? 0,
+    hasTriggeredThisBattle: false,
+    triggerCountThisBattle: 0,
+    hasOverloadedThisBattle: false,
+    consecutiveOverloadBattles: 0,
+    pendingBacklash: false,
   }
 }

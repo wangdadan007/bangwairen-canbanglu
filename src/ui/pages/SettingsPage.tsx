@@ -50,7 +50,7 @@ export function SettingsPage({ settings, onChange, onClose }: SettingsPageProps)
     <section className="settings-page" aria-label="设置">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">设置 / T46</p>
+          <p className="panel-kicker">设置</p>
           <h2>案前设置</h2>
         </div>
         <button className="ghost-button" type="button" onClick={onClose}>

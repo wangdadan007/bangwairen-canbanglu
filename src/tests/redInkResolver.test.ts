@@ -38,6 +38,8 @@ describe('T11 red ink MVP', () => {
     expect(createTutorialRedInkOfferIfNeeded(redInkRun).pendingRedInk?.options.map((option) => option.id)).toEqual([
       'red_ink_return_incense',
       'red_ink_trace_name',
+      'red_ink_named_draw',
+      'red_ink_press_momentum',
     ])
   })
 
@@ -115,6 +117,66 @@ describe('T11 red ink MVP', () => {
     expect(nextState.enemies[0].nameSlots[0].isRevealed).toBe(true)
     expect(nextState.actionLog.map((entry) => entry.type)).toEqual(
       expect.arrayContaining(['CARD_ANNOTATION_TRIGGERED', 'NAME_ASKED', 'NAME_SLOT_REVEALED']),
+    )
+  })
+
+  it('adds T54 red ink annotations for named-turn draw and pressure control', () => {
+    const namedDrawOfferRun = createTutorialRedInkOfferIfNeeded(
+      withRedInkUnlocked(
+        createInitialTutorialRunState(
+          gameData.tutorialUnlocks,
+          ['encounter_tutorial_paper_wraith'],
+          [
+            'card_mark_forehead',
+            'card_zhu_fu',
+            'card_zhu_fu',
+            'card_zhu_fu',
+            'card_zhu_fu',
+            'card_guard_desk_talisman',
+          ],
+        ),
+      ),
+    )
+    const namedDrawRun = resolveTutorialRedInk(namedDrawOfferRun, {
+      deckCardId: namedDrawOfferRun.deckCards[0].id,
+      annotationId: 'red_ink_named_draw',
+    })
+    const drawBattle = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[1],
+      deckDefinitionIds: namedDrawRun.deckCards.map((card) => card.definitionId),
+      deckCards: namedDrawRun.deckCards,
+    })
+    const afterNamedDraw = playFirstCard(drawBattle, 'card_mark_forehead')
+
+    expect(
+      afterNamedDraw.actionLog
+        .filter((entry) => entry.type === 'CARD_DRAWN')
+        .map((entry) => entry.payload.cardDefinitionId),
+    ).toContain('card_guard_desk_talisman')
+
+    const controlOfferRun = createTutorialRedInkOfferIfNeeded(
+      withRedInkUnlocked(
+        createInitialTutorialRunState(
+          gameData.tutorialUnlocks,
+          ['encounter_tutorial_paper_wraith'],
+          ['card_guard_desk_talisman'],
+        ),
+      ),
+    )
+    const controlRun = resolveTutorialRedInk(controlOfferRun, {
+      deckCardId: controlOfferRun.deckCards[0].id,
+      annotationId: 'red_ink_press_momentum',
+    })
+    const controlBattle = createBattle(
+      controlRun.deckCards.map((card) => card.definitionId),
+      controlRun.deckCards,
+    )
+    const afterControl = playFirstCard(controlBattle, 'card_guard_desk_talisman')
+
+    expect(afterControl.enemies[0].incomingForce).toBe(0)
+    expect(afterControl.actionLog.map((entry) => entry.type)).toEqual(
+      expect.arrayContaining(['CARD_ANNOTATION_TRIGGERED', 'INCOMING_FORCE_SEALED']),
     )
   })
 })

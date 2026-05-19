@@ -27,7 +27,7 @@ export function selectBattleHudState(viewState: TutorialBattleViewState) {
     currentRouteFlowKind === 'rest' ? getAvailableRestOptions(run) : []
   const currentShopItems =
     currentRouteFlowKind === 'shop'
-      ? getAvailableShopItems(run, gameData.shopItems, gameData.cards)
+      ? getAvailableShopItems(run, gameData.shopItems, gameData.cards, gameData.artifacts)
       : []
   const currentHeading = currentEncounter
     ? t(currentEncounter.nameKey)

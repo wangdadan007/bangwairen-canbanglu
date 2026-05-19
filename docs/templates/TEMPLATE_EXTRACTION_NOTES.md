@@ -220,3 +220,29 @@
 - 依赖与授权注意：未新增 Electron / Tauri 生产依赖；不能把该方向包装成已验证商品。
 - 是否值得抽到模板：暂不抽，只作为 `Steam-ready Vite Phaser Desktop Wrapper` 的前置观察记录。
 - 后续动作：等用户单独确认桌面打包阶段并完成真实构建验证后，再升级为模板候选。
+
+### 2026-05-19 · T52-T53 · 页面回归与平衡 Guardrail 记录
+
+- 候选类型：页面回归 QA checklist / 长流程平衡 guardrail。
+- 主归属模板：`AI Game Development Planning and QA Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`React Card Game UI Kit`。
+- 涉及文件：`docs/qa/CHAPTER_ONE_PAGE_REGRESSION_T52.md`、`docs/qa/CHAPTER_ONE_BALANCE_T53.md`、`docs/tasks/PROJECT_PLAN.md`、`src/tests/chapterOneBalance.test.ts`、`src/core/battle/nameResolver.ts`、`src/ui/pages/BattleHud.tsx`。
+- 可复用价值：把页面点击回归拆成页面矩阵、截图矩阵、控制台 / 溢出指标、结算入口验证，再把平衡检查拆成 tier-based ratio 和 enemy abnormal move coverage，可复用到其他卡牌肉鸽 demo 收口。
+- 与本作强绑定部分：页面名称、名破、异动、法宝、三坛、归册和伏诛属于本作表达。
+- 去题材化思路：抽象为 page reachability matrix、viewport evidence、post-combat state cleanup、enemy-tier payoff ratio、abnormal-move counter coverage。
+- 依赖与授权注意：本轮未新增依赖或第三方素材；截图路径只作为本地 QA 证据，不应进入模板商品示例资产。
+- 是否值得抽到模板：值得，适合作为 `AI Game Development Planning and QA Kit` 的回归与平衡收口 worksheet。
+- 后续动作：T59 外部试玩反馈和 T60 最终硬化后，合并成完整的 pre-demo QA pack。
+
+### 2026-05-19 · T54-T55 · 卡牌改造循环与法宝经济服务
+
+- 候选类型：永久卡牌改造 / relic economy / run service loop。
+- 主归属模板：`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 也支持：`Data-Driven Card Battle Engine`、`Roguelike Run Flow Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/core/run/redInkResolver.ts`、`src/core/battle/artifactBattleResolver.ts`、`src/core/run/artifactResolver.ts`、`src/core/run/shopResolver.ts`、`src/core/run/restResolver.ts`、`src/ui/pages/ShopPage.tsx`、`src/ui/pages/RestPage.tsx`、`src/tests/redInkResolver.test.ts`、`src/tests/artifactResolver.test.ts`、`src/tests/shopResolver.test.ts`、`src/tests/restResolver.test.ts`、`docs/qa/CHAPTER_ONE_RED_INK_ARTIFACT_ECONOMY_T54_T55.md`。
+- 可复用价值：把“永久改造已有卡牌”和“牌组外器物的购买 / 维护 / 反噬清理”接入同一局内经济，是卡牌肉鸽模板中很常见但容易做散的系统。
+- 与本作强绑定部分：朱批、法宝、问名、封势、墨、反噬、裁定等术语和具体数据属于本作。
+- 去题材化思路：抽象为 card modification options、run services、shop relic purchases、rest maintenance、overload / backlash cleanup；示例换成中性 upgrade / relic / repair service。
+- 依赖与授权注意：本轮未新增依赖或第三方素材；模板化时要替换全部本作文案和资产名称。
+- 是否值得抽到模板：值得，适合进入主 starter kit 的中级模块，也可拆成 `Run Economy Services` 示例章节。
+- 后续动作：T56-T60 后结合玩家理解与外部反馈，决定该模块是否需要更明确的新手提示和服务价格 authoring 文档。

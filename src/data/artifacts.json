@@ -72,13 +72,13 @@
     "unlockStage": "stage_abnormal_boundary",
     "tags": ["chapter_one", "intent", "seal_momentum"],
     "baseEffect": {
-      "type": "peek_intent_after_ask_name",
+      "type": "seal_momentum_after_ask_name",
       "amount": 1,
       "descriptionKey": "artifact.court_chime.effect.base"
     },
     "boundEffect": {
-      "type": "peek_intent_after_ask_name",
-      "amount": 1,
+      "type": "seal_momentum_after_ask_name",
+      "amount": 2,
       "descriptionKey": "artifact.court_chime.effect.bound"
     },
     "bindCondition": {
@@ -203,12 +203,12 @@
     "unlockStage": "stage_run_resources",
     "tags": ["chapter_one", "ink", "ask_name"],
     "baseEffect": {
-      "type": "peek_intent_after_ask_name",
+      "type": "gain_ink_after_ask_name",
       "amount": 1,
       "descriptionKey": "artifact.registry_inkstone.effect.base"
     },
     "boundEffect": {
-      "type": "peek_intent_after_ask_name",
+      "type": "gain_ink_after_ask_name",
       "amount": 2,
       "descriptionKey": "artifact.registry_inkstone.effect.bound"
     },

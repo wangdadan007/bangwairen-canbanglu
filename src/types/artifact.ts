@@ -22,6 +22,8 @@ export type ArtifactOverloadKind =
 export type ArtifactEffectType =
   | 'next_break_shape_bonus'
   | 'peek_intent_after_ask_name'
+  | 'seal_momentum_after_ask_name'
+  | 'gain_ink_after_ask_name'
   | 'red_ink_annotation_bonus'
   | 'erase_reward_bonus'
 

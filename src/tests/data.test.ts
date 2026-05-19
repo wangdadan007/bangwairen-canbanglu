@@ -11,7 +11,7 @@ describe('initial game data', () => {
     expect(data.encounters).toHaveLength(25)
     expect(data.events).toHaveLength(9)
     expect(data.routes).toHaveLength(1)
-    expect(data.shopItems).toHaveLength(5)
+    expect(data.shopItems).toHaveLength(7)
     expect(data.tutorialUnlocks).toHaveLength(6)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
   })

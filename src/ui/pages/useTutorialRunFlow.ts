@@ -405,6 +405,7 @@ export function useTutorialRunFlow({
           },
           gameData.shopItems,
           gameData.cards,
+          gameData.artifacts,
         ),
       }
     })

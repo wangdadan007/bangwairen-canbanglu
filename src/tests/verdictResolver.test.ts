@@ -93,6 +93,8 @@ describe('T12 verdict MVP', () => {
     expect(nextRun.pendingRedInk?.options.map((option) => option.id)).toEqual([
       'red_ink_return_incense',
       'red_ink_trace_name',
+      'red_ink_named_draw',
+      'red_ink_press_momentum',
     ])
     expect(nextRun.pendingReward).toBeDefined()
     expect(nextRun.verdict.records[0]).toEqual(

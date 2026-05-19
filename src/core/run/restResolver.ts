@@ -8,6 +8,7 @@ import type {
   TutorialRestState,
   TutorialRunState,
 } from '../../types'
+import { clearFirstPendingArtifactBacklash } from './artifactResolver'
 import { removeRunDeckCard } from './deckResolver'
 import {
   RESTORE_PLAYER_FORM_AMOUNT,
@@ -18,6 +19,7 @@ import { RED_INK_OPTIONS } from './redInkResolver'
 export const REST_OPTION_RESTORE_FORM: TutorialRestOptionId = 'restore_form'
 export const REST_OPTION_REMOVE_CARD: TutorialRestOptionId = 'remove_card'
 export const REST_OPTION_RED_INK_SERVICE: TutorialRestOptionId = 'red_ink_service'
+export const REST_OPTION_MAINTAIN_ARTIFACT: TutorialRestOptionId = 'maintain_artifact'
 
 export const TUTORIAL_REST_OPTIONS: readonly TutorialRestOption[] = [
   {
@@ -41,6 +43,14 @@ export const TUTORIAL_REST_OPTIONS: readonly TutorialRestOption[] = [
     rewardKey: 'rest.option.red_ink_service.reward',
     costKey: 'rest.option.red_ink_service.cost',
     requiredUnlockStages: ['stage_red_ink_preview'],
+  },
+  {
+    id: REST_OPTION_MAINTAIN_ARTIFACT,
+    nameKey: 'rest.option.maintain_artifact.name',
+    descriptionKey: 'rest.option.maintain_artifact.description',
+    rewardKey: 'rest.option.maintain_artifact.reward',
+    costKey: 'rest.option.maintain_artifact.cost',
+    requiredUnlockStages: ['stage_three_altars'],
   },
 ]
 
@@ -84,12 +94,13 @@ export function resolveTutorialRest(
 
   if (input.optionId === REST_OPTION_RESTORE_FORM) {
     const formRestore = restoreTutorialPlayerForm(run.playerForm, RESTORE_PLAYER_FORM_AMOUNT)
-    const record = createRestRecord(run, input, {
-      formRestored: formRestore.restored,
-      playerCurrentFormAfter: formRestore.playerForm.current,
-      playerMaxFormAfter: formRestore.playerForm.max,
-      createdRedInkOffer: false,
-    })
+      const record = createRestRecord(run, input, {
+        formRestored: formRestore.restored,
+        playerCurrentFormAfter: formRestore.playerForm.current,
+        playerMaxFormAfter: formRestore.playerForm.max,
+        createdRedInkOffer: false,
+        clearedArtifactBacklash: false,
+      })
 
     return {
       ...run,
@@ -113,6 +124,7 @@ export function resolveTutorialRest(
       playerCurrentFormAfter: run.playerForm.current,
       playerMaxFormAfter: run.playerForm.max,
       createdRedInkOffer: false,
+      clearedArtifactBacklash: false,
     })
 
     return {
@@ -125,11 +137,33 @@ export function resolveTutorialRest(
     }
   }
 
+  if (input.optionId === REST_OPTION_MAINTAIN_ARTIFACT) {
+    const maintenance = clearFirstPendingArtifactBacklash(run.artifacts)
+    const record = createRestRecord(run, input, {
+      maintainedArtifactId: maintenance.clearedArtifact?.id,
+      maintainedArtifactDefinitionId: maintenance.clearedArtifact?.definitionId,
+      clearedArtifactBacklash: Boolean(maintenance.clearedArtifact),
+      formRestored: 0,
+      playerCurrentFormAfter: run.playerForm.current,
+      playerMaxFormAfter: run.playerForm.max,
+      createdRedInkOffer: false,
+    })
+
+    return {
+      ...run,
+      artifacts: maintenance.artifacts,
+      rests: {
+        records: [...run.rests.records, record],
+      },
+    }
+  }
+
   const record = createRestRecord(run, input, {
     formRestored: 0,
     playerCurrentFormAfter: run.playerForm.current,
     playerMaxFormAfter: run.playerForm.max,
     createdRedInkOffer: true,
+    clearedArtifactBacklash: false,
   })
 
   return {
@@ -159,6 +193,10 @@ function isRestOptionAvailable(optionId: TutorialRestOptionId, run: TutorialRunS
     return run.deckCards.length > 1
   }
 
+  if (optionId === REST_OPTION_MAINTAIN_ARTIFACT) {
+    return run.artifacts.artifacts.some((artifact) => artifact.pendingBacklash)
+  }
+
   return true
 }
 
@@ -168,6 +206,9 @@ function createRestRecord(
   result: {
     readonly removedDeckCardId?: RunDeckCardId
     readonly removedCardDefinitionId?: CardId
+    readonly maintainedArtifactId?: string
+    readonly maintainedArtifactDefinitionId?: string
+    readonly clearedArtifactBacklash: boolean
     readonly formRestored: number
     readonly playerCurrentFormAfter: number
     readonly playerMaxFormAfter: number
@@ -180,6 +221,9 @@ function createRestRecord(
     optionId: input.optionId,
     removedDeckCardId: result.removedDeckCardId,
     removedCardDefinitionId: result.removedCardDefinitionId,
+    maintainedArtifactId: result.maintainedArtifactId,
+    maintainedArtifactDefinitionId: result.maintainedArtifactDefinitionId,
+    clearedArtifactBacklash: result.clearedArtifactBacklash,
     formRestored: result.formRestored,
     playerCurrentFormAfter: result.playerCurrentFormAfter,
     playerMaxFormAfter: result.playerMaxFormAfter,

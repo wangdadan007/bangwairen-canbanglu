@@ -65,6 +65,7 @@ describe('T21 rest resolver', () => {
       optionId: 'remove_card',
       removedDeckCardId: targetCard.id,
       removedCardDefinitionId: 'card_zhu_fu',
+      clearedArtifactBacklash: false,
       formRestored: 0,
       playerCurrentFormAfter: 72,
       playerMaxFormAfter: 72,
@@ -96,6 +97,7 @@ describe('T21 rest resolver', () => {
       id: 'rest_record_1',
       routeNodeId: restRouteNodeId,
       optionId: 'restore_form',
+      clearedArtifactBacklash: false,
       formRestored: 24,
       playerCurrentFormAfter: 64,
       playerMaxFormAfter: 72,
@@ -125,6 +127,8 @@ describe('T21 rest resolver', () => {
     expect(nextRun.pendingRedInk?.options.map((option) => option.id)).toEqual([
       'red_ink_return_incense',
       'red_ink_trace_name',
+      'red_ink_named_draw',
+      'red_ink_press_momentum',
     ])
     expect(nextRun.rests.records[0]).toEqual(
       expect.objectContaining({
@@ -132,6 +136,62 @@ describe('T21 rest resolver', () => {
         routeNodeId: restRouteNodeId,
         optionId: 'red_ink_service',
         createdRedInkOffer: true,
+      }),
+    )
+  })
+
+  it('clears one pending artifact backlash through the rest maintenance option', () => {
+    const run = {
+      ...createInitialTutorialRunState(
+        gameData.tutorialUnlocks,
+        undefined,
+        undefined,
+        gameData.artifacts,
+      ),
+      unlocks: {
+        stages: [
+          'stage_core',
+          'stage_abnormal_boundary',
+          'stage_red_ink_preview',
+          'stage_human_altar',
+          'stage_run_resources',
+          'stage_three_altars',
+        ],
+        keywords: [],
+      },
+      artifacts: {
+        artifacts: createInitialTutorialRunState(
+          gameData.tutorialUnlocks,
+          undefined,
+          undefined,
+          gameData.artifacts,
+        ).artifacts.artifacts.map((artifact, index) =>
+          index === 0
+            ? {
+                ...artifact,
+                pendingBacklash: true,
+                consecutiveOverloadBattles: 2,
+              }
+            : artifact,
+        ),
+      },
+    }
+
+    expect(getAvailableRestOptions(run).map((option) => option.id)).toContain('maintain_artifact')
+
+    const nextRun = resolveTutorialRest(run, {
+      optionId: 'maintain_artifact',
+      routeNodeId: restRouteNodeId,
+    })
+
+    expect(nextRun.artifacts.artifacts[0].pendingBacklash).toBe(false)
+    expect(nextRun.artifacts.artifacts[0].consecutiveOverloadBattles).toBe(0)
+    expect(nextRun.rests.records[0]).toEqual(
+      expect.objectContaining({
+        optionId: 'maintain_artifact',
+        maintainedArtifactDefinitionId: 'artifact_whip_fragment',
+        clearedArtifactBacklash: true,
+        createdRedInkOffer: false,
       }),
     )
   })

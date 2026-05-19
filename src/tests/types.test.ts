@@ -424,6 +424,7 @@ describe('core type contracts', () => {
         {
           instanceId: 'ei_001',
           definitionId: 'enemy_paper_wraith',
+          tier: 'normal',
           maxForm: 18,
           currentForm: 18,
           nameSlots: [

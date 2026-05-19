@@ -557,6 +557,18 @@ export function formatLogEntry(
       )}。`
     }
 
+    if (effectType === 'seal_momentum_after_ask_name') {
+      return `${artifactName}震住来势 ${getPayloadNumber(entry.payload.amount) ?? 0}，余 ${
+        getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0
+      }。`
+    }
+
+    if (effectType === 'gain_ink_after_ask_name') {
+      return `${artifactName}研墨 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
+        getPayloadNumber(entry.payload.currentInk) ?? 0
+      }。`
+    }
+
     if (result === 'prepared') {
       return `${artifactName}触发：下一次破形额外 +${
         getPayloadNumber(entry.payload.amount) ?? 0
@@ -795,15 +807,15 @@ export function getRouteFlowLabel(flowKind: RouteFlowKind) {
   }
 
   if (flowKind === 'event_placeholder') {
-    return '事件占位'
+    return '事件节点'
   }
 
   if (flowKind === 'rest_placeholder') {
-    return '休整占位'
+    return '休整节点'
   }
 
   if (flowKind === 'shop_placeholder') {
-    return '商店占位'
+    return '商店节点'
   }
 
   if (flowKind === 'battle') {

@@ -1,4 +1,5 @@
 import type {
+  ArtifactDefinition,
   CardDefinition,
   CardId,
   RouteNodeId,
@@ -9,6 +10,7 @@ import type {
   TutorialShopRecord,
   TutorialShopState,
 } from '../../types'
+import { addArtifactToCollection } from './artifactResolver'
 import { appendRunDeckCard, removeRunDeckCard } from './deckResolver'
 import { RED_INK_OPTIONS } from './redInkResolver'
 
@@ -39,11 +41,12 @@ export function getAvailableShopItems(
   run: TutorialRunState,
   shopItems: readonly TutorialShopItemDefinition[],
   cardDefinitions: readonly CardDefinition[],
+  artifactDefinitions: readonly ArtifactDefinition[] = [],
 ): readonly TutorialShopItemDefinition[] {
   return shopItems.filter(
     (item) =>
       everyRequiredStageUnlocked(item, run) &&
-      isShopItemMechanicallyAvailable(item, run, cardDefinitions),
+      isShopItemMechanicallyAvailable(item, run, cardDefinitions, artifactDefinitions),
   )
 }
 
@@ -52,6 +55,7 @@ export function resolveTutorialShopPurchase(
   input: ResolveTutorialShopPurchaseInput,
   shopItems: readonly TutorialShopItemDefinition[],
   cardDefinitions: readonly CardDefinition[],
+  artifactDefinitions: readonly ArtifactDefinition[] = [],
 ): TutorialRunState {
   if (run.status !== 'active') {
     return run
@@ -61,7 +65,7 @@ export function resolveTutorialShopPurchase(
     throw new Error('Resolve pending run choice before resolving a shop purchase')
   }
 
-  const item = getAvailableShopItems(run, shopItems, cardDefinitions).find(
+  const item = getAvailableShopItems(run, shopItems, cardDefinitions, artifactDefinitions).find(
     (candidate) => candidate.id === input.itemId,
   )
 
@@ -88,6 +92,32 @@ export function resolveTutorialShopPurchase(
       currency: spendIncenseMoney(run.currency, item.cost),
       deckDefinitionIds: [...run.deckDefinitionIds, item.cardDefinitionId],
       deckCards: appendRunDeckCard(run.deckCards, item.cardDefinitionId),
+      shops: updateShopStateAfterPurchase(run.shops, item, record),
+    }
+  }
+
+  if (item.kind === 'artifact') {
+    if (!item.artifactDefinitionId) {
+      throw new Error(`Shop artifact item is missing artifactDefinitionId: ${item.id}`)
+    }
+
+    const artifactDefinition = artifactDefinitions.find(
+      (candidate) => candidate.id === item.artifactDefinitionId,
+    )
+
+    if (!artifactDefinition) {
+      throw new Error(`Shop artifact item references missing artifact: ${item.artifactDefinitionId}`)
+    }
+
+    const record = createShopRecord(run, input, item, {
+      purchasedArtifactDefinitionId: item.artifactDefinitionId,
+      createdRedInkOffer: false,
+    })
+
+    return {
+      ...run,
+      currency: spendIncenseMoney(run.currency, item.cost),
+      artifacts: addArtifactToCollection(run.artifacts, artifactDefinition),
       shops: updateShopStateAfterPurchase(run.shops, item, record),
     }
   }
@@ -147,6 +177,7 @@ function isShopItemMechanicallyAvailable(
   item: TutorialShopItemDefinition,
   run: TutorialRunState,
   cardDefinitions: readonly CardDefinition[],
+  artifactDefinitions: readonly ArtifactDefinition[],
 ) {
   if (!item.repeatable && run.shops.purchasedItemIds.includes(item.id)) {
     return false
@@ -154,6 +185,18 @@ function isShopItemMechanicallyAvailable(
 
   if (item.kind === 'remove_card') {
     return run.deckCards.length > 1
+  }
+
+  if (item.kind === 'artifact') {
+    const artifact = item.artifactDefinitionId
+      ? artifactDefinitions.find((candidate) => candidate.id === item.artifactDefinitionId)
+      : undefined
+
+    return Boolean(
+      artifact &&
+        run.unlocks.stages.includes(artifact.unlockStage) &&
+        !run.artifacts.artifacts.some((candidate) => candidate.definitionId === artifact.id),
+    )
   }
 
   if (item.kind !== 'card') {
@@ -186,6 +229,7 @@ function createShopRecord(
   item: TutorialShopItemDefinition,
   result: {
     readonly purchasedCardDefinitionId?: CardId
+    readonly purchasedArtifactDefinitionId?: string
     readonly removedDeckCardId?: RunDeckCardId
     readonly removedCardDefinitionId?: CardId
     readonly createdRedInkOffer: boolean
@@ -198,6 +242,7 @@ function createShopRecord(
     kind: item.kind,
     cost: item.cost,
     purchasedCardDefinitionId: result.purchasedCardDefinitionId,
+    purchasedArtifactDefinitionId: result.purchasedArtifactDefinitionId,
     removedDeckCardId: result.removedDeckCardId,
     removedCardDefinitionId: result.removedCardDefinitionId,
     createdRedInkOffer: result.createdRedInkOffer,

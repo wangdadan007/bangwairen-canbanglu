@@ -17,7 +17,7 @@ import type {
 import { DEFAULT_STARTER_DECK_IDS } from '../battle/battleState'
 import {
   advanceArtifactsAfterBattle,
-  createInitialArtifactCollection,
+  createStarterArtifactCollection,
   type ArtifactBattleProgressInput,
 } from './artifactResolver'
 import { createRunDeckCards } from './deckResolver'
@@ -59,7 +59,7 @@ export function createInitialTutorialRunState(
     settlements: [],
     deckDefinitionIds,
     deckCards: createRunDeckCards(deckDefinitionIds),
-    artifacts: createInitialArtifactCollection(artifactDefinitions),
+    artifacts: createStarterArtifactCollection(artifactDefinitions),
     currency: createInitialTutorialCurrencyState(),
     playerForm: createInitialTutorialPlayerFormState(),
     resources: createInitialTutorialResourceState(),

@@ -28,7 +28,7 @@ export function EventPage({
     <section className="event-page" aria-label="事件页">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">事件页 / T20</p>
+          <p className="panel-kicker">事件</p>
           <h3>{t(event.nameKey)}</h3>
         </div>
         <span>{options.length} 个选项</span>

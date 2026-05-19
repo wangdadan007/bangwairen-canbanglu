@@ -44,6 +44,51 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
       ],
     },
   },
+  {
+    id: 'red_ink_named_draw',
+    nameKey: 'red_ink.named_draw.name',
+    rulesTextKey: 'red_ink.named_draw.rules',
+    annotation: {
+      id: 'red_ink_named_draw',
+      nameKey: 'red_ink.named_draw.name',
+      rulesTextKey: 'red_ink.named_draw.rules',
+      effects: [
+        {
+          type: 'DRAW',
+          target: 'self',
+          count: 1,
+          condition: {
+            type: 'THIS_TURN_NAMED_ENEMY',
+          },
+        },
+      ],
+    },
+  },
+  {
+    id: 'red_ink_press_momentum',
+    nameKey: 'red_ink.press_momentum.name',
+    rulesTextKey: 'red_ink.press_momentum.rules',
+    annotation: {
+      id: 'red_ink_press_momentum',
+      nameKey: 'red_ink.press_momentum.name',
+      rulesTextKey: 'red_ink.press_momentum.rules',
+      effects: [
+        {
+          type: 'SEAL_MOMENTUM',
+          target: 'selected_enemy',
+          amount: 2,
+        },
+        {
+          type: 'BREAK_SHAPE',
+          target: 'selected_enemy',
+          amount: 1,
+          condition: {
+            type: 'TARGET_HAS_REVEALED_NAME_SLOT',
+          },
+        },
+      ],
+    },
+  },
 ]
 
 export interface ResolveTutorialRedInkInput {

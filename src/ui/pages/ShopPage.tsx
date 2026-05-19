@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type {
+  ArtifactDefinition,
   CardDefinition,
   CardId,
   RunDeckCard,
@@ -11,6 +12,7 @@ import type {
 export interface ShopPageProps {
   readonly items: readonly TutorialShopItemDefinition[]
   readonly deckCards: readonly RunDeckCard[]
+  readonly artifactDefinitionsById: ReadonlyMap<string, ArtifactDefinition>
   readonly cardDefinitionsById: ReadonlyMap<CardId, CardDefinition>
   readonly run: TutorialRunState
   readonly t: (key: string | undefined) => string
@@ -21,6 +23,7 @@ export interface ShopPageProps {
 export function ShopPage({
   items,
   deckCards,
+  artifactDefinitionsById,
   cardDefinitionsById,
   run,
   t,
@@ -34,7 +37,7 @@ export function ShopPage({
     <section className="shop-page" aria-label="商店页">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">商店页 / T22</p>
+          <p className="panel-kicker">商店</p>
           <h3>纸钱小肆</h3>
         </div>
         <span>{items.length} 件商品</span>
@@ -106,7 +109,13 @@ export function ShopPage({
                   </span>
                   <span className="shop-item-copy">{t(item.descriptionKey)}</span>
                   <span className="card-tags">
-                    {getItemLabels(item, selectedCard, cardDefinitionsById, t).map((label) => (
+                    {getItemLabels(
+                      item,
+                      selectedCard,
+                      artifactDefinitionsById,
+                      cardDefinitionsById,
+                      t,
+                    ).map((label) => (
                       <span key={label}>{label}</span>
                     ))}
                   </span>
@@ -130,6 +139,7 @@ export function ShopPage({
 function getItemLabels(
   item: TutorialShopItemDefinition,
   selectedCard: RunDeckCard | undefined,
+  artifactDefinitionsById: ReadonlyMap<string, ArtifactDefinition>,
   cardDefinitionsById: ReadonlyMap<CardId, CardDefinition>,
   t: (key: string | undefined) => string,
 ) {
@@ -139,6 +149,14 @@ function getItemLabels(
       : undefined
 
     return [`买卡：${definition ? t(definition.nameKey) : item.cardDefinitionId ?? '未知牌'}`]
+  }
+
+  if (item.kind === 'artifact') {
+    const definition = item.artifactDefinitionId
+      ? artifactDefinitionsById.get(item.artifactDefinitionId)
+      : undefined
+
+    return [`买法宝：${definition ? t(definition.nameKey) : item.artifactDefinitionId ?? '未知器物'}`]
   }
 
   if (item.kind === 'remove_card') {

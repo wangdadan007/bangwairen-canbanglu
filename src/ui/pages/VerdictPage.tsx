@@ -18,7 +18,7 @@ export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictP
     <section className="verdict-page" aria-label="裁定页">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">裁定 / T12</p>
+          <p className="panel-kicker">裁定</p>
           <h3>归册后的裁定</h3>
         </div>
         <span>{offer.options.length} 选 1</span>

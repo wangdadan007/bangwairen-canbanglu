@@ -26,7 +26,7 @@ export function RewardPage({
     <section className={`reward-page ${offer.quality}`} aria-label="战后奖励">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">战后奖励 / T10</p>
+          <p className="panel-kicker">战后奖励</p>
           <h3>{qualityLabel}</h3>
         </div>
         <span>{offer.options.length} 选 1</span>

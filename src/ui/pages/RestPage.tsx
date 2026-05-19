@@ -42,7 +42,7 @@ export function RestPage({
     <section className="rest-page" aria-label="休整页">
       <div className="section-title-row">
         <div>
-          <p className="panel-kicker">休整页 / T21</p>
+          <p className="panel-kicker">休整</p>
           <h3>旧庙案前</h3>
         </div>
         <span>{options.length} 个选项</span>
@@ -216,6 +216,14 @@ function getRestOptionLabel(
     const definition = selectedCard ? cardDefinitionsById.get(selectedCard.definitionId) : undefined
 
     return definition ? `目标：${t(definition.nameKey)}` : '请选择牌'
+  }
+
+  if (optionId === 'maintain_artifact') {
+    const pendingBacklashCount = run.artifacts.artifacts.filter(
+      (artifact) => artifact.pendingBacklash,
+    ).length
+
+    return `反噬预警 ${pendingBacklashCount}`
   }
 
   return '进入朱批'

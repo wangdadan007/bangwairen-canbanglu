@@ -1,4 +1,5 @@
 import { appendLog } from '../log/actionLog'
+import { applyTutorialResourceDelta } from '../run/resourceResolver'
 import {
   BONE_MIRROR_ARTIFACT_ID,
   COURT_CHIME_ARTIFACT_ID,
@@ -17,28 +18,42 @@ import type {
 interface AskNameArtifactTrigger {
   readonly artifactId: ArtifactId
   readonly unlockStage: UnlockStageId
+  readonly effectType:
+    | 'peek_intent_after_ask_name'
+    | 'seal_momentum_after_ask_name'
+    | 'gain_ink_after_ask_name'
+  readonly baseAmount?: number
+  readonly boundAmount?: number
   readonly boundBonus: number
 }
 
-const ASK_NAME_PEEK_ARTIFACTS: readonly AskNameArtifactTrigger[] = [
+const ASK_NAME_ARTIFACTS: readonly AskNameArtifactTrigger[] = [
   {
     artifactId: BONE_MIRROR_ARTIFACT_ID,
     unlockStage: 'stage_core',
+    effectType: 'peek_intent_after_ask_name',
     boundBonus: 1,
   },
   {
     artifactId: COURT_CHIME_ARTIFACT_ID,
     unlockStage: 'stage_abnormal_boundary',
-    boundBonus: 1,
+    effectType: 'seal_momentum_after_ask_name',
+    baseAmount: 1,
+    boundAmount: 2,
+    boundBonus: 0,
   },
   {
     artifactId: REGISTRY_INKSTONE_ARTIFACT_ID,
     unlockStage: 'stage_run_resources',
-    boundBonus: 2,
+    effectType: 'gain_ink_after_ask_name',
+    baseAmount: 1,
+    boundAmount: 2,
+    boundBonus: 0,
   },
   {
     artifactId: NAME_TETHER_SPINDLE_ARTIFACT_ID,
     unlockStage: 'stage_three_altars',
+    effectType: 'peek_intent_after_ask_name',
     boundBonus: 2,
   },
 ]
@@ -64,7 +79,7 @@ export function triggerArtifactsAfterAskName(
   const target = state.enemies.find((enemy) => enemy.instanceId === askNameEntry.targetId)
   let nextState = state
 
-  for (const trigger of ASK_NAME_PEEK_ARTIFACTS) {
+  for (const trigger of ASK_NAME_ARTIFACTS) {
     const artifact = nextState.artifacts.artifacts.find(
       (candidate) => candidate.definitionId === trigger.artifactId,
     )
@@ -77,37 +92,120 @@ export function triggerArtifactsAfterAskName(
       continue
     }
 
-    nextState = {
-      ...nextState,
-      artifacts: {
-        artifacts: nextState.artifacts.artifacts.map((candidate) =>
-          candidate.id === artifact.id
-            ? {
-                ...candidate,
-                hasTriggeredThisBattle: true,
-                triggerCountThisBattle: candidate.triggerCountThisBattle + 1,
-              }
-            : candidate,
-        ),
-      },
-      triggeredArtifactIds: [...nextState.triggeredArtifactIds, artifact.id],
-    }
+    nextState = markArtifactTriggered(nextState, artifact.id)
+    nextState = resolveAskNameArtifactTrigger(nextState, trigger, artifact.id, target)
+  }
 
-    nextState = appendLog(nextState, {
+  return nextState
+}
+
+function resolveAskNameArtifactTrigger(
+  state: CombatState,
+  trigger: AskNameArtifactTrigger,
+  artifactId: ArtifactId,
+  target: CombatState['enemies'][number] | undefined,
+): CombatState {
+  if (trigger.effectType === 'seal_momentum_after_ask_name') {
+    const amount = getArtifactTriggerAmount(state, artifactId, trigger)
+    const nextIncomingForce = Math.max(0, (target?.incomingForce ?? 0) - amount)
+    const sealedAmount = (target?.incomingForce ?? 0) - nextIncomingForce
+    const nextState = target
+      ? {
+          ...state,
+          enemies: state.enemies.map((enemy) =>
+            enemy.instanceId === target.instanceId
+              ? {
+                  ...enemy,
+                  incomingForce: nextIncomingForce,
+                }
+              : enemy,
+          ),
+        }
+      : state
+
+    return appendLog(nextState, {
       type: 'ARTIFACT_TRIGGERED',
-      sourceId: artifact.id,
+      sourceId: artifactId,
       targetId: target?.instanceId,
       payload: {
-        effectType: 'peek_intent_after_ask_name',
-        result: 'peeked',
-        intentId: target?.currentIntent?.id ?? null,
-        intentKind: target?.currentIntent?.kind ?? null,
-        boundBonus: artifact.bindingStatus === 'bound' ? trigger.boundBonus : 0,
+        effectType: trigger.effectType,
+        result: 'sealed',
+        amount: sealedAmount,
+        requestedAmount: amount,
+        remainingIncomingForce: nextIncomingForce,
       },
     })
   }
 
-  return nextState
+  if (trigger.effectType === 'gain_ink_after_ask_name') {
+    const amount = getArtifactTriggerAmount(state, artifactId, trigger)
+    const nextResources = applyTutorialResourceDelta(state.resources, {
+      ink: amount,
+    })
+
+    return appendLog(
+      {
+        ...state,
+        resources: nextResources,
+      },
+      {
+        type: 'ARTIFACT_TRIGGERED',
+        sourceId: artifactId,
+        targetId: target?.instanceId,
+        payload: {
+          effectType: trigger.effectType,
+          result: 'gain_ink',
+          amount,
+          currentInk: nextResources.ink,
+        },
+      },
+    )
+  }
+
+  return appendLog(state, {
+    type: 'ARTIFACT_TRIGGERED',
+    sourceId: artifactId,
+    targetId: target?.instanceId,
+    payload: {
+      effectType: 'peek_intent_after_ask_name',
+      result: 'peeked',
+      intentId: target?.currentIntent?.id ?? null,
+      intentKind: target?.currentIntent?.kind ?? null,
+      boundBonus: getArtifactBindingStatus(state, artifactId) === 'bound' ? trigger.boundBonus : 0,
+    },
+  })
+}
+
+function markArtifactTriggered(state: CombatState, artifactId: ArtifactId): CombatState {
+  return {
+    ...state,
+    artifacts: {
+      artifacts: state.artifacts.artifacts.map((candidate) =>
+        candidate.id === artifactId
+          ? {
+              ...candidate,
+              hasTriggeredThisBattle: true,
+              triggerCountThisBattle: candidate.triggerCountThisBattle + 1,
+            }
+          : candidate,
+      ),
+    },
+    triggeredArtifactIds: [...state.triggeredArtifactIds, artifactId],
+  }
+}
+
+function getArtifactTriggerAmount(
+  state: CombatState,
+  artifactId: ArtifactId,
+  trigger: AskNameArtifactTrigger,
+) {
+  return getArtifactBindingStatus(state, artifactId) === 'bound'
+    ? (trigger.boundAmount ?? trigger.baseAmount ?? 0)
+    : (trigger.baseAmount ?? 0)
+}
+
+function getArtifactBindingStatus(state: CombatState, artifactId: ArtifactId) {
+  return state.artifacts.artifacts.find((artifact) => artifact.id === artifactId)?.bindingStatus
 }
 
 export function triggerArtifactsAfterEnemyNamed(

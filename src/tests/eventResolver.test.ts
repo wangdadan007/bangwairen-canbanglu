@@ -132,6 +132,8 @@ describe('T20 event resolver', () => {
     expect(redInkServiceRun.pendingRedInk?.options.map((option) => option.id)).toEqual([
       'red_ink_return_incense',
       'red_ink_trace_name',
+      'red_ink_named_draw',
+      'red_ink_press_momentum',
     ])
     expect(redInkServiceRun.events.records[0].createdRedInkOffer).toBe(true)
   })

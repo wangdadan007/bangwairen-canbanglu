@@ -1,8 +1,8 @@
-import type { CardId, LocalizationKey, RouteNodeId, UnlockStageId } from './common'
+import type { ArtifactId, CardId, LocalizationKey, RouteNodeId, UnlockStageId } from './common'
 import type { RunDeckCardId } from './run'
 
 export type TutorialShopCurrency = 'incense_money'
-export type TutorialShopItemKind = 'card' | 'remove_card' | 'red_ink_service'
+export type TutorialShopItemKind = 'card' | 'artifact' | 'remove_card' | 'red_ink_service'
 
 export interface TutorialCurrencyState {
   readonly incenseMoney: number
@@ -16,6 +16,7 @@ export interface TutorialShopItemDefinition {
   readonly cost: number
   readonly currency: TutorialShopCurrency
   readonly cardDefinitionId?: CardId
+  readonly artifactDefinitionId?: ArtifactId
   readonly requiredUnlockStages?: readonly UnlockStageId[]
   readonly repeatable?: boolean
 }
@@ -27,6 +28,7 @@ export interface TutorialShopRecord {
   readonly kind: TutorialShopItemKind
   readonly cost: number
   readonly purchasedCardDefinitionId?: CardId
+  readonly purchasedArtifactDefinitionId?: ArtifactId
   readonly removedDeckCardId?: RunDeckCardId
   readonly removedCardDefinitionId?: CardId
   readonly createdRedInkOffer: boolean

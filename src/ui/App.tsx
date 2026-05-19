@@ -91,7 +91,7 @@ export function App() {
           onClose={() => setIsSettingsOpen(false)}
         />
       ) : null}
-      <section className="battle-layout" aria-label="测试战斗">
+      <section className="battle-layout" aria-label="第一章试玩区域">
         <PhaserGame />
         <BattleHud
           key={battleKey}

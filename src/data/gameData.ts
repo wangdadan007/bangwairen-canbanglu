@@ -51,7 +51,7 @@ export function loadGameData(): GameData {
   assertUniqueIds(shopItems, 'shop item')
   assertEncounterEnemyIds(encounters, enemies)
   assertEventCardIds(events, cards)
-  assertShopItemCardIds(shopItems, cards)
+  assertShopItemReferences(shopItems, cards, artifacts)
   assertRouteNodeIds(routes)
   assertRouteReferences(routes, encounters, events)
   assertUniqueIds(tutorialUnlocks, 'tutorial unlock')
@@ -174,15 +174,21 @@ function assertEventCardIds(
   }
 }
 
-function assertShopItemCardIds(
+function assertShopItemReferences(
   shopItems: readonly TutorialShopItemDefinition[],
   cards: readonly CardDefinition[],
+  artifacts: readonly ArtifactDefinition[],
 ) {
   const cardIds = new Set(cards.map((card) => card.id))
+  const artifactIds = new Set(artifacts.map((artifact) => artifact.id))
 
   for (const item of shopItems) {
     if (item.cardDefinitionId && !cardIds.has(item.cardDefinitionId)) {
       throw new Error(`Shop item ${item.id} references missing card ${item.cardDefinitionId}`)
+    }
+
+    if (item.artifactDefinitionId && !artifactIds.has(item.artifactDefinitionId)) {
+      throw new Error(`Shop item ${item.id} references missing artifact ${item.artifactDefinitionId}`)
     }
   }
 }

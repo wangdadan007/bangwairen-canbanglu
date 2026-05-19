@@ -1,7 +1,11 @@
-import type { CardId, LocalizationKey, RouteNodeId, UnlockStageId } from './common'
+import type { ArtifactId, CardId, LocalizationKey, RouteNodeId, UnlockStageId } from './common'
 import type { RunDeckCardId } from './run'
 
-export type TutorialRestOptionId = 'restore_form' | 'remove_card' | 'red_ink_service'
+export type TutorialRestOptionId =
+  | 'restore_form'
+  | 'remove_card'
+  | 'red_ink_service'
+  | 'maintain_artifact'
 
 export interface TutorialRestOption {
   readonly id: TutorialRestOptionId
@@ -18,6 +22,9 @@ export interface TutorialRestRecord {
   readonly optionId: TutorialRestOptionId
   readonly removedDeckCardId?: RunDeckCardId
   readonly removedCardDefinitionId?: CardId
+  readonly maintainedArtifactId?: ArtifactId
+  readonly maintainedArtifactDefinitionId?: ArtifactId
+  readonly clearedArtifactBacklash: boolean
   readonly formRestored: number
   readonly playerCurrentFormAfter: number
   readonly playerMaxFormAfter: number
