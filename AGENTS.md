@@ -24,6 +24,7 @@
 | 技术骨架、目录、测试、数据驱动 | `docs/prd/PRD-architecture.md` |
 | UI、页面、交互、术语展示 | `docs/prd/PRD-pages.md`、`docs/prd/PRD-gameplay.md` |
 | 验收、QA、版本收尾 | `docs/prd/PRD-checklist.md` |
+| 模板沉淀、商业化抽象、可复用模块记录 | `docs/templates/TEMPLATE_EXTRACTION_NOTES.md` |
 
 如果用户最新指令和文档冲突，按以下顺序判断：
 
@@ -192,6 +193,7 @@ src/
 
 - 将已完成任务的状态改为已完成。
 - 记录本次完成内容、验证基线和下一步建议。
+- 增加模板沉淀检查：本阶段是否产生可模板化模块？是否需要记录到 `docs/templates/TEMPLATE_EXTRACTION_NOTES.md`？
 - 如果任务范围、核心机制、技术栈或阶段规划发生变化，再同步更新 `docs/prd/PRD-changelog.md`。
 
 如果只是文档整理或很小的改动，可以压缩格式，但不能省略测试 / 命令是否运行的真实说明。
