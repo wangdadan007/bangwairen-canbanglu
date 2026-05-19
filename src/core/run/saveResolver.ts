@@ -1,4 +1,5 @@
 import type { RouteState, TutorialRunState, TutorialSaveData } from '../../types'
+import { normalizeTutorialPlayerFormState } from './playerFormResolver'
 import {
   type KeyValueStorage,
   removeStorageItem,
@@ -116,6 +117,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
   return {
     ...value,
+    playerForm: normalizeTutorialPlayerFormState(value.playerForm),
     rewards: value.rewards ?? [],
     redInkRecords: value.redInkRecords ?? [],
   }

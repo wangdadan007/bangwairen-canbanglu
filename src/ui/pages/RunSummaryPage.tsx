@@ -41,6 +41,10 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
         <SummaryMetric label="削籍" value={summary.verdictEraseCount} />
         <SummaryMetric label="休整" value={summary.restCount} />
         <SummaryMetric label="商店" value={summary.shopPurchaseCount} />
+        <SummaryMetric
+          label="己形"
+          value={`${summary.playerCurrentForm} / ${summary.playerMaxForm}`}
+        />
         <SummaryMetric label="香火钱" value={summary.incenseMoney} />
         <SummaryMetric label="墨" value={summary.ink} />
         <SummaryMetric label="劫数" value={summary.doom} />
@@ -60,7 +64,7 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
   )
 }
 
-function SummaryMetric({ label, value }: { readonly label: string; readonly value: number }) {
+function SummaryMetric({ label, value }: { readonly label: string; readonly value: number | string }) {
   return (
     <div>
       <span>{label}</span>

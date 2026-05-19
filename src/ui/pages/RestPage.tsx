@@ -51,6 +51,9 @@ export function RestPage({
 
       <div className="rest-state-row" aria-label="休整相关状态">
         <span>牌组 {deckCards.length} 张</span>
+        <span>
+          己形 {run.playerForm.current} / {run.playerForm.max}
+        </span>
         <span>墨 {run.resources.ink}</span>
         <span>劫数 {run.resources.doom}</span>
         <span>榜裂 {run.resources.fracture}</span>
@@ -133,7 +136,7 @@ export function RestPage({
             >
               <span className="card-topline">
                 <strong>{t(option.nameKey)}</strong>
-                <span>{getRestOptionLabel(option.id, selectedCard, cardDefinitionsById, t)}</span>
+                <span>{getRestOptionLabel(option.id, selectedCard, cardDefinitionsById, run, t)}</span>
               </span>
               <span className="rest-option-copy">{t(option.descriptionKey)}</span>
               <span className="event-result-grid">
@@ -202,8 +205,13 @@ function getRestOptionLabel(
   optionId: TutorialRestOptionId,
   selectedCard: RunDeckCard | undefined,
   cardDefinitionsById: ReadonlyMap<CardId, CardDefinition>,
+  run: TutorialRunState,
   t: (key: string | undefined) => string,
 ) {
+  if (optionId === 'restore_form') {
+    return `己形：${run.playerForm.current} / ${run.playerForm.max}`
+  }
+
   if (optionId === 'remove_card') {
     const definition = selectedCard ? cardDefinitionsById.get(selectedCard.definitionId) : undefined
 

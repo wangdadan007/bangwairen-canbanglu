@@ -36,6 +36,8 @@ export interface UnlockState {
 export interface PlayerState {
   readonly incense: number
   readonly maxIncense: number
+  readonly currentForm: number
+  readonly maxForm: number
   readonly deck: readonly CardInstance[]
   readonly unlocks: UnlockState
 }
@@ -68,6 +70,8 @@ export type ActionLogType =
   | 'INCENSE_SPENT'
   | 'INK_GAINED'
   | 'DOOM_GAINED'
+  | 'PLAYER_FORM_LOST'
+  | 'DEFEAT_SETTLED'
   | 'ALTAR_PLACED'
   | 'ALTAR_TRIGGERED'
   | 'ALTAR_EXPIRED'

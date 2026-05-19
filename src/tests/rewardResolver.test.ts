@@ -170,7 +170,6 @@ describe('T10 tutorial rewards', () => {
         'card_thunder_splinter',
         'card_name_hook_charm',
         'card_heavy_edict',
-        'card_mirror_slip',
       ]),
     )
     expect(coreOrdinaryRewardIds).not.toContain('card_mirror_slip')

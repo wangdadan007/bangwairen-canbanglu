@@ -1,5 +1,9 @@
 import { appendLog } from '../log/actionLog'
 import { createInitialArtifactCollection, type ArtifactBacklashRecord } from '../run/artifactResolver'
+import {
+  createInitialTutorialPlayerFormState,
+  normalizeTutorialPlayerFormState,
+} from '../run/playerFormResolver'
 import { createInitialTutorialResourceState } from '../run/resourceResolver'
 import { startPlayerTurn } from './turnFlow'
 import type {
@@ -41,6 +45,8 @@ export interface CreateBattleStateInput {
   readonly deckDefinitionIds?: readonly CardId[]
   readonly deckCards?: readonly RunDeckCard[]
   readonly maxIncenseBonus?: number
+  readonly playerCurrentForm?: number
+  readonly playerMaxForm?: number
   readonly resources?: TutorialResourceState
   readonly temporaryResourceDelta?: TutorialResourceState
   readonly artifacts?: ArtifactCollectionState
@@ -75,6 +81,14 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     createEnemyState(enemyDefinition, index),
   )
   const maxIncense = DEFAULT_MAX_INCENSE + (input.maxIncenseBonus ?? 0)
+  const playerForm = normalizeTutorialPlayerFormState(
+    input.playerCurrentForm === undefined && input.playerMaxForm === undefined
+      ? createInitialTutorialPlayerFormState()
+      : {
+          current: input.playerCurrentForm,
+          max: input.playerMaxForm,
+        },
+  )
 
   let state: CombatState = {
     turn: 1,
@@ -82,6 +96,8 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     player: {
       incense: 0,
       maxIncense,
+      currentForm: playerForm.current,
+      maxForm: playerForm.max,
       deck,
       unlocks: input.unlocks ?? {
         stages: ['stage_core'],
@@ -113,6 +129,8 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
       enemyDefinitionId: enemyDefinitions[0]?.id,
       enemyDefinitionIds: enemyDefinitions.map((enemyDefinition) => enemyDefinition.id),
       enemyCount: enemyDefinitions.length,
+      playerCurrentForm: playerForm.current,
+      playerMaxForm: playerForm.max,
       deckSize: deck.length,
     },
   })

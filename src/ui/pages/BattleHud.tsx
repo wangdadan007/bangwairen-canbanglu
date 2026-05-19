@@ -198,7 +198,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
       {currentEncounter && battle.result.status === 'defeat' && run.status === 'active' ? (
         <section className="result-banner run-failed" aria-live="polite">
           <span>失败</span>
-          <strong>本场战斗已经失败。</strong>
+          <strong>己形已散，本场战斗已经失败。</strong>
           <p>进入第一章结算页，保留本局已经完成的伏诛、归册、奖励和裁定记录。</p>
           <div className="result-actions">
             <button type="button" onClick={settleBattleDefeat}>
@@ -329,6 +329,11 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
           <span className="turn-pill">第 {battle.turn} 回合</span>
         </div>
         <div className="resource-grid" aria-label="玩家资源">
+          <Metric
+            label="己形"
+            tooltip={getTermTooltip('player_shape')}
+            value={`${battle.player.currentForm} / ${battle.player.maxForm}`}
+          />
           <Metric
             label="香火"
             tooltip={getTermTooltip('incense')}
@@ -482,14 +487,15 @@ function TutorialRunPanel({
       <ol className="tutorial-steps">
         {run.encounterIds.map((encounterId, index) => {
           const encounter = getEncounterDefinition(encounterId)
-          const settlement = run.settlements.find((record) => record.encounterId === encounterId)
-          const isCurrent = currentEncounter?.id === encounterId
-          const isDone = run.completedEncounterIds.includes(encounterId)
+          const settlement = run.settlements[index]
+          const isDone = Boolean(settlement)
+          const isCurrent =
+            !isDone && index === run.currentEncounterIndex && currentEncounter?.id === encounterId
 
           return (
             <li
               className={isDone ? 'done' : isCurrent ? 'current' : 'locked'}
-              key={encounterId}
+              key={`${encounterId}-${index}`}
             >
               <span>{index + 1}</span>
               <div>
@@ -513,6 +519,9 @@ function TutorialRunPanel({
       </div>
       <div className="run-summary-row" aria-label="牌组与奖励记录">
         <span>牌组 {run.deckCards.length} 张</span>
+        <span>
+          己形 {run.playerForm.current} / {run.playerForm.max}
+        </span>
         <span>香火钱 {run.currency.incenseMoney}</span>
         <span>墨 {run.resources.ink}</span>
         <span>劫数 {run.resources.doom}</span>

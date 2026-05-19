@@ -153,6 +153,10 @@ describe('core type contracts', () => {
       currency: {
         incenseMoney: 100,
       },
+      playerForm: {
+        current: 72,
+        max: 72,
+      },
       resources: {
         ink: 0,
         doom: 0,
@@ -334,10 +338,14 @@ describe('core type contracts', () => {
         artifacts: {
           artifacts: [],
         },
-        currency: {
-          incenseMoney: 100,
-        },
-        resources: {
+      currency: {
+        incenseMoney: 100,
+      },
+      playerForm: {
+        current: 72,
+        max: 72,
+      },
+      resources: {
           ink: 0,
           doom: 0,
           fracture: 0,
@@ -404,6 +412,8 @@ describe('core type contracts', () => {
       player: {
         incense: 3,
         maxIncense: 3,
+        currentForm: 72,
+        maxForm: 72,
         deck: [cardInstance],
         unlocks: {
           stages: ['stage_core'],

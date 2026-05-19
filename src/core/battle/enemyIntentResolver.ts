@@ -23,6 +23,10 @@ export function executeEnemyTurn(
   nextState = triggerEarthAltars(nextState)
 
   for (const enemy of nextState.enemies) {
+    if (nextState.result.status !== 'ongoing') {
+      break
+    }
+
     if (enemy.currentForm <= 0) {
       continue
     }
@@ -57,6 +61,7 @@ function executeEnemyIntent(
           baseAmount: effect.amount,
         },
       })
+      nextState = applyIncomingForceToPlayer(nextState, enemy, amount)
     }
 
     if (effect.type === 'ABNORMAL_MOVE') {
@@ -64,7 +69,64 @@ function executeEnemyIntent(
     }
   }
 
+  if (nextState.result.status !== 'ongoing') {
+    return nextState
+  }
+
   return advanceEnemyIntent(nextState, enemy, enemyDefinitions)
+}
+
+function applyIncomingForceToPlayer(
+  state: CombatState,
+  enemy: EnemyState,
+  amount: number,
+): CombatState {
+  if (amount <= 0) {
+    return state
+  }
+
+  const nextCurrentForm = Math.max(0, state.player.currentForm - amount)
+  let nextState = appendLog(
+    {
+      ...state,
+      player: {
+        ...state.player,
+        currentForm: nextCurrentForm,
+      },
+    },
+    {
+      type: 'PLAYER_FORM_LOST',
+      sourceId: enemy.instanceId,
+      targetId: 'player',
+      payload: {
+        amount,
+        currentForm: nextCurrentForm,
+        maxForm: state.player.maxForm,
+      },
+    },
+  )
+
+  if (nextCurrentForm > 0) {
+    return nextState
+  }
+
+  nextState = {
+    ...nextState,
+    phase: 'defeat',
+    result: {
+      status: 'defeat',
+      reasonKey: 'battle.defeat.player_form_broken',
+    },
+  }
+
+  return appendLog(nextState, {
+    type: 'DEFEAT_SETTLED',
+    sourceId: enemy.instanceId,
+    targetId: 'player',
+    payload: {
+      reasonKey: 'battle.defeat.player_form_broken',
+    },
+  })
 }
 
 function executeAbnormalMove(

@@ -261,11 +261,16 @@
     "cost": 0,
     "type": "edict",
     "unlockStage": "stage_core",
-    "tags": ["reward", "catalogue_reward", "ask_name", "exhaust"],
+    "tags": ["reward", "catalogue_reward", "ink", "draw", "exhaust"],
     "effects": [
       {
-        "type": "ASK_NAME",
-        "target": "selected_enemy",
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
+      },
+      {
+        "type": "GAIN_INK",
+        "target": "self",
         "amount": 1
       }
     ]
@@ -422,7 +427,7 @@
     "cost": 1,
     "type": "ritual",
     "unlockStage": "stage_human_altar",
-    "tags": ["reward", "altar", "human_altar", "ink", "ask_name"],
+    "tags": ["reward", "altar", "human_altar", "ink"],
     "effects": [
       {
         "type": "PLACE_ALTAR",
@@ -486,7 +491,7 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "ink", "ask_name", "draw"],
+    "tags": ["reward", "ink", "draw"],
     "effects": [
       {
         "type": "GAIN_INK",
@@ -574,17 +579,20 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "catalogue_reward", "heaven_altar", "ask_name", "draw"],
+    "tags": ["reward", "catalogue_reward", "heaven_altar", "gain_incense", "draw"],
     "effects": [
-      {
-        "type": "ASK_NAME",
-        "target": "selected_enemy",
-        "amount": 1
-      },
       {
         "type": "DRAW",
         "target": "self",
         "count": 1
+      },
+      {
+        "type": "GAIN_INCENSE",
+        "target": "self",
+        "amount": 1,
+        "condition": {
+          "type": "THIS_TURN_NAMED_ENEMY"
+        }
       }
     ]
   },
@@ -689,17 +697,17 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "catalogue_reward", "artifact", "ask_name", "ink"],
+    "tags": ["reward", "catalogue_reward", "artifact", "ink", "draw"],
     "effects": [
-      {
-        "type": "ASK_NAME",
-        "target": "selected_enemy",
-        "amount": 1
-      },
       {
         "type": "GAIN_INK",
         "target": "self",
         "amount": 1
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1
       }
     ]
   },
@@ -788,7 +796,7 @@
     "cost": 1,
     "type": "talisman",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "catalogue_reward", "artifact", "break_form", "ask_name"],
+    "tags": ["reward", "catalogue_reward", "artifact", "break_form"],
     "effects": [
       {
         "type": "BREAK_SHAPE",
@@ -796,9 +804,9 @@
         "amount": 5
       },
       {
-        "type": "ASK_NAME",
+        "type": "BREAK_SHAPE",
         "target": "selected_enemy",
-        "amount": 1,
+        "amount": 2,
         "condition": {
           "type": "TARGET_HAS_REVEALED_NAME_SLOT"
         }

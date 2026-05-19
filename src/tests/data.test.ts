@@ -153,6 +153,22 @@ describe('initial game data', () => {
     expect(getCardDefinition('card_heaven_altar_oracle', data)?.tags).toContain(
       'catalogue_reward',
     )
+    expect(getCardDefinition('card_mirror_slip', data)?.effects.map((effect) => effect.type)).toEqual([
+      'DRAW',
+      'GAIN_INK',
+    ])
+    expect(getCardDefinition('card_heaven_trace_edict', data)?.effects.map((effect) => effect.type)).toEqual([
+      'DRAW',
+      'GAIN_INCENSE',
+    ])
+    expect(getCardDefinition('card_mirror_bind_edict', data)?.effects.map((effect) => effect.type)).toEqual([
+      'GAIN_INK',
+      'DRAW',
+    ])
+    expect(getCardDefinition('card_whip_follow_charm', data)?.effects.map((effect) => effect.type)).toEqual([
+      'BREAK_SHAPE',
+      'BREAK_SHAPE',
+    ])
     expect(getCardDefinition('card_doom_flash_talisman', data)?.effects.map((effect) => effect.type)).toEqual([
       'GAIN_DOOM',
       'BREAK_SHAPE',
@@ -399,14 +415,7 @@ describe('initial game data', () => {
     expect(
       route.nodes.find((node) => node.id === 'route_node_unlit_temple_warden')
         ?.encounterPoolIds,
-    ).toEqual([
-      'encounter_mid_unlit_temple_warden',
-      'encounter_mid_fortune_breaker',
-      'encounter_mid_ash_altar_child',
-      'encounter_pool_bronze_bell_patrol_return',
-      'encounter_multi_paper_wraith_imp',
-      'encounter_multi_thief_mouse_louse',
-    ])
+    ).toBeUndefined()
     expect(
       route.nodes.find((node) => node.id === 'route_node_late_fleeing_name_paper_horse')
         ?.encounterPoolIds,
@@ -444,9 +453,21 @@ describe('initial game data', () => {
     }
 
     expect(cardsByDirection.breakForm).toHaveLength(13)
-    expect(cardsByDirection.askName).toHaveLength(15)
+    expect(cardsByDirection.askName).toHaveLength(9)
     expect(cardsByDirection.sealMomentum).toHaveLength(9)
     expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(35)
+    expect(
+      data.cards.filter((card) => card.effects.some((effect) => effect.type === 'ASK_NAME')),
+    ).toHaveLength(8)
+    expect(
+      data.cards.filter((card) =>
+        card.effects.some(
+          (effect) =>
+            effect.type === 'PLACE_ALTAR' &&
+            effect.altarEffect.type === 'ask_name_and_gain_ink',
+        ),
+      ),
+    ).toHaveLength(1)
   })
 
   it('keeps early chapter reward numbers within the current enemy curve', () => {

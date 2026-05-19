@@ -55,6 +55,8 @@ describe('T12 verdict MVP', () => {
       enemyDefinition: gameData.enemies[1],
       deckCards: nextRun.deckCards,
       maxIncenseBonus: nextRun.verdict.maxIncenseBonus,
+      playerCurrentForm: nextRun.playerForm.current,
+      playerMaxForm: nextRun.playerForm.max,
       unlocks: nextRun.unlocks,
     })
 
@@ -71,10 +73,16 @@ describe('T12 verdict MVP', () => {
       expect.objectContaining({
         choiceId: 'register',
         maxIncenseBonusDelta: 1,
+        maxFormBonusDelta: 4,
       }),
     )
+    expect(nextRun.playerForm).toEqual({
+      current: 76,
+      max: 76,
+    })
     expect(state.player.maxIncense).toBe(4)
     expect(state.player.incense).toBe(4)
+    expect(state.player.maxForm).toBe(76)
   })
 
   it('resolves red ink by entering the red ink page before reward selection', () => {

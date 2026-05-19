@@ -23,6 +23,8 @@ describe('battle core loop', () => {
     expect(state.phase).toBe('player_turn')
     expect(state.turn).toBe(1)
     expect(state.player.incense).toBe(3)
+    expect(state.player.currentForm).toBe(72)
+    expect(state.player.maxForm).toBe(72)
     expect(state.hand).toHaveLength(5)
     expect(state.drawPile).toHaveLength(7)
     expect(state.discardPile).toHaveLength(0)
@@ -109,6 +111,28 @@ describe('battle core loop', () => {
     expect(nextState.discardPile.length).toBeGreaterThan(0)
     expect(nextState.actionLog.map((entry) => entry.type)).toEqual(
       expect.arrayContaining(['TURN_ENDED', 'CARD_DISCARDED', 'INCOMING_FORCE_CREATED']),
+    )
+  })
+
+  it('reduces player form from unsealed incoming force and settles defeat at zero', () => {
+    const state = withPlayerForm(
+      createInitialBattleState({
+        cardDefinitions: gameData.cards,
+        enemyDefinition: paperWraith,
+      }),
+      4,
+    )
+
+    const nextState = reduceBattleState(state, { type: 'END_TURN' }, context)
+
+    expect(nextState.player.currentForm).toBe(0)
+    expect(nextState.phase).toBe('defeat')
+    expect(nextState.result).toEqual({
+      status: 'defeat',
+      reasonKey: 'battle.defeat.player_form_broken',
+    })
+    expect(nextState.actionLog.map((entry) => entry.type)).toEqual(
+      expect.arrayContaining(['PLAYER_FORM_LOST', 'DEFEAT_SETTLED']),
     )
   })
 
@@ -220,6 +244,16 @@ function withPlayerIncense(state: CombatState, incense: number): CombatState {
     player: {
       ...state.player,
       incense,
+    },
+  }
+}
+
+function withPlayerForm(state: CombatState, currentForm: number): CombatState {
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      currentForm,
     },
   }
 }

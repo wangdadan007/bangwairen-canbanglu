@@ -35,15 +35,15 @@ export function RedInkPage({
           <p className="panel-kicker">批改卡牌（朱批） / T11</p>
           <h3>给一张牌写入永久词条</h3>
         </div>
-        <span>{offer.options.length} 种朱批</span>
+        <span>当前牌组 {deckCards.length} 张 / {offer.options.length} 种朱批</span>
       </div>
       <p className="reward-copy">
-        选择一张已有牌，再选择一条朱批。被批改的牌会在后续战斗保留这个词条。
+        从当前牌组选择一张已有牌，再选择一条朱批。未获得的卡牌不会出现在这里，被批改的牌会在后续战斗保留这个词条。
       </p>
 
       <div className="red-ink-grid">
         <div className="red-ink-column">
-          <h4>案上牌册</h4>
+          <h4>当前牌组</h4>
           <div className="red-ink-card-list">
             {deckCards.map((deckCard, index) => {
               const definition = cardDefinitionsById.get(deckCard.definitionId)

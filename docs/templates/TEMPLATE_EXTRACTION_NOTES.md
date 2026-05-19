@@ -1,6 +1,6 @@
 # 模板沉淀区
 
-版本：v0.3
+版本：v0.4
 日期：2026-05-19
 建议路径：`docs/templates/TEMPLATE_EXTRACTION_NOTES.md`
 
@@ -181,6 +181,19 @@
 - 依赖与授权注意：发布前要剥离私有仓库 URL、具体商业计划、未公开素材路线和任何账号信息。
 - 是否值得抽到模板：非常值得，优先级仅次于主 starter kit，甚至可以先做轻量版售卖。
 - 后续动作：阶段 D 每轮收尾继续补“真实试玩反馈模板”和“bug bash 记录模板”。
+
+### 2026-05-19 · T51 · 浏览器完整局 Bug Bash 记录
+
+- 候选类型：真实试玩 QA 记录模板 / 阻断问题分级模板。
+- 主归属模板：`AI Game Development Planning and QA Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 涉及文件：`docs/qa/CHAPTER_ONE_PLAYABLE_BUG_BASH.md`、`docs/tasks/PROJECT_PLAN.md`、`src/ui/pages/BattleHud.tsx`。
+- 可复用价值：把完整局点击验证拆成路线记录、阻断问题、非阻断限制、修复记录和后续建议，适合复用到其他独立游戏或 demo 收口流程。
+- 与本作强绑定部分：伏诛、归册、削籍、榜裂、法宝反噬和第一章节点名称属于本作表达。
+- 去题材化思路：抽象为 run style、completion result、critical blocker、known limitation、fix record 和 follow-up bucket。
+- 依赖与授权注意：模板只记录 QA 流程，不包含本作剧情、素材或私有发布信息。
+- 是否值得抽到模板：值得，适合作为 `AI Game Development Planning and QA Kit` 的 bug bash worksheet。
+- 后续动作：T59 外部试玩反馈模板完成后，合并成“内部 bug bash + 外部反馈”双表模板。
 
 ### 2026-05-19 · T40-T46 回溯 · React 页面编排、反馈层与可访问设置
 

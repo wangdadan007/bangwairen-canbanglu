@@ -9,12 +9,24 @@ import type {
   TutorialRunState,
 } from '../../types'
 import { removeRunDeckCard } from './deckResolver'
+import {
+  RESTORE_PLAYER_FORM_AMOUNT,
+  restoreTutorialPlayerForm,
+} from './playerFormResolver'
 import { RED_INK_OPTIONS } from './redInkResolver'
 
+export const REST_OPTION_RESTORE_FORM: TutorialRestOptionId = 'restore_form'
 export const REST_OPTION_REMOVE_CARD: TutorialRestOptionId = 'remove_card'
 export const REST_OPTION_RED_INK_SERVICE: TutorialRestOptionId = 'red_ink_service'
 
 export const TUTORIAL_REST_OPTIONS: readonly TutorialRestOption[] = [
+  {
+    id: REST_OPTION_RESTORE_FORM,
+    nameKey: 'rest.option.restore_form.name',
+    descriptionKey: 'rest.option.restore_form.description',
+    rewardKey: 'rest.option.restore_form.reward',
+    costKey: 'rest.option.restore_form.cost',
+  },
   {
     id: REST_OPTION_REMOVE_CARD,
     nameKey: 'rest.option.remove_card.name',
@@ -70,6 +82,24 @@ export function resolveTutorialRest(
     throw new Error(`Rest option is not available: ${input.optionId}`)
   }
 
+  if (input.optionId === REST_OPTION_RESTORE_FORM) {
+    const formRestore = restoreTutorialPlayerForm(run.playerForm, RESTORE_PLAYER_FORM_AMOUNT)
+    const record = createRestRecord(run, input, {
+      formRestored: formRestore.restored,
+      playerCurrentFormAfter: formRestore.playerForm.current,
+      playerMaxFormAfter: formRestore.playerForm.max,
+      createdRedInkOffer: false,
+    })
+
+    return {
+      ...run,
+      playerForm: formRestore.playerForm,
+      rests: {
+        records: [...run.rests.records, record],
+      },
+    }
+  }
+
   if (input.optionId === REST_OPTION_REMOVE_CARD) {
     if (!input.deckCardId) {
       throw new Error('Rest remove card option requires a deck card id')
@@ -79,6 +109,9 @@ export function resolveTutorialRest(
     const record = createRestRecord(run, input, {
       removedDeckCardId: removal.removedDeckCardId,
       removedCardDefinitionId: removal.removedCardDefinitionId,
+      formRestored: 0,
+      playerCurrentFormAfter: run.playerForm.current,
+      playerMaxFormAfter: run.playerForm.max,
       createdRedInkOffer: false,
     })
 
@@ -93,6 +126,9 @@ export function resolveTutorialRest(
   }
 
   const record = createRestRecord(run, input, {
+    formRestored: 0,
+    playerCurrentFormAfter: run.playerForm.current,
+    playerMaxFormAfter: run.playerForm.max,
     createdRedInkOffer: true,
   })
 
@@ -115,6 +151,10 @@ function everyRequiredStageUnlocked(option: TutorialRestOption, run: TutorialRun
 }
 
 function isRestOptionAvailable(optionId: TutorialRestOptionId, run: TutorialRunState) {
+  if (optionId === REST_OPTION_RESTORE_FORM) {
+    return run.playerForm.current < run.playerForm.max
+  }
+
   if (optionId === REST_OPTION_REMOVE_CARD) {
     return run.deckCards.length > 1
   }
@@ -128,6 +168,9 @@ function createRestRecord(
   result: {
     readonly removedDeckCardId?: RunDeckCardId
     readonly removedCardDefinitionId?: CardId
+    readonly formRestored: number
+    readonly playerCurrentFormAfter: number
+    readonly playerMaxFormAfter: number
     readonly createdRedInkOffer: boolean
   },
 ): TutorialRestRecord {
@@ -137,6 +180,9 @@ function createRestRecord(
     optionId: input.optionId,
     removedDeckCardId: result.removedDeckCardId,
     removedCardDefinitionId: result.removedCardDefinitionId,
+    formRestored: result.formRestored,
+    playerCurrentFormAfter: result.playerCurrentFormAfter,
+    playerMaxFormAfter: result.playerMaxFormAfter,
     createdRedInkOffer: result.createdRedInkOffer,
   }
 }

@@ -6,6 +6,7 @@ import {
   failTutorialRun,
   getRouteBattleEncounterIds,
   getCurrentTutorialEncounter,
+  syncTutorialRunEncounters,
 } from '../core'
 import { gameData } from '../data'
 
@@ -207,6 +208,35 @@ describe('T09 tutorial run sequence', () => {
       'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
     ])
+  })
+
+  it('syncs stale saved encounter ids with the current route battle order', () => {
+    const routeEncounterIds = getRouteBattleEncounterIds(gameData.routes[0])
+    const staleEncounterIds = [
+      ...routeEncounterIds.slice(0, 3),
+      'encounter_multi_thief_mouse_louse',
+      ...routeEncounterIds.slice(4),
+    ]
+    const thirdRun = staleEncounterIds.slice(0, 3).reduce(
+      (currentRun) =>
+        advanceTutorialRun(
+          currentRun,
+          gameData.encounters,
+          gameData.tutorialUnlocks,
+          'vanquish',
+        ),
+      createInitialTutorialRunState(gameData.tutorialUnlocks, staleEncounterIds),
+    )
+    const syncedRun = syncTutorialRunEncounters(thirdRun, routeEncounterIds)
+
+    expect(getCurrentTutorialEncounter(thirdRun, gameData.encounters)?.id).toBe(
+      'encounter_multi_thief_mouse_louse',
+    )
+    expect(getCurrentTutorialEncounter(syncedRun, gameData.encounters)?.id).toBe(
+      'encounter_mid_unlit_temple_warden',
+    )
+    expect(syncedRun.currentEncounterIndex).toBe(3)
+    expect(syncedRun.settlements).toEqual(thirdRun.settlements)
   })
 
   it('summarizes boss settlement when the first chapter route is complete', () => {

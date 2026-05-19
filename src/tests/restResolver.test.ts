@@ -65,6 +65,40 @@ describe('T21 rest resolver', () => {
       optionId: 'remove_card',
       removedDeckCardId: targetCard.id,
       removedCardDefinitionId: 'card_zhu_fu',
+      formRestored: 0,
+      playerCurrentFormAfter: 72,
+      playerMaxFormAfter: 72,
+      createdRedInkOffer: false,
+    })
+  })
+
+  it('restores player form when the run is damaged', () => {
+    const run = {
+      ...createInitialTutorialRunState(gameData.tutorialUnlocks),
+      playerForm: {
+        current: 40,
+        max: 72,
+      },
+    }
+
+    expect(getAvailableRestOptions(run).map((option) => option.id)).toContain('restore_form')
+
+    const nextRun = resolveTutorialRest(run, {
+      optionId: 'restore_form',
+      routeNodeId: restRouteNodeId,
+    })
+
+    expect(nextRun.playerForm).toEqual({
+      current: 64,
+      max: 72,
+    })
+    expect(nextRun.rests.records[0]).toEqual({
+      id: 'rest_record_1',
+      routeNodeId: restRouteNodeId,
+      optionId: 'restore_form',
+      formRestored: 24,
+      playerCurrentFormAfter: 64,
+      playerMaxFormAfter: 72,
       createdRedInkOffer: false,
     })
   })

@@ -7,6 +7,7 @@ import {
   createInitialBattleState,
   createInitialRouteState,
   createInitialTutorialRunState,
+  DEFAULT_PLAYER_MAX_FORM,
   failTutorialRun,
   getEncounterEnemyDefinitionIds,
   getCurrentRouteEncounter,
@@ -21,6 +22,7 @@ import {
   resolveTutorialReward,
   resolveTutorialShopPurchase,
   resolveTutorialVerdict,
+  syncTutorialRunEncounters,
   type BattleReducerContext,
 } from '../../core'
 import { gameData } from '../../data'
@@ -38,6 +40,7 @@ import type {
   RunDeckCard,
   RunDeckCardId,
   SettingsState,
+  TutorialPlayerFormState,
   TutorialRestOptionId,
   TutorialRunState,
   TutorialSaveData,
@@ -77,6 +80,10 @@ export function useTutorialRunFlow({
   onSaveChange,
 }: Pick<BattleHudProps, 'initialSave' | 'onSaveChange'>) {
   const [viewState, setViewState] = useState(() => createInitialTutorialBattleView(initialSave))
+
+  useEffect(() => {
+    setViewState((current) => reconcileViewStateWithRoute(current))
+  }, [])
 
   useEffect(() => {
     onSaveChange?.(viewState.run, viewState.route)
@@ -187,7 +194,13 @@ export function useTutorialRunFlow({
   function settleBattleDefeat() {
     setViewState((current) => ({
       ...current,
-      run: failTutorialRun(current.run, 'battle_defeat'),
+      run: failTutorialRun(
+        {
+          ...current.run,
+          playerForm: getPersistentBattlePlayerForm(current.battle),
+        },
+        'battle_defeat',
+      ),
     }))
   }
 
@@ -205,6 +218,7 @@ export function useTutorialRunFlow({
         return current
       }
 
+      const syncedRun = syncRunWithRoute(current.run, current.route)
       const defeatedEnemy = current.battle.enemies.find(
         (candidate) => candidate.instanceId === result.enemyInstanceId,
       )
@@ -212,7 +226,7 @@ export function useTutorialRunFlow({
         ? getEnemyDefinition(defeatedEnemy.definitionId)
         : undefined
       const nextRun = advanceTutorialRun(
-        current.run,
+        syncedRun,
         gameData.encounters,
         gameData.tutorialUnlocks,
         result.settlement,
@@ -226,6 +240,7 @@ export function useTutorialRunFlow({
           : undefined,
         defeatedEnemy ? createArtifactBattleProgress(current.battle, defeatedEnemy) : undefined,
         getPersistentBattleResources(current.battle),
+        getPersistentBattlePlayerForm(current.battle),
       )
       const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
 
@@ -493,6 +508,10 @@ function createBattle(
   unlocks: UnlockState,
   deckCards?: readonly RunDeckCard[],
   maxIncenseBonus = 0,
+  playerForm: TutorialPlayerFormState = {
+    current: DEFAULT_PLAYER_MAX_FORM,
+    max: DEFAULT_PLAYER_MAX_FORM,
+  },
   resources = {
     ink: 0,
     doom: 0,
@@ -513,6 +532,8 @@ function createBattle(
     unlocks,
     deckCards,
     maxIncenseBonus,
+    playerCurrentForm: playerForm.current,
+    playerMaxForm: playerForm.max,
     resources,
     temporaryResourceDelta,
     artifacts,
@@ -524,7 +545,7 @@ function createBattle(
 function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattleViewState {
   const route =
     save?.route.routeId === tutorialRoute.id ? save.route : createInitialRouteState(tutorialRoute)
-  const run =
+  const loadedRun =
     save?.route.routeId === tutorialRoute.id
       ? save.run
       : createInitialTutorialRunState(
@@ -533,6 +554,7 @@ function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattl
           undefined,
           gameData.artifacts,
         )
+  const run = syncRunWithRoute(loadedRun, route)
   const currentEncounter = getCurrentRouteEncounter(tutorialRoute, route, gameData.encounters)
   const fallbackEncounter = getCurrentRouteEncounter(
     tutorialRoute,
@@ -553,6 +575,7 @@ function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattl
             run.unlocks,
             run.deckCards,
             run.verdict.maxIncenseBonus,
+            run.playerForm,
             run.resources,
             undefined,
             run.artifacts,
@@ -565,6 +588,52 @@ function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattl
     route,
     selectedEnemyInstanceId: getFirstLivingEnemy(battleView.battle)?.instanceId,
   }
+}
+
+function reconcileViewStateWithRoute(viewState: TutorialBattleViewState): TutorialBattleViewState {
+  const run = syncRunWithRoute(viewState.run, viewState.route)
+  const currentEncounter = getCurrentRouteEncounter(
+    tutorialRoute,
+    viewState.route,
+    gameData.encounters,
+  )
+
+  if (
+    !currentEncounter ||
+    hasPendingRunChoice(run) ||
+    run.status !== 'active' ||
+    battleMatchesEncounter(viewState.battle, currentEncounter)
+  ) {
+    return run === viewState.run
+      ? viewState
+      : {
+          ...viewState,
+          run,
+        }
+  }
+
+  const nextBattleView = createBattleForEncounter(currentEncounter, run)
+
+  return {
+    ...viewState,
+    run: nextBattleView.run,
+    battle: nextBattleView.battle,
+    selectedEnemyInstanceId: getFirstLivingEnemy(nextBattleView.battle)?.instanceId,
+  }
+}
+
+function syncRunWithRoute(run: TutorialRunState, route: RouteState) {
+  return syncTutorialRunEncounters(run, getRouteBattleEncounterIds(tutorialRoute, route))
+}
+
+function battleMatchesEncounter(battle: CombatState, encounter: EncounterDefinition) {
+  const expectedEnemyIds = getEncounterEnemyDefinitionIds(encounter)
+  const actualEnemyIds = battle.enemies.map((enemy) => enemy.definitionId)
+
+  return (
+    expectedEnemyIds.length === actualEnemyIds.length &&
+    expectedEnemyIds.every((enemyId, index) => enemyId === actualEnemyIds[index])
+  )
 }
 
 function getTutorialRoute(routes: readonly RouteDefinition[]) {
@@ -596,6 +665,7 @@ function createBattleForEncounter(
       nextRun.unlocks,
       nextRun.deckCards,
       nextRun.verdict.maxIncenseBonus,
+      nextRun.playerForm,
       backlashResolution.resources,
       backlashResolution.temporaryResourceDelta,
       nextRun.artifacts,
@@ -643,6 +713,13 @@ function getPersistentBattleResources(battle: CombatState) {
     ink: battle.resources.ink - battle.temporaryResourceDelta.ink,
     doom: battle.resources.doom - battle.temporaryResourceDelta.doom,
     fracture: battle.resources.fracture - battle.temporaryResourceDelta.fracture,
+  }
+}
+
+function getPersistentBattlePlayerForm(battle: CombatState): TutorialPlayerFormState {
+  return {
+    current: battle.player.currentForm,
+    max: battle.player.maxForm,
   }
 }
 

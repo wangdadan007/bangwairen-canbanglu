@@ -32,6 +32,7 @@ export interface TutorialVerdictRecord {
   readonly choiceId: TutorialVerdictChoiceId
   readonly fractureDelta: number
   readonly maxIncenseBonusDelta: number
+  readonly maxFormBonusDelta: number
   readonly addedCardDefinitionId?: CardId
 }
 

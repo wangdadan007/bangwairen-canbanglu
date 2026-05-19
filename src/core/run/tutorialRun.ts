@@ -9,6 +9,7 @@ import type {
   TutorialRunState,
   TutorialUnlockDefinition,
   TutorialResourceState,
+  TutorialPlayerFormState,
   UnlockStageId,
   UnlockState,
   VictorySettlement,
@@ -33,6 +34,10 @@ import {
   createInitialTutorialShopState,
 } from './shopResolver'
 import { createInitialTutorialResourceState } from './resourceResolver'
+import {
+  createInitialTutorialPlayerFormState,
+  normalizeTutorialPlayerFormState,
+} from './playerFormResolver'
 
 export const TUTORIAL_ENCOUNTER_IDS: readonly EncounterId[] = [
   'encounter_tutorial_paper_wraith',
@@ -56,6 +61,7 @@ export function createInitialTutorialRunState(
     deckCards: createRunDeckCards(deckDefinitionIds),
     artifacts: createInitialArtifactCollection(artifactDefinitions),
     currency: createInitialTutorialCurrencyState(),
+    playerForm: createInitialTutorialPlayerFormState(),
     resources: createInitialTutorialResourceState(),
     unlocks: createUnlockState(['stage_core'], tutorialUnlocks),
     verdict: createInitialTutorialVerdictState(),
@@ -79,6 +85,20 @@ export function getCurrentTutorialEncounter(
   return encounters.find((encounter) => encounter.id === encounterId)
 }
 
+export function syncTutorialRunEncounters(
+  run: TutorialRunState,
+  encounterIds: readonly EncounterId[],
+): TutorialRunState {
+  if (areEncounterIdsEqual(run.encounterIds, encounterIds)) {
+    return run
+  }
+
+  return {
+    ...run,
+    encounterIds,
+  }
+}
+
 export function advanceTutorialRun(
   run: TutorialRunState,
   encounters: readonly EncounterDefinition[],
@@ -88,6 +108,7 @@ export function advanceTutorialRun(
   verdictContext?: TutorialVerdictContext,
   artifactProgress?: ArtifactBattleProgressInput,
   resources?: TutorialResourceState,
+  playerForm?: TutorialPlayerFormState,
 ): TutorialRunState {
   if (run.status !== 'active') {
     return run
@@ -127,6 +148,7 @@ export function advanceTutorialRun(
     settlements: nextSettlements,
     artifacts: advanceArtifactsAfterBattle(run.artifacts, artifactProgress),
     resources: resources ?? run.resources,
+    playerForm: playerForm ? normalizeTutorialPlayerFormState(playerForm) : run.playerForm,
     unlocks: nextUnlocks,
     pendingVerdict: verdictContext
       ? createTutorialVerdictOffer({
@@ -144,6 +166,16 @@ export function advanceTutorialRun(
         })
       : undefined,
   }
+}
+
+function areEncounterIdsEqual(
+  currentEncounterIds: readonly EncounterId[],
+  nextEncounterIds: readonly EncounterId[],
+) {
+  return (
+    currentEncounterIds.length === nextEncounterIds.length &&
+    currentEncounterIds.every((encounterId, index) => encounterId === nextEncounterIds[index])
+  )
 }
 
 export function failTutorialRun(

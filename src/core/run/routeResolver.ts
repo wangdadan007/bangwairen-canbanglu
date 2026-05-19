@@ -211,7 +211,11 @@ function getSelectedEncounterId(
   node: RouteNodeDefinition,
   state?: RouteState,
 ): EncounterId | undefined {
-  return state?.encounterSelections?.[node.id] ?? node.encounterId ?? node.encounterPoolIds?.[0]
+  if (node.encounterPoolIds?.length) {
+    return state?.encounterSelections?.[node.id] ?? node.encounterPoolIds[0]
+  }
+
+  return node.encounterId
 }
 
 function getSeededIndex(seed: number, offset: number, length: number) {

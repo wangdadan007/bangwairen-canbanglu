@@ -50,6 +50,7 @@ const artifactDefinitionsById = new Map(
 
 const termTooltips: Record<string, string> = {
   shape: '敌人的形体（形）：敌人的战斗实体。形归零即本场胜利。',
+  player_shape: '己形：执簿者当前状态。跨战斗保留，归零则本场失败。',
   break_form: '击破敌形（破形）：削减敌人的形，不等同于伤害表述。',
   incense: '香火：每回合获得的出牌费用。',
   seal_momentum: '压住来势（封势）：只能降低直接来势，不能处理异动。',
@@ -94,6 +95,7 @@ export function createPressureFeedback(
         'ABNORMAL_MOVE_COUNTERED',
         'ABNORMAL_MOVE_EXECUTED',
         'INCOMING_FORCE_CREATED',
+        'PLAYER_FORM_LOST',
       ].includes(candidate.type),
     )
 
@@ -155,6 +157,21 @@ export function createPressureFeedback(
     }
   }
 
+  if (entry.type === 'PLAYER_FORM_LOST') {
+    const amount = getPayloadNumber(entry.payload.amount) ?? 0
+
+    return {
+      id: entry.id,
+      tone: 'incoming',
+      label: '己形承压',
+      title: `${sourceName}冲击己形 ${amount}`,
+      detail: `己形余 ${getPayloadNumber(entry.payload.currentForm) ?? 0} / ${
+        getPayloadNumber(entry.payload.maxForm) ?? 0
+      }。`,
+      audioCue: 'pressure',
+    }
+  }
+
   const amount = getPayloadNumber(entry.payload.amount) ?? 0
 
   return {
@@ -184,6 +201,7 @@ export function createRitualFeedback(
         'NAME_BREAK_TRIGGERED',
         'ENEMY_SETTLED',
         'VICTORY_SETTLED',
+        'DEFEAT_SETTLED',
         'ARTIFACT_TRIGGERED',
         'ARTIFACT_BACKLASH_TRIGGERED',
       ].includes(candidate.type),
@@ -261,6 +279,17 @@ export function createRitualFeedback(
             : '战斗已经结算',
       detail: settlement ? getSettlementText(settlement) : '结算结果已写入战斗状态。',
       audioCue: 'settlement',
+    }
+  }
+
+  if (entry.type === 'DEFEAT_SETTLED') {
+    return {
+      id: entry.id,
+      tone: 'settlement',
+      label: '败退反馈',
+      title: '己形已散',
+      detail: '执簿者无法继续承受来势，本场战斗失败。',
+      audioCue: 'backlash',
     }
   }
 
@@ -471,6 +500,14 @@ export function formatLogEntry(
     }。`
   }
 
+  if (entry.type === 'PLAYER_FORM_LOST') {
+    return `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}冲击己形 ${
+      getPayloadNumber(entry.payload.amount) ?? 0
+    }，己形 ${getPayloadNumber(entry.payload.currentForm) ?? 0} / ${
+      getPayloadNumber(entry.payload.maxForm) ?? 0
+    }。`
+  }
+
   if (entry.type === 'ALTAR_PLACED') {
     const sourceDefinitionId = getPayloadString(entry.payload.sourceCardDefinitionId)
     const sourceDefinition = sourceDefinitionId
@@ -625,6 +662,10 @@ export function formatLogEntry(
     return `战斗结算：${settlement ? getSettlementLabel(settlement) : '已结算'}。`
   }
 
+  if (entry.type === 'DEFEAT_SETTLED') {
+    return '战斗结算：己形已散。'
+  }
+
   return entry.type
 }
 
@@ -692,10 +733,15 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     return 'log-entry countered'
   }
 
+  if (entry.type === 'PLAYER_FORM_LOST') {
+    return 'log-entry incoming'
+  }
+
   if (
     entry.type === 'FORM_BROKEN' ||
     entry.type === 'NAME_BREAK_TRIGGERED' ||
-    entry.type === 'ENEMY_SETTLED'
+    entry.type === 'ENEMY_SETTLED' ||
+    entry.type === 'DEFEAT_SETTLED'
   ) {
     return 'log-entry form'
   }
@@ -881,7 +927,7 @@ function getVerdictChoiceLabel(choiceId: TutorialRunState['verdict']['records'][
 
 function getVerdictRecordDetail(record: TutorialRunState['verdict']['records'][number]) {
   if (record.choiceId === 'register') {
-    return `后续战斗香火上限 +${record.maxIncenseBonusDelta}。`
+    return `后续战斗香火上限 +${record.maxIncenseBonusDelta}，己形上限 +${record.maxFormBonusDelta}。`
   }
 
   if (record.choiceId === 'red_ink') {

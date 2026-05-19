@@ -130,6 +130,13 @@ describe('T29 settings and local save MVP', () => {
         ...legacySave.route,
         encounterSelections: legacySave.route.encounterSelections ?? {},
       },
+      run: {
+        ...legacySave.run,
+        playerForm: {
+          current: 72,
+          max: 72,
+        },
+      },
     })
   })
 

@@ -67,7 +67,7 @@ function formatRevealedNames(
 
 function getVerdictImpact(choiceId: TutorialVerdictChoiceId) {
   if (choiceId === 'register') {
-    return '后续战斗香火上限 +1'
+    return '后续战斗香火上限 +1，己形上限 +4'
   }
 
   if (choiceId === 'red_ink') {

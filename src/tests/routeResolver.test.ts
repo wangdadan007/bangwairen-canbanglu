@@ -49,6 +49,19 @@ describe('T28 chapter one route closure', () => {
     expect(getCurrentRouteNode(route, fourth)?.encounterId).toBe(
       'encounter_mid_unlit_temple_warden',
     )
+    expect(
+      getCurrentRouteEncounter(
+        route,
+        {
+          ...fourth,
+          encounterSelections: {
+            ...fourth.encounterSelections,
+            route_node_unlit_temple_warden: 'encounter_multi_thief_mouse_louse',
+          },
+        },
+        gameData.encounters,
+      )?.id,
+    ).toBe('encounter_mid_unlit_temple_warden')
 
     expect(eventState.currentNodeId).toBe('route_node_first_event')
     expect(getCurrentRouteNode(route, eventState)?.type).toBe('event')
@@ -169,7 +182,7 @@ describe('T28 chapter one route closure', () => {
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
-      'encounter_mid_fortune_breaker',
+      'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
       'encounter_pool_plague_paper_figure_return',
       'encounter_elite_fire_fleeing_name',
@@ -182,7 +195,7 @@ describe('T28 chapter one route closure', () => {
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
-      'encounter_multi_paper_wraith_imp',
+      'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
       'encounter_late_offering_table_afterimage',
       'encounter_elite_fire_fleeing_name',

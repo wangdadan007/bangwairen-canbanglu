@@ -18,11 +18,13 @@ import {
   markArtifactOverloads,
 } from './artifactResolver'
 import { appendRunDeckCard } from './deckResolver'
+import { increaseTutorialPlayerMaxForm } from './playerFormResolver'
 import { RED_INK_OPTIONS } from './redInkResolver'
 import { applyTutorialResourceDelta } from './resourceResolver'
 
 export const VERDICT_ERASE_REWARD_CARD_ID: CardId = 'card_split_form_talisman'
 export const VERDICT_REGISTER_INCENSE_BONUS = 1
+export const VERDICT_REGISTER_MAX_FORM_BONUS = 4
 export const VERDICT_ERASE_FRACTURE_DELTA = 1
 
 export const TUTORIAL_VERDICT_OPTIONS: readonly TutorialVerdictOption[] = [
@@ -103,6 +105,10 @@ export function resolveTutorialVerdict(
     return {
       ...run,
       pendingVerdict: undefined,
+      playerForm: increaseTutorialPlayerMaxForm(
+        run.playerForm,
+        VERDICT_REGISTER_MAX_FORM_BONUS,
+      ),
       verdict: {
         ...run.verdict,
         maxIncenseBonus: run.verdict.maxIncenseBonus + VERDICT_REGISTER_INCENSE_BONUS,
@@ -201,6 +207,7 @@ function createVerdictRecord(
     choiceId,
     fractureDelta: choiceId === 'erase' ? VERDICT_ERASE_FRACTURE_DELTA : 0,
     maxIncenseBonusDelta: choiceId === 'register' ? VERDICT_REGISTER_INCENSE_BONUS : 0,
+    maxFormBonusDelta: choiceId === 'register' ? VERDICT_REGISTER_MAX_FORM_BONUS : 0,
     addedCardDefinitionId: choiceId === 'erase' ? VERDICT_ERASE_REWARD_CARD_ID : undefined,
   }
 }

@@ -26,6 +26,8 @@ export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSumm
     restCount: run.rests.records.length,
     shopPurchaseCount: run.shops.records.length,
     incenseMoney: run.currency.incenseMoney,
+    playerCurrentForm: run.playerForm.current,
+    playerMaxForm: run.playerForm.max,
     ink: run.resources.ink,
     doom: run.resources.doom,
     fracture: run.resources.fracture,

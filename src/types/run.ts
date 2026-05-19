@@ -47,6 +47,11 @@ export interface RunDeckCard {
   readonly annotations: readonly CardAnnotation[]
 }
 
+export interface TutorialPlayerFormState {
+  readonly current: number
+  readonly max: number
+}
+
 export interface TutorialRedInkOption {
   readonly id: RedInkAnnotationId
   readonly nameKey: LocalizationKey
@@ -96,6 +101,7 @@ export interface TutorialRunState {
   readonly deckCards: readonly RunDeckCard[]
   readonly artifacts: ArtifactCollectionState
   readonly currency: TutorialCurrencyState
+  readonly playerForm: TutorialPlayerFormState
   readonly resources: TutorialResourceState
   readonly unlocks: UnlockState
   readonly verdict: TutorialVerdictState
@@ -126,6 +132,8 @@ export interface TutorialRunSummary {
   readonly restCount: number
   readonly shopPurchaseCount: number
   readonly incenseMoney: number
+  readonly playerCurrentForm: number
+  readonly playerMaxForm: number
   readonly ink: number
   readonly doom: number
   readonly fracture: number
