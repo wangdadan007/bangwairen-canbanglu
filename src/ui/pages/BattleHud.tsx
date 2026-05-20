@@ -55,7 +55,6 @@ import {
 import type {
   AltarState,
   CardDefinition,
-  CardInstance,
   CombatState,
   EncounterDefinition,
   EnemyState,

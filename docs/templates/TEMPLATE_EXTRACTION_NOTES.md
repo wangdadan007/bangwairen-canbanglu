@@ -311,3 +311,16 @@
 - 依赖与授权注意：模板化时要剥离本地截图路径、私有仓库 URL、具体项目术语和任何未公开发行信息；不包含第三方素材。
 - 是否值得抽到模板：值得，可作为 `AI Game Development Planning and QA Kit` 的 pre-demo playtest pack。
 - 后续动作：等真实外部试玩反馈收集后，补一条 feedback triage and fix queue 候选记录。
+
+### 2026-05-20 · T61 · 工程质量门禁
+
+- 候选类型：engineering quality gate / CI smoke pack。
+- 主归属模板：`AI Game Development Planning and QA Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`React Card Game UI Kit`。
+- 涉及文件：`eslint.config.js`、`playwright.config.ts`、`e2e/chapter-one-smoke.spec.ts`、`vite.config.ts`、`.github/workflows/ci.yml`、`package.json`、`docs/qa/ENGINEERING_QUALITY_GATE_T61.md`。
+- 可复用价值：把 lint、typecheck、unit test、build、coverage baseline 和 browser smoke 合成轻量门禁，适合非代码审阅者用“命令是否通过”来监督 AI 代码质量。
+- 与本作强绑定部分：Playwright smoke 里的标题、法宝三选一、第一战等页面文案属于本作。
+- 去题材化思路：抽象为 title smoke、settings smoke、new-run first decision smoke、first combat smoke、no console error、viewport overflow check。
+- 依赖与授权注意：新增依赖均为开发期依赖；模板化时要保留 dev-only 边界，并记录 Playwright 浏览器下载和 CI 时间成本。
+- 是否值得抽到模板：值得，适合作为 `AI Game Development Planning and QA Kit` 的 quality gate 章节。
+- 后续动作：外部试玩反馈稳定后，评估是否加入覆盖率硬阈值、更多 E2E 页面和 React Compiler 更严格 lint 规则。

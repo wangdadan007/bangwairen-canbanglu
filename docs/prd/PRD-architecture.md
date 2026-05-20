@@ -230,10 +230,14 @@ DEV-001 要做：
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "test": "vitest run",
-    "test:watch": "vitest",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "verify:full": "npm run verify && npm run test:coverage && npm run test:e2e"
   }
 }
 ```
@@ -242,8 +246,10 @@ DEV-001 要做：
 
 ```text
 npm install
+npm run lint
 npm run typecheck
 npm run test
+npm run build
 npm run dev
 ```
 

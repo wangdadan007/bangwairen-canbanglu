@@ -24,7 +24,6 @@ import {
 import { getEnemyDefinition, gameData } from '../data'
 import type {
   RouteDefinition,
-  RouteState,
   EncounterDefinition,
   TutorialRunState,
   VictorySettlement,

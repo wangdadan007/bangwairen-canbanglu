@@ -600,9 +600,13 @@ function hasNonAsciiKey(value: unknown): boolean {
 
   if (value && typeof value === 'object') {
     return Object.entries(value).some(
-      ([key, nestedValue]) => /[^\u0000-\u007f]/.test(key) || hasNonAsciiKey(nestedValue),
+      ([key, nestedValue]) => hasNonAsciiText(key) || hasNonAsciiKey(nestedValue),
     )
   }
 
   return false
+}
+
+function hasNonAsciiText(value: string): boolean {
+  return Array.from(value).some((character) => character.charCodeAt(0) > 127)
 }

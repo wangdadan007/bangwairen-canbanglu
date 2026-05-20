@@ -23,11 +23,14 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
 
-      - name: Test
-        run: npm run test
+      - name: Verify
+        run: npm run verify
 
-      - name: Build
-        run: npm run build
+      - name: Coverage baseline
+        run: npm run test:coverage
+
+      - name: Browser smoke
+        run: npm run test:e2e

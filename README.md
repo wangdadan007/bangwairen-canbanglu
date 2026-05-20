@@ -93,9 +93,19 @@ npm run preview -- --host 127.0.0.1
 常用验证命令：
 
 ```bash
+npm run lint
 npm run typecheck
 npm run test
 npm run build
+npm run verify
+```
+
+完整质量门禁：
+
+```bash
+npm run test:coverage
+npm run test:e2e
+npm run verify:full
 ```
 
 ## 协作规则
