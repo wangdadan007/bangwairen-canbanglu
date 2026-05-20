@@ -90,12 +90,21 @@ export function ShopPage({
               const isRemoveCard = item.kind === 'remove_card'
               const canAfford = run.currency.incenseMoney >= item.cost
               const canChoose = canAfford && (!isRemoveCard || Boolean(selectedCard))
+              const disabledReason = canChoose
+                ? undefined
+                : getShopDisabledReason({
+                    item,
+                    isRemoveCard,
+                    canAfford,
+                    selectedCard,
+                  })
 
               return (
                 <button
                   className={item.kind === 'red_ink_service' ? 'shop-item red-ink' : 'shop-item'}
                   disabled={!canChoose}
                   key={item.id}
+                  title={disabledReason}
                   type="button"
                   onClick={() =>
                     isRemoveCard
@@ -119,7 +128,7 @@ export function ShopPage({
                       <span key={label}>{label}</span>
                     ))}
                   </span>
-                  {!canAfford ? <span className="card-state">香火钱不足</span> : null}
+                  {disabledReason ? <span className="card-state">{disabledReason}</span> : null}
                 </button>
               )
             })}
@@ -134,6 +143,28 @@ export function ShopPage({
       </div>
     </section>
   )
+}
+
+function getShopDisabledReason({
+  item,
+  isRemoveCard,
+  canAfford,
+  selectedCard,
+}: {
+  readonly item: TutorialShopItemDefinition
+  readonly isRemoveCard: boolean
+  readonly canAfford: boolean
+  readonly selectedCard: RunDeckCard | undefined
+}) {
+  if (!canAfford) {
+    return `香火钱不足：需要 ${item.cost}`
+  }
+
+  if (isRemoveCard && !selectedCard) {
+    return '请先在牌册里选一张牌'
+  }
+
+  return '当前不能购买'
 }
 
 function getItemLabels(

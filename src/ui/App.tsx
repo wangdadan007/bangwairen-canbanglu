@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PhaserGame } from '../game/PhaserGame'
 import {
   clearTutorialSaveData,
@@ -11,6 +11,8 @@ import {
   type KeyValueStorage,
 } from '../core'
 import type { RouteState, SettingsState, TutorialRunState, TutorialSaveData } from '../types'
+import { AppErrorBoundary } from './ErrorBoundary'
+import { appendBrowserErrorLog, createBrowserErrorLogEntry } from './errorReporting'
 import { BattleHud } from './pages/BattleHud'
 import { SettingsPage } from './pages/SettingsPage'
 import { TitlePage } from './pages/TitlePage'
@@ -75,32 +77,68 @@ export function App() {
     setAvailableSave(save)
   }, [storage])
 
+  useEffect(() => {
+    if (!storage || typeof window === 'undefined') {
+      return undefined
+    }
+
+    const handleRuntimeError = (event: ErrorEvent) => {
+      appendBrowserErrorLog(
+        storage,
+        createBrowserErrorLogEntry({
+          source: 'runtime_error',
+          error: event.error ?? event.message,
+          detail: formatRuntimeErrorDetail(event),
+        }),
+      )
+    }
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      appendBrowserErrorLog(
+        storage,
+        createBrowserErrorLogEntry({
+          source: 'unhandled_rejection',
+          error: event.reason,
+        }),
+      )
+    }
+
+    window.addEventListener('error', handleRuntimeError)
+    window.addEventListener('unhandledrejection', handleUnhandledRejection)
+
+    return () => {
+      window.removeEventListener('error', handleRuntimeError)
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+    }
+  }, [storage])
+
   return (
-    <main className="app-shell">
-      <TitlePage
-        hasSave={Boolean(availableSave)}
-        saveLabel={getSaveLabel(availableSave)}
-        onContinue={continueSavedRun}
-        onNewGame={startNewRun}
-        onOpenSettings={() => setIsSettingsOpen((current) => !current)}
-      />
-      {isSettingsOpen ? (
-        <SettingsPage
-          settings={settings}
-          onChange={updateSettings}
-          onClose={() => setIsSettingsOpen(false)}
+    <AppErrorBoundary storage={storage}>
+      <main className="app-shell">
+        <TitlePage
+          hasSave={Boolean(availableSave)}
+          saveLabel={getSaveLabel(availableSave)}
+          onContinue={continueSavedRun}
+          onNewGame={startNewRun}
+          onOpenSettings={() => setIsSettingsOpen((current) => !current)}
         />
-      ) : null}
-      <section className="battle-layout" aria-label="第一章试玩区域">
-        <PhaserGame />
-        <BattleHud
-          key={battleKey}
-          initialSave={initialSave}
-          settings={settings}
-          onSaveChange={handleSaveChange}
-        />
-      </section>
-    </main>
+        {isSettingsOpen ? (
+          <SettingsPage
+            settings={settings}
+            onChange={updateSettings}
+            onClose={() => setIsSettingsOpen(false)}
+          />
+        ) : null}
+        <section className="battle-layout" aria-label="第一章试玩区域">
+          <PhaserGame />
+          <BattleHud
+            key={battleKey}
+            initialSave={initialSave}
+            settings={settings}
+            onSaveChange={handleSaveChange}
+          />
+        </section>
+      </main>
+    </AppErrorBoundary>
   )
 }
 
@@ -123,4 +161,10 @@ function getSaveLabel(save: TutorialSaveData | undefined) {
   return `本地进度：第 ${save.run.currentEncounterIndex + 1} / ${
     save.run.encounterIds.length
   } 场，保存于 ${savedAtText}`
+}
+
+function formatRuntimeErrorDetail(event: ErrorEvent) {
+  const location = [event.filename, event.lineno, event.colno].filter(Boolean).join(':')
+
+  return location || undefined
 }

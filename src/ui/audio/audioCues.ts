@@ -108,20 +108,20 @@ function getCueProfile(kind: AudioCueKind) {
   if (kind === 'ask_name') {
     return {
       type: 'sine' as OscillatorType,
-      startFrequency: 520,
-      endFrequency: 740,
-      duration: 0.11,
-      gain: 0.052,
+      startFrequency: 560,
+      endFrequency: 760,
+      duration: 0.13,
+      gain: 0.048,
     }
   }
 
   if (kind === 'named') {
     return {
       type: 'triangle' as OscillatorType,
-      startFrequency: 440,
-      endFrequency: 960,
-      duration: 0.16,
-      gain: 0.058,
+      startFrequency: 420,
+      endFrequency: 1040,
+      duration: 0.18,
+      gain: 0.054,
     }
   }
 
@@ -130,7 +130,7 @@ function getCueProfile(kind: AudioCueKind) {
       type: 'sine' as OscillatorType,
       startFrequency: 330,
       endFrequency: 220,
-      duration: 0.18,
+      duration: 0.22,
       gain: 0.05,
     }
   }
@@ -140,8 +140,8 @@ function getCueProfile(kind: AudioCueKind) {
       type: 'triangle' as OscillatorType,
       startFrequency: 660,
       endFrequency: 880,
-      duration: 0.12,
-      gain: 0.047,
+      duration: 0.14,
+      gain: 0.045,
     }
   }
 
@@ -150,8 +150,8 @@ function getCueProfile(kind: AudioCueKind) {
       type: 'sawtooth' as OscillatorType,
       startFrequency: 180,
       endFrequency: 92,
-      duration: 0.15,
-      gain: 0.032,
+      duration: 0.17,
+      gain: 0.028,
     }
   }
 

@@ -1,7 +1,7 @@
 # 模板沉淀区
 
-版本：v0.4
-日期：2026-05-19
+版本：v0.5
+日期：2026-05-20
 建议路径：`docs/templates/TEMPLATE_EXTRACTION_NOTES.md`
 
 ## 1. 文件用途
@@ -40,8 +40,8 @@
 | 数据驱动卡牌肉鸽模板 | `Phaser React Deckbuilder Roguelike Starter Kit` | 已有 T00-T50 回溯候选 | 抽牌、费用、出牌、敌人意图、奖励、路线、商店、事件、存档和测试。 |
 | 纯逻辑卡牌战斗引擎 | `Data-Driven Card Battle Engine` | 已有 T00-T08 回溯候选 | `src/core/battle` 中可去题材化的战斗状态机、卡牌效果、日志和测试。 |
 | 肉鸽局内流程模板 | `Roguelike Run Flow Kit` | 已有 T09-T39 回溯候选 | 路线、遭遇池、奖励、商店、休整、事件、解锁、结算等 run 层结构。 |
-| React 卡牌游戏 UI 套件 | `React Card Game UI Kit` | 已有 T05-T46 回溯候选 | 战斗 HUD、卡牌组件、奖励页、路线页、商店页、设置页、结算页。 |
-| AI 游戏开发流程模板 | `AI Game Development Planning and QA Kit` | 已有 T30-T50 回溯候选 | AGENTS、PRD 拆分、任务看板、changelog、QA checklist、内容覆盖表。 |
+| React 卡牌游戏 UI 套件 | `React Card Game UI Kit` | 已有 T05-T58 回溯候选 | 战斗 HUD、卡牌组件、奖励页、路线页、商店页、设置页、结算页、反馈层、错误边界。 |
+| AI 游戏开发流程模板 | `AI Game Development Planning and QA Kit` | 已有 T30-T58 回溯候选 | AGENTS、PRD 拆分、任务看板、changelog、QA checklist、内容覆盖表、试玩包 runbook。 |
 | Steam 桌面包装模板 | `Steam-ready Vite Phaser Desktop Wrapper` | 仅完成方案评估 | T49 已评估 Electron / Tauri；等窗口、全屏、存档路径、构建脚本和平台 QA 真正验证后再记录为模板。 |
 
 ## 5. 方向到证据映射
@@ -50,11 +50,11 @@
 
 | 模板方向 | 主要回溯候选 | 关系说明 |
 |---|---|---|
-| `Phaser React Deckbuilder Roguelike Starter Kit` | T00-T08、T09-T13、T16-T22 / T28 / T39 / T42A、T14-T15 / T26 / T31-T38 / T49A、T23-T27 / T35 / T44、T29 / T43、T30 / T38 / T42 / T45 / T48 / T50、T40-T46 | 主产品方向，吸收战斗、run flow、数据、UI、QA、存档和高级扩展模块。 |
+| `Phaser React Deckbuilder Roguelike Starter Kit` | T00-T08、T09-T13、T16-T22 / T28 / T39 / T42A、T14-T15 / T26 / T31-T38 / T49A、T23-T27 / T35 / T44、T29 / T43、T30 / T38 / T42 / T45 / T48 / T50 / T58、T40-T46 / T56-T58 | 主产品方向，吸收战斗、run flow、数据、UI、QA、存档、高级扩展和试玩交付模块。 |
 | `Data-Driven Card Battle Engine` | T00-T08；T23-T27 / T35 / T44 | T00-T08 是核心战斗包；资源、时机窗口和 relic / artifact 可作为高级扩展。 |
 | `Roguelike Run Flow Kit` | T09-T13、T16-T22 / T28 / T39 / T42A、T29 / T43 | 重点覆盖跨战流程、路线节点、事件 / 休整 / 商店、遭遇池、结算和存档。 |
-| `React Card Game UI Kit` | T40-T46；参考 T05-T08、T20-T22 | T40-T46 是主要 UI 分层和反馈证据；早期战斗与页面 MVP 可作为接入案例。 |
-| `AI Game Development Planning and QA Kit` | 初始化记录、T30 / T38 / T42 / T45 / T48 / T50、T14-T15 / T26 / T31-T38 / T49A | 重点覆盖 AI 协作规则、PRD 拆分、任务看板、QA、素材授权、内容覆盖和数据扩展流程。 |
+| `React Card Game UI Kit` | T40-T46、T56-T58；参考 T05-T08、T20-T22 | T40-T46 是主要 UI 分层和反馈证据；T56-T58 补首局提示、读屏标签、错误边界和试玩错误反馈。 |
+| `AI Game Development Planning and QA Kit` | 初始化记录、T30 / T38 / T42 / T45 / T48 / T50 / T58、T14-T15 / T26 / T31-T38 / T49A、T51 / T52-T53 / T56 | 重点覆盖 AI 协作规则、PRD 拆分、任务看板、QA、素材授权、内容覆盖、数据扩展和试玩交付流程。 |
 | `Steam-ready Vite Phaser Desktop Wrapper` | T49 | 目前只有方案评估，不作为已验证模板；等桌面打包真实完成后再升级。 |
 
 ## 6. 候选记录格式
@@ -246,3 +246,42 @@
 - 依赖与授权注意：本轮未新增依赖或第三方素材；模板化时要替换全部本作文案和资产名称。
 - 是否值得抽到模板：值得，适合进入主 starter kit 的中级模块，也可拆成 `Run Economy Services` 示例章节。
 - 后续动作：T56-T60 后结合玩家理解与外部反馈，决定该模块是否需要更明确的新手提示和服务价格 authoring 文档。
+
+### 2026-05-20 · T56 · 上下文首局提示层
+
+- 候选类型：onboarding guidance / contextual hint layer / 首局理解 QA 模板。
+- 主归属模板：`React Card Game UI Kit`。
+- 也支持：`AI Game Development Planning and QA Kit`、`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 涉及文件：`src/ui/pages/firstRunGuidance.ts`、`src/ui/pages/BattleHud.tsx`、`src/ui/styles.css`、`src/tests/firstRunGuidance.test.ts`、`docs/qa/CHAPTER_ONE_FIRST_RUN_GUIDANCE_T56.md`。
+- 可复用价值：用当前 run / battle / route 状态生成短提示，覆盖首战、战后奖励、裁定、商店、休整、法宝、反噬和 Boss 压力，避免把新手教学写成固定长墙。
+- 与本作强绑定部分：问名、正名、伏诛、归册、裁定、三坛、法宝等术语和具体文案属于本作表达。
+- 去题材化思路：抽象为 first-run guidance rules、reward quality explanation、post-combat decision hint、relic economy hint 和 boss pressure hint；示例项目替换为中性术语。
+- 依赖与授权注意：本轮未新增依赖或第三方素材；模板化时需要替换本作专有文案和截图。
+- 是否值得抽到模板：值得，适合进入 UI kit 和 AI QA kit 的 onboarding 章节。
+- 后续动作：等 T59 外部试玩反馈完成后，补充“提示是否被玩家读懂”的反馈字段。
+
+### 2026-05-20 · T57 · 表现反馈与可访问性二轮修边
+
+- 候选类型：feedback layer / accessibility polish / reduced-motion guardrail。
+- 主归属模板：`React Card Game UI Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/ui/pages/BattleHud.tsx`、`src/ui/styles.css`、`src/ui/audio/audioCues.ts`、`src/game/scenes/BattleScene.ts`、`docs/qa/CHAPTER_ONE_BROWSER_PLAYTEST_T57_T58.md`。
+- 可复用价值：把关键状态反馈、读屏摘要、键盘焦点、动画关闭和系统减弱动态偏好放进同一轮收口检查，适合卡牌游戏 demo 在正式素材前提升可玩手感。
+- 与本作强绑定部分：反馈文案、残榜案面、问名 / 正名 / 裁定等术语属于本作。
+- 去题材化思路：抽象为 status feedback panels、aria summaries、focus-visible tokens、reduced-motion fallback、placeholder stage composition。
+- 依赖与授权注意：本轮未新增依赖或第三方素材；Web Audio 仍为合成占位，模板化时应保留可替换接口。
+- 是否值得抽到模板：值得，适合进入 UI kit 的 polish checklist。
+- 后续动作：T59 外部试玩后，记录哪些反馈仍被玩家忽略。
+
+### 2026-05-20 · T58 · 浏览器试玩包与错误反馈 Runbook
+
+- 候选类型：browser playtest release runbook / frontend error reporting。
+- 主归属模板：`AI Game Development Planning and QA Kit`。
+- 也支持：`React Card Game UI Kit`、`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 涉及文件：`src/ui/ErrorBoundary.tsx`、`src/ui/errorReporting.ts`、`src/tests/errorReporting.test.ts`、`README.md`、`package.json`、`docs/qa/CHAPTER_ONE_BROWSER_PLAYTEST_T57_T58.md`。
+- 可复用价值：把本地 browser preview、重开 / 继续 / 清存档、问题反馈格式、错误边界、本地错误日志和 chunk warning 决策记录串成可交给外部试玩者的轻量交付包。
+- 与本作强绑定部分：试玩说明里的页面名称、存档 key 和第一章语境属于本作。
+- 去题材化思路：抽象为 build-preview checklist、save reset guide、playtest feedback template、error boundary report format、bundle warning decision log。
+- 依赖与授权注意：本轮只新增 npm preview 脚本，没有新增生产依赖；模板化时要替换私有仓库路径和本地截图路径。
+- 是否值得抽到模板：值得，是 AI QA kit 中“外部试玩前交付”章节的直接候选。
+- 后续动作：T59 反馈模板完成后，把 runbook 与反馈分类表合成一份 playtest pack。

@@ -16,5 +16,5 @@ export function PhaserGame() {
     }
   }, [])
 
-  return <div ref={hostRef} className="phaser-shell" aria-label="Phaser 战斗场景" />
+  return <div ref={hostRef} className="phaser-shell" aria-label="战斗演出台：残榜案面" />
 }

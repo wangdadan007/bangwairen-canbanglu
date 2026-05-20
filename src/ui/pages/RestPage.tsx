@@ -121,12 +121,16 @@ export function RestPage({
         {options.map((option) => {
           const isRemoveCard = option.id === 'remove_card'
           const canChoose = !isRemoveCard || Boolean(selectedCard)
+          const disabledReason = canChoose
+            ? undefined
+            : getRestDisabledReason(option.id, selectedCard)
 
           return (
             <button
               className={option.id === 'red_ink_service' ? 'rest-option red-ink' : 'rest-option'}
               disabled={!canChoose}
               key={option.id}
+              title={disabledReason}
               type="button"
               onClick={() =>
                 isRemoveCard
@@ -149,12 +153,24 @@ export function RestPage({
                   {t(option.costKey)}
                 </span>
               </span>
+              {disabledReason ? <span className="card-state">{disabledReason}</span> : null}
             </button>
           )
         })}
       </div>
     </section>
   )
+}
+
+function getRestDisabledReason(
+  optionId: TutorialRestOptionId,
+  selectedCard: RunDeckCard | undefined,
+) {
+  if (optionId === 'remove_card' && !selectedCard) {
+    return '请先在当前牌组里选一张牌'
+  }
+
+  return '当前不能休整'
 }
 
 function RestArtifactCard({

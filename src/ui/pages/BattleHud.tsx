@@ -37,6 +37,10 @@ import {
 } from './actionLogView'
 import { selectBattleHudState } from './battleHudSelectors'
 import {
+  createFirstRunGuidance,
+  type FirstRunGuidance,
+} from './firstRunGuidance'
+import {
   artifactDefinitionsById,
   createCardDefinitionMap,
   createCardInstanceMap,
@@ -121,6 +125,17 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
   )
   const runRitualFeedback = useMemo(() => createRunRitualFeedback(run), [run])
   const bossPressureFeedback = useMemo(() => createBossPressureFeedback(battle), [battle])
+  const firstRunGuidance = useMemo(
+    () =>
+      createFirstRunGuidance({
+        battle,
+        run,
+        currentEncounter,
+        currentRouteFlowKind,
+        currentRouteNode,
+      }),
+    [battle, currentEncounter, currentRouteFlowKind, currentRouteNode, run],
+  )
   const audioCue = useMemo<AudioCue | undefined>(() => {
     const feedback = ritualFeedback ?? pressureFeedback ?? runRitualFeedback ?? bossPressureFeedback
 
@@ -173,6 +188,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
       </header>
 
       <TutorialRunPanel run={run} currentEncounter={currentEncounter} />
+      {firstRunGuidance ? <FirstRunGuidancePanel guidance={firstRunGuidance} /> : null}
       <RoutePage route={tutorialRoute} routeState={viewState.route} t={t} />
       <ArtifactBar
         artifacts={run.artifacts}
@@ -749,7 +765,12 @@ function EnemyPanel({
 
 function PressureFeedbackPanel({ feedback }: { readonly feedback: PressureFeedback }) {
   return (
-    <section className={`pressure-feedback ${feedback.tone}`} aria-live="polite">
+    <section
+      className={`pressure-feedback ${feedback.tone}`}
+      aria-label={`${feedback.label}：${feedback.title}`}
+      aria-live="polite"
+      role="status"
+    >
       <span>{feedback.label}</span>
       <strong>{feedback.title}</strong>
       <p>{feedback.detail}</p>
@@ -759,10 +780,37 @@ function PressureFeedbackPanel({ feedback }: { readonly feedback: PressureFeedba
 
 function RitualFeedbackPanel({ feedback }: { readonly feedback: RitualFeedback }) {
   return (
-    <section className={`ritual-feedback ${feedback.tone}`} aria-live="polite">
+    <section
+      className={`ritual-feedback ${feedback.tone}`}
+      aria-label={`${feedback.label}：${feedback.title}`}
+      aria-live="polite"
+      role="status"
+    >
       <span>{feedback.label}</span>
       <strong>{feedback.title}</strong>
       <p>{feedback.detail}</p>
+    </section>
+  )
+}
+
+function FirstRunGuidancePanel({ guidance }: { readonly guidance: FirstRunGuidance }) {
+  return (
+    <section
+      className={`first-run-guide ${guidance.tone}`}
+      aria-label={`${guidance.eyebrow}：${guidance.title}`}
+      aria-live="polite"
+      role="note"
+    >
+      <div>
+        <span>{guidance.eyebrow}</span>
+        <strong>{guidance.title}</strong>
+      </div>
+      <p>{guidance.body}</p>
+      <div className="guide-term-row" aria-label="本条提示相关术语">
+        {guidance.terms.map((term) => (
+          <span key={term}>{term}</span>
+        ))}
+      </div>
     </section>
   )
 }
