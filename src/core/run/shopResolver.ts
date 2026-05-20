@@ -61,7 +61,7 @@ export function resolveTutorialShopPurchase(
     return run
   }
 
-  if (run.pendingVerdict || run.pendingReward || run.pendingRedInk) {
+  if (run.pendingVerdict || run.pendingReward || run.pendingRedInk || run.pendingArtifactOffer) {
     throw new Error('Resolve pending run choice before resolving a shop purchase')
   }
 

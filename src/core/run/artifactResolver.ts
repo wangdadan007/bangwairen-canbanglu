@@ -6,6 +6,9 @@ import type {
   ArtifactProgressKind,
   ArtifactState,
   CardId,
+  TutorialArtifactOffer,
+  TutorialArtifactOfferStage,
+  TutorialRunState,
   TutorialResourceState,
 } from '../../types'
 import { applyTutorialResourceDelta } from './resourceResolver'
@@ -17,13 +20,27 @@ export const NAME_TETHER_SPINDLE_ARTIFACT_ID: ArtifactId = 'artifact_name_tether
 export const CINNABAR_DOU_ARTIFACT_ID: ArtifactId = 'artifact_cinnabar_dou'
 export const FRACTURE_NEEDLE_ARTIFACT_ID: ArtifactId = 'artifact_fracture_needle'
 export const REGISTRY_INKSTONE_ARTIFACT_ID: ArtifactId = 'artifact_registry_inkstone'
+export const SEAL_DOOR_TABLET_ARTIFACT_ID: ArtifactId = 'artifact_seal_door_tablet'
+export const ASH_LAMP_ARTIFACT_ID: ArtifactId = 'artifact_ash_lamp'
+export const DOOM_BELL_ARTIFACT_ID: ArtifactId = 'artifact_doom_bell'
 export const WHIP_BACKLASH_CARD_ID: CardId = 'card_cracked_whip_echo'
+export const MID_CHAPTER_ARTIFACT_REWARD_ENCOUNTER_ID = 'encounter_elite_incense_clerk'
+export const BOSS_ARTIFACT_REWARD_ENCOUNTER_ID = 'encounter_boss_registry_thief'
 
-export const STARTER_ARTIFACT_DEFINITION_IDS: readonly ArtifactId[] = [
+export const STARTER_ARTIFACT_OFFER_IDS: readonly ArtifactId[] = [
   WHIP_FRAGMENT_ARTIFACT_ID,
   BONE_MIRROR_ARTIFACT_ID,
   COURT_CHIME_ARTIFACT_ID,
+]
+export const MID_CHAPTER_ARTIFACT_OFFER_IDS: readonly ArtifactId[] = [
   CINNABAR_DOU_ARTIFACT_ID,
+  SEAL_DOOR_TABLET_ARTIFACT_ID,
+  REGISTRY_INKSTONE_ARTIFACT_ID,
+]
+export const BOSS_CLEAR_ARTIFACT_OFFER_IDS: readonly ArtifactId[] = [
+  NAME_TETHER_SPINDLE_ARTIFACT_ID,
+  FRACTURE_NEEDLE_ARTIFACT_ID,
+  DOOM_BELL_ARTIFACT_ID,
 ]
 
 export interface ArtifactProgressEvent {
@@ -68,11 +85,99 @@ export function createInitialArtifactCollection(
 export function createStarterArtifactCollection(
   artifactDefinitions: readonly ArtifactDefinition[] = [],
 ): ArtifactCollectionState {
-  const starterIds = new Set(STARTER_ARTIFACT_DEFINITION_IDS)
+  const starterIds = new Set(STARTER_ARTIFACT_OFFER_IDS)
 
   return createInitialArtifactCollection(
     artifactDefinitions.filter((definition) => starterIds.has(definition.id)),
   )
+}
+
+export function createTutorialArtifactOfferIfNeeded(
+  run: TutorialRunState,
+  artifactDefinitions: readonly ArtifactDefinition[],
+): TutorialRunState {
+  if (run.status === 'failed') {
+    return run
+  }
+
+  if (
+    run.pendingArtifactOffer ||
+    run.pendingVerdict ||
+    run.pendingReward ||
+    run.pendingRedInk
+  ) {
+    return run
+  }
+
+  if (
+    run.status === 'active' &&
+    !hasArtifactOfferRecord(run, 'starter') &&
+    run.completedEncounterIds.length === 0
+  ) {
+    return createRunWithArtifactOffer(run, artifactDefinitions, 'starter')
+  }
+
+  if (
+    run.status === 'active' &&
+    !hasArtifactOfferRecord(run, 'mid_chapter') &&
+    run.completedEncounterIds.includes(MID_CHAPTER_ARTIFACT_REWARD_ENCOUNTER_ID)
+  ) {
+    return createRunWithArtifactOffer(run, artifactDefinitions, 'mid_chapter')
+  }
+
+  if (
+    run.status === 'complete' &&
+    !hasArtifactOfferRecord(run, 'boss_clear') &&
+    run.completedEncounterIds.includes(BOSS_ARTIFACT_REWARD_ENCOUNTER_ID)
+  ) {
+    return createRunWithArtifactOffer(run, artifactDefinitions, 'boss_clear')
+  }
+
+  return run
+}
+
+export function resolveTutorialArtifactOffer(
+  run: TutorialRunState,
+  artifactDefinitionId: ArtifactId,
+  artifactDefinitions: readonly ArtifactDefinition[],
+): TutorialRunState {
+  const offer = run.pendingArtifactOffer
+  const artifactOfferRecords = run.artifactOfferRecords ?? []
+
+  if (!offer) {
+    return run
+  }
+
+  const option = offer.options.find(
+    (candidate) => candidate.artifactDefinitionId === artifactDefinitionId,
+  )
+
+  if (!option) {
+    throw new Error(`Artifact option is not available: ${artifactDefinitionId}`)
+  }
+
+  const definition = artifactDefinitions.find((candidate) => candidate.id === artifactDefinitionId)
+
+  if (!definition) {
+    throw new Error(`Missing artifact definition: ${artifactDefinitionId}`)
+  }
+
+  return {
+    ...run,
+    artifacts: addArtifactToCollection(run.artifacts, definition),
+    pendingArtifactOffer: undefined,
+    artifactOfferRecords: [
+      ...artifactOfferRecords,
+      {
+        id: `artifact_offer_record_${artifactOfferRecords.length + 1}`,
+        stage: offer.stage,
+        offeredArtifactDefinitionIds: offer.options.map(
+          (candidate) => candidate.artifactDefinitionId,
+        ),
+        selectedArtifactDefinitionId: artifactDefinitionId,
+      },
+    ],
+  }
 }
 
 export function addArtifactToCollection(
@@ -322,4 +427,68 @@ function createArtifactState(definition: ArtifactDefinition): ArtifactState {
     consecutiveOverloadBattles: 0,
     pendingBacklash: false,
   }
+}
+
+function createRunWithArtifactOffer(
+  run: TutorialRunState,
+  artifactDefinitions: readonly ArtifactDefinition[],
+  stage: TutorialArtifactOfferStage,
+): TutorialRunState {
+  const offer = createTutorialArtifactOffer(run, artifactDefinitions, stage)
+
+  return offer
+    ? {
+        ...run,
+        pendingArtifactOffer: offer,
+      }
+    : run
+}
+
+function createTutorialArtifactOffer(
+  run: TutorialRunState,
+  artifactDefinitions: readonly ArtifactDefinition[],
+  stage: TutorialArtifactOfferStage,
+): TutorialArtifactOffer | undefined {
+  const ownedArtifactIds = new Set(run.artifacts.artifacts.map((artifact) => artifact.definitionId))
+  const artifactOfferRecords = run.artifactOfferRecords ?? []
+  const options = getArtifactOfferIds(stage)
+    .filter((artifactDefinitionId) => !ownedArtifactIds.has(artifactDefinitionId))
+    .map((artifactDefinitionId, index) => {
+      const definition = artifactDefinitions.find((candidate) => candidate.id === artifactDefinitionId)
+
+      return definition
+        ? {
+            id: `${stage}_${index + 1}_${artifactDefinitionId}`,
+            artifactDefinitionId,
+          }
+        : undefined
+    })
+    .filter((option): option is TutorialArtifactOffer['options'][number] => Boolean(option))
+    .slice(0, 3)
+
+  if (options.length === 0) {
+    return undefined
+  }
+
+  return {
+    id: `artifact_offer_${stage}_${artifactOfferRecords.length + 1}`,
+    stage,
+    options,
+  }
+}
+
+function getArtifactOfferIds(stage: TutorialArtifactOfferStage) {
+  if (stage === 'starter') {
+    return STARTER_ARTIFACT_OFFER_IDS
+  }
+
+  if (stage === 'mid_chapter') {
+    return MID_CHAPTER_ARTIFACT_OFFER_IDS
+  }
+
+  return BOSS_CLEAR_ARTIFACT_OFFER_IDS
+}
+
+function hasArtifactOfferRecord(run: TutorialRunState, stage: TutorialArtifactOfferStage) {
+  return (run.artifactOfferRecords ?? []).some((record) => record.stage === stage)
 }

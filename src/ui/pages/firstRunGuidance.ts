@@ -3,6 +3,7 @@ import type {
   CombatState,
   EncounterDefinition,
   RouteNodeDefinition,
+  TutorialArtifactOfferStage,
   TutorialRunState,
 } from '../../types'
 
@@ -39,6 +40,16 @@ export function createFirstRunGuidance({
   currentRouteFlowKind,
   currentRouteNode,
 }: FirstRunGuidanceInput): FirstRunGuidance | undefined {
+  if (run.pendingArtifactOffer) {
+    return {
+      tone: 'artifact',
+      eyebrow: '法宝三选一',
+      title: getArtifactOfferGuidanceTitle(run.pendingArtifactOffer.stage),
+      body: '本章法宝节奏已收敛：开局、第一章途中、Boss 后各选 1 件。法宝仍是牌组外器物，不进入抽牌堆。',
+      terms: ['法宝', '三选一', '牌组外'],
+    }
+  }
+
   if (run.pendingVerdict) {
     return {
       tone: 'verdict',
@@ -91,8 +102,8 @@ export function createFirstRunGuidance({
     return {
       tone: 'artifact',
       eyebrow: '商店',
-      title: '法宝买入法宝栏，不进牌堆',
-      body: '买卡会扩大牌组，买法宝会增加牌组外器物，不进牌堆；朱批服务则改已有牌，三者都受香火钱约束。',
+      title: '商店只处理牌册与服务',
+      body: '买卡会扩大牌组，朱批服务会改已有牌；法宝改由开局、途中和 Boss 后的三选一发放，不进牌堆。',
       terms: ['买卡', '法宝', '朱批'],
     }
   }
@@ -242,6 +253,18 @@ function createBattleResultGuidance(battle: CombatState): FirstRunGuidance | und
 
 function hasStage(run: TutorialRunState, stageId: string) {
   return run.unlocks.stages.includes(stageId)
+}
+
+function getArtifactOfferGuidanceTitle(stage: TutorialArtifactOfferStage) {
+  if (stage === 'starter') {
+    return '开局只带一件器物'
+  }
+
+  if (stage === 'mid_chapter') {
+    return '途中只再补一件法宝'
+  }
+
+  return 'Boss 后再收一件余响'
 }
 
 function hasBattleBacklash(battle: CombatState) {

@@ -179,7 +179,7 @@ describe('T22 shop resolver', () => {
     )
   })
 
-  it('buys an unlocked artifact without putting it into the deck', () => {
+  it('does not expose direct artifact purchases in the current shop data', () => {
     const coreRun = createInitialTutorialRunState(
       gameData.tutorialUnlocks,
       undefined,
@@ -193,50 +193,25 @@ describe('T22 shop resolver', () => {
       'vanquish',
     )
 
-    expect(
-      getAvailableShopItems(
-        abnormalRun,
-        gameData.shopItems,
-        gameData.cards,
-        gameData.artifacts,
-      ).map((item) => item.id),
-    ).toContain('shop_artifact_seal_door_tablet')
-
-    const nextRun = resolveTutorialShopPurchase(
+    const itemIds = getAvailableShopItems(
       abnormalRun,
-      {
-        itemId: 'shop_artifact_seal_door_tablet',
-        routeNodeId: shopRouteNodeId,
-      },
       gameData.shopItems,
       gameData.cards,
       gameData.artifacts,
-    )
+    ).map((item) => item.id)
 
-    expect(nextRun.currency.incenseMoney).toBe(abnormalRun.currency.incenseMoney - 55)
-    expect(nextRun.artifacts.artifacts.map((artifact) => artifact.definitionId)).toContain(
-      'artifact_seal_door_tablet',
-    )
-    expect(nextRun.deckDefinitionIds).not.toContain('artifact_seal_door_tablet')
-    expect(nextRun.deckCards.map((card) => card.definitionId)).not.toContain(
-      'artifact_seal_door_tablet',
-    )
-    expect(nextRun.shops.records[0]).toEqual(
-      expect.objectContaining({
-        itemId: 'shop_artifact_seal_door_tablet',
-        kind: 'artifact',
-        cost: 55,
-        purchasedArtifactDefinitionId: 'artifact_seal_door_tablet',
-        createdRedInkOffer: false,
-      }),
-    )
-    expect(
-      getAvailableShopItems(
-        nextRun,
+    expect(itemIds.some((itemId) => itemId.startsWith('shop_artifact_'))).toBe(false)
+    expect(() =>
+      resolveTutorialShopPurchase(
+        abnormalRun,
+        {
+          itemId: 'shop_artifact_seal_door_tablet',
+          routeNodeId: shopRouteNodeId,
+        },
         gameData.shopItems,
         gameData.cards,
         gameData.artifacts,
-      ).map((item) => item.id),
-    ).not.toContain('shop_artifact_seal_door_tablet')
+      ),
+    ).toThrow('Shop item is not available: shop_artifact_seal_door_tablet')
   })
 })

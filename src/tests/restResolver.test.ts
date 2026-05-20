@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   advanceTutorialRun,
+  createInitialArtifactCollection,
   createInitialTutorialRunState,
   getAvailableRestOptions,
   resolveTutorialRest,
@@ -160,12 +161,7 @@ describe('T21 rest resolver', () => {
         keywords: [],
       },
       artifacts: {
-        artifacts: createInitialTutorialRunState(
-          gameData.tutorialUnlocks,
-          undefined,
-          undefined,
-          gameData.artifacts,
-        ).artifacts.artifacts.map((artifact, index) =>
+        artifacts: createInitialArtifactCollection(gameData.artifacts).artifacts.map((artifact, index) =>
           index === 0
             ? {
                 ...artifact,

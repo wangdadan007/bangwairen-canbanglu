@@ -184,6 +184,7 @@ describe('core type contracts', () => {
       },
       rewards: [],
       redInkRecords: [],
+      artifactOfferRecords: [],
     } satisfies TutorialRunState
 
     expect(run.encounterIds[0]).toBe(encounter.id)
@@ -372,6 +373,7 @@ describe('core type contracts', () => {
         },
         rewards: [],
         redInkRecords: [],
+        artifactOfferRecords: [],
       },
       route: {
         routeId: 'route_chapter_one_skeleton',

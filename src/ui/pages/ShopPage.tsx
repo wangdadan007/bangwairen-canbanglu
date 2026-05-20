@@ -187,7 +187,7 @@ function getItemLabels(
       ? artifactDefinitionsById.get(item.artifactDefinitionId)
       : undefined
 
-    return [`买法宝：${definition ? t(definition.nameKey) : item.artifactDefinitionId ?? '未知器物'}`]
+    return [`法宝：${definition ? t(definition.nameKey) : item.artifactDefinitionId ?? '未知器物'}`]
   }
 
   if (item.kind === 'remove_card') {

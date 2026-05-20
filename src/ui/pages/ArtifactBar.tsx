@@ -2,22 +2,16 @@ import type {
   ArtifactCollectionState,
   ArtifactDefinition,
   ArtifactState,
-  UnlockState,
 } from '../../types'
 
 export interface ArtifactBarProps {
   readonly artifacts: ArtifactCollectionState
   readonly artifactDefinitionsById: ReadonlyMap<string, ArtifactDefinition>
-  readonly unlocks: UnlockState
   readonly t: (key: string) => string
 }
 
-export function ArtifactBar({ artifacts, artifactDefinitionsById, unlocks, t }: ArtifactBarProps) {
-  const visibleArtifacts = artifacts.artifacts.filter((artifact) => {
-    const definition = artifactDefinitionsById.get(artifact.definitionId)
-
-    return definition ? unlocks.stages.includes(definition.unlockStage) : false
-  })
+export function ArtifactBar({ artifacts, artifactDefinitionsById, t }: ArtifactBarProps) {
+  const visibleArtifacts = artifacts.artifacts
 
   return (
     <section className="artifact-bar" aria-label="法宝栏">
@@ -49,7 +43,7 @@ export function ArtifactBar({ artifacts, artifactDefinitionsById, unlocks, t }: 
             )
           })
         ) : (
-          <p className="empty-state">当前没有已解锁法宝。法宝本体不会进入抽牌堆。</p>
+          <p className="empty-state">当前没有法宝。法宝本体不会进入抽牌堆。</p>
         )}
       </div>
     </section>

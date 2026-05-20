@@ -32,11 +32,7 @@ export function RestPage({
 }: RestPageProps) {
   const [selectedDeckCardId, setSelectedDeckCardId] = useState(deckCards[0]?.id ?? '')
   const selectedCard = deckCards.find((card) => card.id === selectedDeckCardId)
-  const visibleArtifacts = run.artifacts.artifacts.filter((artifact) => {
-    const definition = artifactDefinitionsById.get(artifact.definitionId)
-
-    return definition ? run.unlocks.stages.includes(definition.unlockStage) : false
-  })
+  const visibleArtifacts = run.artifacts.artifacts
 
   return (
     <section className="rest-page" aria-label="休整页">
@@ -111,7 +107,7 @@ export function RestPage({
                 ) : null
               })
             ) : (
-              <p className="empty-state">当前没有已解锁法宝。</p>
+              <p className="empty-state">当前没有法宝。</p>
             )}
           </div>
         </div>

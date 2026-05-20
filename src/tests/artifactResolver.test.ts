@@ -5,9 +5,11 @@ import {
   createInitialBattleState,
   createInitialArtifactCollection,
   createInitialTutorialRunState,
+  createTutorialArtifactOfferIfNeeded,
   reduceBattleState,
   RED_INK_OPTIONS,
   resolveArtifactBacklashesAtBattleStart,
+  resolveTutorialArtifactOffer,
   resolveTutorialRedInk,
   resolveTutorialVerdict,
   advanceTutorialRun,
@@ -22,31 +24,84 @@ const battleContext: BattleReducerContext = {
 }
 
 describe('T17 artifact foundation', () => {
-  it('creates starter artifact state as out-of-deck run equipment', () => {
+  it('creates starter artifact offer as a three-choice out-of-deck pickup', () => {
     const run = createInitialTutorialRunState(
       gameData.tutorialUnlocks,
       undefined,
       undefined,
       gameData.artifacts,
     )
-    const artifactIds = run.artifacts.artifacts.map((artifact) => artifact.definitionId)
     const deckIds = new Set(run.deckDefinitionIds)
+    const offerRun = createTutorialArtifactOfferIfNeeded(run, gameData.artifacts)
+    const chosenRun = resolveTutorialArtifactOffer(
+      offerRun,
+      'artifact_whip_fragment',
+      gameData.artifacts,
+    )
+    const artifactIds = chosenRun.artifacts.artifacts.map((artifact) => artifact.definitionId)
 
-    expect(artifactIds).toEqual([
+    expect(run.artifacts.artifacts).toEqual([])
+    expect(offerRun.pendingArtifactOffer?.stage).toBe('starter')
+    expect(offerRun.pendingArtifactOffer?.options.map((option) => option.artifactDefinitionId)).toEqual([
       'artifact_whip_fragment',
       'artifact_bone_mirror',
       'artifact_court_chime',
-      'artifact_cinnabar_dou',
     ])
+    expect(artifactIds).toEqual(['artifact_whip_fragment'])
     expect(artifactIds.every((artifactId) => !deckIds.has(artifactId))).toBe(true)
-    expect(run.artifacts.artifacts.every((artifact) => artifact.bindingStatus === 'unbound')).toBe(
-      true,
+    expect(chosenRun.artifacts.artifacts[0]?.bindingStatus).toBe('unbound')
+    expect(chosenRun.artifactOfferRecords[0]).toEqual({
+      id: 'artifact_offer_record_1',
+      stage: 'starter',
+      offeredArtifactDefinitionIds: [
+        'artifact_whip_fragment',
+        'artifact_bone_mirror',
+        'artifact_court_chime',
+      ],
+      selectedArtifactDefinitionId: 'artifact_whip_fragment',
+    })
+  })
+
+  it('creates mid-chapter and boss-clear artifact offers at fixed chapter checkpoints', () => {
+    let run = createInitialTutorialRunState(gameData.tutorialUnlocks, [
+      'encounter_tutorial_paper_wraith',
+      'encounter_elite_incense_clerk',
+      'encounter_boss_registry_thief',
+    ])
+
+    run = resolveTutorialArtifactOffer(
+      createTutorialArtifactOfferIfNeeded(run, gameData.artifacts),
+      'artifact_bone_mirror',
+      gameData.artifacts,
     )
-    expect(
-      run.artifacts.artifacts.find(
-        (artifact) => artifact.definitionId === 'artifact_cinnabar_dou',
-      )?.chargesRemaining,
-    ).toBe(1)
+    run = advanceTutorialRun(run, gameData.encounters, gameData.tutorialUnlocks, 'vanquish')
+    run = advanceTutorialRun(run, gameData.encounters, gameData.tutorialUnlocks, 'vanquish')
+
+    const midOfferRun = createTutorialArtifactOfferIfNeeded(run, gameData.artifacts)
+
+    expect(midOfferRun.pendingArtifactOffer?.stage).toBe('mid_chapter')
+    expect(midOfferRun.pendingArtifactOffer?.options.map((option) => option.artifactDefinitionId)).toEqual([
+      'artifact_cinnabar_dou',
+      'artifact_seal_door_tablet',
+      'artifact_registry_inkstone',
+    ])
+
+    run = resolveTutorialArtifactOffer(
+      midOfferRun,
+      'artifact_cinnabar_dou',
+      gameData.artifacts,
+    )
+    run = advanceTutorialRun(run, gameData.encounters, gameData.tutorialUnlocks, 'vanquish')
+
+    const bossOfferRun = createTutorialArtifactOfferIfNeeded(run, gameData.artifacts)
+
+    expect(bossOfferRun.status).toBe('complete')
+    expect(bossOfferRun.pendingArtifactOffer?.stage).toBe('boss_clear')
+    expect(bossOfferRun.pendingArtifactOffer?.options.map((option) => option.artifactDefinitionId)).toEqual([
+      'artifact_name_tether_spindle',
+      'artifact_fracture_needle',
+      'artifact_doom_bell',
+    ])
   })
 
   it('binds artifacts when their progress condition is met', () => {
@@ -398,12 +453,7 @@ describe('T17 artifact foundation', () => {
   })
 
   it('applies cinnabar dou as an extra red-ink annotation without entering the deck', () => {
-    const initialRun = createInitialTutorialRunState(
-      gameData.tutorialUnlocks,
-      undefined,
-      undefined,
-      gameData.artifacts,
-    )
+    const initialRun = createRunWithAllArtifacts()
     const runWithRedInkOffer = {
       ...initialRun,
       pendingRedInk: {

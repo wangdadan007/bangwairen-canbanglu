@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   createInitialBattleState,
   createInitialTutorialRunState,
+  createTutorialArtifactOfferIfNeeded,
 } from '../core'
 import { gameData } from '../data'
 import { createFirstRunGuidance } from '../ui/pages/firstRunGuidance'
@@ -95,6 +96,29 @@ describe('T56 first run guidance', () => {
     expect(guidance?.tone).toBe('artifact')
     expect(guidance?.body).toContain('不进牌堆')
     expect(guidance?.terms).toEqual(['买卡', '法宝', '朱批'])
+  })
+
+  it('explains the narrowed artifact offer pacing before the first fight', () => {
+    const run = createTutorialArtifactOfferIfNeeded(
+      createInitialTutorialRunState(
+        gameData.tutorialUnlocks,
+        ['encounter_tutorial_paper_wraith'],
+        undefined,
+        gameData.artifacts,
+      ),
+      gameData.artifacts,
+    )
+    const battle = createBattle(run, 'enemy_paper_wraith')
+    const guidance = createFirstRunGuidance({
+      battle,
+      run,
+      currentRouteFlowKind: 'battle',
+    })
+
+    expect(guidance?.tone).toBe('artifact')
+    expect(guidance?.title).toContain('开局')
+    expect(guidance?.body).toContain('开局、第一章途中、Boss 后各选 1 件')
+    expect(guidance?.terms).toEqual(['法宝', '三选一', '牌组外'])
   })
 })
 

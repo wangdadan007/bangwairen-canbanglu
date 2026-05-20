@@ -4,6 +4,7 @@ import {
   completeCurrentRouteNode,
   createInitialRouteState,
   createInitialTutorialRunState,
+  createTutorialArtifactOfferIfNeeded,
   createTutorialRunSummary,
   getAvailableEventOptions,
   getAvailableRestOptions,
@@ -14,6 +15,7 @@ import {
   getEncounterEnemyDefinitionIds,
   getRouteBattleEncounterIds,
   resolveTutorialEvent,
+  resolveTutorialArtifactOffer,
   resolveTutorialRedInk,
   resolveTutorialRest,
   resolveTutorialReward,
@@ -65,6 +67,8 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
     expect(result.run.pendingReward).toBeUndefined()
     expect(result.run.pendingVerdict).toBeUndefined()
     expect(result.run.pendingRedInk).toBeUndefined()
+    expect(result.run.pendingArtifactOffer).toBeUndefined()
+    expect(result.run.artifacts.artifacts).toHaveLength(3)
     expect(createTutorialRunSummary(result.run)).toEqual(
       expect.objectContaining({
         completedEncounterCount: getRouteBattleEncounterIds(gameData.routes[0], result.initialRoute).length,
@@ -91,6 +95,8 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
     expect(result.run.pendingReward).toBeUndefined()
     expect(result.run.pendingVerdict).toBeUndefined()
     expect(result.run.pendingRedInk).toBeUndefined()
+    expect(result.run.pendingArtifactOffer).toBeUndefined()
+    expect(result.run.artifacts.artifacts).toHaveLength(3)
     expect(result.run.deckCards.length).toBeGreaterThan(0)
   })
 })
@@ -112,6 +118,7 @@ function completeRouteSmoke({
     undefined,
     gameData.artifacts,
   )
+  run = resolvePendingRunChoices(run)
   let battleIndex = 0
 
   while (getCurrentRouteFlowKind(route, routeState) !== 'complete') {
@@ -196,21 +203,45 @@ function completeRouteSmoke({
 }
 
 function resolvePendingRunChoices(run: TutorialRunState): TutorialRunState {
-  let nextRun = run
+  let nextRun = createTutorialArtifactOfferIfNeeded(run, gameData.artifacts)
 
-  if (nextRun.pendingVerdict) {
-    nextRun = resolveTutorialVerdict(nextRun, 'register')
+  for (let index = 0; index < 10; index += 1) {
+    if (nextRun.pendingVerdict) {
+      nextRun = resolveTutorialVerdict(nextRun, 'register')
+      continue
+    }
+
+    if (nextRun.pendingRedInk) {
+      nextRun = resolveTutorialRedInk(nextRun)
+      continue
+    }
+
+    if (nextRun.pendingReward) {
+      nextRun = resolveTutorialReward(nextRun)
+      continue
+    }
+
+    if (nextRun.pendingArtifactOffer) {
+      const artifactDefinitionId = nextRun.pendingArtifactOffer.options[0]?.artifactDefinitionId
+
+      if (!artifactDefinitionId) {
+        throw new Error(`No artifact option available: ${nextRun.pendingArtifactOffer.id}`)
+      }
+
+      nextRun = resolveTutorialArtifactOffer(nextRun, artifactDefinitionId, gameData.artifacts)
+      continue
+    }
+
+    const offeredRun = createTutorialArtifactOfferIfNeeded(nextRun, gameData.artifacts)
+
+    if (!offeredRun.pendingArtifactOffer) {
+      return offeredRun
+    }
+
+    nextRun = offeredRun
   }
 
-  if (nextRun.pendingRedInk) {
-    nextRun = resolveTutorialRedInk(nextRun)
-  }
-
-  if (nextRun.pendingReward) {
-    nextRun = resolveTutorialReward(nextRun)
-  }
-
-  return nextRun
+  throw new Error('Too many pending run choices during long-flow smoke')
 }
 
 function getPrimaryEnemyForEncounter(encounter: EncounterDefinition) {

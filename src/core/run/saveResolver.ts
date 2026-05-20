@@ -118,8 +118,10 @@ function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
   return {
     ...value,
     playerForm: normalizeTutorialPlayerFormState(value.playerForm),
+    pendingArtifactOffer: value.pendingArtifactOffer,
     rewards: value.rewards ?? [],
     redInkRecords: value.redInkRecords ?? [],
+    artifactOfferRecords: value.artifactOfferRecords ?? [],
   }
 }
 

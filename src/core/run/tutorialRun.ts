@@ -17,7 +17,7 @@ import type {
 import { DEFAULT_STARTER_DECK_IDS } from '../battle/battleState'
 import {
   advanceArtifactsAfterBattle,
-  createStarterArtifactCollection,
+  createInitialArtifactCollection,
   type ArtifactBattleProgressInput,
 } from './artifactResolver'
 import { createRunDeckCards } from './deckResolver'
@@ -49,7 +49,7 @@ export function createInitialTutorialRunState(
   tutorialUnlocks: readonly TutorialUnlockDefinition[],
   encounterIds: readonly EncounterId[] = TUTORIAL_ENCOUNTER_IDS,
   deckDefinitionIds: readonly CardId[] = DEFAULT_STARTER_DECK_IDS,
-  artifactDefinitions: readonly ArtifactDefinition[] = [],
+  _artifactDefinitions: readonly ArtifactDefinition[] = [],
 ): TutorialRunState {
   return {
     status: 'active',
@@ -59,7 +59,7 @@ export function createInitialTutorialRunState(
     settlements: [],
     deckDefinitionIds,
     deckCards: createRunDeckCards(deckDefinitionIds),
-    artifacts: createStarterArtifactCollection(artifactDefinitions),
+    artifacts: createInitialArtifactCollection(),
     currency: createInitialTutorialCurrencyState(),
     playerForm: createInitialTutorialPlayerFormState(),
     resources: createInitialTutorialResourceState(),
@@ -70,6 +70,7 @@ export function createInitialTutorialRunState(
     shops: createInitialTutorialShopState(),
     rewards: [],
     redInkRecords: [],
+    artifactOfferRecords: [],
   }
 }
 
@@ -114,7 +115,7 @@ export function advanceTutorialRun(
     return run
   }
 
-  if (run.pendingVerdict || run.pendingReward || run.pendingRedInk) {
+  if (run.pendingVerdict || run.pendingReward || run.pendingRedInk || run.pendingArtifactOffer) {
     throw new Error('Resolve pending tutorial offer before advancing the run')
   }
 
@@ -193,6 +194,7 @@ export function failTutorialRun(
     pendingVerdict: undefined,
     pendingReward: undefined,
     pendingRedInk: undefined,
+    pendingArtifactOffer: undefined,
   }
 }
 

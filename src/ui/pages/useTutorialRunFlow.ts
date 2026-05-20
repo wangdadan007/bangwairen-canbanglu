@@ -7,6 +7,7 @@ import {
   createInitialBattleState,
   createInitialRouteState,
   createInitialTutorialRunState,
+  createTutorialArtifactOfferIfNeeded,
   DEFAULT_PLAYER_MAX_FORM,
   failTutorialRun,
   getEncounterEnemyDefinitionIds,
@@ -16,6 +17,7 @@ import {
   getRouteBattleEncounterIds,
   reduceBattleState,
   resolveArtifactBacklashesAtBattleStart,
+  resolveTutorialArtifactOffer,
   resolveTutorialEvent,
   resolveTutorialRedInk,
   resolveTutorialRest,
@@ -225,22 +227,25 @@ export function useTutorialRunFlow({
       const defeatedEnemyDefinition = defeatedEnemy
         ? getEnemyDefinition(defeatedEnemy.definitionId)
         : undefined
-      const nextRun = advanceTutorialRun(
-        syncedRun,
-        gameData.encounters,
-        gameData.tutorialUnlocks,
-        result.settlement,
-        gameData.cards,
-        defeatedEnemy && defeatedEnemyDefinition
-          ? {
-              enemyDefinitionId: defeatedEnemy.definitionId,
-              enemyNameKey: defeatedEnemyDefinition.nameKey,
-              revealedNameKeys: getRevealedNameKeys(defeatedEnemy),
-            }
-          : undefined,
-        defeatedEnemy ? createArtifactBattleProgress(current.battle, defeatedEnemy) : undefined,
-        getPersistentBattleResources(current.battle),
-        getPersistentBattlePlayerForm(current.battle),
+      const nextRun = createTutorialArtifactOfferIfNeeded(
+        advanceTutorialRun(
+          syncedRun,
+          gameData.encounters,
+          gameData.tutorialUnlocks,
+          result.settlement,
+          gameData.cards,
+          defeatedEnemy && defeatedEnemyDefinition
+            ? {
+                enemyDefinitionId: defeatedEnemy.definitionId,
+                enemyNameKey: defeatedEnemyDefinition.nameKey,
+                revealedNameKeys: getRevealedNameKeys(defeatedEnemy),
+              }
+            : undefined,
+          defeatedEnemy ? createArtifactBattleProgress(current.battle, defeatedEnemy) : undefined,
+          getPersistentBattleResources(current.battle),
+          getPersistentBattlePlayerForm(current.battle),
+        ),
+        gameData.artifacts,
       )
       const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
 
@@ -254,7 +259,10 @@ export function useTutorialRunFlow({
 
   function chooseReward(cardDefinitionId?: CardId) {
     setViewState((current) => {
-      const nextRun = resolveTutorialReward(current.run, cardDefinitionId)
+      const nextRun = createTutorialArtifactOfferIfNeeded(
+        resolveTutorialReward(current.run, cardDefinitionId),
+        gameData.artifacts,
+      )
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
       const nextBattleView =
         nextEncounter && !hasPendingRunChoice(nextRun)
@@ -274,7 +282,10 @@ export function useTutorialRunFlow({
 
   function chooseVerdict(choiceId: TutorialVerdictChoiceId) {
     setViewState((current) => {
-      const nextRun = resolveTutorialVerdict(current.run, choiceId)
+      const nextRun = createTutorialArtifactOfferIfNeeded(
+        resolveTutorialVerdict(current.run, choiceId),
+        gameData.artifacts,
+      )
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
       const nextBattleView =
         nextEncounter && !hasPendingRunChoice(nextRun)
@@ -296,8 +307,11 @@ export function useTutorialRunFlow({
     setViewState((current) => {
       const nextRun =
         deckCardId && annotationId
-          ? resolveTutorialRedInk(current.run, { deckCardId, annotationId })
-          : resolveTutorialRedInk(current.run)
+          ? createTutorialArtifactOfferIfNeeded(
+              resolveTutorialRedInk(current.run, { deckCardId, annotationId }),
+              gameData.artifacts,
+            )
+          : createTutorialArtifactOfferIfNeeded(resolveTutorialRedInk(current.run), gameData.artifacts)
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
       const nextBattleView =
         nextEncounter && !hasPendingRunChoice(nextRun)
@@ -328,7 +342,10 @@ export function useTutorialRunFlow({
         return current
       }
 
-      const nextRun = resolveTutorialEvent(current.run, event, optionId)
+      const nextRun = createTutorialArtifactOfferIfNeeded(
+        resolveTutorialEvent(current.run, event, optionId),
+        gameData.artifacts,
+      )
       const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
       const nextBattleView =
@@ -359,11 +376,14 @@ export function useTutorialRunFlow({
         return current
       }
 
-      const nextRun = resolveTutorialRest(current.run, {
-        optionId,
-        deckCardId,
-        routeNodeId: node.id,
-      })
+      const nextRun = createTutorialArtifactOfferIfNeeded(
+        resolveTutorialRest(current.run, {
+          optionId,
+          deckCardId,
+          routeNodeId: node.id,
+        }),
+        gameData.artifacts,
+      )
       const nextRoute = completeCurrentRouteNode(tutorialRoute, current.route)
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
       const nextBattleView =
@@ -407,6 +427,29 @@ export function useTutorialRunFlow({
           gameData.cards,
           gameData.artifacts,
         ),
+      }
+    })
+  }
+
+  function chooseArtifact(artifactDefinitionId: string) {
+    setViewState((current) => {
+      const nextRun = createTutorialArtifactOfferIfNeeded(
+        resolveTutorialArtifactOffer(current.run, artifactDefinitionId, gameData.artifacts),
+        gameData.artifacts,
+      )
+      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
+      const nextBattleView =
+        nextEncounter && !hasPendingRunChoice(nextRun)
+          ? createBattleForEncounter(nextEncounter, nextRun)
+          : undefined
+
+      return {
+        ...current,
+        run: nextBattleView?.run ?? nextRun,
+        battle: nextBattleView?.battle ?? current.battle,
+        selectedEnemyInstanceId: nextBattleView
+          ? getFirstLivingEnemy(nextBattleView.battle)?.instanceId
+          : current.selectedEnemyInstanceId,
       }
     })
   }
@@ -482,6 +525,7 @@ export function useTutorialRunFlow({
       chooseEvent,
       chooseRest,
       buyShopItem,
+      chooseArtifact,
       leaveShop,
       advancePlaceholderNode,
     },
@@ -497,7 +541,12 @@ export function createCardInstanceMap(cards: readonly CardInstance[]) {
 }
 
 export function hasPendingRunChoice(run: TutorialRunState) {
-  return Boolean(run.pendingVerdict || run.pendingRedInk || run.pendingReward)
+  return Boolean(
+    run.pendingVerdict ||
+      run.pendingRedInk ||
+      run.pendingReward ||
+      run.pendingArtifactOffer,
+  )
 }
 
 export function isFinalEncounter(run: TutorialRunState) {
@@ -555,7 +604,10 @@ function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattl
           undefined,
           gameData.artifacts,
         )
-  const run = syncRunWithRoute(loadedRun, route)
+  const run = createTutorialArtifactOfferIfNeeded(
+    syncRunWithRoute(loadedRun, route),
+    gameData.artifacts,
+  )
   const currentEncounter = getCurrentRouteEncounter(tutorialRoute, route, gameData.encounters)
   const fallbackEncounter = getCurrentRouteEncounter(
     tutorialRoute,
@@ -568,20 +620,20 @@ function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattl
   }
 
   const battleView = currentEncounter
-      ? createBattleForEncounter(currentEncounter, run)
-      : {
-          run,
-          battle: createBattle(
-            [getEnemyDefinition(fallbackEncounter!.enemyDefinitionId)],
-            run.unlocks,
-            run.deckCards,
-            run.verdict.maxIncenseBonus,
-            run.playerForm,
-            run.resources,
-            undefined,
-            run.artifacts,
-          ),
-        }
+    ? createBattleForEncounter(currentEncounter, run)
+    : {
+        run,
+        battle: createBattle(
+          [getEnemyDefinition(fallbackEncounter!.enemyDefinitionId)],
+          run.unlocks,
+          run.deckCards,
+          run.verdict.maxIncenseBonus,
+          run.playerForm,
+          run.resources,
+          undefined,
+          run.artifacts,
+        ),
+      }
 
   return {
     run: battleView.run,

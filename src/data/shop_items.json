@@ -29,26 +29,6 @@
     "requiredUnlockStages": ["stage_red_ink_preview"]
   },
   {
-    "id": "shop_artifact_seal_door_tablet",
-    "kind": "artifact",
-    "nameKey": "shop.item.seal_door_tablet.name",
-    "descriptionKey": "shop.item.seal_door_tablet.description",
-    "cost": 55,
-    "currency": "incense_money",
-    "artifactDefinitionId": "artifact_seal_door_tablet",
-    "requiredUnlockStages": ["stage_abnormal_boundary"]
-  },
-  {
-    "id": "shop_artifact_registry_inkstone",
-    "kind": "artifact",
-    "nameKey": "shop.item.registry_inkstone.name",
-    "descriptionKey": "shop.item.registry_inkstone.description",
-    "cost": 70,
-    "currency": "incense_money",
-    "artifactDefinitionId": "artifact_registry_inkstone",
-    "requiredUnlockStages": ["stage_run_resources"]
-  },
-  {
     "id": "shop_remove_card",
     "kind": "remove_card",
     "nameKey": "shop.item.remove_card.name",

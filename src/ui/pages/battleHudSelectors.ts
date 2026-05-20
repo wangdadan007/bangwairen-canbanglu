@@ -29,7 +29,9 @@ export function selectBattleHudState(viewState: TutorialBattleViewState) {
     currentRouteFlowKind === 'shop'
       ? getAvailableShopItems(run, gameData.shopItems, gameData.cards, gameData.artifacts)
       : []
-  const currentHeading = currentEncounter
+  const currentHeading = run.pendingArtifactOffer
+    ? '法宝三选一'
+    : currentEncounter
     ? t(currentEncounter.nameKey)
     : currentRouteEvent
       ? t(currentRouteEvent.nameKey)

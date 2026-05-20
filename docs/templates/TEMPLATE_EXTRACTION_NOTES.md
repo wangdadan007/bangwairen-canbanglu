@@ -1,6 +1,6 @@
 # 模板沉淀区
 
-版本：v0.5
+版本：v0.6
 日期：2026-05-20
 建议路径：`docs/templates/TEMPLATE_EXTRACTION_NOTES.md`
 
@@ -41,7 +41,7 @@
 | 纯逻辑卡牌战斗引擎 | `Data-Driven Card Battle Engine` | 已有 T00-T08 回溯候选 | `src/core/battle` 中可去题材化的战斗状态机、卡牌效果、日志和测试。 |
 | 肉鸽局内流程模板 | `Roguelike Run Flow Kit` | 已有 T09-T39 回溯候选 | 路线、遭遇池、奖励、商店、休整、事件、解锁、结算等 run 层结构。 |
 | React 卡牌游戏 UI 套件 | `React Card Game UI Kit` | 已有 T05-T58 回溯候选 | 战斗 HUD、卡牌组件、奖励页、路线页、商店页、设置页、结算页、反馈层、错误边界。 |
-| AI 游戏开发流程模板 | `AI Game Development Planning and QA Kit` | 已有 T30-T58 回溯候选 | AGENTS、PRD 拆分、任务看板、changelog、QA checklist、内容覆盖表、试玩包 runbook。 |
+| AI 游戏开发流程模板 | `AI Game Development Planning and QA Kit` | 已有 T30-T60 回溯候选 | AGENTS、PRD 拆分、任务看板、changelog、QA checklist、内容覆盖表、试玩包 runbook、外部反馈模板、阶段收口清单。 |
 | Steam 桌面包装模板 | `Steam-ready Vite Phaser Desktop Wrapper` | 仅完成方案评估 | T49 已评估 Electron / Tauri；等窗口、全屏、存档路径、构建脚本和平台 QA 真正验证后再记录为模板。 |
 
 ## 5. 方向到证据映射
@@ -54,7 +54,7 @@
 | `Data-Driven Card Battle Engine` | T00-T08；T23-T27 / T35 / T44 | T00-T08 是核心战斗包；资源、时机窗口和 relic / artifact 可作为高级扩展。 |
 | `Roguelike Run Flow Kit` | T09-T13、T16-T22 / T28 / T39 / T42A、T29 / T43 | 重点覆盖跨战流程、路线节点、事件 / 休整 / 商店、遭遇池、结算和存档。 |
 | `React Card Game UI Kit` | T40-T46、T56-T58；参考 T05-T08、T20-T22 | T40-T46 是主要 UI 分层和反馈证据；T56-T58 补首局提示、读屏标签、错误边界和试玩错误反馈。 |
-| `AI Game Development Planning and QA Kit` | 初始化记录、T30 / T38 / T42 / T45 / T48 / T50 / T58、T14-T15 / T26 / T31-T38 / T49A、T51 / T52-T53 / T56 | 重点覆盖 AI 协作规则、PRD 拆分、任务看板、QA、素材授权、内容覆盖、数据扩展和试玩交付流程。 |
+| `AI Game Development Planning and QA Kit` | 初始化记录、T30 / T38 / T42 / T45 / T48 / T50 / T58-T60、T14-T15 / T26 / T31-T38 / T49A、T51 / T52-T53 / T56 | 重点覆盖 AI 协作规则、PRD 拆分、任务看板、QA、素材授权、内容覆盖、数据扩展、试玩交付、外部反馈和阶段收口流程。 |
 | `Steam-ready Vite Phaser Desktop Wrapper` | T49 | 目前只有方案评估，不作为已验证模板；等桌面打包真实完成后再升级。 |
 
 ## 6. 候选记录格式
@@ -240,12 +240,25 @@
 - 主归属模板：`Phaser React Deckbuilder Roguelike Starter Kit`。
 - 也支持：`Data-Driven Card Battle Engine`、`Roguelike Run Flow Kit`、`AI Game Development Planning and QA Kit`。
 - 涉及文件：`src/core/run/redInkResolver.ts`、`src/core/battle/artifactBattleResolver.ts`、`src/core/run/artifactResolver.ts`、`src/core/run/shopResolver.ts`、`src/core/run/restResolver.ts`、`src/ui/pages/ShopPage.tsx`、`src/ui/pages/RestPage.tsx`、`src/tests/redInkResolver.test.ts`、`src/tests/artifactResolver.test.ts`、`src/tests/shopResolver.test.ts`、`src/tests/restResolver.test.ts`、`docs/qa/CHAPTER_ONE_RED_INK_ARTIFACT_ECONOMY_T54_T55.md`。
-- 可复用价值：把“永久改造已有卡牌”和“牌组外器物的购买 / 维护 / 反噬清理”接入同一局内经济，是卡牌肉鸽模板中很常见但容易做散的系统。
+- 可复用价值：把“永久改造已有卡牌”和“牌组外器物的获得 / 维护 / 反噬清理”接入同一局内经济，是卡牌肉鸽模板中很常见但容易做散的系统。T60A 后本作已从商店买法宝改为固定三阶段三选一，可作为该模板的节奏收敛案例。
 - 与本作强绑定部分：朱批、法宝、问名、封势、墨、反噬、裁定等术语和具体数据属于本作。
-- 去题材化思路：抽象为 card modification options、run services、shop relic purchases、rest maintenance、overload / backlash cleanup；示例换成中性 upgrade / relic / repair service。
+- 去题材化思路：抽象为 card modification options、run services、relic offer pacing、rest maintenance、overload / backlash cleanup；示例换成中性 upgrade / relic / repair service。
 - 依赖与授权注意：本轮未新增依赖或第三方素材；模板化时要替换全部本作文案和资产名称。
 - 是否值得抽到模板：值得，适合进入主 starter kit 的中级模块，也可拆成 `Run Economy Services` 示例章节。
 - 后续动作：T56-T60 后结合玩家理解与外部反馈，决定该模块是否需要更明确的新手提示和服务价格 authoring 文档。
+
+### 2026-05-20 · T60A · 三阶段法宝三选一节奏
+
+- 候选类型：relic offer pacing / reward economy / first-run cognitive load control。
+- 主归属模板：`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 也支持：`Roguelike Run Flow Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/core/run/artifactResolver.ts`、`src/types/run.ts`、`src/ui/pages/ArtifactOfferPage.tsx`、`src/ui/pages/BattleHud.tsx`、`src/ui/pages/firstRunGuidance.ts`、`src/data/shop_items.json`、`src/tests/artifactResolver.test.ts`、`src/tests/chapterOneLongFlow.test.ts`、`docs/qa/CHAPTER_ONE_ARTIFACT_PACING_T60A.md`。
+- 可复用价值：把 relic acquisition 从“开局多件 + 商店购买”收敛成开局、章节中点、Boss 后三次三选一，有助于控制第一局认知负担，并保留玩家选择感。
+- 与本作强绑定部分：法宝名称、问名、正名、Boss、残榜等术语属于本作表达。
+- 去题材化思路：抽象为 starter relic offer、mid-act relic offer、act-boss relic offer、offer records 和 shop relic gating removal。
+- 依赖与授权注意：本轮未新增依赖或第三方素材；模板化时应替换全部本作文案和法宝 ID。
+- 是否值得抽到模板：值得，适合成为 starter kit 的 progression economy 示例。
+- 后续动作：外部试玩后记录玩家是否能理解三次 offer 的时机与价值，再决定是否加入权重、稀有度或构筑倾向过滤。
 
 ### 2026-05-20 · T56 · 上下文首局提示层
 
@@ -284,4 +297,17 @@
 - 去题材化思路：抽象为 build-preview checklist、save reset guide、playtest feedback template、error boundary report format、bundle warning decision log。
 - 依赖与授权注意：本轮只新增 npm preview 脚本，没有新增生产依赖；模板化时要替换私有仓库路径和本地截图路径。
 - 是否值得抽到模板：值得，是 AI QA kit 中“外部试玩前交付”章节的直接候选。
-- 后续动作：T59 反馈模板完成后，把 runbook 与反馈分类表合成一份 playtest pack。
+- 后续动作：T59-T60 反馈模板和收口完成后，把 runbook、反馈分类表、完局问卷和收口清单合成一份 playtest pack。
+
+### 2026-05-20 · T59-T60 · 外部试玩反馈包与阶段 D 收口清单
+
+- 候选类型：external playtest feedback pack / pre-demo release closeout checklist。
+- 主归属模板：`AI Game Development Planning and QA Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`React Card Game UI Kit`。
+- 涉及文件：`docs/qa/CHAPTER_ONE_EXTERNAL_PLAYTEST_T59.md`、`docs/qa/CHAPTER_ONE_PLAYABLE_RELEASE_T60.md`、`docs/tasks/PROJECT_PLAN.md`、`README.md`、`docs/templates/TEMPLATE_EXTRACTION_NOTES.md`。
+- 可复用价值：把小范围外部试玩准备拆成启动说明、试玩任务单、问题分类、单问题模板、完局问卷、已知问题、传播限制和反馈整理表，并把阶段收口拆成已完成任务、验证命令、剩余风险和下一阶段决策闸门。
+- 与本作强绑定部分：页面名称、术语、存档 key、第一章路线和禁用宣传表达属于本作语境。
+- 去题材化思路：抽象为 tester onboarding, issue taxonomy, one-issue report, post-run survey, known limitations, release gate, next-phase decision menu。
+- 依赖与授权注意：模板化时要剥离本地截图路径、私有仓库 URL、具体项目术语和任何未公开发行信息；不包含第三方素材。
+- 是否值得抽到模板：值得，可作为 `AI Game Development Planning and QA Kit` 的 pre-demo playtest pack。
+- 后续动作：等真实外部试玩反馈收集后，补一条 feedback triage and fix queue 候选记录。

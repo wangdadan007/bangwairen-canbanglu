@@ -3,6 +3,7 @@ import type { RouteFlowKind } from '../../core'
 import { gameData } from '../../data'
 import { useAudioCue, type AudioCue } from '../audio/audioCues'
 import { ArtifactBar } from './ArtifactBar'
+import { ArtifactOfferPage } from './ArtifactOfferPage'
 import { EventPage } from './EventPage'
 import { RedInkPage } from './RedInkPage'
 import { RestPage } from './RestPage'
@@ -94,6 +95,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
     chooseEvent,
     chooseRest,
     buyShopItem,
+    chooseArtifact,
     leaveShop,
     advancePlaceholderNode,
   } = actions
@@ -193,7 +195,6 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
       <ArtifactBar
         artifacts={run.artifacts}
         artifactDefinitionsById={artifactDefinitionsById}
-        unlocks={run.unlocks}
         t={t}
       />
       {runRitualFeedback ? <RitualFeedbackPanel feedback={runRitualFeedback} /> : null}
@@ -231,7 +232,16 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
         </section>
       ) : null}
 
-      {run.pendingVerdict ? (
+      {run.pendingArtifactOffer ? (
+        <ArtifactOfferPage
+          artifactDefinitionsById={artifactDefinitionsById}
+          offer={run.pendingArtifactOffer}
+          t={t}
+          onChoose={chooseArtifact}
+        />
+      ) : null}
+
+      {!run.pendingArtifactOffer && run.pendingVerdict ? (
         <VerdictPage
           offer={run.pendingVerdict}
           t={t}
@@ -241,7 +251,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
         />
       ) : null}
 
-      {!run.pendingVerdict && run.pendingRedInk ? (
+      {!run.pendingArtifactOffer && !run.pendingVerdict && run.pendingRedInk ? (
         <RedInkPage
           cardDefinitionsById={cardDefinitionsById}
           deckCards={run.deckCards}
@@ -252,7 +262,7 @@ export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProp
         />
       ) : null}
 
-      {!run.pendingVerdict && !run.pendingRedInk && run.pendingReward ? (
+      {!run.pendingArtifactOffer && !run.pendingVerdict && !run.pendingRedInk && run.pendingReward ? (
         <RewardPage
           cardDefinitionsById={cardDefinitionsById}
           offer={run.pendingReward}
@@ -564,6 +574,7 @@ function TutorialRunPanel({
         {run.pendingVerdict ? <span>待裁定</span> : null}
         {run.pendingReward ? <span>待选奖励</span> : null}
         {run.pendingRedInk ? <span>待朱批</span> : null}
+        {run.pendingArtifactOffer ? <span>待选法宝</span> : null}
       </div>
     </section>
   )
@@ -860,7 +871,7 @@ function getCardDisabledReason({
   }
 
   if (hasPendingRunChoice(run)) {
-    return '请先处理待裁定 / 奖励 / 朱批'
+    return '请先处理待裁定 / 奖励 / 朱批 / 法宝'
   }
 
   if (run.status !== 'active') {

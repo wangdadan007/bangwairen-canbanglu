@@ -1,5 +1,5 @@
 import type { ArtifactCollectionState } from './artifact'
-import type { CardId, EncounterId, EventId, LocalizationKey } from './common'
+import type { ArtifactId, CardId, EncounterId, EventId, LocalizationKey } from './common'
 import type { CardAnnotation } from './card'
 import type { UnlockState, VictorySettlement } from './battle'
 import type { TutorialRestState } from './rest'
@@ -12,6 +12,7 @@ export type TutorialRunFailureReason = 'abandoned' | 'battle_defeat'
 export type RewardQuality = 'ordinary' | 'high'
 export type RunDeckCardId = string
 export type RedInkAnnotationId = string
+export type TutorialArtifactOfferStage = 'starter' | 'mid_chapter' | 'boss_clear'
 
 export interface TutorialRunSettlementRecord {
   readonly encounterId: EncounterId
@@ -72,6 +73,24 @@ export interface TutorialRedInkRecord {
   readonly skipped: boolean
 }
 
+export interface TutorialArtifactOption {
+  readonly id: string
+  readonly artifactDefinitionId: ArtifactId
+}
+
+export interface TutorialArtifactOffer {
+  readonly id: string
+  readonly stage: TutorialArtifactOfferStage
+  readonly options: readonly TutorialArtifactOption[]
+}
+
+export interface TutorialArtifactRecord {
+  readonly id: string
+  readonly stage: TutorialArtifactOfferStage
+  readonly offeredArtifactDefinitionIds: readonly ArtifactId[]
+  readonly selectedArtifactDefinitionId: ArtifactId
+}
+
 export interface TutorialEventRecord {
   readonly id: string
   readonly eventId: EventId
@@ -111,8 +130,10 @@ export interface TutorialRunState {
   readonly pendingVerdict?: TutorialVerdictOffer
   readonly pendingReward?: TutorialRewardOffer
   readonly pendingRedInk?: TutorialRedInkOffer
+  readonly pendingArtifactOffer?: TutorialArtifactOffer
   readonly rewards: readonly TutorialRewardRecord[]
   readonly redInkRecords: readonly TutorialRedInkRecord[]
+  readonly artifactOfferRecords: readonly TutorialArtifactRecord[]
 }
 
 export interface TutorialRunSummary {
