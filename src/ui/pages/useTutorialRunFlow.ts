@@ -25,6 +25,7 @@ import {
   resolveTutorialReward,
   resolveTutorialShopPurchase,
   resolveTutorialVerdict,
+  selectReachableRouteNode,
   syncTutorialRunEncounters,
   type BattleReducerContext,
 } from '../../core'
@@ -39,6 +40,7 @@ import type {
   EnemyState,
   RedInkAnnotationId,
   RouteDefinition,
+  RouteNodeId,
   RouteState,
   RunDeckCard,
   RunDeckCardId,
@@ -515,6 +517,31 @@ export function useTutorialRunFlow({
     })
   }
 
+  function chooseRouteNode(nodeId: RouteNodeId) {
+    setViewState((current) => {
+      if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
+        return current
+      }
+
+      const nextRoute = selectReachableRouteNode(tutorialRoute, current.route, nodeId)
+      const syncedRun = syncRunWithRoute(current.run, nextRoute)
+      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, nextRoute, gameData.encounters)
+      const nextBattleView = nextEncounter
+        ? createBattleForEncounter(nextEncounter, syncedRun)
+        : undefined
+
+      return {
+        ...current,
+        route: nextRoute,
+        run: nextBattleView?.run ?? syncedRun,
+        battle: nextBattleView?.battle ?? current.battle,
+        selectedEnemyInstanceId: nextBattleView
+          ? getFirstLivingEnemy(nextBattleView.battle)?.instanceId
+          : current.selectedEnemyInstanceId,
+      }
+    })
+  }
+
   return {
     viewState,
     actions: {
@@ -535,6 +562,7 @@ export function useTutorialRunFlow({
       chooseArtifact,
       leaveShop,
       advancePlaceholderNode,
+      chooseRouteNode,
     },
   }
 }

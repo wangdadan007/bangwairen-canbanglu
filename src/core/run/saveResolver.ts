@@ -130,6 +130,7 @@ function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
 function normalizeRouteState(value: RouteState): RouteState {
   return {
     ...value,
+    routeTendencyIds: value.routeTendencyIds ?? [],
     encounterSelections: value.encounterSelections ?? {},
   }
 }

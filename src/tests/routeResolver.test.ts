@@ -5,15 +5,18 @@ import {
   getCurrentRouteEncounter,
   getCurrentRouteFlowKind,
   getCurrentRouteNode,
-  getRouteNodeStatus,
+  getReachableRouteNodes,
   getRouteBattleEncounterIds,
+  getRouteNodeStatus,
+  selectReachableRouteNode,
 } from '../core'
 import { gameData } from '../data'
+import type { RouteState } from '../types'
 
 const route = gameData.routes[0]
 const routeSeed = 7
 
-describe('T28 chapter one route closure', () => {
+describe('T64 chapter one branched route closure', () => {
   it('starts at the first tutorial battle node', () => {
     const state = createInitialRouteState(route, routeSeed)
     const currentNode = getCurrentRouteNode(route, state)
@@ -22,116 +25,107 @@ describe('T28 chapter one route closure', () => {
     expect(state.currentNodeId).toBe('route_node_tutorial_paper_wraith')
     expect(state.completedNodeIds).toEqual([])
     expect(state.reachableNodeIds).toEqual(['route_node_tutorial_paper_wraith'])
+    expect(state.routeTendencyIds).toEqual([])
     expect(currentNode?.encounterId).toBe('encounter_tutorial_paper_wraith')
     expect(getRouteNodeStatus(state, 'route_node_tutorial_paper_wraith')).toBe('current')
     expect(getRouteNodeStatus(state, 'route_node_tutorial_incense_thief_mouse')).toBe('locked')
   })
 
-  it('advances through fixed battle nodes into the event, shop, and rest nodes', () => {
+  it('keeps the first three battles fixed before opening three main route choices', () => {
     const first = createInitialRouteState(route, routeSeed)
     const second = completeCurrentRouteNode(route, first)
     const third = completeCurrentRouteNode(route, second)
-    const fourth = completeCurrentRouteNode(route, third)
-    const eventState = completeCurrentRouteNode(route, fourth)
+    const firstChoice = completeCurrentRouteNode(route, third)
 
     expect(second.currentNodeId).toBe('route_node_tutorial_incense_thief_mouse')
-    expect(second.completedNodeIds).toEqual(['route_node_tutorial_paper_wraith'])
-    expect(getRouteNodeStatus(second, 'route_node_tutorial_paper_wraith')).toBe('completed')
-
     expect(third.currentNodeId).toBe('route_node_tutorial_bronze_bell_patrol')
-    expect(third.completedNodeIds).toEqual([
+    expect(firstChoice.currentNodeId).toBeUndefined()
+    expect(firstChoice.completedNodeIds).toEqual([
       'route_node_tutorial_paper_wraith',
       'route_node_tutorial_incense_thief_mouse',
+      'route_node_tutorial_bronze_bell_patrol',
     ])
+    expect(getCurrentRouteFlowKind(route, firstChoice)).toBe('route_selection')
+    expect(getReachableRouteNodes(route, firstChoice).map((node) => node.id)).toEqual([
+      'route_node_unlit_temple_warden',
+      'route_node_first_elite',
+      'route_node_fracture_fortune_breaker',
+    ])
+  })
 
-    expect(fourth.currentNodeId).toBe('route_node_unlit_temple_warden')
-    expect(getCurrentRouteNode(route, fourth)?.type).toBe('normal_battle')
-    expect(getCurrentRouteNode(route, fourth)?.encounterId).toBe(
+  it('supports steady, catalogue, and fracture main routes with one mid-branch each', () => {
+    const firstChoice = advanceToFirstChoice()
+
+    const steady = selectReachableRouteNode(route, firstChoice, 'route_node_unlit_temple_warden')
+    const steadyBranch = completeCurrentRouteNode(route, steady)
+    expect(getCurrentRouteEncounter(route, steady, gameData.encounters)?.id).toBe(
       'encounter_mid_unlit_temple_warden',
     )
-    expect(
-      getCurrentRouteEncounter(
-        route,
-        {
-          ...fourth,
-          encounterSelections: {
-            ...fourth.encounterSelections,
-            route_node_unlit_temple_warden: 'encounter_multi_thief_mouse_louse',
-          },
-        },
-        gameData.encounters,
-      )?.id,
-    ).toBe('encounter_mid_unlit_temple_warden')
+    expect(getCurrentRouteFlowKind(route, steadyBranch)).toBe('route_selection')
+    expect(getReachableRouteNodes(route, steadyBranch).map((node) => node.id)).toEqual([
+      'route_node_first_shop',
+      'route_node_rest_site',
+    ])
+    expect(completeCurrentRouteNode(
+      route,
+      selectReachableRouteNode(route, steadyBranch, 'route_node_first_shop'),
+    ).currentNodeId).toBe('route_node_steady_incense_clerk')
 
-    expect(eventState.currentNodeId).toBe('route_node_first_event')
-    expect(getCurrentRouteNode(route, eventState)?.type).toBe('event')
-    expect(getCurrentRouteNode(route, eventState)?.isPlaceholder).toBeUndefined()
-    expect(getCurrentRouteNode(route, eventState)?.eventPoolIds).toEqual([
-      'event_mid_ink_pool',
-      'event_abandoned_registry_desk',
-      'event_ash_altar_lamp',
-      'event_cinnabar_scribe',
-      'event_cracked_registry_needle',
+    const catalogue = selectReachableRouteNode(route, firstChoice, 'route_node_first_elite')
+    const catalogueBranch = completeCurrentRouteNode(route, catalogue)
+    expect(getCurrentRouteEncounter(route, catalogue, gameData.encounters)?.id).toBe(
+      'encounter_elite_incense_clerk',
+    )
+    expect(getReachableRouteNodes(route, catalogueBranch).map((node) => node.id)).toEqual([
+      'route_node_second_elite',
+      'route_node_mid_event',
+    ])
+    expect(completeCurrentRouteNode(
+      route,
+      selectReachableRouteNode(route, catalogueBranch, 'route_node_second_elite'),
+    ).currentNodeId).toBe('route_node_catalogue_rest')
+
+    const fracture = selectReachableRouteNode(route, firstChoice, 'route_node_fracture_fortune_breaker')
+    const fractureBranch = completeCurrentRouteNode(route, fracture)
+    expect(getCurrentRouteEncounter(route, fracture, gameData.encounters)?.id).toBe(
+      'encounter_mid_fortune_breaker',
+    )
+    expect(getReachableRouteNodes(route, fractureBranch).map((node) => node.id)).toEqual([
+      'route_node_first_event',
+      'route_node_late_scroll_stuffer_clerk',
+    ])
+    expect(completeCurrentRouteNode(
+      route,
+      selectReachableRouteNode(route, fractureBranch, 'route_node_late_scroll_stuffer_clerk'),
+    ).currentNodeId).toBe('route_node_fracture_shop')
+  })
+
+  it('reports route tendencies from completed nodes for later boss and QA tuning', () => {
+    const firstChoice = advanceToFirstChoice()
+    const catalogue = selectReachableRouteNode(route, firstChoice, 'route_node_first_elite')
+    const catalogueBranch = completeCurrentRouteNode(route, catalogue)
+    const secondElite = selectReachableRouteNode(route, catalogueBranch, 'route_node_second_elite')
+    const afterSecondElite = completeCurrentRouteNode(route, secondElite)
+
+    expect(catalogueBranch.routeTendencyIds).toEqual(['catalogue', 'high_pressure'])
+    expect(afterSecondElite.routeTendencyIds).toEqual([
+      'catalogue',
+      'high_pressure',
+      'catalogue',
+      'high_pressure',
     ])
   })
 
-  it('supports event, shop, rest, elite, and boss nodes before route completion', () => {
-    const states = collectRouteStates()
-    const stateAfterFourthBattle = states[4]
-    const shopState = states[5]
-    const restState = states[6]
-    const eliteState = states[7]
-    const midEventState = states[8]
-    const lateBattleState = states[9]
-    const secondEliteState = states[10]
-    const thirdEliteState = states[12]
-    const lateEventState = states[13]
-    const bossState = states[15]
-    const completeState = states[16]
-
-    expect(getCurrentRouteNode(route, stateAfterFourthBattle)?.type).toBe('event')
-    expect(getCurrentRouteNode(route, stateAfterFourthBattle)?.isPlaceholder).toBeUndefined()
-    expect(getCurrentRouteNode(route, shopState)?.type).toBe('shop')
-    expect(getCurrentRouteNode(route, shopState)?.isPlaceholder).toBeUndefined()
-    expect(getCurrentRouteNode(route, restState)?.type).toBe('rest')
-    expect(getCurrentRouteNode(route, restState)?.isPlaceholder).toBeUndefined()
-    expect(getCurrentRouteNode(route, eliteState)?.type).toBe('elite')
-    expect(getCurrentRouteNode(route, eliteState)?.isPlaceholder).toBeUndefined()
-    expect(getCurrentRouteNode(route, eliteState)?.encounterId).toBe('encounter_elite_incense_clerk')
-    expect(getCurrentRouteNode(route, midEventState)?.type).toBe('event')
-    expect(getCurrentRouteNode(route, midEventState)?.eventPoolIds).toEqual([
-      'event_mid_ink_pool',
-      'event_lost_altar_bell',
-      'event_bound_artifact_case',
-      'event_cracked_registry_needle',
-    ])
-    expect(getCurrentRouteNode(route, lateBattleState)?.type).toBe('normal_battle')
-    expect(getCurrentRouteEncounter(route, lateBattleState, gameData.encounters)?.id).toBe(
-      'encounter_pool_plague_paper_figure_return',
+  it('builds battle encounter order from the selected route path instead of every node', () => {
+    const defaultRouteState = createInitialRouteState(route, 11)
+    const firstChoice = advanceToFirstChoice(defaultRouteState)
+    const catalogue = selectReachableRouteNode(route, firstChoice, 'route_node_first_elite')
+    const catalogueBranch = completeCurrentRouteNode(route, catalogue)
+    const cataloguePressure = selectReachableRouteNode(
+      route,
+      catalogueBranch,
+      'route_node_second_elite',
     )
-    expect(getCurrentRouteNode(route, secondEliteState)?.encounterId).toBe(
-      'encounter_elite_fire_fleeing_name',
-    )
-    expect(getCurrentRouteNode(route, thirdEliteState)?.encounterId).toBe(
-      'encounter_elite_dipper_empty_shell',
-    )
-    expect(getCurrentRouteNode(route, lateEventState)?.type).toBe('event')
-    expect(getCurrentRouteNode(route, bossState)?.type).toBe('boss')
-    expect(getCurrentRouteNode(route, bossState)?.encounterId).toBe(
-      'encounter_boss_registry_thief',
-    )
-    expect(getCurrentRouteFlowKind(route, completeState)).toBe('complete')
-  })
-
-  it('reports the current route flow and current encounter from route state', () => {
-    const states = collectRouteStates()
-    const first = states[0]
-    const fourth = states[3]
-    const eventState = states[4]
-    const shopState = states[5]
-    const restState = states[6]
-    const eliteState = states[7]
-    const bossState = states[15]
 
     expect(getRouteBattleEncounterIds(route)).toEqual([
       'encounter_tutorial_paper_wraith',
@@ -140,79 +134,40 @@ describe('T28 chapter one route closure', () => {
       'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
       'encounter_late_plague_paper_figure',
-      'encounter_elite_fire_fleeing_name',
-      'encounter_late_scroll_stuffer_clerk',
-      'encounter_elite_dipper_empty_shell',
-      'encounter_late_fleeing_name_paper_horse',
       'encounter_boss_registry_thief',
     ])
-    expect(getCurrentRouteFlowKind(route, first)).toBe('battle')
-    expect(getCurrentRouteEncounter(route, fourth, gameData.encounters)?.id).toBe(
+    expect(getRouteBattleEncounterIds(route, defaultRouteState)).toEqual([
+      'encounter_tutorial_paper_wraith',
+      'encounter_tutorial_incense_thief_mouse',
+      'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
-    )
-    expect(getCurrentRouteFlowKind(route, eventState)).toBe('event')
-    expect(getCurrentRouteEncounter(route, eventState, gameData.encounters)).toBeUndefined()
-    expect(getCurrentRouteFlowKind(route, shopState)).toBe('shop')
-    expect(getCurrentRouteFlowKind(route, restState)).toBe('rest')
-    expect(getCurrentRouteFlowKind(route, eliteState)).toBe('battle')
-    expect(getCurrentRouteFlowKind(route, bossState)).toBe('battle')
-    expect(getCurrentRouteEncounter(route, bossState, gameData.encounters)?.id).toBe(
+      'encounter_elite_incense_clerk',
+      defaultRouteState.encounterSelections?.route_node_late_plague_paper_figure,
       'encounter_boss_registry_thief',
-    )
+    ])
+    expect(getRouteBattleEncounterIds(route, cataloguePressure)).toEqual([
+      'encounter_tutorial_paper_wraith',
+      'encounter_tutorial_incense_thief_mouse',
+      'encounter_tutorial_bronze_bell_patrol',
+      'encounter_elite_incense_clerk',
+      'encounter_elite_fire_fleeing_name',
+      cataloguePressure.encounterSelections?.route_node_late_fleeing_name_paper_horse,
+      'encounter_boss_registry_thief',
+    ])
   })
 
-  it('samples normal battle encounter pools while keeping fallback encounter ids stable', () => {
-    const firstRouteState = createInitialRouteState(route, 11)
-    const secondRouteState = createInitialRouteState(route, 19)
+  it('rejects route choices that are not currently reachable', () => {
+    const firstChoice = advanceToFirstChoice()
 
-    expect(getRouteBattleEncounterIds(route)).toEqual([
-      'encounter_tutorial_paper_wraith',
-      'encounter_tutorial_incense_thief_mouse',
-      'encounter_tutorial_bronze_bell_patrol',
-      'encounter_mid_unlit_temple_warden',
-      'encounter_elite_incense_clerk',
-      'encounter_late_plague_paper_figure',
-      'encounter_elite_fire_fleeing_name',
-      'encounter_late_scroll_stuffer_clerk',
-      'encounter_elite_dipper_empty_shell',
-      'encounter_late_fleeing_name_paper_horse',
-      'encounter_boss_registry_thief',
-    ])
-    expect(getRouteBattleEncounterIds(route, firstRouteState)).toEqual([
-      'encounter_tutorial_paper_wraith',
-      'encounter_tutorial_incense_thief_mouse',
-      'encounter_tutorial_bronze_bell_patrol',
-      'encounter_mid_unlit_temple_warden',
-      'encounter_elite_incense_clerk',
-      'encounter_pool_plague_paper_figure_return',
-      'encounter_elite_fire_fleeing_name',
-      'encounter_pool_offering_table_afterimage_return',
-      'encounter_elite_dipper_empty_shell',
-      'encounter_multi_offering_table_mouse',
-      'encounter_boss_registry_thief',
-    ])
-    expect(getRouteBattleEncounterIds(route, secondRouteState)).toEqual([
-      'encounter_tutorial_paper_wraith',
-      'encounter_tutorial_incense_thief_mouse',
-      'encounter_tutorial_bronze_bell_patrol',
-      'encounter_mid_unlit_temple_warden',
-      'encounter_elite_incense_clerk',
-      'encounter_late_offering_table_afterimage',
-      'encounter_elite_fire_fleeing_name',
-      'encounter_pool_scroll_stuffer_clerk_return',
-      'encounter_elite_dipper_empty_shell',
-      'encounter_pool_offering_table_afterimage_return',
-      'encounter_boss_registry_thief',
-    ])
+    expect(() =>
+      selectReachableRouteNode(route, firstChoice, 'route_node_boss_registry_thief'),
+    ).toThrow(/not reachable/)
   })
 })
 
-function collectRouteStates() {
-  const states = [createInitialRouteState(route, routeSeed)]
-
-  while (getCurrentRouteFlowKind(route, states[states.length - 1]) !== 'complete') {
-    states.push(completeCurrentRouteNode(route, states[states.length - 1]))
-  }
-
-  return states
+function advanceToFirstChoice(initialState: RouteState = createInitialRouteState(route, routeSeed)) {
+  return completeCurrentRouteNode(
+    route,
+    completeCurrentRouteNode(route, completeCurrentRouteNode(route, initialState)),
+  )
 }

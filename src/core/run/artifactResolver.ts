@@ -26,6 +26,7 @@ export const DOOM_BELL_ARTIFACT_ID: ArtifactId = 'artifact_doom_bell'
 export const RED_SASH_FIRE_WHEEL_ARTIFACT_ID: ArtifactId = 'artifact_red_sash_fire_wheel'
 export const WHIP_BACKLASH_CARD_ID: CardId = 'card_cracked_whip_echo'
 export const MID_CHAPTER_ARTIFACT_REWARD_ENCOUNTER_ID = 'encounter_elite_incense_clerk'
+export const MID_CHAPTER_ARTIFACT_REWARD_COMPLETED_ENCOUNTER_COUNT = 5
 export const BOSS_ARTIFACT_REWARD_ENCOUNTER_ID = 'encounter_boss_registry_thief'
 
 export const STARTER_ARTIFACT_OFFER_IDS: readonly ArtifactId[] = [
@@ -125,7 +126,7 @@ export function createTutorialArtifactOfferIfNeeded(
   if (
     run.status === 'active' &&
     !hasArtifactOfferRecord(run, 'mid_chapter') &&
-    run.completedEncounterIds.includes(MID_CHAPTER_ARTIFACT_REWARD_ENCOUNTER_ID)
+    hasReachedMidChapterArtifactCheckpoint(run)
   ) {
     return createRunWithArtifactOffer(run, artifactDefinitions, 'mid_chapter')
   }
@@ -512,6 +513,13 @@ function getArtifactOfferIds(stage: TutorialArtifactOfferStage) {
   }
 
   return BOSS_CLEAR_ARTIFACT_OFFER_IDS
+}
+
+function hasReachedMidChapterArtifactCheckpoint(run: TutorialRunState) {
+  return (
+    run.completedEncounterIds.includes(MID_CHAPTER_ARTIFACT_REWARD_ENCOUNTER_ID) ||
+    run.completedEncounterIds.length >= MID_CHAPTER_ARTIFACT_REWARD_COMPLETED_ENCOUNTER_COUNT
+  )
 }
 
 function hasArtifactOfferRecord(run: TutorialRunState, stage: TutorialArtifactOfferStage) {

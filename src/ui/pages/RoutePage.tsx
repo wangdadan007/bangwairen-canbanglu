@@ -1,10 +1,17 @@
 import { getCurrentRouteNode, getRouteNodeStatus } from '../../core'
-import type { LocalizationKey, RouteDefinition, RouteNodeDefinition, RouteState } from '../../types'
+import type {
+  LocalizationKey,
+  RouteDefinition,
+  RouteNodeDefinition,
+  RouteNodeId,
+  RouteState,
+} from '../../types'
 
 interface RoutePageProps {
   readonly route: RouteDefinition
   readonly routeState: RouteState
   readonly t: (key: LocalizationKey) => string
+  readonly onChooseRouteNode?: (nodeId: RouteNodeId) => void
 }
 
 const nodeTypeLabels: Record<RouteNodeDefinition['type'], string> = {
@@ -23,8 +30,9 @@ const statusLabels = {
   locked: '未显',
 }
 
-export function RoutePage({ route, routeState, t }: RoutePageProps) {
+export function RoutePage({ route, routeState, t, onChooseRouteNode }: RoutePageProps) {
   const currentNode = getCurrentRouteNode(route, routeState)
+  const hasRouteChoices = !currentNode && routeState.reachableNodeIds.length > 0
 
   return (
     <section className="route-page" aria-label="路线与节点">
@@ -33,7 +41,7 @@ export function RoutePage({ route, routeState, t }: RoutePageProps) {
           <p className="panel-kicker">残榜路线</p>
           <h3>{t(route.nameKey)}</h3>
         </div>
-        <span>{currentNode ? nodeTypeLabels[currentNode.type] : '收束'}</span>
+        <span>{currentNode ? nodeTypeLabels[currentNode.type] : hasRouteChoices ? '择路' : '收束'}</span>
       </header>
       <p>{t(route.descriptionKey)}</p>
       <ol className="route-node-list">
@@ -50,7 +58,17 @@ export function RoutePage({ route, routeState, t }: RoutePageProps) {
                 <strong>{t(node.nameKey)}</strong>
                 <small>{t(node.descriptionKey)}</small>
               </div>
-              <em>{node.isPlaceholder ? '待启' : statusLabels[status]}</em>
+              {status === 'reachable' && onChooseRouteNode ? (
+                <button
+                  className="route-choice-button"
+                  type="button"
+                  onClick={() => onChooseRouteNode(node.id)}
+                >
+                  择此路
+                </button>
+              ) : (
+                <em>{node.isPlaceholder ? '待启' : statusLabels[status]}</em>
+              )}
             </li>
           )
         })}

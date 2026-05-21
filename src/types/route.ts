@@ -1,6 +1,7 @@
 import type { EncounterId, EventId, LocalizationKey, RouteId, RouteNodeId } from './common'
 
 export type RouteNodeType = 'normal_battle' | 'elite' | 'event' | 'rest' | 'shop' | 'boss'
+export type RouteTendencyId = 'steady' | 'catalogue' | 'fracture' | 'supply' | 'high_pressure'
 
 export interface RouteNodeDefinition {
   readonly id: RouteNodeId
@@ -11,6 +12,7 @@ export interface RouteNodeDefinition {
   readonly encounterPoolIds?: readonly EncounterId[]
   readonly eventPoolIds?: readonly EventId[]
   readonly nextNodeIds: readonly RouteNodeId[]
+  readonly routeTendencyIds?: readonly RouteTendencyId[]
   readonly isPlaceholder?: boolean
 }
 
@@ -27,6 +29,7 @@ export interface RouteState {
   readonly currentNodeId?: RouteNodeId
   readonly completedNodeIds: readonly RouteNodeId[]
   readonly reachableNodeIds: readonly RouteNodeId[]
+  readonly routeTendencyIds?: readonly RouteTendencyId[]
   readonly encounterSelections?: Readonly<Record<RouteNodeId, EncounterId>>
 }
 

@@ -103,6 +103,7 @@ export function BattleHud({
     chooseArtifact,
     leaveShop,
     advancePlaceholderNode,
+    chooseRouteNode,
   } = actions
   const hasPendingChoice = hasPendingRunChoice(run)
   const showActiveBattlePanels = Boolean(
@@ -196,7 +197,12 @@ export function BattleHud({
 
       <TutorialRunPanel run={run} currentEncounter={currentEncounter} />
       {firstRunGuidance ? <FirstRunGuidancePanel guidance={firstRunGuidance} /> : null}
-      <RoutePage route={tutorialRoute} routeState={viewState.route} t={t} />
+      <RoutePage
+        route={tutorialRoute}
+        routeState={viewState.route}
+        t={t}
+        onChooseRouteNode={chooseRouteNode}
+      />
       <ArtifactBar
         artifacts={run.artifacts}
         artifactDefinitionsById={artifactDefinitionsById}

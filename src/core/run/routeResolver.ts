@@ -6,6 +6,7 @@ import type {
   RouteNodeId,
   RouteNodeStatus,
   RouteState,
+  RouteTendencyId,
 } from '../../types'
 
 export type RouteFlowKind =
@@ -13,6 +14,7 @@ export type RouteFlowKind =
   | 'event'
   | 'rest'
   | 'shop'
+  | 'route_selection'
   | 'event_placeholder'
   | 'rest_placeholder'
   | 'shop_placeholder'
@@ -26,6 +28,7 @@ export function createInitialRouteState(route: RouteDefinition, seed = createRou
     currentNodeId: route.startNodeId,
     completedNodeIds: [],
     reachableNodeIds: [route.startNodeId],
+    routeTendencyIds: [],
     encounterSelections: createEncounterSelections(route, seed),
   }
 }
@@ -56,7 +59,7 @@ export function getRouteBattleEncounterIds(
   route: RouteDefinition,
   state?: RouteState,
 ): readonly EncounterId[] {
-  return route.nodes.flatMap((node) =>
+  return getRoutePathNodes(route, state).flatMap((node) =>
     isRouteBattleNode(node)
       ? [getSelectedEncounterId(node, state)].filter((id): id is EncounterId => Boolean(id))
       : [],
@@ -86,7 +89,11 @@ export function getCurrentRouteFlowKind(
   const node = getCurrentRouteNode(route, state)
 
   if (!node) {
-    return 'complete'
+    return state.reachableNodeIds.length > 0 ? 'route_selection' : 'complete'
+  }
+
+  if (state.reachableNodeIds.length > 1 && state.reachableNodeIds.includes(node.id)) {
+    return 'route_selection'
   }
 
   if (isRouteBattleNode(node)) {
@@ -145,22 +152,63 @@ export function completeCurrentRouteNode(route: RouteDefinition, state: RouteSta
     return state
   }
 
-  const completedNodeIds = addUnique(state.completedNodeIds, currentNode.id)
-  const nextReachableNodeIds = uniqueRouteNodeIds([
-    ...state.reachableNodeIds.filter((nodeId) => nodeId !== currentNode.id),
-    ...currentNode.nextNodeIds,
-  ])
-  const currentNodeId = currentNode.nextNodeIds[0]
-
   for (const nodeId of currentNode.nextNodeIds) {
     assertRouteHasNode(route, nodeId)
   }
+
+  const completedNodeIds = addUnique(state.completedNodeIds, currentNode.id)
+  const nextReachableNodeIds = uniqueRouteNodeIds(currentNode.nextNodeIds)
+  const currentNodeId = currentNode.nextNodeIds.length === 1 ? currentNode.nextNodeIds[0] : undefined
 
   return {
     ...state,
     currentNodeId,
     completedNodeIds,
     reachableNodeIds: nextReachableNodeIds,
+    routeTendencyIds: appendRouteTendencies(
+      state.routeTendencyIds ?? [],
+      currentNode.routeTendencyIds ?? [],
+    ),
+  }
+}
+
+export function getReachableRouteNodes(
+  route: RouteDefinition,
+  state: RouteState,
+): readonly RouteNodeDefinition[] {
+  assertRouteStateMatchesDefinition(route, state)
+
+  return state.reachableNodeIds.map((nodeId) => {
+    const node = getRouteNode(route, nodeId)
+
+    if (!node) {
+      throw new Error(`Missing route node ${nodeId} in ${route.id}`)
+    }
+
+    return node
+  })
+}
+
+export function selectReachableRouteNode(
+  route: RouteDefinition,
+  state: RouteState,
+  nodeId: RouteNodeId,
+): RouteState {
+  assertRouteStateMatchesDefinition(route, state)
+  assertRouteHasNode(route, nodeId)
+
+  if (!state.reachableNodeIds.includes(nodeId)) {
+    throw new Error(`Route node ${nodeId} is not reachable from current route state`)
+  }
+
+  if (state.completedNodeIds.includes(nodeId)) {
+    throw new Error(`Route node ${nodeId} has already been completed`)
+  }
+
+  return {
+    ...state,
+    currentNodeId: nodeId,
+    reachableNodeIds: [nodeId],
   }
 }
 
@@ -182,6 +230,69 @@ function addUnique(nodeIds: readonly RouteNodeId[], nodeId: RouteNodeId) {
 
 function uniqueRouteNodeIds(nodeIds: readonly RouteNodeId[]) {
   return Array.from(new Set(nodeIds))
+}
+
+function appendRouteTendencies(
+  currentTendencyIds: readonly RouteTendencyId[],
+  nextTendencyIds: readonly RouteTendencyId[],
+) {
+  return [...currentTendencyIds, ...nextTendencyIds]
+}
+
+function getRoutePathNodes(route: RouteDefinition, state?: RouteState) {
+  if (state) {
+    assertRouteStateMatchesDefinition(route, state)
+  }
+
+  const pathNodes: RouteNodeDefinition[] = []
+  const visitedNodeIds = new Set<RouteNodeId>()
+  let nextNodeId: RouteNodeId | undefined = route.startNodeId
+
+  while (nextNodeId) {
+    if (visitedNodeIds.has(nextNodeId)) {
+      throw new Error(`Route ${route.id} contains a cycle at ${nextNodeId}`)
+    }
+
+    const node = getRouteNode(route, nextNodeId)
+
+    if (!node) {
+      throw new Error(`Missing route node ${nextNodeId} in ${route.id}`)
+    }
+
+    visitedNodeIds.add(nextNodeId)
+    pathNodes.push(node)
+    nextNodeId = getNextPathNodeId(node, state)
+  }
+
+  return pathNodes
+}
+
+function getNextPathNodeId(node: RouteNodeDefinition, state?: RouteState) {
+  if (node.nextNodeIds.length <= 1) {
+    return node.nextNodeIds[0]
+  }
+
+  if (!state) {
+    return node.nextNodeIds[0]
+  }
+
+  const completedNextNodeId = node.nextNodeIds.find((nodeId) =>
+    state.completedNodeIds.includes(nodeId),
+  )
+
+  if (completedNextNodeId) {
+    return completedNextNodeId
+  }
+
+  if (state.currentNodeId && node.nextNodeIds.includes(state.currentNodeId)) {
+    return state.currentNodeId
+  }
+
+  const reachableNextNodeIds = node.nextNodeIds.filter((nodeId) =>
+    state.reachableNodeIds.includes(nodeId),
+  )
+
+  return reachableNextNodeIds.length === 1 ? reachableNextNodeIds[0] : node.nextNodeIds[0]
 }
 
 function createEncounterSelections(route: RouteDefinition, seed: number) {

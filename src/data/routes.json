@@ -27,7 +27,11 @@
         "nameKey": "route.node.tutorial_bronze_bell_patrol.name",
         "descriptionKey": "route.node.tutorial_bronze_bell_patrol.description",
         "encounterId": "encounter_tutorial_bronze_bell_patrol",
-        "nextNodeIds": ["route_node_unlit_temple_warden"]
+        "nextNodeIds": [
+          "route_node_unlit_temple_warden",
+          "route_node_first_elite",
+          "route_node_fracture_fortune_breaker"
+        ]
       },
       {
         "id": "route_node_unlit_temple_warden",
@@ -35,55 +39,32 @@
         "nameKey": "route.node.unlit_temple_warden.name",
         "descriptionKey": "route.node.unlit_temple_warden.description",
         "encounterId": "encounter_mid_unlit_temple_warden",
-        "nextNodeIds": ["route_node_first_event"]
-      },
-      {
-        "id": "route_node_first_event",
-        "type": "event",
-        "nameKey": "route.node.first_event.name",
-        "descriptionKey": "route.node.first_event.description",
-        "eventPoolIds": [
-          "event_mid_ink_pool",
-          "event_abandoned_registry_desk",
-          "event_ash_altar_lamp",
-          "event_cinnabar_scribe",
-          "event_cracked_registry_needle"
-        ],
-        "nextNodeIds": ["route_node_first_shop"]
+        "routeTendencyIds": ["steady"],
+        "nextNodeIds": ["route_node_first_shop", "route_node_rest_site"]
       },
       {
         "id": "route_node_first_shop",
         "type": "shop",
         "nameKey": "route.node.first_shop.name",
         "descriptionKey": "route.node.first_shop.description",
-        "nextNodeIds": ["route_node_rest_site"]
+        "routeTendencyIds": ["steady", "supply"],
+        "nextNodeIds": ["route_node_steady_incense_clerk"]
       },
       {
         "id": "route_node_rest_site",
         "type": "rest",
         "nameKey": "route.node.rest_site.name",
         "descriptionKey": "route.node.rest_site.description",
-        "nextNodeIds": ["route_node_first_elite"]
+        "routeTendencyIds": ["steady", "supply"],
+        "nextNodeIds": ["route_node_steady_incense_clerk"]
       },
       {
-        "id": "route_node_first_elite",
+        "id": "route_node_steady_incense_clerk",
         "type": "elite",
-        "nameKey": "route.node.first_elite.name",
-        "descriptionKey": "route.node.first_elite.description",
+        "nameKey": "route.node.steady_incense_clerk.name",
+        "descriptionKey": "route.node.steady_incense_clerk.description",
         "encounterId": "encounter_elite_incense_clerk",
-        "nextNodeIds": ["route_node_mid_event"]
-      },
-      {
-        "id": "route_node_mid_event",
-        "type": "event",
-        "nameKey": "route.node.mid_event.name",
-        "descriptionKey": "route.node.mid_event.description",
-        "eventPoolIds": [
-          "event_mid_ink_pool",
-          "event_lost_altar_bell",
-          "event_bound_artifact_case",
-          "event_cracked_registry_needle"
-        ],
+        "routeTendencyIds": ["steady", "catalogue"],
         "nextNodeIds": ["route_node_late_plague_paper_figure"]
       },
       {
@@ -97,7 +78,17 @@
           "encounter_late_offering_table_afterimage",
           "encounter_pool_plague_paper_figure_return"
         ],
-        "nextNodeIds": ["route_node_second_elite"]
+        "routeTendencyIds": ["steady"],
+        "nextNodeIds": ["route_node_boss_registry_thief"]
+      },
+      {
+        "id": "route_node_first_elite",
+        "type": "elite",
+        "nameKey": "route.node.first_elite.name",
+        "descriptionKey": "route.node.first_elite.description",
+        "encounterId": "encounter_elite_incense_clerk",
+        "routeTendencyIds": ["catalogue", "high_pressure"],
+        "nextNodeIds": ["route_node_second_elite", "route_node_mid_event"]
       },
       {
         "id": "route_node_second_elite",
@@ -105,41 +96,37 @@
         "nameKey": "route.node.second_elite.name",
         "descriptionKey": "route.node.second_elite.description",
         "encounterId": "encounter_elite_fire_fleeing_name",
-        "nextNodeIds": ["route_node_late_scroll_stuffer_clerk"]
+        "routeTendencyIds": ["catalogue", "high_pressure"],
+        "nextNodeIds": ["route_node_catalogue_rest"]
       },
       {
-        "id": "route_node_late_scroll_stuffer_clerk",
-        "type": "normal_battle",
-        "nameKey": "route.node.late_scroll_stuffer_clerk.name",
-        "descriptionKey": "route.node.late_scroll_stuffer_clerk.description",
-        "encounterId": "encounter_late_scroll_stuffer_clerk",
-        "encounterPoolIds": [
-          "encounter_late_scroll_stuffer_clerk",
-          "encounter_pool_scroll_stuffer_clerk_return",
-          "encounter_pool_offering_table_afterimage_return"
-        ],
-        "nextNodeIds": ["route_node_third_elite"]
-      },
-      {
-        "id": "route_node_third_elite",
-        "type": "elite",
-        "nameKey": "route.node.third_elite.name",
-        "descriptionKey": "route.node.third_elite.description",
-        "encounterId": "encounter_elite_dipper_empty_shell",
-        "nextNodeIds": ["route_node_late_event"]
-      },
-      {
-        "id": "route_node_late_event",
+        "id": "route_node_mid_event",
         "type": "event",
-        "nameKey": "route.node.late_event.name",
-        "descriptionKey": "route.node.late_event.description",
+        "nameKey": "route.node.mid_event.name",
+        "descriptionKey": "route.node.mid_event.description",
         "eventPoolIds": [
-          "event_fouled_page_bundle",
-          "event_covered_name_stable",
-          "event_bound_artifact_case",
+          "event_mid_ink_pool",
           "event_lost_altar_bell",
+          "event_bound_artifact_case",
           "event_cracked_registry_needle"
         ],
+        "routeTendencyIds": ["catalogue", "supply"],
+        "nextNodeIds": ["route_node_catalogue_shop"]
+      },
+      {
+        "id": "route_node_catalogue_rest",
+        "type": "rest",
+        "nameKey": "route.node.catalogue_rest.name",
+        "descriptionKey": "route.node.catalogue_rest.description",
+        "routeTendencyIds": ["catalogue", "supply"],
+        "nextNodeIds": ["route_node_late_fleeing_name_paper_horse"]
+      },
+      {
+        "id": "route_node_catalogue_shop",
+        "type": "shop",
+        "nameKey": "route.node.catalogue_shop.name",
+        "descriptionKey": "route.node.catalogue_shop.description",
+        "routeTendencyIds": ["catalogue", "supply"],
         "nextNodeIds": ["route_node_late_fleeing_name_paper_horse"]
       },
       {
@@ -154,6 +141,85 @@
           "encounter_pool_offering_table_afterimage_return",
           "encounter_multi_offering_table_mouse"
         ],
+        "routeTendencyIds": ["catalogue", "high_pressure"],
+        "nextNodeIds": ["route_node_boss_registry_thief"]
+      },
+      {
+        "id": "route_node_fracture_fortune_breaker",
+        "type": "normal_battle",
+        "nameKey": "route.node.fracture_fortune_breaker.name",
+        "descriptionKey": "route.node.fracture_fortune_breaker.description",
+        "encounterId": "encounter_mid_fortune_breaker",
+        "routeTendencyIds": ["fracture"],
+        "nextNodeIds": ["route_node_first_event", "route_node_late_scroll_stuffer_clerk"]
+      },
+      {
+        "id": "route_node_first_event",
+        "type": "event",
+        "nameKey": "route.node.first_event.name",
+        "descriptionKey": "route.node.first_event.description",
+        "eventPoolIds": [
+          "event_mid_ink_pool",
+          "event_abandoned_registry_desk",
+          "event_ash_altar_lamp",
+          "event_cinnabar_scribe",
+          "event_cracked_registry_needle"
+        ],
+        "routeTendencyIds": ["fracture", "supply"],
+        "nextNodeIds": ["route_node_fracture_rest"]
+      },
+      {
+        "id": "route_node_late_scroll_stuffer_clerk",
+        "type": "normal_battle",
+        "nameKey": "route.node.late_scroll_stuffer_clerk.name",
+        "descriptionKey": "route.node.late_scroll_stuffer_clerk.description",
+        "encounterId": "encounter_late_scroll_stuffer_clerk",
+        "encounterPoolIds": [
+          "encounter_late_scroll_stuffer_clerk",
+          "encounter_pool_scroll_stuffer_clerk_return",
+          "encounter_pool_offering_table_afterimage_return"
+        ],
+        "routeTendencyIds": ["fracture", "high_pressure"],
+        "nextNodeIds": ["route_node_fracture_shop"]
+      },
+      {
+        "id": "route_node_fracture_rest",
+        "type": "rest",
+        "nameKey": "route.node.fracture_rest.name",
+        "descriptionKey": "route.node.fracture_rest.description",
+        "routeTendencyIds": ["fracture", "supply"],
+        "nextNodeIds": ["route_node_late_event"]
+      },
+      {
+        "id": "route_node_fracture_shop",
+        "type": "shop",
+        "nameKey": "route.node.fracture_shop.name",
+        "descriptionKey": "route.node.fracture_shop.description",
+        "routeTendencyIds": ["fracture", "supply"],
+        "nextNodeIds": ["route_node_late_event"]
+      },
+      {
+        "id": "route_node_late_event",
+        "type": "event",
+        "nameKey": "route.node.late_event.name",
+        "descriptionKey": "route.node.late_event.description",
+        "eventPoolIds": [
+          "event_fouled_page_bundle",
+          "event_covered_name_stable",
+          "event_bound_artifact_case",
+          "event_lost_altar_bell",
+          "event_cracked_registry_needle"
+        ],
+        "routeTendencyIds": ["fracture", "supply"],
+        "nextNodeIds": ["route_node_third_elite"]
+      },
+      {
+        "id": "route_node_third_elite",
+        "type": "elite",
+        "nameKey": "route.node.third_elite.name",
+        "descriptionKey": "route.node.third_elite.description",
+        "encounterId": "encounter_elite_dipper_empty_shell",
+        "routeTendencyIds": ["fracture", "high_pressure"],
         "nextNodeIds": ["route_node_boss_registry_thief"]
       },
       {

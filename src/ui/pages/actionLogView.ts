@@ -817,6 +817,10 @@ export function getRouteFlowLabel(flowKind: RouteFlowKind) {
     return '商店节点'
   }
 
+  if (flowKind === 'route_selection') {
+    return '路线选择'
+  }
+
   if (flowKind === 'event_placeholder') {
     return '事件节点'
   }

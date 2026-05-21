@@ -181,10 +181,6 @@ describe('T09 tutorial run sequence', () => {
       'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
       'encounter_late_plague_paper_figure',
-      'encounter_elite_fire_fleeing_name',
-      'encounter_late_scroll_stuffer_clerk',
-      'encounter_elite_dipper_empty_shell',
-      'encounter_late_fleeing_name_paper_horse',
       'encounter_boss_registry_thief',
     ])
     expect(getCurrentTutorialEncounter(runs[3], gameData.encounters)?.id).toBe(
@@ -197,10 +193,10 @@ describe('T09 tutorial run sequence', () => {
       'encounter_late_plague_paper_figure',
     )
     expect(getCurrentTutorialEncounter(runs[6], gameData.encounters)?.id).toBe(
-      'encounter_elite_fire_fleeing_name',
+      'encounter_boss_registry_thief',
     )
     expect(runs[6].status).toBe('active')
-    expect(runs[5].unlocks.stages).toContain('stage_run_resources')
+    expect(runs[5].unlocks.stages).toContain('stage_three_altars')
     expect(runs[5].completedEncounterIds).toEqual([
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',

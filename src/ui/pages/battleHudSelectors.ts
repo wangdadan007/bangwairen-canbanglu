@@ -35,10 +35,12 @@ export function selectBattleHudState(viewState: TutorialBattleViewState) {
     ? t(currentEncounter.nameKey)
     : currentRouteEvent
       ? t(currentRouteEvent.nameKey)
-      : currentRouteFlowKind === 'shop' && currentRouteNode
+    : currentRouteFlowKind === 'shop' && currentRouteNode
         ? t(currentRouteNode.nameKey)
         : currentRouteFlowKind === 'rest' && currentRouteNode
           ? t(currentRouteNode.nameKey)
+          : currentRouteFlowKind === 'route_selection'
+            ? '择路入榜'
           : getRunHeadline(run.status)
   const selectedEnemy = battle.enemies.find(
     (candidate) =>

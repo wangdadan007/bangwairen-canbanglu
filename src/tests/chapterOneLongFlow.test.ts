@@ -13,6 +13,7 @@ import {
   getCurrentRouteFlowKind,
   getCurrentRouteNode,
   getEncounterEnemyDefinitionIds,
+  getReachableRouteNodes,
   getRouteBattleEncounterIds,
   HENGJIAN_ROLE_ID,
   LIANJIN_ROLE_ID,
@@ -23,6 +24,8 @@ import {
   resolveTutorialRest,
   resolveTutorialReward,
   resolveTutorialVerdict,
+  selectReachableRouteNode,
+  syncTutorialRunEncounters,
   ZHAOWEI_ROLE_ID,
 } from '../core'
 import { getEnemyDefinition, gameData } from '../data'
@@ -30,6 +33,9 @@ import type {
   EncounterDefinition,
   PlayableRoleId,
   RouteDefinition,
+  RouteNodeDefinition,
+  RouteNodeId,
+  RouteState,
   TutorialRunState,
   VictorySettlement,
 } from '../types'
@@ -104,7 +110,7 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
     expect(result.run.deckCards.length).toBeGreaterThan(0)
   })
 
-  it('can complete the first-chapter route with each T62 playable role', () => {
+  it('can complete all three T64 main routes with each T62 playable role', () => {
     const roleCases: readonly {
       readonly roleId: PlayableRoleId
       readonly seed: number
@@ -130,35 +136,105 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
         expectedBaseForm: 78,
       },
     ]
+    const routeCases: readonly {
+      readonly label: string
+      readonly routeNodeIds: readonly RouteNodeId[]
+      readonly expectedTendencyId: string
+    }[] = [
+      {
+        label: 'steady-shop',
+        routeNodeIds: ['route_node_unlit_temple_warden', 'route_node_first_shop'],
+        expectedTendencyId: 'steady',
+      },
+      {
+        label: 'catalogue-pressure',
+        routeNodeIds: ['route_node_first_elite', 'route_node_second_elite'],
+        expectedTendencyId: 'catalogue',
+      },
+      {
+        label: 'fracture-event',
+        routeNodeIds: ['route_node_fracture_fortune_breaker', 'route_node_first_event'],
+        expectedTendencyId: 'fracture',
+      },
+    ]
 
     for (const roleCase of roleCases) {
+      for (const routeCase of routeCases) {
+        const result = completeRouteSmoke({
+          route: gameData.routes[0],
+          seed: roleCase.seed,
+          roleId: roleCase.roleId,
+          chooseRouteNode: createRouteSequenceChooser(routeCase.routeNodeIds),
+          chooseSettlement: (_encounterId, index) => (index % 3 === 0 ? 'catalogue' : 'vanquish'),
+        })
+        const summary = createTutorialRunSummary(result.run)
+        const artifactIds = result.run.artifacts.artifacts.map((artifact) => artifact.definitionId)
+
+        expect(result.run.status, `${roleCase.roleId} ${routeCase.label}`).toBe('complete')
+        expect(result.run.roleId).toBe(roleCase.roleId)
+        expect(result.run.pendingReward).toBeUndefined()
+        expect(result.run.pendingVerdict).toBeUndefined()
+        expect(result.run.pendingRedInk).toBeUndefined()
+        expect(result.run.pendingArtifactOffer).toBeUndefined()
+        expect(result.run.playerForm.max).toBeGreaterThanOrEqual(roleCase.expectedBaseForm)
+        expect(artifactIds[0]).toBe(roleCase.starterArtifactId)
+        expect(artifactIds).toHaveLength(3)
+        expect(result.route.routeTendencyIds).toContain(routeCase.expectedTendencyId)
+        expect(result.route.routeTendencyIds).toContain('supply')
+        expect(result.run.artifactOfferRecords.map((record) => record.stage)).toEqual([
+          'mid_chapter',
+          'boss_clear',
+        ])
+        expect(summary.completedEncounterCount).toBe(result.run.encounterIds.length)
+        expect(summary.catalogueCount).toBeGreaterThan(0)
+        expect(summary.bossCleared).toBe(true)
+      }
+    }
+  })
+
+  it('covers the alternate mid-branch for every T64 main route with non-exclusive roles', () => {
+    const branchCases: readonly {
+      readonly roleId: PlayableRoleId
+      readonly routeNodeIds: readonly RouteNodeId[]
+      readonly expectedTendencyIds: readonly string[]
+    }[] = [
+      {
+        roleId: LIANJIN_ROLE_ID,
+        routeNodeIds: ['route_node_unlit_temple_warden', 'route_node_rest_site'],
+        expectedTendencyIds: ['steady', 'supply'],
+      },
+      {
+        roleId: HENGJIAN_ROLE_ID,
+        routeNodeIds: ['route_node_first_elite', 'route_node_mid_event'],
+        expectedTendencyIds: ['catalogue', 'supply'],
+      },
+      {
+        roleId: ZHAOWEI_ROLE_ID,
+        routeNodeIds: [
+          'route_node_fracture_fortune_breaker',
+          'route_node_late_scroll_stuffer_clerk',
+        ],
+        expectedTendencyIds: ['fracture', 'high_pressure', 'supply'],
+      },
+    ]
+
+    for (const branchCase of branchCases) {
       const result = completeRouteSmoke({
         route: gameData.routes[0],
-        seed: roleCase.seed,
-        roleId: roleCase.roleId,
-        chooseSettlement: (_encounterId, index) => (index % 3 === 0 ? 'catalogue' : 'vanquish'),
+        seed: 61,
+        roleId: branchCase.roleId,
+        chooseRouteNode: createRouteSequenceChooser(branchCase.routeNodeIds),
+        chooseSettlement: (_encounterId, index) => (index % 2 === 0 ? 'catalogue' : 'vanquish'),
       })
-      const summary = createTutorialRunSummary(result.run)
-      const artifactIds = result.run.artifacts.artifacts.map((artifact) => artifact.definitionId)
 
       expect(result.run.status).toBe('complete')
-      expect(result.run.roleId).toBe(roleCase.roleId)
-      expect(result.run.pendingReward).toBeUndefined()
-      expect(result.run.pendingVerdict).toBeUndefined()
-      expect(result.run.pendingRedInk).toBeUndefined()
-      expect(result.run.pendingArtifactOffer).toBeUndefined()
-      expect(result.run.playerForm.max).toBeGreaterThanOrEqual(roleCase.expectedBaseForm)
-      expect(artifactIds[0]).toBe(roleCase.starterArtifactId)
-      expect(artifactIds).toHaveLength(3)
-      expect(result.run.artifactOfferRecords.map((record) => record.stage)).toEqual([
-        'mid_chapter',
-        'boss_clear',
-      ])
-      expect(summary.completedEncounterCount).toBe(
-        getRouteBattleEncounterIds(gameData.routes[0], result.initialRoute).length,
+      expect(result.run.roleId).toBe(branchCase.roleId)
+      expect(result.run.playerForm.current).toBeGreaterThanOrEqual(
+        Math.floor(result.run.playerForm.max * 0.35),
       )
-      expect(summary.catalogueCount).toBeGreaterThan(0)
-      expect(summary.bossCleared).toBe(true)
+      for (const tendencyId of branchCase.expectedTendencyIds) {
+        expect(result.route.routeTendencyIds).toContain(tendencyId)
+      }
     }
   })
 })
@@ -167,11 +243,13 @@ function completeRouteSmoke({
   route,
   seed,
   roleId,
+  chooseRouteNode,
   chooseSettlement,
 }: {
   readonly route: RouteDefinition
   readonly seed: number
   readonly roleId?: PlayableRoleId
+  readonly chooseRouteNode?: (nodes: readonly RouteNodeDefinition[], context: RouteChoiceContext) => RouteNodeId
   readonly chooseSettlement: (encounterId: string, battleIndex: number) => VictorySettlement
 }) {
   let routeState = createInitialRouteState(route, seed)
@@ -185,10 +263,30 @@ function completeRouteSmoke({
   )
   run = resolvePendingRunChoices(run)
   let battleIndex = 0
+  let routeChoiceIndex = 0
 
   while (getCurrentRouteFlowKind(route, routeState) !== 'complete') {
     const flowKind = getCurrentRouteFlowKind(route, routeState)
     const node = getCurrentRouteNode(route, routeState)
+
+    if (flowKind === 'route_selection') {
+      const reachableNodes = getReachableRouteNodes(route, routeState)
+      const selectedNodeId =
+        chooseRouteNode?.(reachableNodes, {
+          routeState,
+          run,
+          routeChoiceIndex,
+        }) ?? reachableNodes[0]?.id
+
+      if (!selectedNodeId) {
+        throw new Error('No route node available during route selection')
+      }
+
+      routeState = selectReachableRouteNode(route, routeState, selectedNodeId)
+      run = syncTutorialRunEncounters(run, getRouteBattleEncounterIds(route, routeState))
+      routeChoiceIndex += 1
+      continue
+    }
 
     if (flowKind === 'battle') {
       const encounter = getCurrentRouteEncounter(route, routeState, gameData.encounters)
@@ -264,6 +362,34 @@ function completeRouteSmoke({
     initialRoute,
     route: routeState,
     run,
+  }
+}
+
+interface RouteChoiceContext {
+  readonly routeState: RouteState
+  readonly run: TutorialRunState
+  readonly routeChoiceIndex: number
+}
+
+function createRouteSequenceChooser(routeNodeIds: readonly RouteNodeId[]) {
+  let nextSelectionIndex = 0
+
+  return (nodes: readonly RouteNodeDefinition[]) => {
+    const expectedNodeId = routeNodeIds[nextSelectionIndex]
+    const selectedNode =
+      nodes.find((node) => node.id === expectedNodeId) ??
+      nodes.find((node) => routeNodeIds.includes(node.id)) ??
+      nodes[0]
+
+    if (selectedNode?.id === expectedNodeId) {
+      nextSelectionIndex += 1
+    }
+
+    if (!selectedNode) {
+      throw new Error('No route node available in sequence chooser')
+    }
+
+    return selectedNode.id
   }
 }
 

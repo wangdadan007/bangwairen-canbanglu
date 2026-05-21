@@ -373,64 +373,90 @@ describe('initial game data', () => {
     ).toBe(true)
   })
 
-  it('contains the route skeleton with T28 boss closure wiring', () => {
+  it('contains the T64 route skeleton with fixed opener and branched main routes', () => {
     const data = loadGameData()
     const route = data.routes[0]
+    const nodesById = new Map(route.nodes.map((node) => [node.id, node]))
 
     expect(route.id).toBe('route_chapter_one_skeleton')
     expect(route.startNodeId).toBe('route_node_tutorial_paper_wraith')
-    expect(route.nodes.map((node) => node.type)).toEqual([
-      'normal_battle',
-      'normal_battle',
-      'normal_battle',
-      'normal_battle',
-      'event',
-      'shop',
-      'rest',
-      'elite',
-      'event',
-      'normal_battle',
-      'elite',
-      'normal_battle',
-      'elite',
-      'event',
-      'normal_battle',
-      'boss',
+    expect(route.nodes.slice(0, 3).map((node) => node.id)).toEqual([
+      'route_node_tutorial_paper_wraith',
+      'route_node_tutorial_incense_thief_mouse',
+      'route_node_tutorial_bronze_bell_patrol',
     ])
     expect(route.nodes.filter((node) => node.isPlaceholder).map((node) => node.type)).toEqual([])
-    expect(route.nodes.find((node) => node.type === 'event')?.eventPoolIds).toEqual([
+    expect(nodesById.get('route_node_tutorial_bronze_bell_patrol')?.nextNodeIds).toEqual([
+      'route_node_unlit_temple_warden',
+      'route_node_first_elite',
+      'route_node_fracture_fortune_breaker',
+    ])
+    expect(nodesById.get('route_node_unlit_temple_warden')?.nextNodeIds).toEqual([
+      'route_node_first_shop',
+      'route_node_rest_site',
+    ])
+    expect(nodesById.get('route_node_first_elite')?.nextNodeIds).toEqual([
+      'route_node_second_elite',
+      'route_node_mid_event',
+    ])
+    expect(nodesById.get('route_node_fracture_fortune_breaker')?.nextNodeIds).toEqual([
+      'route_node_first_event',
+      'route_node_late_scroll_stuffer_clerk',
+    ])
+    expect(nodesById.get('route_node_first_event')?.eventPoolIds).toEqual([
       'event_mid_ink_pool',
       'event_abandoned_registry_desk',
       'event_ash_altar_lamp',
       'event_cinnabar_scribe',
       'event_cracked_registry_needle',
     ])
-    expect(route.nodes.find((node) => node.type === 'event')?.nextNodeIds).toEqual([
-      'route_node_first_shop',
+    expect(nodesById.get('route_node_mid_event')?.eventPoolIds).toEqual([
+      'event_mid_ink_pool',
+      'event_lost_altar_bell',
+      'event_bound_artifact_case',
+      'event_cracked_registry_needle',
     ])
-    expect(route.nodes.find((node) => node.type === 'shop')?.nextNodeIds).toEqual([
-      'route_node_rest_site',
+    expect(nodesById.get('route_node_late_event')?.eventPoolIds).toEqual([
+      'event_fouled_page_bundle',
+      'event_covered_name_stable',
+      'event_bound_artifact_case',
+      'event_lost_altar_bell',
+      'event_cracked_registry_needle',
     ])
-    expect(route.nodes.find((node) => node.type === 'elite')?.nextNodeIds).toEqual([
-      'route_node_mid_event',
+    expect(nodesById.get('route_node_first_shop')?.nextNodeIds).toEqual([
+      'route_node_steady_incense_clerk',
+    ])
+    expect(nodesById.get('route_node_catalogue_rest')?.nextNodeIds).toEqual([
+      'route_node_late_fleeing_name_paper_horse',
+    ])
+    expect(nodesById.get('route_node_fracture_shop')?.nextNodeIds).toEqual([
+      'route_node_late_event',
     ])
     expect(
-      route.nodes.find((node) => node.id === 'route_node_unlit_temple_warden')
-        ?.encounterPoolIds,
+      nodesById.get('route_node_unlit_temple_warden')?.encounterPoolIds,
     ).toBeUndefined()
     expect(
-      route.nodes.find((node) => node.id === 'route_node_late_fleeing_name_paper_horse')
-        ?.encounterPoolIds,
+      nodesById.get('route_node_late_fleeing_name_paper_horse')?.encounterPoolIds,
     ).toEqual([
       'encounter_late_fleeing_name_paper_horse',
       'encounter_pool_fleeing_name_paper_horse_return',
       'encounter_pool_offering_table_afterimage_return',
       'encounter_multi_offering_table_mouse',
     ])
+    expect(nodesById.get('route_node_unlit_temple_warden')?.routeTendencyIds).toEqual([
+      'steady',
+    ])
+    expect(nodesById.get('route_node_first_elite')?.routeTendencyIds).toEqual([
+      'catalogue',
+      'high_pressure',
+    ])
+    expect(nodesById.get('route_node_fracture_fortune_breaker')?.routeTendencyIds).toEqual([
+      'fracture',
+    ])
     expect(
       route.nodes.filter((node) => node.type === 'event').map((node) => node.eventPoolIds?.length),
-    ).toEqual([5, 4, 5])
-    expect(route.nodes.find((node) => node.type === 'boss')?.nextNodeIds).toEqual([])
+    ).toEqual([4, 5, 5])
+    expect(nodesById.get('route_node_boss_registry_thief')?.nextNodeIds).toEqual([])
     expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',
@@ -438,10 +464,12 @@ describe('initial game data', () => {
       'encounter_mid_unlit_temple_warden',
       'encounter_elite_incense_clerk',
       'encounter_late_plague_paper_figure',
+      'encounter_elite_incense_clerk',
       'encounter_elite_fire_fleeing_name',
+      'encounter_late_fleeing_name_paper_horse',
+      'encounter_mid_fortune_breaker',
       'encounter_late_scroll_stuffer_clerk',
       'encounter_elite_dipper_empty_shell',
-      'encounter_late_fleeing_name_paper_horse',
       'encounter_boss_registry_thief',
     ])
   })
