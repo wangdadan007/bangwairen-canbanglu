@@ -107,6 +107,7 @@ export interface CombatState {
   readonly nextTurnIncensePenalty: number
   readonly resources: TutorialResourceState
   readonly temporaryResourceDelta: TutorialResourceState
+  readonly temporaryPlayerFormDelta: number
   readonly altars: readonly AltarState[]
   readonly artifacts: ArtifactCollectionState
   readonly pendingArtifactBreakShapeBonus?: PendingArtifactBreakShapeBonus

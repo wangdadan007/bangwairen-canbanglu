@@ -4,11 +4,13 @@ import {
   BONE_MIRROR_ARTIFACT_ID,
   COURT_CHIME_ARTIFACT_ID,
   NAME_TETHER_SPINDLE_ARTIFACT_ID,
+  RED_SASH_FIRE_WHEEL_ARTIFACT_ID,
   REGISTRY_INKSTONE_ARTIFACT_ID,
   WHIP_FRAGMENT_ARTIFACT_ID,
 } from '../run/artifactResolver'
 import type {
   ArtifactId,
+  CardDefinition,
   CombatState,
   EnemyInstanceId,
   GameEntityId,
@@ -267,6 +269,71 @@ export function triggerArtifactsAfterEnemyNamed(
   })
 }
 
+export function triggerArtifactsAfterBreakShapeCardPlayed(
+  state: CombatState,
+  cardDefinitions: readonly CardDefinition[],
+): CombatState {
+  const redSashFireWheel = state.artifacts.artifacts.find(
+    (artifact) => artifact.definitionId === RED_SASH_FIRE_WHEEL_ARTIFACT_ID,
+  )
+
+  if (
+    !redSashFireWheel ||
+    state.triggeredArtifactIds.includes(redSashFireWheel.id) ||
+    countBreakShapeCardPlaysThisTurn(state, cardDefinitions) < 2
+  ) {
+    return state
+  }
+
+  const bonusAmount = redSashFireWheel.bindingStatus === 'bound' ? 3 : 1
+  const nextIncense = state.player.incense + 1
+  let nextState: CombatState = {
+    ...state,
+    player: {
+      ...state.player,
+      incense: nextIncense,
+    },
+    artifacts: {
+      artifacts: state.artifacts.artifacts.map((artifact) =>
+        artifact.id === redSashFireWheel.id
+          ? {
+              ...artifact,
+              hasTriggeredThisBattle: true,
+              triggerCountThisBattle: artifact.triggerCountThisBattle + 1,
+            }
+          : artifact,
+      ),
+    },
+    pendingArtifactBreakShapeBonus: {
+      artifactId: redSashFireWheel.id,
+      amount: bonusAmount,
+    },
+    triggeredArtifactIds: [...state.triggeredArtifactIds, redSashFireWheel.id],
+  }
+
+  nextState = appendLog(nextState, {
+    type: 'INCENSE_GAINED',
+    sourceId: redSashFireWheel.id,
+    targetId: 'player',
+    payload: {
+      amount: 1,
+      currentIncense: nextIncense,
+    },
+  })
+
+  return appendLog(nextState, {
+    type: 'ARTIFACT_TRIGGERED',
+    sourceId: redSashFireWheel.id,
+    targetId: getLatestCardPlayTargetId(state),
+    payload: {
+      effectType: 'break_chain_incense_bonus',
+      result: 'prepared',
+      incenseAmount: 1,
+      amount: bonusAmount,
+    },
+  })
+}
+
 export function consumePendingBreakShapeBonus(
   state: CombatState,
   targetEnemyInstanceId?: EnemyInstanceId,
@@ -301,4 +368,41 @@ export function consumePendingBreakShapeBonus(
     }),
     bonusAmount: pendingBonus.amount,
   }
+}
+
+function countBreakShapeCardPlaysThisTurn(
+  state: CombatState,
+  cardDefinitions: readonly CardDefinition[],
+) {
+  return state.actionLog.filter(
+    (entry) =>
+      entry.type === 'CARD_PLAYED' &&
+      entry.turn === state.turn &&
+      isBreakShapeCardDefinitionId(getPayloadString(entry.payload.cardDefinitionId), cardDefinitions),
+  ).length
+}
+
+function isBreakShapeCardDefinitionId(
+  cardDefinitionId: string | undefined,
+  cardDefinitions: readonly CardDefinition[],
+) {
+  const cardDefinition = cardDefinitionId
+    ? cardDefinitions.find((candidate) => candidate.id === cardDefinitionId)
+    : undefined
+
+  return Boolean(
+    cardDefinition?.effects.some((effect) => effect.type === 'BREAK_SHAPE') ||
+      cardDefinition?.tags.includes('break_form'),
+  )
+}
+
+function getLatestCardPlayTargetId(state: CombatState) {
+  return state.actionLog
+    .slice()
+    .reverse()
+    .find((entry) => entry.type === 'CARD_PLAYED' && entry.turn === state.turn)?.targetId
+}
+
+function getPayloadString(value: unknown) {
+  return typeof value === 'string' ? value : undefined
 }

@@ -64,6 +64,39 @@
     }
   },
   {
+    "id": "artifact_red_sash_fire_wheel",
+    "nameKey": "artifact.red_sash_fire_wheel.name",
+    "descriptionKey": "artifact.red_sash_fire_wheel.description",
+    "rulesTextKey": "artifact.red_sash_fire_wheel.rules",
+    "triggerType": "battle_trigger",
+    "unlockStage": "stage_core",
+    "tags": ["chapter_one", "break_form", "gain_incense", "starter_role"],
+    "baseEffect": {
+      "type": "break_chain_incense_bonus",
+      "amount": 1,
+      "descriptionKey": "artifact.red_sash_fire_wheel.effect.base"
+    },
+    "boundEffect": {
+      "type": "break_chain_incense_bonus",
+      "amount": 3,
+      "descriptionKey": "artifact.red_sash_fire_wheel.effect.bound"
+    },
+    "bindCondition": {
+      "kind": "turn_two_break_shape_cards",
+      "requiredCount": 6,
+      "descriptionKey": "artifact.red_sash_fire_wheel.bind"
+    },
+    "overloadCondition": {
+      "kind": "vanquish_named_enemy_before_named",
+      "descriptionKey": "artifact.red_sash_fire_wheel.overload"
+    },
+    "backlashEffect": {
+      "type": "temporary_player_form_loss",
+      "amount": 4,
+      "descriptionKey": "artifact.red_sash_fire_wheel.backlash"
+    }
+  },
+  {
     "id": "artifact_court_chime",
     "nameKey": "artifact.court_chime.name",
     "descriptionKey": "artifact.court_chime.description",

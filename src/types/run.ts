@@ -4,6 +4,7 @@ import type { CardAnnotation } from './card'
 import type { UnlockState, VictorySettlement } from './battle'
 import type { TutorialRestState } from './rest'
 import type { TutorialResourceState } from './resource'
+import type { PlayableRoleId } from './role'
 import type { TutorialCurrencyState, TutorialShopState } from './shop'
 import type { TutorialVerdictOffer, TutorialVerdictState } from './verdict'
 
@@ -112,6 +113,7 @@ export interface TutorialEventState {
 export interface TutorialRunState {
   readonly status: TutorialRunStatus
   readonly failureReason?: TutorialRunFailureReason
+  readonly roleId?: PlayableRoleId
   readonly currentEncounterIndex: number
   readonly encounterIds: readonly EncounterId[]
   readonly completedEncounterIds: readonly EncounterId[]

@@ -12,10 +12,13 @@ import type {
   TutorialPlayerFormState,
   UnlockStageId,
   UnlockState,
+  PlayableRoleId,
+  PlayableRoleDefinition,
   VictorySettlement,
 } from '../../types'
 import { DEFAULT_STARTER_DECK_IDS } from '../battle/battleState'
 import {
+  addArtifactToCollection,
   advanceArtifactsAfterBattle,
   createInitialArtifactCollection,
   type ArtifactBattleProgressInput,
@@ -38,6 +41,7 @@ import {
   createInitialTutorialPlayerFormState,
   normalizeTutorialPlayerFormState,
 } from './playerFormResolver'
+import { getPlayableRoleDefinition } from './playerRoleResolver'
 
 export const TUTORIAL_ENCOUNTER_IDS: readonly EncounterId[] = [
   'encounter_tutorial_paper_wraith',
@@ -48,20 +52,26 @@ export const TUTORIAL_ENCOUNTER_IDS: readonly EncounterId[] = [
 export function createInitialTutorialRunState(
   tutorialUnlocks: readonly TutorialUnlockDefinition[],
   encounterIds: readonly EncounterId[] = TUTORIAL_ENCOUNTER_IDS,
-  deckDefinitionIds: readonly CardId[] = DEFAULT_STARTER_DECK_IDS,
-  _artifactDefinitions: readonly ArtifactDefinition[] = [],
+  deckDefinitionIds?: readonly CardId[],
+  artifactDefinitions: readonly ArtifactDefinition[] = [],
+  roleId?: PlayableRoleId,
 ): TutorialRunState {
+  const role = roleId ? getPlayableRoleDefinition(roleId) : undefined
+  const starterDeckDefinitionIds =
+    deckDefinitionIds ?? role?.starterDeckDefinitionIds ?? DEFAULT_STARTER_DECK_IDS
+
   return {
     status: 'active',
+    roleId: role?.id,
     currentEncounterIndex: 0,
     encounterIds,
     completedEncounterIds: [],
     settlements: [],
-    deckDefinitionIds,
-    deckCards: createRunDeckCards(deckDefinitionIds),
-    artifacts: createInitialArtifactCollection(),
+    deckDefinitionIds: starterDeckDefinitionIds,
+    deckCards: createRunDeckCards(starterDeckDefinitionIds),
+    artifacts: createInitialRunArtifactCollection(role, artifactDefinitions),
     currency: createInitialTutorialCurrencyState(),
-    playerForm: createInitialTutorialPlayerFormState(),
+    playerForm: createInitialTutorialPlayerFormState(role?.playerMaxForm),
     resources: createInitialTutorialResourceState(),
     unlocks: createUnlockState(['stage_core'], tutorialUnlocks),
     verdict: createInitialTutorialVerdictState(),
@@ -72,6 +82,25 @@ export function createInitialTutorialRunState(
     redInkRecords: [],
     artifactOfferRecords: [],
   }
+}
+
+function createInitialRunArtifactCollection(
+  role: PlayableRoleDefinition | undefined,
+  artifactDefinitions: readonly ArtifactDefinition[],
+) {
+  if (!role) {
+    return createInitialArtifactCollection()
+  }
+
+  const starterArtifactDefinition = artifactDefinitions.find(
+    (definition) => definition.id === role.starterArtifactId,
+  )
+
+  if (!starterArtifactDefinition) {
+    throw new Error(`Missing role starter artifact definition: ${role.starterArtifactId}`)
+  }
+
+  return addArtifactToCollection(createInitialArtifactCollection(), starterArtifactDefinition)
 }
 
 export function getCurrentTutorialEncounter(

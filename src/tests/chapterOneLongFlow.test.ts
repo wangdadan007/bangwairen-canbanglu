@@ -14,17 +14,22 @@ import {
   getCurrentRouteNode,
   getEncounterEnemyDefinitionIds,
   getRouteBattleEncounterIds,
+  HENGJIAN_ROLE_ID,
+  LIANJIN_ROLE_ID,
+  RED_SASH_FIRE_WHEEL_ARTIFACT_ID,
   resolveTutorialEvent,
   resolveTutorialArtifactOffer,
   resolveTutorialRedInk,
   resolveTutorialRest,
   resolveTutorialReward,
   resolveTutorialVerdict,
+  ZHAOWEI_ROLE_ID,
 } from '../core'
 import { getEnemyDefinition, gameData } from '../data'
 import type {
-  RouteDefinition,
   EncounterDefinition,
+  PlayableRoleId,
+  RouteDefinition,
   TutorialRunState,
   VictorySettlement,
 } from '../types'
@@ -38,7 +43,7 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
 
     expect(gameData.cards).toHaveLength(44)
     expect(rewardCards).toHaveLength(35)
-    expect(gameData.artifacts).toHaveLength(10)
+    expect(gameData.artifacts).toHaveLength(11)
     expect(gameData.events).toHaveLength(9)
     expect(gameData.enemies.filter((enemy) => enemy.tier === 'elite')).toHaveLength(3)
     expect(gameData.enemies.filter((enemy) => enemy.tier === 'boss')).toHaveLength(1)
@@ -98,15 +103,75 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
     expect(result.run.artifacts.artifacts).toHaveLength(3)
     expect(result.run.deckCards.length).toBeGreaterThan(0)
   })
+
+  it('can complete the first-chapter route with each T62 playable role', () => {
+    const roleCases: readonly {
+      readonly roleId: PlayableRoleId
+      readonly seed: number
+      readonly starterArtifactId: string
+      readonly expectedBaseForm: number
+    }[] = [
+      {
+        roleId: HENGJIAN_ROLE_ID,
+        seed: 31,
+        starterArtifactId: 'artifact_whip_fragment',
+        expectedBaseForm: 72,
+      },
+      {
+        roleId: ZHAOWEI_ROLE_ID,
+        seed: 37,
+        starterArtifactId: 'artifact_bone_mirror',
+        expectedBaseForm: 64,
+      },
+      {
+        roleId: LIANJIN_ROLE_ID,
+        seed: 43,
+        starterArtifactId: RED_SASH_FIRE_WHEEL_ARTIFACT_ID,
+        expectedBaseForm: 78,
+      },
+    ]
+
+    for (const roleCase of roleCases) {
+      const result = completeRouteSmoke({
+        route: gameData.routes[0],
+        seed: roleCase.seed,
+        roleId: roleCase.roleId,
+        chooseSettlement: (_encounterId, index) => (index % 3 === 0 ? 'catalogue' : 'vanquish'),
+      })
+      const summary = createTutorialRunSummary(result.run)
+      const artifactIds = result.run.artifacts.artifacts.map((artifact) => artifact.definitionId)
+
+      expect(result.run.status).toBe('complete')
+      expect(result.run.roleId).toBe(roleCase.roleId)
+      expect(result.run.pendingReward).toBeUndefined()
+      expect(result.run.pendingVerdict).toBeUndefined()
+      expect(result.run.pendingRedInk).toBeUndefined()
+      expect(result.run.pendingArtifactOffer).toBeUndefined()
+      expect(result.run.playerForm.max).toBeGreaterThanOrEqual(roleCase.expectedBaseForm)
+      expect(artifactIds[0]).toBe(roleCase.starterArtifactId)
+      expect(artifactIds).toHaveLength(3)
+      expect(result.run.artifactOfferRecords.map((record) => record.stage)).toEqual([
+        'mid_chapter',
+        'boss_clear',
+      ])
+      expect(summary.completedEncounterCount).toBe(
+        getRouteBattleEncounterIds(gameData.routes[0], result.initialRoute).length,
+      )
+      expect(summary.catalogueCount).toBeGreaterThan(0)
+      expect(summary.bossCleared).toBe(true)
+    }
+  })
 })
 
 function completeRouteSmoke({
   route,
   seed,
+  roleId,
   chooseSettlement,
 }: {
   readonly route: RouteDefinition
   readonly seed: number
+  readonly roleId?: PlayableRoleId
   readonly chooseSettlement: (encounterId: string, battleIndex: number) => VictorySettlement
 }) {
   let routeState = createInitialRouteState(route, seed)
@@ -116,6 +181,7 @@ function completeRouteSmoke({
     getRouteBattleEncounterIds(route, routeState),
     undefined,
     gameData.artifacts,
+    roleId,
   )
   run = resolvePendingRunChoices(run)
   let battleIndex = 0

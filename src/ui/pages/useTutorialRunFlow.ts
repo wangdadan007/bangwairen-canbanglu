@@ -8,6 +8,7 @@ import {
   createInitialRouteState,
   createInitialTutorialRunState,
   createTutorialArtifactOfferIfNeeded,
+  DEFAULT_PLAYABLE_ROLE_ID,
   DEFAULT_PLAYER_MAX_FORM,
   failTutorialRun,
   getEncounterEnemyDefinitionIds,
@@ -59,6 +60,7 @@ export interface TutorialBattleViewState {
 
 export interface BattleHudProps {
   readonly initialSave?: TutorialSaveData
+  readonly selectedRoleId?: TutorialRunState['roleId']
   readonly settings?: SettingsState
   readonly onSaveChange?: (run: TutorialRunState, route: RouteState) => void
 }
@@ -79,9 +81,12 @@ export const tutorialRoute = getTutorialRoute(gameData.routes)
 
 export function useTutorialRunFlow({
   initialSave,
+  selectedRoleId = DEFAULT_PLAYABLE_ROLE_ID,
   onSaveChange,
-}: Pick<BattleHudProps, 'initialSave' | 'onSaveChange'>) {
-  const [viewState, setViewState] = useState(() => createInitialTutorialBattleView(initialSave))
+}: Pick<BattleHudProps, 'initialSave' | 'selectedRoleId' | 'onSaveChange'>) {
+  const [viewState, setViewState] = useState(() =>
+    createInitialTutorialBattleView(initialSave, selectedRoleId),
+  )
 
   useEffect(() => {
     setViewState((current) => reconcileViewStateWithRoute(current))
@@ -168,7 +173,7 @@ export function useTutorialRunFlow({
       const encounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
 
       if (!encounter) {
-        return createInitialTutorialBattleView()
+        return createInitialTutorialBattleView(undefined, current.run.roleId ?? selectedRoleId)
       }
 
       const nextBattleView = createBattleForEncounter(encounter, current.run)
@@ -183,7 +188,9 @@ export function useTutorialRunFlow({
   }
 
   function restartTutorialRun() {
-    setViewState(createInitialTutorialBattleView())
+    setViewState((current) =>
+      createInitialTutorialBattleView(undefined, current.run.roleId ?? selectedRoleId),
+    )
   }
 
   function abandonTutorialRun() {
@@ -572,6 +579,7 @@ function createBattle(
     doom: 0,
     fracture: 0,
   },
+  temporaryPlayerFormDelta = 0,
   artifacts?: TutorialRunState['artifacts'],
   extraHandDefinitionIds: readonly CardId[] = [],
   artifactBacklashRecords: readonly ArtifactBacklashRecord[] = [],
@@ -586,13 +594,17 @@ function createBattle(
     playerMaxForm: playerForm.max,
     resources,
     temporaryResourceDelta,
+    temporaryPlayerFormDelta,
     artifacts,
     extraHandDefinitionIds,
     artifactBacklashRecords,
   })
 }
 
-function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattleViewState {
+function createInitialTutorialBattleView(
+  save?: TutorialSaveData,
+  selectedRoleId: TutorialRunState['roleId'] = DEFAULT_PLAYABLE_ROLE_ID,
+): TutorialBattleViewState {
   const route =
     save?.route.routeId === tutorialRoute.id ? save.route : createInitialRouteState(tutorialRoute)
   const loadedRun =
@@ -603,6 +615,7 @@ function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattl
           getRouteBattleEncounterIds(tutorialRoute, route),
           undefined,
           gameData.artifacts,
+          selectedRoleId,
         )
   const run = createTutorialArtifactOfferIfNeeded(
     syncRunWithRoute(loadedRun, route),
@@ -631,6 +644,7 @@ function createInitialTutorialBattleView(save?: TutorialSaveData): TutorialBattl
           run.playerForm,
           run.resources,
           undefined,
+          0,
           run.artifacts,
         ),
       }
@@ -721,6 +735,7 @@ function createBattleForEncounter(
       nextRun.playerForm,
       backlashResolution.resources,
       backlashResolution.temporaryResourceDelta,
+      backlashResolution.temporaryPlayerFormDelta,
       nextRun.artifacts,
       backlashResolution.extraHandDefinitionIds,
       backlashResolution.records,
@@ -750,12 +765,19 @@ function createArtifactBattleProgress(
   const askNameCount = battle.actionLog.filter(
     (entry) => entry.type === 'NAME_ASKED' && entry.payload.result !== 'no_target',
   ).length
+  const breakChainCount = battle.actionLog.filter(
+    (entry) =>
+      entry.type === 'ARTIFACT_TRIGGERED' &&
+      entry.payload.effectType === 'break_chain_incense_bonus' &&
+      entry.payload.result === 'prepared',
+  ).length
   const isNamedEnemy = defeatedEnemy.nameSlots.length > 0
   const settlement = battle.result.status === 'victory' ? battle.result.settlement : undefined
 
   return {
     askNameCount,
     catalogueNamedEnemyCount: settlement === 'catalogue' && isNamedEnemy ? 1 : 0,
+    breakChainCount,
     vanquishNamedEnemyBeforeNamedCount:
       settlement === 'vanquish' && isNamedEnemy && !defeatedEnemy.isNamed ? 1 : 0,
   }
@@ -770,9 +792,11 @@ function getPersistentBattleResources(battle: CombatState) {
 }
 
 function getPersistentBattlePlayerForm(battle: CombatState): TutorialPlayerFormState {
+  const persistentMaxForm = battle.player.maxForm - battle.temporaryPlayerFormDelta
+
   return {
-    current: battle.player.currentForm,
-    max: battle.player.maxForm,
+    current: Math.min(persistentMaxForm, battle.player.currentForm - battle.temporaryPlayerFormDelta),
+    max: persistentMaxForm,
   }
 }
 

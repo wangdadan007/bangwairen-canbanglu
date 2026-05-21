@@ -1,3 +1,4 @@
+import { ZHAOWEI_ROLE_ID } from '../../core'
 import type { RouteFlowKind } from '../../core'
 import type {
   CombatState,
@@ -157,6 +158,16 @@ export function createFirstRunGuidance({
   }
 
   if (currentEncounter.id === 'encounter_tutorial_paper_wraith') {
+    if (run.roleId === ZHAOWEI_ROLE_ID) {
+      return {
+        tone: 'core',
+        eyebrow: '照微首战',
+        title: '先问名照行动，再决定收束',
+        body: '照骨镜会在首次问名后照见下一动；照微己形低，但问名密度高，前两场尽量抢正名和归册奖励。',
+        terms: ['照骨镜', '问名', '来势', '归册'],
+      }
+    }
+
     return {
       tone: 'core',
       eyebrow: '首战',

@@ -23,6 +23,7 @@ export const REGISTRY_INKSTONE_ARTIFACT_ID: ArtifactId = 'artifact_registry_inks
 export const SEAL_DOOR_TABLET_ARTIFACT_ID: ArtifactId = 'artifact_seal_door_tablet'
 export const ASH_LAMP_ARTIFACT_ID: ArtifactId = 'artifact_ash_lamp'
 export const DOOM_BELL_ARTIFACT_ID: ArtifactId = 'artifact_doom_bell'
+export const RED_SASH_FIRE_WHEEL_ARTIFACT_ID: ArtifactId = 'artifact_red_sash_fire_wheel'
 export const WHIP_BACKLASH_CARD_ID: CardId = 'card_cracked_whip_echo'
 export const MID_CHAPTER_ARTIFACT_REWARD_ENCOUNTER_ID = 'encounter_elite_incense_clerk'
 export const BOSS_ARTIFACT_REWARD_ENCOUNTER_ID = 'encounter_boss_registry_thief'
@@ -56,6 +57,7 @@ export interface ArtifactBattleProgressInput {
   readonly askNameCount?: number
   readonly catalogueNamedEnemyCount?: number
   readonly vanquishNamedEnemyBeforeNamedCount?: number
+  readonly breakChainCount?: number
 }
 
 export interface ArtifactBacklashRecord {
@@ -64,12 +66,14 @@ export interface ArtifactBacklashRecord {
   readonly amount?: number
   readonly cardDefinitionId?: CardId
   readonly fractureDelta?: number
+  readonly playerFormDelta?: number
 }
 
 export interface ArtifactBacklashResolution {
   readonly artifacts: ArtifactCollectionState
   readonly resources: TutorialResourceState
   readonly temporaryResourceDelta: TutorialResourceState
+  readonly temporaryPlayerFormDelta: number
   readonly extraHandDefinitionIds: readonly CardId[]
   readonly records: readonly ArtifactBacklashRecord[]
 }
@@ -111,6 +115,7 @@ export function createTutorialArtifactOfferIfNeeded(
 
   if (
     run.status === 'active' &&
+    !run.roleId &&
     !hasArtifactOfferRecord(run, 'starter') &&
     run.completedEncounterIds.length === 0
   ) {
@@ -243,6 +248,13 @@ export function advanceArtifactsAfterBattle(
     })
   }
 
+  if (input.breakChainCount) {
+    progressEvents.push({
+      kind: 'turn_two_break_shape_cards',
+      amount: input.breakChainCount,
+    })
+  }
+
   if (input.vanquishNamedEnemyBeforeNamedCount) {
     overloadEvents.push({
       kind: 'vanquish_named_enemy_before_named',
@@ -266,6 +278,7 @@ export function resolveArtifactBacklashesAtBattleStart(
     doom: 0,
     fracture: 0,
   }
+  let temporaryPlayerFormDelta = 0
 
   const artifacts = collection.artifacts.map((artifact) => {
     if (!artifact.pendingBacklash) {
@@ -298,6 +311,17 @@ export function resolveArtifactBacklashesAtBattleStart(
       })
     }
 
+    if (artifact.definitionId === RED_SASH_FIRE_WHEEL_ARTIFACT_ID) {
+      const playerFormDelta = -4
+      temporaryPlayerFormDelta += playerFormDelta
+      records.push({
+        artifactId: artifact.id,
+        effectType: 'temporary_player_form_loss',
+        amount: Math.abs(playerFormDelta),
+        playerFormDelta,
+      })
+    }
+
     return {
       ...artifact,
       pendingBacklash: false,
@@ -311,6 +335,7 @@ export function resolveArtifactBacklashesAtBattleStart(
     },
     resources: nextResources,
     temporaryResourceDelta,
+    temporaryPlayerFormDelta,
     extraHandDefinitionIds,
     records,
   }

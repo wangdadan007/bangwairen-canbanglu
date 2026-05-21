@@ -1,5 +1,6 @@
 import type { RouteState, TutorialRunState, TutorialSaveData } from '../../types'
 import { normalizeTutorialPlayerFormState } from './playerFormResolver'
+import { isPlayableRoleId } from './playerRoleResolver'
 import {
   type KeyValueStorage,
   removeStorageItem,
@@ -117,6 +118,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
   return {
     ...value,
+    roleId: isPlayableRoleId(value.roleId) ? value.roleId : undefined,
     playerForm: normalizeTutorialPlayerFormState(value.playerForm),
     pendingArtifactOffer: value.pendingArtifactOffer,
     rewards: value.rewards ?? [],

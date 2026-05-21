@@ -10,6 +10,7 @@ export type ArtifactTriggerType =
 export type ArtifactProgressKind =
   | 'catalogue_named_enemy'
   | 'ask_name'
+  | 'turn_two_break_shape_cards'
   | 'red_ink_applied'
   | 'erase_verdict'
 
@@ -21,6 +22,7 @@ export type ArtifactOverloadKind =
 
 export type ArtifactEffectType =
   | 'next_break_shape_bonus'
+  | 'break_chain_incense_bonus'
   | 'peek_intent_after_ask_name'
   | 'seal_momentum_after_ask_name'
   | 'gain_ink_after_ask_name'
@@ -32,6 +34,7 @@ export type ArtifactBacklashEffectType =
   | 'hide_intent_before_ask_name'
   | 'lock_red_ink_target'
   | 'temporary_fracture'
+  | 'temporary_player_form_loss'
 
 export interface ArtifactProgressCondition {
   readonly kind: ArtifactProgressKind

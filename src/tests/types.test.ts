@@ -456,6 +456,7 @@ describe('core type contracts', () => {
         doom: 0,
         fracture: 0,
       },
+      temporaryPlayerFormDelta: 0,
       altars: [],
       artifacts: {
         artifacts: [],

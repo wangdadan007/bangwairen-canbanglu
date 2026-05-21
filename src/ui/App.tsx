@@ -1,16 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { PhaserGame } from '../game/PhaserGame'
+import { gameData } from '../data'
 import {
   clearTutorialSaveData,
   createDefaultSettingsState,
   createTutorialSaveData,
+  DEFAULT_PLAYABLE_ROLE_ID,
+  getPlayableRoleDefinition,
   readSettingsState,
   readTutorialSaveData,
   writeSettingsState,
   writeTutorialSaveData,
   type KeyValueStorage,
 } from '../core'
-import type { RouteState, SettingsState, TutorialRunState, TutorialSaveData } from '../types'
+import type {
+  PlayableRoleId,
+  RouteState,
+  SettingsState,
+  TutorialRunState,
+  TutorialSaveData,
+} from '../types'
 import { AppErrorBoundary } from './ErrorBoundary'
 import { appendBrowserErrorLog, createBrowserErrorLogEntry } from './errorReporting'
 import { BattleHud } from './pages/BattleHud'
@@ -26,6 +35,7 @@ export function App() {
     storage ? readTutorialSaveData(storage) : undefined,
   )
   const [initialSave, setInitialSave] = useState<TutorialSaveData | undefined>(availableSave)
+  const [selectedRoleId, setSelectedRoleId] = useState<PlayableRoleId>(DEFAULT_PLAYABLE_ROLE_ID)
   const [battleKey, setBattleKey] = useState(0)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
@@ -37,11 +47,12 @@ export function App() {
     }
   }, [storage])
 
-  function startNewRun() {
+  function startNewRun(roleId: PlayableRoleId) {
     if (storage) {
       clearTutorialSaveData(storage)
     }
 
+    setSelectedRoleId(roleId)
     setAvailableSave(undefined)
     setInitialSave(undefined)
     setBattleKey((current) => current + 1)
@@ -133,6 +144,7 @@ export function App() {
           <BattleHud
             key={battleKey}
             initialSave={initialSave}
+            selectedRoleId={selectedRoleId}
             settings={settings}
             onSaveChange={handleSaveChange}
           />
@@ -158,9 +170,16 @@ function getSaveLabel(save: TutorialSaveData | undefined) {
   const savedAt = new Date(save.savedAt)
   const savedAtText = Number.isNaN(savedAt.getTime()) ? save.savedAt : savedAt.toLocaleString()
 
+  const role = save.run.roleId ? getPlayableRoleDefinition(save.run.roleId) : undefined
+  const roleLabel = role ? `，执簿者 ${gameText(role.nameKey)}` : ''
+
   return `本地进度：第 ${save.run.currentEncounterIndex + 1} / ${
     save.run.encounterIds.length
-  } 场，保存于 ${savedAtText}`
+  } 场${roleLabel}，保存于 ${savedAtText}`
+}
+
+function gameText(key: string) {
+  return gameData.localization[key] ?? key
 }
 
 function formatRuntimeErrorDetail(event: ErrorEvent) {

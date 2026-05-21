@@ -3,10 +3,15 @@ import type { TutorialPlayerFormState } from '../../types'
 export const DEFAULT_PLAYER_MAX_FORM = 72
 export const RESTORE_PLAYER_FORM_AMOUNT = 24
 
-export function createInitialTutorialPlayerFormState(): TutorialPlayerFormState {
+export function createInitialTutorialPlayerFormState(
+  maxForm: number = DEFAULT_PLAYER_MAX_FORM,
+): TutorialPlayerFormState {
+  const normalizedMaxForm =
+    Number.isFinite(maxForm) && maxForm > 0 ? Math.floor(maxForm) : DEFAULT_PLAYER_MAX_FORM
+
   return {
-    current: DEFAULT_PLAYER_MAX_FORM,
-    max: DEFAULT_PLAYER_MAX_FORM,
+    current: normalizedMaxForm,
+    max: normalizedMaxForm,
   }
 }
 

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { DEFAULT_PLAYABLE_ROLE_ID, getPlayableRoleDefinition } from '../../core'
 import type { RouteFlowKind } from '../../core'
 import { gameData } from '../../data'
 import { useAudioCue, type AudioCue } from '../audio/audioCues'
@@ -62,8 +63,13 @@ import type {
   TutorialRunState,
 } from '../../types'
 
-export function BattleHud({ initialSave, settings, onSaveChange }: BattleHudProps) {
-  const { viewState, actions } = useTutorialRunFlow({ initialSave, onSaveChange })
+export function BattleHud({
+  initialSave,
+  selectedRoleId = DEFAULT_PLAYABLE_ROLE_ID,
+  settings,
+  onSaveChange,
+}: BattleHudProps) {
+  const { viewState, actions } = useTutorialRunFlow({ initialSave, selectedRoleId, onSaveChange })
   const { battle, run } = viewState
   const {
     currentRouteNode,
@@ -511,6 +517,8 @@ function TutorialRunPanel({
   readonly run: TutorialRunState
   readonly currentEncounter?: EncounterDefinition
 }) {
+  const role = run.roleId ? getPlayableRoleDefinition(run.roleId) : undefined
+
   return (
     <section className="tutorial-run-panel" aria-label="路线战斗进度">
       <div className="section-title-row">
@@ -551,6 +559,7 @@ function TutorialRunPanel({
         ))}
       </div>
       <div className="run-summary-row" aria-label="牌组与奖励记录">
+        {role ? <span>执簿者 {t(role.nameKey)}</span> : null}
         <span>牌组 {run.deckCards.length} 张</span>
         <span>
           己形 {run.playerForm.current} / {run.playerForm.max}

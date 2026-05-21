@@ -569,6 +569,12 @@ export function formatLogEntry(
       }。`
     }
 
+    if (effectType === 'break_chain_incense_bonus') {
+      return `${artifactName}踏火连击：香火 +${
+        getPayloadNumber(entry.payload.incenseAmount) ?? 0
+      }，下一次破形额外 +${getPayloadNumber(entry.payload.amount) ?? 0}。`
+    }
+
     if (result === 'prepared') {
       return `${artifactName}触发：下一次破形额外 +${
         getPayloadNumber(entry.payload.amount) ?? 0
@@ -589,6 +595,7 @@ export function formatLogEntry(
     const cardDefinitionId = getPayloadString(entry.payload.cardDefinitionId)
     const cardDefinition = cardDefinitionId ? cardDefinitionsById.get(cardDefinitionId) : undefined
     const fractureDelta = getPayloadNumber(entry.payload.fractureDelta) ?? 0
+    const playerFormDelta = getPayloadNumber(entry.payload.playerFormDelta) ?? 0
 
     if (cardDefinition) {
       return `${artifactName}反噬：${t(cardDefinition.nameKey)}临时入手。`
@@ -596,6 +603,10 @@ export function formatLogEntry(
 
     if (fractureDelta > 0) {
       return `${artifactName}反噬：本场开始时榜裂 +${fractureDelta}。`
+    }
+
+    if (playerFormDelta < 0) {
+      return `${artifactName}反噬：本场己形临时 ${playerFormDelta}。`
     }
 
     return `${artifactName}反噬已结算。`

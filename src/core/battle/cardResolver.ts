@@ -1,7 +1,10 @@
 import { appendLog } from '../log/actionLog'
 import { applyTutorialResourceDelta } from '../run/resourceResolver'
 import { placeAltar } from './altarResolver'
-import { consumePendingBreakShapeBonus } from './artifactBattleResolver'
+import {
+  consumePendingBreakShapeBonus,
+  triggerArtifactsAfterBreakShapeCardPlayed,
+} from './artifactBattleResolver'
 import { drawCards } from './turnFlow'
 import { resolveAskName } from './nameResolver'
 import { settleVictoryIfNeeded } from './victoryResolver'
@@ -89,6 +92,7 @@ export function resolvePlayCard(state: CombatState, input: ResolveCardInput): Co
     },
   })
 
+  nextState = triggerArtifactsAfterBreakShapeCardPlayed(nextState, input.cardDefinitions)
   nextState = removeCardFromHand(nextState, card.instanceId)
   nextState = resolveCardEffects(nextState, card, cardDefinition, input.targetEnemyInstanceId)
   nextState = movePlayedCard(nextState, card, cardDefinition)

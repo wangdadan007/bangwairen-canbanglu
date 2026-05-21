@@ -22,8 +22,11 @@ test.beforeEach(async ({ page }) => {
   await page.reload()
 })
 
-test('title, settings, and fresh run artifact offer are reachable', async ({ page }) => {
+test('title, settings, and fresh role run are reachable', async ({ page }) => {
   await expect(page.getByRole('heading', { name: '榜外人：残榜录' })).toBeVisible()
+  await expect(page.getByRole('button', { name: '衡简 己形 72' })).toBeVisible()
+  await expect(page.getByRole('button', { name: '照微 己形 64' })).toBeVisible()
+  await expect(page.getByRole('button', { name: '莲烬 己形 78' })).toBeVisible()
 
   await page.getByRole('button', { name: '设置' }).click()
   await expect(page.getByRole('region', { name: '设置' })).toBeVisible()
@@ -31,15 +34,12 @@ test('title, settings, and fresh run artifact offer are reachable', async ({ pag
   await page.getByRole('button', { name: '返回' }).click()
   await expect(page.getByRole('region', { name: '设置' })).toBeHidden()
 
-  await page.getByRole('button', { name: '新开本局' }).click()
-  await expect(page.getByRole('region', { name: '法宝三选一' })).toBeVisible()
-  await expect(page.getByText('开局法宝')).toBeVisible()
-  await expect(page.getByText('待选法宝')).toBeVisible()
-  await expect(page.getByText('法宝 0 件')).toBeVisible()
-
-  await page.getByRole('button', { name: /打神鞭残节/ }).click()
+  await page.getByRole('button', { name: '莲烬 己形 78' }).click()
+  await page.getByRole('button', { name: '以莲烬开局' }).click()
   await expect(page.getByRole('region', { name: '法宝三选一' })).toBeHidden()
+  await expect(page.getByText('执簿者 莲烬', { exact: true })).toBeVisible()
   await expect(page.getByText('法宝 1 件')).toBeVisible()
+  await expect(page.getByText('赤绫火轮', { exact: true })).toBeVisible()
   await expect(page.getByRole('region', { name: '敌方目标' })).toBeVisible()
   await expect(page.getByRole('button', { name: '结束回合' })).toBeVisible()
 

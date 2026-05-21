@@ -49,6 +49,7 @@ export interface CreateBattleStateInput {
   readonly playerMaxForm?: number
   readonly resources?: TutorialResourceState
   readonly temporaryResourceDelta?: TutorialResourceState
+  readonly temporaryPlayerFormDelta?: number
   readonly artifacts?: ArtifactCollectionState
   readonly extraHandDefinitionIds?: readonly CardId[]
   readonly artifactBacklashRecords?: readonly ArtifactBacklashRecord[]
@@ -81,13 +82,19 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     createEnemyState(enemyDefinition, index),
   )
   const maxIncense = DEFAULT_MAX_INCENSE + (input.maxIncenseBonus ?? 0)
-  const playerForm = normalizeTutorialPlayerFormState(
+  const persistentPlayerForm = normalizeTutorialPlayerFormState(
     input.playerCurrentForm === undefined && input.playerMaxForm === undefined
       ? createInitialTutorialPlayerFormState()
       : {
           current: input.playerCurrentForm,
           max: input.playerMaxForm,
         },
+  )
+  const temporaryPlayerFormDelta = Math.floor(input.temporaryPlayerFormDelta ?? 0)
+  const playerForm = createTemporaryBattlePlayerForm(
+    persistentPlayerForm.current,
+    persistentPlayerForm.max,
+    temporaryPlayerFormDelta,
   )
 
   let state: CombatState = {
@@ -112,6 +119,7 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     nextTurnIncensePenalty: 0,
     resources: input.resources ?? createInitialTutorialResourceState(),
     temporaryResourceDelta: input.temporaryResourceDelta ?? createInitialTutorialResourceState(),
+    temporaryPlayerFormDelta,
     altars: [],
     artifacts: input.artifacts ?? createInitialArtifactCollection(),
     triggeredArtifactIds: [],
@@ -149,6 +157,27 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
   }
 
   return startPlayerTurn(state, DEFAULT_HAND_DRAW)
+}
+
+function createTemporaryBattlePlayerForm(
+  currentForm: number,
+  maxForm: number,
+  temporaryPlayerFormDelta: number,
+) {
+  if (temporaryPlayerFormDelta === 0) {
+    return {
+      current: currentForm,
+      max: maxForm,
+    }
+  }
+
+  const nextMaxForm = Math.max(1, maxForm + temporaryPlayerFormDelta)
+  const nextCurrentForm = Math.max(0, Math.min(nextMaxForm, currentForm + temporaryPlayerFormDelta))
+
+  return {
+    current: nextCurrentForm,
+    max: nextMaxForm,
+  }
 }
 
 export function createCardInstances(deckDefinitionIds: readonly CardId[]): readonly CardInstance[] {
