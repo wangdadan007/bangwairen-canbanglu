@@ -12,7 +12,7 @@ import type {
 } from '../../types'
 import { addArtifactToCollection } from './artifactResolver'
 import { appendRunDeckCard, removeRunDeckCard } from './deckResolver'
-import { RED_INK_OPTIONS } from './redInkResolver'
+import { createTutorialRedInkOffer } from './redInkResolver'
 
 export const DEFAULT_TUTORIAL_INCENSE_MONEY = 100
 
@@ -150,10 +150,7 @@ export function resolveTutorialShopPurchase(
   return {
     ...run,
     currency: spendIncenseMoney(run.currency, item.cost),
-    pendingRedInk: {
-      id: `red_ink_offer_${run.redInkRecords.length + 1}`,
-      options: RED_INK_OPTIONS,
-    },
+    pendingRedInk: createTutorialRedInkOffer(run),
     shops: updateShopStateAfterPurchase(run.shops, item, record),
   }
 }

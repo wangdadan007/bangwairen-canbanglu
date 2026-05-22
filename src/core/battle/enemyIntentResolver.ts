@@ -1,5 +1,6 @@
 import { appendLog } from '../log/actionLog'
 import { triggerEarthAltars } from './altarResolver'
+import { triggerRegisterAfterAbnormalMoveCountered } from './registerBattleResolver'
 import type {
   AbnormalMoveDefinition,
   CardInstance,
@@ -136,7 +137,7 @@ function executeAbnormalMove(
   move: AbnormalMoveDefinition,
 ): CombatState {
   if (enemy.blockedAbnormalMoveTypes.includes(move.type)) {
-    return appendLog(state, {
+    const counteredState = appendLog(state, {
       type: 'ABNORMAL_MOVE_COUNTERED',
       sourceId: enemy.instanceId,
       targetId: 'player',
@@ -145,6 +146,12 @@ function executeAbnormalMove(
         moveType: move.type,
         result: 'prevented',
       },
+    })
+
+    return triggerRegisterAfterAbnormalMoveCountered(counteredState, {
+      sourceId: enemy.instanceId,
+      targetId: 'player',
+      moveType: move.type,
     })
   }
 

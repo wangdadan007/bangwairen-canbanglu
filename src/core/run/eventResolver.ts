@@ -10,7 +10,7 @@ import type {
   TutorialRunState,
 } from '../../types'
 import { appendRunDeckCard, removeFirstMatchingRunDeckCard } from './deckResolver'
-import { RED_INK_OPTIONS } from './redInkResolver'
+import { createTutorialRedInkOffer } from './redInkResolver'
 import {
   applyTutorialResourceDelta,
   canSpendTutorialResources,
@@ -123,10 +123,7 @@ export function resolveTutorialEvent(
       fracture: result.fractureDelta,
     }),
     pendingRedInk: result.createdRedInkOffer
-      ? {
-          id: `red_ink_offer_${run.redInkRecords.length + 1}`,
-          options: RED_INK_OPTIONS,
-        }
+      ? createTutorialRedInkOffer(run)
       : undefined,
     events: {
       completedEventIds: addUniqueEventId(run.events.completedEventIds, event.id),

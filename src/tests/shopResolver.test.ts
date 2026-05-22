@@ -163,12 +163,14 @@ describe('T22 shop resolver', () => {
     )
 
     expect(nextRun.currency.incenseMoney).toBe(redInkRun.currency.incenseMoney - 60)
-    expect(nextRun.pendingRedInk?.options.map((option) => option.id)).toEqual([
-      'red_ink_return_incense',
-      'red_ink_trace_name',
-      'red_ink_named_draw',
-      'red_ink_press_momentum',
-    ])
+    expect(nextRun.pendingRedInk?.options.map((option) => option.id)).toEqual(
+      expect.arrayContaining([
+        'red_ink_return_incense',
+        'red_ink_trace_name',
+        'red_ink_named_draw',
+        'red_ink_press_momentum',
+      ]),
+    )
     expect(nextRun.shops.records[0]).toEqual(
       expect.objectContaining({
         itemId: 'shop_red_ink_service',

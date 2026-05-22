@@ -446,6 +446,7 @@ describe('core type contracts', () => {
       discardPile: [],
       exhaustPile: [],
       nextTurnIncensePenalty: 0,
+      nextTurnIncenseBonus: 0,
       resources: {
         ink: 0,
         doom: 0,
@@ -461,6 +462,7 @@ describe('core type contracts', () => {
       artifacts: {
         artifacts: [],
       },
+      registerEntries: [],
       triggeredArtifactIds: [],
       actionLog: [logEntry],
       result: {

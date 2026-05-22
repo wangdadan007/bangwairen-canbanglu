@@ -129,12 +129,14 @@ describe('T20 event resolver', () => {
     expect(fractureRun.deckDefinitionIds).toContain('card_thunder_splinter')
     expect(fractureRun.events.records[0].fractureDelta).toBe(1)
     expect(getAvailableEventOptions(cinnabarEvent, coreRun)).toHaveLength(0)
-    expect(redInkServiceRun.pendingRedInk?.options.map((option) => option.id)).toEqual([
-      'red_ink_return_incense',
-      'red_ink_trace_name',
-      'red_ink_named_draw',
-      'red_ink_press_momentum',
-    ])
+    expect(redInkServiceRun.pendingRedInk?.options.map((option) => option.id)).toEqual(
+      expect.arrayContaining([
+        'red_ink_return_incense',
+        'red_ink_trace_name',
+        'red_ink_named_draw',
+        'red_ink_press_momentum',
+      ]),
+    )
     expect(redInkServiceRun.events.records[0].createdRedInkOffer).toBe(true)
   })
 

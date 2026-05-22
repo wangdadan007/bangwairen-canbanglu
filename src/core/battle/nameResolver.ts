@@ -3,6 +3,7 @@ import {
   triggerArtifactsAfterAskName,
   triggerArtifactsAfterEnemyNamed,
 } from './artifactBattleResolver'
+import { triggerRegisterAfterEnemyNamed } from './registerBattleResolver'
 import type { CombatState, EnemyInstanceId, EnemyState, EnemyTier, GameEntityId } from '../../types'
 
 const NAME_BREAK_RATIOS: Readonly<Record<EnemyTier, number>> = {
@@ -64,6 +65,10 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
 
   if (updatedTarget && shouldTriggerNaming(updatedTarget)) {
     nextState = markEnemyNamed(nextState, updatedTarget, input.sourceId)
+    nextState = triggerRegisterAfterEnemyNamed(nextState, {
+      sourceId: input.sourceId,
+      targetId: updatedTarget.instanceId,
+    })
     nextState = triggerNameBreak(nextState, updatedTarget.instanceId, input.sourceId)
     nextState = triggerArtifactsAfterEnemyNamed(nextState, input.sourceId)
   }

@@ -51,10 +51,12 @@ export interface CreateBattleStateInput {
   readonly temporaryResourceDelta?: TutorialResourceState
   readonly temporaryPlayerFormDelta?: number
   readonly artifacts?: ArtifactCollectionState
+  readonly registerEntries?: CombatState['registerEntries']
   readonly extraHandDefinitionIds?: readonly CardId[]
   readonly artifactBacklashRecords?: readonly ArtifactBacklashRecord[]
   readonly unlocks?: UnlockState
   readonly initialEnemyIntentIds?: Readonly<Record<string, string>>
+  readonly openingIncenseBonus?: number
 }
 
 export function createInitialBattleState(input: CreateBattleStateInput): CombatState {
@@ -118,11 +120,13 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     discardPile: [],
     exhaustPile: [],
     nextTurnIncensePenalty: 0,
+    nextTurnIncenseBonus: Math.max(0, Math.floor(input.openingIncenseBonus ?? 0)),
     resources: input.resources ?? createInitialTutorialResourceState(),
     temporaryResourceDelta: input.temporaryResourceDelta ?? createInitialTutorialResourceState(),
     temporaryPlayerFormDelta,
     altars: [],
     artifacts: input.artifacts ?? createInitialArtifactCollection(),
+    registerEntries: input.registerEntries ?? [],
     triggeredArtifactIds: [],
     actionLog: [],
     result: {

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getVisibleRedInkOptionsForDeckCard } from '../../core'
 import type {
   CardDefinition,
   CardId,
@@ -27,6 +28,14 @@ export function RedInkPage({
 }: RedInkPageProps) {
   const [selectedDeckCardId, setSelectedDeckCardId] = useState(deckCards[0]?.id ?? '')
   const selectedCard = deckCards.find((card) => card.id === selectedDeckCardId)
+  const selectedCardDefinition = selectedCard
+    ? cardDefinitionsById.get(selectedCard.definitionId)
+    : undefined
+  const visibleOptions = getVisibleRedInkOptionsForDeckCard(
+    offer,
+    selectedCard,
+    selectedCardDefinition,
+  )
 
   return (
     <section className="red-ink-page" aria-label="批改卡牌（朱批）">
@@ -35,7 +44,9 @@ export function RedInkPage({
           <p className="panel-kicker">批改卡牌（朱批）</p>
           <h3>给一张牌写入永久词条</h3>
         </div>
-        <span>当前牌组 {deckCards.length} 张 / {offer.options.length} 种朱批</span>
+        <span>
+          当前牌组 {deckCards.length} 张 / 候选 {visibleOptions.length} / 总池 {offer.options.length}
+        </span>
       </div>
       <p className="reward-copy">
         从当前牌组选择一张已有牌，再选择一条朱批。未获得的卡牌不会出现在这里，被批改的牌会在后续战斗保留这个词条。
@@ -73,7 +84,7 @@ export function RedInkPage({
         <div className="red-ink-column">
           <h4>朱批词条</h4>
           <div className="red-ink-option-list">
-            {offer.options.map((option) => (
+            {visibleOptions.map((option) => (
               <button
                 className="red-ink-option"
                 disabled={!selectedCard}
@@ -86,6 +97,9 @@ export function RedInkPage({
                 <small>{getEffectSummary(option.annotation)}</small>
               </button>
             ))}
+            {visibleOptions.length === 0 ? (
+              <p className="empty-list-copy">这张牌暂时没有可触发的朱批，换一张牌试试。</p>
+            ) : null}
           </div>
         </div>
       </div>
@@ -120,6 +134,14 @@ function getEffectSummary(annotation: TutorialRedInkOffer['options'][number]['an
 
       if (effect.type === 'SEAL_MOMENTUM') {
         return `封势 ${effect.amount}`
+      }
+
+      if (effect.type === 'GAIN_INK') {
+        return `墨 +${effect.amount}`
+      }
+
+      if (effect.type === 'GAIN_DOOM') {
+        return `劫数 +${effect.amount}`
       }
 
       return '断异动'

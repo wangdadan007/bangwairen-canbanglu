@@ -1,12 +1,17 @@
 import type { ArtifactCollectionState } from './artifact'
-import type { ArtifactId, CardId, EncounterId, EventId, LocalizationKey } from './common'
+import type { ArtifactId, CardId, EncounterId, EventId, LocalizationKey, UnlockStageId } from './common'
 import type { CardAnnotation } from './card'
 import type { UnlockState, VictorySettlement } from './battle'
 import type { TutorialRestState } from './rest'
 import type { TutorialResourceState } from './resource'
 import type { PlayableRoleId } from './role'
+import type { RouteTendencyId } from './route'
 import type { TutorialCurrencyState, TutorialShopState } from './shop'
-import type { TutorialVerdictOffer, TutorialVerdictState } from './verdict'
+import type {
+  TutorialNextBattleStartBonus,
+  TutorialVerdictOffer,
+  TutorialVerdictState,
+} from './verdict'
 
 export type TutorialRunStatus = 'active' | 'complete' | 'failed'
 export type TutorialRunFailureReason = 'abandoned' | 'battle_defeat'
@@ -59,11 +64,24 @@ export interface TutorialRedInkOption {
   readonly nameKey: LocalizationKey
   readonly rulesTextKey: LocalizationKey
   readonly annotation: CardAnnotation
+  readonly category?:
+    | 'economy'
+    | 'ask_name'
+    | 'break_form'
+    | 'defense'
+    | 'altar'
+    | 'risk'
+  readonly requiredUnlockStages?: readonly UnlockStageId[]
+  readonly preferredRoleIds?: readonly PlayableRoleId[]
+  readonly preferredRouteTendencyIds?: readonly RouteTendencyId[]
+  readonly compatibleCardTags?: readonly string[]
+  readonly compatibleEffectTypes?: readonly string[]
 }
 
 export interface TutorialRedInkOffer {
   readonly id: string
   readonly options: readonly TutorialRedInkOption[]
+  readonly displayCount?: number
 }
 
 export interface TutorialRedInkRecord {
@@ -136,6 +154,7 @@ export interface TutorialRunState {
   readonly rewards: readonly TutorialRewardRecord[]
   readonly redInkRecords: readonly TutorialRedInkRecord[]
   readonly artifactOfferRecords: readonly TutorialArtifactRecord[]
+  readonly nextBattleStartBonus?: TutorialNextBattleStartBonus
 }
 
 export interface TutorialRunSummary {
@@ -167,4 +186,6 @@ export interface TutorialRunSummary {
   readonly bossCleared: boolean
   readonly bossEncounterId?: EncounterId
   readonly bossSettlement?: VictorySettlement
+  readonly registryThiefSealed: boolean
+  readonly registerRuleNames: readonly LocalizationKey[]
 }

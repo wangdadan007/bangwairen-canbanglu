@@ -1,6 +1,10 @@
 import { appendLog } from '../log/actionLog'
 import { applyTutorialResourceDelta } from '../run/resourceResolver'
 import { resolveAskName } from './nameResolver'
+import {
+  triggerRegisterAfterAltarPlaced,
+  triggerRegisterAfterAltarTriggered,
+} from './registerBattleResolver'
 import type {
   AbnormalMoveType,
   AltarState,
@@ -49,7 +53,7 @@ export function placeAltar(state: CombatState, input: PlaceAltarInput): CombatSt
     })
   }
 
-  return appendLog(nextState, {
+  nextState = appendLog(nextState, {
     type: 'ALTAR_PLACED',
     sourceId: altar.id,
     targetId: altar.targetEnemyInstanceId,
@@ -58,6 +62,11 @@ export function placeAltar(state: CombatState, input: PlaceAltarInput): CombatSt
       sourceCardDefinitionId: altar.sourceCardDefinitionId,
       effectType: altar.effect.type,
     },
+  })
+
+  return triggerRegisterAfterAltarPlaced(nextState, {
+    sourceId: altar.id,
+    targetId: altar.targetEnemyInstanceId,
   })
 }
 
@@ -206,7 +215,7 @@ function prepareAbnormalCounter(
     },
   })
 
-  return appendLog(nextState, {
+  nextState = appendLog(nextState, {
     type: 'ABNORMAL_MOVE_COUNTERED',
     sourceId: altar.id,
     targetId: target.instanceId,
@@ -214,6 +223,11 @@ function prepareAbnormalCounter(
       moveType: counterMoveType,
       result: 'prepared',
     },
+  })
+
+  return triggerRegisterAfterAltarTriggered(nextState, {
+    sourceId: altar.id,
+    targetId: target.instanceId,
   })
 }
 
@@ -245,7 +259,7 @@ function gainInkFromAltar(
     },
   })
 
-  return appendLog(nextState, {
+  nextState = appendLog(nextState, {
     type: 'INK_GAINED',
     sourceId: altar.id,
     targetId: 'player',
@@ -253,6 +267,11 @@ function gainInkFromAltar(
       amount,
       currentInk: resources.ink,
     },
+  })
+
+  return triggerRegisterAfterAltarTriggered(nextState, {
+    sourceId: altar.id,
+    targetId: altar.targetEnemyInstanceId,
   })
 }
 

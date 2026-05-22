@@ -5,8 +5,9 @@ import {
   consumePendingBreakShapeBonus,
   triggerArtifactsAfterBreakShapeCardPlayed,
 } from './artifactBattleResolver'
-import { drawCards } from './turnFlow'
+import { drawCards } from './drawResolver'
 import { resolveAskName } from './nameResolver'
+import { consumePendingRegisterBreakShapeBonus } from './registerBattleResolver'
 import { settleVictoryIfNeeded } from './victoryResolver'
 import type {
   CardDefinition,
@@ -345,6 +346,12 @@ function breakEnemyForm(
       breakAmount += consumedBonus.bonusAmount
     }
 
+    if (nextState.pendingRegisterBreakShapeBonus) {
+      const consumedBonus = consumePendingRegisterBreakShapeBonus(nextState, target.instanceId)
+      nextState = consumedBonus.state
+      breakAmount += consumedBonus.bonusAmount
+    }
+
     const nextCurrentForm = Math.max(0, target.currentForm - breakAmount)
     const brokenAmount = target.currentForm - nextCurrentForm
 
@@ -416,9 +423,29 @@ function isEffectConditionMet(
     return Boolean(target && target.nameSlots.length === 0)
   }
 
-  return state.actionLog.some(
-    (entry) => entry.turn === state.turn && entry.type === 'ENEMY_NAMED',
-  )
+  if (effect.condition.type === 'TARGET_IS_NAMED') {
+    return Boolean(target?.isNamed)
+  }
+
+  if (effect.condition.type === 'THIS_TURN_NAMED_ENEMY') {
+    return state.actionLog.some(
+      (entry) => entry.turn === state.turn && entry.type === 'ENEMY_NAMED',
+    )
+  }
+
+  if (effect.condition.type === 'THIS_TURN_COUNTERED_ABNORMAL_MOVE') {
+    return state.actionLog.some(
+      (entry) => entry.turn === state.turn && entry.type === 'ABNORMAL_MOVE_COUNTERED',
+    )
+  }
+
+  if (effect.condition.type === 'THIS_TURN_PLACED_ALTAR') {
+    return state.actionLog.some(
+      (entry) => entry.turn === state.turn && entry.type === 'ALTAR_PLACED',
+    )
+  }
+
+  return false
 }
 
 function removeCardFromHand(state: CombatState, cardInstanceId: string): CombatState {

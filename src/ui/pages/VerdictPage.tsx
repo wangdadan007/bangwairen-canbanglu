@@ -1,7 +1,8 @@
 import type {
   TutorialResourceState,
-  TutorialVerdictChoiceId,
   TutorialVerdictOffer,
+  TutorialVerdictOption,
+  TutorialVerdictOptionId,
   TutorialVerdictState,
 } from '../../types'
 
@@ -10,7 +11,7 @@ export interface VerdictPageProps {
   readonly resources: TutorialResourceState
   readonly verdict: TutorialVerdictState
   readonly t: (key: string | undefined) => string
-  readonly onChoose: (choiceId: TutorialVerdictChoiceId) => void
+  readonly onChoose: (choiceId: TutorialVerdictOptionId) => void
 }
 
 export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictPageProps) {
@@ -48,7 +49,7 @@ export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictP
           >
             <strong>{t(option.nameKey)}</strong>
             <span>{t(option.rulesTextKey)}</span>
-            <small>{getVerdictImpact(option.id)}</small>
+            <small>{getVerdictImpact(option, offer, t)}</small>
           </button>
         ))}
       </div>
@@ -65,14 +66,57 @@ function formatRevealedNames(
     : '无可记录名格'
 }
 
-function getVerdictImpact(choiceId: TutorialVerdictChoiceId) {
-  if (choiceId === 'register') {
-    return '后续战斗香火上限 +1，己形上限 +4'
+function getVerdictImpact(
+  option: TutorialVerdictOption,
+  offer: TutorialVerdictOffer,
+  t: VerdictPageProps['t'],
+) {
+  if (option.choiceId === 'register') {
+    return getRegisterImpact(offer, t)
   }
 
-  if (choiceId === 'red_ink') {
+  if (option.choiceId === 'red_ink') {
     return '进入朱批页，批改一张已有牌'
   }
 
-  return '榜裂 +1，并加入裂形符'
+  if (option.id === 'erase_gain_ink') {
+    return '削籍判词：榜裂 +1，墨 +2'
+  }
+
+  if (option.id === 'erase_heavy_split_form') {
+    return '削籍判词：榜裂 +1，劫数 +1，加入重裂形符'
+  }
+
+  if (option.id === 'erase_next_battle_resources') {
+    return '削籍判词：榜裂 +1，下一场开局墨 +1、香火 +1'
+  }
+
+  return '削籍判词：榜裂 +1，并加入裂形符'
+}
+
+function getRegisterImpact(offer: TutorialVerdictOffer, t: VerdictPageProps['t']) {
+  const specialRule = getSpecialRegisterRule(offer.enemyDefinitionId)
+
+  return specialRule
+    ? `专属登簿：${t(specialRule.nameKey)}`
+    : '通用登簿：后续战斗香火上限 +1，己形上限 +4'
+}
+
+function getSpecialRegisterRule(enemyDefinitionId: string) {
+  const rules: Readonly<Record<string, { readonly nameKey: string }>> = {
+    enemy_incense_clerk: {
+      nameKey: 'verdict.register.rule.incense_clerk.name',
+    },
+    enemy_fire_fleeing_name: {
+      nameKey: 'verdict.register.rule.fire_fleeing_name.name',
+    },
+    enemy_dipper_empty_shell: {
+      nameKey: 'verdict.register.rule.dipper_empty_shell.name',
+    },
+    enemy_registry_thief: {
+      nameKey: 'verdict.register.rule.registry_thief.name',
+    },
+  }
+
+  return rules[enemyDefinitionId]
 }

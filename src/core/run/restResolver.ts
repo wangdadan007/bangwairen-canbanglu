@@ -14,7 +14,7 @@ import {
   RESTORE_PLAYER_FORM_AMOUNT,
   restoreTutorialPlayerForm,
 } from './playerFormResolver'
-import { RED_INK_OPTIONS } from './redInkResolver'
+import { createTutorialRedInkOffer } from './redInkResolver'
 
 export const REST_OPTION_RESTORE_FORM: TutorialRestOptionId = 'restore_form'
 export const REST_OPTION_REMOVE_CARD: TutorialRestOptionId = 'remove_card'
@@ -168,10 +168,7 @@ export function resolveTutorialRest(
 
   return {
     ...run,
-    pendingRedInk: {
-      id: `red_ink_offer_${run.redInkRecords.length + 1}`,
-      options: RED_INK_OPTIONS,
-    },
+    pendingRedInk: createTutorialRedInkOffer(run),
     rests: {
       records: [...run.rests.records, record],
     },

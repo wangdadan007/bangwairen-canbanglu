@@ -1,6 +1,7 @@
 import { resolvePlayCard } from './cardResolver'
 import { executeEnemyTurn } from './enemyIntentResolver'
-import { startPlayerTurn, discardHand } from './turnFlow'
+import { discardHand } from './drawResolver'
+import { startPlayerTurn } from './turnFlow'
 import { appendLog } from '../log/actionLog'
 import { triggerHumanAltars } from './altarResolver'
 import type { BattleCommand, CardDefinition, CombatState, EnemyDefinition } from '../../types'

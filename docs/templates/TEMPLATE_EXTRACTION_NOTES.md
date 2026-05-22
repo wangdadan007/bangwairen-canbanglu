@@ -1,6 +1,6 @@
 # 模板沉淀区
 
-版本：v0.7
+版本：v0.9
 日期：2026-05-22
 建议路径：`docs/templates/TEMPLATE_EXTRACTION_NOTES.md`
 
@@ -50,9 +50,9 @@
 
 | 模板方向 | 主要回溯候选 | 关系说明 |
 |---|---|---|
-| `Phaser React Deckbuilder Roguelike Starter Kit` | T00-T08、T09-T13、T16-T22 / T28 / T39 / T42A / T65、T14-T15 / T26 / T31-T38 / T49A、T23-T27 / T35 / T44、T29 / T43、T30 / T38 / T42 / T45 / T48 / T50 / T58、T40-T46 / T56-T58 | 主产品方向，吸收战斗、run flow、数据、UI、QA、存档、高级扩展和试玩交付模块。 |
+| `Phaser React Deckbuilder Roguelike Starter Kit` | T00-T08、T09-T13 / T65A / T66、T16-T22 / T28 / T39 / T42A / T65、T14-T15 / T26 / T31-T38 / T49A、T23-T27 / T35 / T44、T29 / T43、T30 / T38 / T42 / T45 / T48 / T50 / T58、T40-T46 / T56-T58 | 主产品方向，吸收战斗、run flow、数据、UI、QA、存档、高级扩展和试玩交付模块。 |
 | `Data-Driven Card Battle Engine` | T00-T08；T23-T27 / T35 / T44 | T00-T08 是核心战斗包；资源、时机窗口和 relic / artifact 可作为高级扩展。 |
-| `Roguelike Run Flow Kit` | T09-T13、T16-T22 / T28 / T39 / T42A / T65、T29 / T43 | 重点覆盖跨战流程、路线节点、事件 / 休整 / 商店、遭遇池、结算、存档，以及路线 / 角色倾向驱动的奖励与 relic offer。 |
+| `Roguelike Run Flow Kit` | T09-T13 / T65A / T66、T16-T22 / T28 / T39 / T42A / T65、T29 / T43 | 重点覆盖跨战流程、路线节点、事件 / 休整 / 商店、遭遇池、结算、存档，以及路线 / 角色倾向驱动的奖励、relic offer、卡牌改造 offer、敌人专属 run modifier 与风险收益判词池。 |
 | `React Card Game UI Kit` | T40-T46、T56-T58；参考 T05-T08、T20-T22 | T40-T46 是主要 UI 分层和反馈证据；T56-T58 补首局提示、读屏标签、错误边界和试玩错误反馈。 |
 | `AI Game Development Planning and QA Kit` | 初始化记录、T30 / T38 / T42 / T45 / T48 / T50 / T58-T60、T14-T15 / T26 / T31-T38 / T49A、T51 / T52-T53 / T56 | 重点覆盖 AI 协作规则、PRD 拆分、任务看板、QA、素材授权、内容覆盖、数据扩展、试玩交付、外部反馈和阶段收口流程。 |
 | `Steam-ready Vite Phaser Desktop Wrapper` | T49 | 目前只有方案评估，不作为已验证模板；等桌面打包真实完成后再升级。 |
@@ -103,6 +103,32 @@
 - 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时只保留 resolver 结构和中性样例数据。
 - 是否值得抽到模板：值得记录，适合成为 `Roguelike Run Flow Kit` 的中后期 build-direction 模块。
 - 后续动作：待 T66 人工试玩复核后，再决定是否把“确定性排序”升级为 seeded weighted offer 模板。
+
+### 2026-05-22 · T65A · 目标兼容与倾向驱动的卡牌改造 offer
+
+- 候选类型：run flow / card upgrade offer resolver。
+- 主归属模板：`Roguelike Run Flow Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`Data-Driven Card Battle Engine`、`React Card Game UI Kit`。
+- 涉及文件：`src/core/run/redInkResolver.ts`、`src/types/effect.ts`、`src/core/battle/cardResolver.ts`、`src/ui/pages/RedInkPage.tsx`、`src/tests/redInkResolver.test.ts`。
+- 可复用价值：把卡牌改造池拆成总池、解锁过滤、目标牌兼容过滤、角色权重、路线权重和稳定随机展示，适合复用到其他牌组构筑项目的升级 / 附魔 / 铭刻系统。
+- 与本作强绑定部分：朱批、香火、墨、劫数、三坛、问名、正名等命名和触发含义属于本作。
+- 去题材化思路：抽象为 upgrade option pool、unlock gates、card compatibility predicates、role archetype weights、route tendency weights、seeded display count；示例使用中性 draw / energy / block / status / risk 标签。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时只保留 resolver 和中性样例数据。
+- 是否值得抽到模板：值得记录，适合作为 `Roguelike Run Flow Kit` 的 card upgrade service 模块。
+- 后续动作：待 T66 试玩确认候选数量和过滤手感后，再决定是否把目标牌筛选 UI 抽成通用组件。
+
+### 2026-05-22 · T66 · 敌人专属 run modifier 与风险收益判词池
+
+- 候选类型：run flow / enemy-specific modifier / risk-reward verdict resolver。
+- 主归属模板：`Roguelike Run Flow Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`Data-Driven Card Battle Engine`、`React Card Game UI Kit`。
+- 涉及文件：`src/core/run/verdictResolver.ts`、`src/core/battle/registerBattleResolver.ts`、`src/core/battle/drawResolver.ts`、`src/core/battle/cardResolver.ts`、`src/core/battle/nameResolver.ts`、`src/core/battle/altarResolver.ts`、`src/ui/pages/VerdictPage.tsx`、`src/ui/pages/RunSummaryPage.tsx`、`src/tests/verdictResolver.test.ts`。
+- 可复用价值：把“击败特定精英 / Boss 后获得一条本局永久规则”做成数据化 ruleId + 触发窗口 + 每战上限 + 日志反馈，同时把高风险战后选择拆成多个收益变体并支持终局过滤，适合复用到其他牌组构筑肉鸽的 elite reward、boss seal、curse reward 或 pact 系统。
+- 与本作强绑定部分：登簿、削籍、榜裂、墨、香火、劫数、裂形符和具体敌人名称属于本作。
+- 去题材化思路：抽象为 enemy-specific run modifiers、post-battle verdict options、risk meter delta、next-combat start bonus、combat trigger windows；示例使用中性 elite_a / elite_b / boss_flag、energy / currency / curse / delayed bonus 命名。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时只保留 resolver、触发窗口和中性样例数据。
+- 是否值得抽到模板：值得记录，适合作为 `Roguelike Run Flow Kit` 的 advanced run reward 模块。
+- 后续动作：待 T67 人工试玩确认收益强度和显示可读性后，再决定是否抽象为通用 rule registry。
 
 ### 2026-05-19 · T00-T08 回溯 · 纯逻辑卡牌战斗核心
 

@@ -2,10 +2,11 @@ import type { TutorialRunSummary } from '../../types'
 
 export interface RunSummaryPageProps {
   readonly summary: TutorialRunSummary
+  readonly t: (key: string | undefined) => string
   readonly onRestart: () => void
 }
 
-export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
+export function RunSummaryPage({ summary, t, onRestart }: RunSummaryPageProps) {
   const isComplete = summary.status === 'complete'
 
   return (
@@ -29,7 +30,15 @@ export function RunSummaryPage({ summary, onRestart }: RunSummaryPageProps) {
       <div className={summary.bossCleared ? 'boss-summary cleared' : 'boss-summary'}>
         <span>Boss 结算</span>
         <strong>{getBossSettlementText(summary)}</strong>
+        {summary.registryThiefSealed ? <small>窃榜归封已写入终册</small> : null}
       </div>
+
+      {summary.registerRuleNames.length > 0 ? (
+        <div className="boss-summary cleared">
+          <span>专属登簿</span>
+          <strong>{summary.registerRuleNames.map((nameKey) => t(nameKey)).join(' / ')}</strong>
+        </div>
+      ) : null}
 
       <div className="run-summary-grid" aria-label="本局记录">
         <SummaryMetric label="伏诛" value={summary.vanquishCount} />

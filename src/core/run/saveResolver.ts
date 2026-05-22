@@ -124,6 +124,7 @@ function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
     rewards: value.rewards ?? [],
     redInkRecords: value.redInkRecords ?? [],
     artifactOfferRecords: value.artifactOfferRecords ?? [],
+    nextBattleStartBonus: value.nextBattleStartBonus,
   }
 }
 

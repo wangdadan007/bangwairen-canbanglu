@@ -1,6 +1,7 @@
 import type { TutorialRunState, TutorialRunSummary } from '../../types'
 
 export const CHAPTER_ONE_BOSS_ENCOUNTER_ID = 'encounter_boss_registry_thief'
+export const REGISTRY_THIEF_REGISTER_RULE_ID = 'register_registry_thief'
 
 export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSummary {
   const bossRecord = run.settlements.find(
@@ -42,5 +43,11 @@ export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSumm
     bossCleared: Boolean(bossRecord),
     bossEncounterId: bossRecord?.encounterId,
     bossSettlement: bossRecord?.settlement,
+    registryThiefSealed: run.verdict.registerEntries.some(
+      (entry) => entry.registerRuleId === REGISTRY_THIEF_REGISTER_RULE_ID,
+    ),
+    registerRuleNames: run.verdict.registerEntries
+      .map((entry) => entry.ruleNameKey)
+      .filter((nameKey): nameKey is NonNullable<typeof nameKey> => Boolean(nameKey)),
   }
 }

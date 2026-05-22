@@ -157,6 +157,23 @@
     ]
   },
   {
+    "id": "card_heavy_split_form_talisman",
+    "nameKey": "card.heavy_split_form_talisman.name",
+    "descriptionKey": "card.heavy_split_form_talisman.description",
+    "rulesTextKey": "card.heavy_split_form_talisman.rules",
+    "cost": 1,
+    "type": "talisman",
+    "unlockStage": "stage_run_resources",
+    "tags": ["reward", "fracture", "doom", "break_form"],
+    "effects": [
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 10
+      }
+    ]
+  },
+  {
     "id": "card_trace_name_slip",
     "nameKey": "card.trace_name_slip.name",
     "descriptionKey": "card.trace_name_slip.description",

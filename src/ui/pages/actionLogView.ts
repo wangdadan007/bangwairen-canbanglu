@@ -470,9 +470,16 @@ export function formatLogEntry(
 
   if (entry.type === 'INCENSE_GAINED') {
     const incensePenalty = getPayloadNumber(entry.payload.incensePenalty) ?? 0
+    const incenseBonus = getPayloadNumber(entry.payload.incenseBonus) ?? 0
 
     if (incensePenalty > 0) {
       return `香火受扰 -${incensePenalty}，本回合获得 ${
+        getPayloadNumber(entry.payload.amount) ?? 0
+      }，当前 ${getPayloadNumber(entry.payload.currentIncense) ?? 0}。`
+    }
+
+    if (incenseBonus > 0) {
+      return `开局预支香火 +${incenseBonus}，本回合获得 ${
         getPayloadNumber(entry.payload.amount) ?? 0
       }，当前 ${getPayloadNumber(entry.payload.currentIncense) ?? 0}。`
     }
@@ -498,6 +505,10 @@ export function formatLogEntry(
     return `劫数 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
       getPayloadNumber(entry.payload.currentDoom) ?? 0
     }。`
+  }
+
+  if (entry.type === 'REGISTER_RULE_TRIGGERED') {
+    return formatRegisterRuleLog(entry)
   }
 
   if (entry.type === 'PLAYER_FORM_LOST') {
@@ -777,6 +788,10 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     return 'log-entry backlash'
   }
 
+  if (entry.type === 'REGISTER_RULE_TRIGGERED') {
+    return 'log-entry verdict'
+  }
+
   if (
     entry.type === 'NAME_ASKED' ||
     entry.type === 'NAME_SLOT_REVEALED' ||
@@ -792,6 +807,63 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
   }
 
   return 'log-entry'
+}
+
+function formatRegisterRuleLog(entry: ActionLogEntry) {
+  const ruleName = getRegisterRuleName(getPayloadString(entry.payload.ruleId))
+  const trigger = getPayloadString(entry.payload.trigger)
+
+  if (trigger === 'counter_abnormal') {
+    const inkDelta = getPayloadNumber(entry.payload.inkDelta) ?? 0
+    const incenseDelta = getPayloadNumber(entry.payload.incenseDelta) ?? 0
+    return `${ruleName}触发：断异动得墨 ${inkDelta}${
+      incenseDelta > 0 ? `，偷香已断，香火 +${incenseDelta}` : ''
+    }。`
+  }
+
+  if (trigger === 'enemy_named') {
+    return `${ruleName}触发：正名后，本回合下一次破形 +${
+      getPayloadNumber(entry.payload.pendingBreakShapeBonus) ?? 0
+    }。`
+  }
+
+  if (trigger === 'break_bonus_consumed') {
+    return `${ruleName}触发：追加破形 +${
+      getPayloadNumber(entry.payload.breakShapeBonus) ?? 0
+    }。`
+  }
+
+  if (trigger === 'altar_placed') {
+    return `${ruleName}触发：首次奉坛，墨 +${getPayloadNumber(entry.payload.inkDelta) ?? 0}。`
+  }
+
+  if (trigger === 'altar_triggered') {
+    return `${ruleName}触发：首次坛位生效，抽 ${
+      getPayloadNumber(entry.payload.drawCount) ?? 0
+    } 张。`
+  }
+
+  return `${ruleName}触发。`
+}
+
+function getRegisterRuleName(ruleId: string | undefined) {
+  if (ruleId === 'register_incense_clerk') {
+    return '香吏归案'
+  }
+
+  if (ruleId === 'register_fire_fleeing_name') {
+    return '火名落册'
+  }
+
+  if (ruleId === 'register_dipper_empty_shell') {
+    return '斗壳归位'
+  }
+
+  if (ruleId === 'register_registry_thief') {
+    return '窃榜归封'
+  }
+
+  return '专属登簿'
 }
 
 export function getSettlementLabel(settlement: VictorySettlement) {

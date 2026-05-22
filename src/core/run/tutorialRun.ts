@@ -184,6 +184,7 @@ export function advanceTutorialRun(
       ? createTutorialVerdictOffer({
           encounter: currentEncounter,
           settlement,
+          hasNextEncounter: !isComplete,
           ...verdictContext,
         })
       : undefined,

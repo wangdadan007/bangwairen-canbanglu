@@ -15,7 +15,16 @@ export type EffectCondition =
       readonly type: 'TARGET_HAS_NO_NAME_SLOT'
     }
   | {
+      readonly type: 'TARGET_IS_NAMED'
+    }
+  | {
       readonly type: 'THIS_TURN_NAMED_ENEMY'
+    }
+  | {
+      readonly type: 'THIS_TURN_COUNTERED_ABNORMAL_MOVE'
+    }
+  | {
+      readonly type: 'THIS_TURN_PLACED_ALTAR'
     }
 
 export type CardEffect =

@@ -18,6 +18,7 @@ import {
   getCurrentRouteNode,
   getRouteBattleEncounterIds,
   reduceBattleState,
+  reorderPendingTutorialRedInkOffer,
   resolveArtifactBacklashesAtBattleStart,
   resolveTutorialArtifactOffer,
   resolveTutorialEvent,
@@ -50,7 +51,7 @@ import type {
   TutorialRestOptionId,
   TutorialRunState,
   TutorialSaveData,
-  TutorialVerdictChoiceId,
+  TutorialVerdictOptionId,
   UnlockState,
 } from '../../types'
 
@@ -288,7 +289,7 @@ export function useTutorialRunFlow({
     })
   }
 
-  function chooseVerdict(choiceId: TutorialVerdictChoiceId) {
+  function chooseVerdict(choiceId: TutorialVerdictOptionId) {
     setViewState((current) => {
       const nextRun = createRouteAwareArtifactOffer(
         resolveTutorialVerdict(current.run, choiceId),
@@ -316,7 +317,11 @@ export function useTutorialRunFlow({
       const nextRun =
         deckCardId && annotationId
           ? createRouteAwareArtifactOffer(
-              resolveTutorialRedInk(current.run, { deckCardId, annotationId }),
+              resolveTutorialRedInk(current.run, {
+                deckCardId,
+                annotationId,
+                cardDefinitions: gameData.cards,
+              }),
               current.route,
             )
           : createRouteAwareArtifactOffer(resolveTutorialRedInk(current.run), current.route)
@@ -608,9 +613,11 @@ function createBattle(
   },
   temporaryPlayerFormDelta = 0,
   artifacts?: TutorialRunState['artifacts'],
+  registerEntries: TutorialRunState['verdict']['registerEntries'] = [],
   extraHandDefinitionIds: readonly CardId[] = [],
   artifactBacklashRecords: readonly ArtifactBacklashRecord[] = [],
   initialEnemyIntentIds: Readonly<Record<string, string>> = {},
+  openingIncenseBonus = 0,
 ) {
   return createInitialBattleState({
     cardDefinitions: gameData.cards,
@@ -624,14 +631,20 @@ function createBattle(
     temporaryResourceDelta,
     temporaryPlayerFormDelta,
     artifacts,
+    registerEntries,
     extraHandDefinitionIds,
     artifactBacklashRecords,
     initialEnemyIntentIds,
+    openingIncenseBonus,
   })
 }
 
 function createRouteAwareArtifactOffer(run: TutorialRunState, route: RouteState) {
-  return createTutorialArtifactOfferIfNeeded(run, gameData.artifacts, {
+  const runWithRouteAwareRedInk = reorderPendingTutorialRedInkOffer(run, {
+    routeTendencyIds: route.routeTendencyIds ?? [],
+  })
+
+  return createTutorialArtifactOfferIfNeeded(runWithRouteAwareRedInk, gameData.artifacts, {
     routeTendencyIds: route.routeTendencyIds ?? [],
   })
 }
@@ -681,6 +694,7 @@ function createInitialTutorialBattleView(
           undefined,
           0,
           run.artifacts,
+          run.verdict.registerEntries,
           undefined,
           undefined,
           createInitialEnemyIntentIdsForRoute(
@@ -760,9 +774,18 @@ function createBattleForEncounter(
   route: RouteState,
 ) {
   const backlashResolution = resolveArtifactBacklashesAtBattleStart(run.artifacts, run.resources)
+  const battleStartBonus = run.nextBattleStartBonus
+  const battleResources = battleStartBonus
+    ? {
+        ...backlashResolution.resources,
+        ink: backlashResolution.resources.ink + battleStartBonus.ink,
+      }
+    : backlashResolution.resources
   const nextRun = {
     ...run,
     artifacts: backlashResolution.artifacts,
+    resources: battleResources,
+    nextBattleStartBonus: undefined,
   }
   const enemyDefinitions = getEncounterEnemyDefinitionIds(encounter).map((enemyDefinitionId) =>
     getEnemyDefinition(enemyDefinitionId),
@@ -776,16 +799,18 @@ function createBattleForEncounter(
       nextRun.deckCards,
       nextRun.verdict.maxIncenseBonus,
       nextRun.playerForm,
-      backlashResolution.resources,
+      battleResources,
       backlashResolution.temporaryResourceDelta,
       backlashResolution.temporaryPlayerFormDelta,
       nextRun.artifacts,
+      nextRun.verdict.registerEntries,
       backlashResolution.extraHandDefinitionIds,
       backlashResolution.records,
       createInitialEnemyIntentIdsForRoute(
         enemyDefinitions.map((enemyDefinition) => enemyDefinition.id),
         route.routeTendencyIds ?? [],
       ),
+      battleStartBonus?.incense ?? 0,
     ),
   }
 }

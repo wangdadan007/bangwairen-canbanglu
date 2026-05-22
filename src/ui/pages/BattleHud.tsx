@@ -346,7 +346,7 @@ export function BattleHud({
       ) : null}
 
       {run.status !== 'active' && !hasPendingChoice ? (
-        <RunSummaryPage summary={runSummary} onRestart={restartTutorialRun} />
+        <RunSummaryPage summary={runSummary} t={t} onRestart={restartTutorialRun} />
       ) : null}
 
       {showActiveBattlePanels ? (

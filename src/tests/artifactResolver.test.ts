@@ -509,6 +509,10 @@ describe('T17 artifact foundation', () => {
       'card_split_form_talisman',
       'card_split_form_talisman',
     ])
+    expect(afterErase.verdict.records[0]?.addedCardDefinitionIds).toEqual([
+      'card_split_form_talisman',
+      'card_split_form_talisman',
+    ])
   })
 
   it('advances artifact progress from battle, red ink, and erase verdict records', () => {

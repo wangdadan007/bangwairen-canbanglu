@@ -125,12 +125,14 @@ describe('T21 rest resolver', () => {
       routeNodeId: restRouteNodeId,
     })
 
-    expect(nextRun.pendingRedInk?.options.map((option) => option.id)).toEqual([
-      'red_ink_return_incense',
-      'red_ink_trace_name',
-      'red_ink_named_draw',
-      'red_ink_press_momentum',
-    ])
+    expect(nextRun.pendingRedInk?.options.map((option) => option.id)).toEqual(
+      expect.arrayContaining([
+        'red_ink_return_incense',
+        'red_ink_trace_name',
+        'red_ink_named_draw',
+        'red_ink_press_momentum',
+      ]),
+    )
     expect(nextRun.rests.records[0]).toEqual(
       expect.objectContaining({
         id: 'rest_record_1',

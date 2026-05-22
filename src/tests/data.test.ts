@@ -6,7 +6,7 @@ describe('initial game data', () => {
     const data = loadGameData()
 
     expect(data.artifacts).toHaveLength(11)
-    expect(data.cards).toHaveLength(44)
+    expect(data.cards).toHaveLength(45)
     expect(data.enemies).toHaveLength(16)
     expect(data.encounters).toHaveLength(25)
     expect(data.events).toHaveLength(9)
@@ -95,6 +95,11 @@ describe('initial game data', () => {
     expect(getCardDefinition('card_order_scroll', data)?.effects[0].type).toBe('DRAW')
     expect(getCardDefinition('card_quiet_incense', data)?.effects[0].type).toBe('GAIN_INCENSE')
     expect(getCardDefinition('card_split_form_talisman', data)?.tags).toContain('reward')
+    expect(getCardDefinition('card_heavy_split_form_talisman', data)?.effects[0]).toEqual({
+      type: 'BREAK_SHAPE',
+      target: 'selected_enemy',
+      amount: 10,
+    })
     expect(getCardDefinition('card_trace_name_slip', data)?.tags).toContain('catalogue_reward')
     expect(getCardDefinition('card_thunder_splinter', data)?.effects[0]).toEqual({
       type: 'BREAK_SHAPE',
@@ -482,10 +487,10 @@ describe('initial game data', () => {
       sealMomentum: data.cards.filter((card) => card.tags.includes('seal_momentum')),
     }
 
-    expect(cardsByDirection.breakForm).toHaveLength(13)
+    expect(cardsByDirection.breakForm).toHaveLength(14)
     expect(cardsByDirection.askName).toHaveLength(9)
     expect(cardsByDirection.sealMomentum).toHaveLength(9)
-    expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(35)
+    expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(36)
     expect(
       data.cards.filter((card) => card.effects.some((effect) => effect.type === 'ASK_NAME')),
     ).toHaveLength(8)
@@ -503,11 +508,14 @@ describe('initial game data', () => {
   it('keeps early chapter reward numbers within the current enemy curve', () => {
     const data = loadGameData()
     const rewardCards = data.cards.filter((card) => card.tags.includes('reward'))
-    const directBreakAmounts = rewardCards.flatMap((card) =>
+    const directBreakAmounts = rewardCards
+      .filter((card) => card.id !== 'card_heavy_split_form_talisman')
+      .flatMap((card) =>
       card.effects
         .filter((effect) => effect.type === 'BREAK_SHAPE')
         .map((effect) => effect.amount),
     )
+    const heavySplitForm = getCardDefinition('card_heavy_split_form_talisman', data)
     const sealMomentumAmounts = rewardCards.flatMap((card) =>
       card.effects
         .filter((effect) => effect.type === 'SEAL_MOMENTUM')
@@ -515,6 +523,11 @@ describe('initial game data', () => {
     )
 
     expect(Math.max(...directBreakAmounts)).toBeLessThanOrEqual(8)
+    expect(heavySplitForm?.effects[0]).toEqual({
+      type: 'BREAK_SHAPE',
+      target: 'selected_enemy',
+      amount: 10,
+    })
     expect(Math.max(...sealMomentumAmounts)).toBeLessThanOrEqual(5)
   })
 
