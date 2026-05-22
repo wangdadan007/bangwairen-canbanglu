@@ -1,4 +1,5 @@
 export * from './artifactResolver'
+export * from './bossRoutePressureResolver'
 export * from './deckResolver'
 export * from './encounterResolver'
 export * from './eventResolver'

@@ -8,11 +8,13 @@ import {
   createTutorialArtifactOfferIfNeeded,
   reduceBattleState,
   RED_INK_OPTIONS,
+  LIANJIN_ROLE_ID,
   resolveArtifactBacklashesAtBattleStart,
   resolveTutorialArtifactOffer,
   resolveTutorialRedInk,
   resolveTutorialVerdict,
   advanceTutorialRun,
+  ZHAOWEI_ROLE_ID,
   type BattleReducerContext,
 } from '../core'
 import { gameData } from '../data'
@@ -101,6 +103,105 @@ describe('T17 artifact foundation', () => {
       'artifact_name_tether_spindle',
       'artifact_fracture_needle',
       'artifact_doom_bell',
+    ])
+  })
+
+  it('orders T65 artifact offers around role and route build anchors', () => {
+    let zhaoweiRun = createInitialTutorialRunState(
+      gameData.tutorialUnlocks,
+      [
+        'encounter_tutorial_paper_wraith',
+        'encounter_elite_incense_clerk',
+        'encounter_boss_registry_thief',
+      ],
+      undefined,
+      gameData.artifacts,
+      ZHAOWEI_ROLE_ID,
+    )
+    zhaoweiRun = advanceTutorialRun(
+      zhaoweiRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+    zhaoweiRun = advanceTutorialRun(
+      zhaoweiRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+
+    const zhaoweiMidOfferRun = createTutorialArtifactOfferIfNeeded(
+      zhaoweiRun,
+      gameData.artifacts,
+      {
+        routeTendencyIds: ['catalogue', 'supply'],
+      },
+    )
+
+    expect(zhaoweiMidOfferRun.pendingArtifactOffer?.stage).toBe('mid_chapter')
+    expect(zhaoweiMidOfferRun.pendingArtifactOffer?.options[0].artifactDefinitionId).toBe(
+      'artifact_registry_inkstone',
+    )
+
+    let lianjinRun = createInitialTutorialRunState(
+      gameData.tutorialUnlocks,
+      [
+        'encounter_tutorial_paper_wraith',
+        'encounter_elite_incense_clerk',
+        'encounter_boss_registry_thief',
+      ],
+      undefined,
+      gameData.artifacts,
+      LIANJIN_ROLE_ID,
+    )
+    lianjinRun = advanceTutorialRun(
+      lianjinRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+    lianjinRun = advanceTutorialRun(
+      lianjinRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+
+    const lianjinMidOfferRun = createTutorialArtifactOfferIfNeeded(
+      lianjinRun,
+      gameData.artifacts,
+      {
+        routeTendencyIds: ['fracture', 'high_pressure'],
+      },
+    )
+    lianjinRun = resolveTutorialArtifactOffer(
+      lianjinMidOfferRun,
+      'artifact_seal_door_tablet',
+      gameData.artifacts,
+    )
+    lianjinRun = advanceTutorialRun(
+      lianjinRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+
+    const lianjinBossOfferRun = createTutorialArtifactOfferIfNeeded(
+      lianjinRun,
+      gameData.artifacts,
+      {
+        routeTendencyIds: ['fracture', 'high_pressure'],
+      },
+    )
+
+    expect(lianjinMidOfferRun.pendingArtifactOffer?.options[0].artifactDefinitionId).toBe(
+      'artifact_seal_door_tablet',
+    )
+    expect(lianjinBossOfferRun.pendingArtifactOffer?.options.map((option) => option.artifactDefinitionId)).toEqual([
+      'artifact_fracture_needle',
+      'artifact_doom_bell',
+      'artifact_ash_lamp',
     ])
   })
 

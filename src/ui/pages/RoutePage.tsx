@@ -5,6 +5,7 @@ import type {
   RouteNodeDefinition,
   RouteNodeId,
   RouteState,
+  RouteTendencyId,
 } from '../../types'
 
 interface RoutePageProps {
@@ -28,6 +29,29 @@ const statusLabels = {
   current: '当前',
   reachable: '可达',
   locked: '未显',
+}
+
+const routeTendencyCopy: Record<RouteTendencyId, { readonly label: string; readonly hint: string }> = {
+  steady: {
+    label: '稳行',
+    hint: '压力较稳，适合保形和补牌组厚度',
+  },
+  catalogue: {
+    label: '归册',
+    hint: '名格、精英和高质奖励更集中',
+  },
+  fracture: {
+    label: '裂榜',
+    hint: '风险更高，偏破形、劫数与裁定收益',
+  },
+  supply: {
+    label: '补给',
+    hint: '更容易接到商店、休整或资源回补',
+  },
+  high_pressure: {
+    label: '高压',
+    hint: '后段来势更急，需要更明确的构筑方向',
+  },
 }
 
 export function RoutePage({ route, routeState, t, onChooseRouteNode }: RoutePageProps) {
@@ -57,6 +81,16 @@ export function RoutePage({ route, routeState, t, onChooseRouteNode }: RoutePage
                 <span>{nodeTypeLabels[node.type]}</span>
                 <strong>{t(node.nameKey)}</strong>
                 <small>{t(node.descriptionKey)}</small>
+                {node.routeTendencyIds?.length ? (
+                  <span className="route-tendency-row" aria-label="路线倾向">
+                    {node.routeTendencyIds.map((tendencyId) => (
+                      <span key={tendencyId}>{routeTendencyCopy[tendencyId].label}</span>
+                    ))}
+                  </span>
+                ) : null}
+                {status === 'reachable' ? (
+                  <small className="route-choice-hint">{getRouteChoiceHint(node)}</small>
+                ) : null}
               </div>
               {status === 'reachable' && onChooseRouteNode ? (
                 <button
@@ -99,4 +133,14 @@ function getNodeMark(nodeType: RouteNodeDefinition['type']) {
   }
 
   return '战'
+}
+
+function getRouteChoiceHint(node: RouteNodeDefinition) {
+  const primaryTendencyId = node.routeTendencyIds?.[0]
+
+  if (!primaryTendencyId) {
+    return '普通节点，适合维持当前构筑节奏。'
+  }
+
+  return routeTendencyCopy[primaryTendencyId].hint
 }

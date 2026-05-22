@@ -54,6 +54,7 @@ export interface CreateBattleStateInput {
   readonly extraHandDefinitionIds?: readonly CardId[]
   readonly artifactBacklashRecords?: readonly ArtifactBacklashRecord[]
   readonly unlocks?: UnlockState
+  readonly initialEnemyIntentIds?: Readonly<Record<string, string>>
 }
 
 export function createInitialBattleState(input: CreateBattleStateInput): CombatState {
@@ -79,7 +80,7 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
   }
 
   const enemies = enemyDefinitions.map((enemyDefinition, index) =>
-    createEnemyState(enemyDefinition, index),
+    createEnemyState(enemyDefinition, index, input.initialEnemyIntentIds?.[enemyDefinition.id]),
   )
   const maxIncense = DEFAULT_MAX_INCENSE + (input.maxIncenseBonus ?? 0)
   const persistentPlayerForm = normalizeTutorialPlayerFormState(
@@ -214,7 +215,18 @@ export function createTemporaryCardInstances(
   }))
 }
 
-export function createEnemyState(definition: EnemyDefinition, index: number): EnemyState {
+export function createEnemyState(
+  definition: EnemyDefinition,
+  index: number,
+  initialIntentId?: string,
+): EnemyState {
+  const initialIntentIndex = Math.max(
+    0,
+    initialIntentId
+      ? definition.intents.findIndex((intent) => intent.id === initialIntentId)
+      : 0,
+  )
+  const currentIntent = definition.intents[initialIntentIndex]
   const nameSlots = Array.from({ length: definition.nameSlots }, (_, slotIndex) => {
     const slotDefinition = definition.nameSlotDefinitions?.find((slot) => slot.index === slotIndex)
 
@@ -234,9 +246,9 @@ export function createEnemyState(definition: EnemyDefinition, index: number): En
     nameSlots,
     isNamed: false,
     hasTriggeredNameBreak: false,
-    intentIndex: 0,
-    currentIntent: definition.intents[0],
-    incomingForce: getIncomingForce(definition.intents[0]),
+    intentIndex: initialIntentIndex,
+    currentIntent,
+    incomingForce: getIncomingForce(currentIntent),
     blockedAbnormalMoveTypes: [],
     traits: definition.traits,
   }

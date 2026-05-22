@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { createInitialBattleState } from '../core'
+import {
+  createInitialBattleState,
+  getRegistryThiefInitialIntentIdForRoute,
+  REGISTRY_THIEF_BOSS_ENEMY_ID,
+} from '../core'
 import { getEncounterDefinition, getEnemyDefinition, gameData } from '../data'
 
 describe('T31-T35 elite and boss encounter skeletons', () => {
@@ -95,5 +99,40 @@ describe('T31-T35 elite and boss encounter skeletons', () => {
     expect(battle.enemies[0].maxForm).toBe(84)
     expect(battle.enemies[0].nameSlots).toHaveLength(3)
     expect(battle.enemies[0].currentIntent?.id).toBe('intent_registry_thief_press_registry')
+  })
+
+  it('lets T65 route tendency adjust the registry thief opening pressure', () => {
+    const boss = getEnemyDefinition('enemy_registry_thief', gameData)
+
+    if (!boss) {
+      throw new Error('Missing registry thief boss definition')
+    }
+
+    const catalogueIntentId = getRegistryThiefInitialIntentIdForRoute(['catalogue', 'supply'])
+    const fractureIntentId = getRegistryThiefInitialIntentIdForRoute([
+      'fracture',
+      'high_pressure',
+    ])
+    const catalogueBattle = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: boss,
+      initialEnemyIntentIds: {
+        [REGISTRY_THIEF_BOSS_ENEMY_ID]: catalogueIntentId,
+      },
+    })
+    const fractureBattle = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: boss,
+      initialEnemyIntentIds: {
+        [REGISTRY_THIEF_BOSS_ENEMY_ID]: fractureIntentId,
+      },
+    })
+
+    expect(catalogueIntentId).toBe('intent_registry_thief_cloak_stolen_name')
+    expect(fractureIntentId).toBe('intent_registry_thief_tear_registry')
+    expect(catalogueBattle.enemies[0].intentIndex).toBe(2)
+    expect(catalogueBattle.enemies[0].currentIntent?.id).toBe(catalogueIntentId)
+    expect(fractureBattle.enemies[0].intentIndex).toBe(3)
+    expect(fractureBattle.enemies[0].currentIntent?.id).toBe(fractureIntentId)
   })
 })

@@ -16,7 +16,7 @@ const stageCopy = {
   mid_chapter: {
     eyebrow: '途中法宝',
     title: '第一章途中再补一件',
-    body: '这次选择用来补足路线方向：朱批、封势、墨或归册节奏都可以继续拉开差异。',
+    body: '这次选择会优先贴近当前角色和路线倾向，用来把朱批、封势、墨或归册节奏拉成明确构筑。',
   },
   boss_clear: {
     eyebrow: 'Boss 后法宝',
@@ -68,6 +68,7 @@ export function ArtifactOfferPage({
               </span>
               {definition ? (
                 <span className="card-tags" aria-label="法宝标签">
+                  <span>{getBuildAnchorLabel(definition)}</span>
                   <span>{getTriggerLabel(definition)}</span>
                   <span>未认主</span>
                   {definition.overloadCondition ? <span>有过载</span> : null}
@@ -79,6 +80,30 @@ export function ArtifactOfferPage({
       </div>
     </section>
   )
+}
+
+function getBuildAnchorLabel(definition: ArtifactDefinition) {
+  if (definition.tags.includes('ask_name') || definition.tags.includes('catalogue')) {
+    return '偏问名归册'
+  }
+
+  if (definition.tags.includes('break_form')) {
+    return '偏破形节奏'
+  }
+
+  if (definition.tags.includes('red_ink')) {
+    return '偏朱批'
+  }
+
+  if (definition.tags.includes('doom') || definition.tags.includes('verdict')) {
+    return '偏裁定'
+  }
+
+  if (definition.tags.includes('seal_momentum')) {
+    return '偏封势'
+  }
+
+  return '构筑锚点'
 }
 
 function getTriggerLabel(definition: ArtifactDefinition) {

@@ -9,6 +9,7 @@ import type {
   TutorialRunState,
   UnlockState,
   VictorySettlement,
+  PlayableRoleId,
 } from '../../types'
 import { appendRunDeckCard } from './deckResolver'
 
@@ -37,6 +38,7 @@ export interface CreateTutorialRewardOfferInput {
   readonly settlement: VictorySettlement
   readonly unlocks: UnlockState
   readonly cardDefinitions: readonly CardDefinition[]
+  readonly roleId?: PlayableRoleId
 }
 
 export function createTutorialRewardOffer({
@@ -44,6 +46,7 @@ export function createTutorialRewardOffer({
   settlement,
   unlocks,
   cardDefinitions,
+  roleId,
 }: CreateTutorialRewardOfferInput): TutorialRewardOffer {
   const quality = getRewardQuality(settlement)
   const options = selectRewardOptions({
@@ -51,6 +54,7 @@ export function createTutorialRewardOffer({
     quality,
     cards: getAvailableTutorialRewardCards(cardDefinitions, unlocks, quality),
     unlocks,
+    roleId,
   })
 
   return {
@@ -138,11 +142,13 @@ function selectRewardOptions({
   quality,
   cards,
   unlocks,
+  roleId,
 }: {
   readonly encounter: EncounterDefinition
   readonly quality: RewardQuality
   readonly cards: readonly CardDefinition[]
   readonly unlocks: UnlockState
+  readonly roleId?: PlayableRoleId
 }): readonly TutorialRewardOption[] {
   const latestStageId = unlocks.stages[unlocks.stages.length - 1]
   const latestStageCards = latestStageId
@@ -152,8 +158,15 @@ function selectRewardOptions({
     quality === 'high' ? cards.filter((card) => card.tags.includes('catalogue_reward')) : []
   const orderedCards =
     quality === 'high'
-      ? uniqueCards([...highQualityCards, ...latestStageCards, ...cards])
-      : uniqueCards([...latestStageCards, ...cards])
+      ? uniqueCards([
+          ...sortCardsByRolePreference(highQualityCards, roleId),
+          ...sortCardsByRolePreference(latestStageCards, roleId),
+          ...sortCardsByRolePreference(cards, roleId),
+        ])
+      : uniqueCards([
+          ...sortCardsByRolePreference(latestStageCards, roleId),
+          ...sortCardsByRolePreference(cards, roleId),
+        ])
   const optionCount = quality === 'high' ? 3 : 2
 
   return orderedCards.slice(0, optionCount).map((card, index) => ({
@@ -162,6 +175,54 @@ function selectRewardOptions({
     cardDefinitionId: card.id,
     quality,
   }))
+}
+
+const ROLE_REWARD_TAG_WEIGHTS: Record<PlayableRoleId, Readonly<Record<string, number>>> = {
+  role_hengjian: {
+    catalogue_reward: 6,
+    red_ink_preview: 5,
+    draw: 3,
+    ask_name: 2,
+    ink: 2,
+    seal_momentum: 1,
+  },
+  role_zhaowei: {
+    ask_name: 6,
+    counter_abnormal_move: 4,
+    abnormal_move: 4,
+    incoming_force: 3,
+    heaven_altar: 3,
+    draw: 2,
+    ink: 1,
+  },
+  role_lianjin: {
+    break_form: 6,
+    gain_incense: 4,
+    doom: 3,
+    fracture: 3,
+    artifact: 2,
+    seal_momentum: 1,
+  },
+}
+
+function sortCardsByRolePreference(
+  cards: readonly CardDefinition[],
+  roleId?: PlayableRoleId,
+): readonly CardDefinition[] {
+  const weights = roleId ? ROLE_REWARD_TAG_WEIGHTS[roleId] : undefined
+
+  if (!weights) {
+    return cards
+  }
+
+  return cards
+    .map((card, index) => ({
+      card,
+      index,
+      score: card.tags.reduce((total, tag) => total + (weights[tag] ?? 0), 0),
+    }))
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map(({ card }) => card)
 }
 
 function getRewardQuality(settlement: VictorySettlement): RewardQuality {

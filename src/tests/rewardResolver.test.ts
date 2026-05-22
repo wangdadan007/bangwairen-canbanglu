@@ -6,7 +6,10 @@ import {
   createUnlockState,
   getAvailableTutorialRewardCards,
   getCurrentTutorialEncounter,
+  HENGJIAN_ROLE_ID,
+  LIANJIN_ROLE_ID,
   resolveTutorialReward,
+  ZHAOWEI_ROLE_ID,
 } from '../core'
 import { gameData } from '../data'
 
@@ -141,6 +144,49 @@ describe('T10 tutorial rewards', () => {
         'card_heaven_ink_decree',
       ]),
     )
+  })
+
+  it('tilts T65 reward options toward the selected role without changing option count', () => {
+    const allUnlocks = createUnlockState(
+      [
+        'stage_core',
+        'stage_abnormal_boundary',
+        'stage_red_ink_preview',
+        'stage_run_resources',
+        'stage_human_altar',
+        'stage_three_altars',
+      ],
+      gameData.tutorialUnlocks,
+    )
+    const firstEncounter = gameData.encounters[0]
+    const hengjianOffer = createTutorialRewardOffer({
+      encounter: firstEncounter,
+      settlement: 'catalogue',
+      unlocks: allUnlocks,
+      cardDefinitions: gameData.cards,
+      roleId: HENGJIAN_ROLE_ID,
+    })
+    const zhaoweiOffer = createTutorialRewardOffer({
+      encounter: firstEncounter,
+      settlement: 'catalogue',
+      unlocks: allUnlocks,
+      cardDefinitions: gameData.cards,
+      roleId: ZHAOWEI_ROLE_ID,
+    })
+    const lianjinOffer = createTutorialRewardOffer({
+      encounter: firstEncounter,
+      settlement: 'catalogue',
+      unlocks: allUnlocks,
+      cardDefinitions: gameData.cards,
+      roleId: LIANJIN_ROLE_ID,
+    })
+
+    expect(hengjianOffer.options).toHaveLength(3)
+    expect(zhaoweiOffer.options).toHaveLength(3)
+    expect(lianjinOffer.options).toHaveLength(3)
+    expect(hengjianOffer.options[0].cardDefinitionId).toBe('card_trace_name_slip')
+    expect(zhaoweiOffer.options[0].cardDefinitionId).toBe('card_heaven_altar_oracle')
+    expect(lianjinOffer.options[0].cardDefinitionId).toBe('card_registry_rewrite_edict')
   })
 
   it('keeps the expanded T15 card pool gated by tutorial unlocks', () => {

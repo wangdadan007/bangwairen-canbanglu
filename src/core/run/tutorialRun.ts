@@ -193,6 +193,7 @@ export function advanceTutorialRun(
           settlement,
           unlocks: nextUnlocks,
           cardDefinitions,
+          roleId: run.roleId,
         })
       : undefined,
   }

@@ -261,7 +261,7 @@ function completeRouteSmoke({
     gameData.artifacts,
     roleId,
   )
-  run = resolvePendingRunChoices(run)
+  run = resolvePendingRunChoices(run, routeState)
   let battleIndex = 0
   let routeChoiceIndex = 0
 
@@ -313,8 +313,8 @@ function completeRouteSmoke({
         undefined,
         run.resources,
       )
-      run = resolvePendingRunChoices(run)
       routeState = completeCurrentRouteNode(route, routeState)
+      run = resolvePendingRunChoices(run, routeState)
       battleIndex += 1
       continue
     }
@@ -330,10 +330,10 @@ function completeRouteSmoke({
         }
 
         run = resolveTutorialEvent(run, event, option.id)
-        run = resolvePendingRunChoices(run)
       }
 
       routeState = completeCurrentRouteNode(route, routeState)
+      run = resolvePendingRunChoices(run, routeState)
       continue
     }
 
@@ -350,8 +350,8 @@ function completeRouteSmoke({
         deckCardId: fallbackOption.id === 'remove_card' ? run.deckCards[0]?.id : undefined,
         routeNodeId: node?.id,
       })
-      run = resolvePendingRunChoices(run)
       routeState = completeCurrentRouteNode(route, routeState)
+      run = resolvePendingRunChoices(run, routeState)
       continue
     }
 
@@ -393,8 +393,13 @@ function createRouteSequenceChooser(routeNodeIds: readonly RouteNodeId[]) {
   }
 }
 
-function resolvePendingRunChoices(run: TutorialRunState): TutorialRunState {
-  let nextRun = createTutorialArtifactOfferIfNeeded(run, gameData.artifacts)
+function resolvePendingRunChoices(
+  run: TutorialRunState,
+  routeState?: RouteState,
+): TutorialRunState {
+  let nextRun = createTutorialArtifactOfferIfNeeded(run, gameData.artifacts, {
+    routeTendencyIds: routeState?.routeTendencyIds ?? [],
+  })
 
   for (let index = 0; index < 10; index += 1) {
     if (nextRun.pendingVerdict) {
@@ -423,7 +428,9 @@ function resolvePendingRunChoices(run: TutorialRunState): TutorialRunState {
       continue
     }
 
-    const offeredRun = createTutorialArtifactOfferIfNeeded(nextRun, gameData.artifacts)
+    const offeredRun = createTutorialArtifactOfferIfNeeded(nextRun, gameData.artifacts, {
+      routeTendencyIds: routeState?.routeTendencyIds ?? [],
+    })
 
     if (!offeredRun.pendingArtifactOffer) {
       return offeredRun

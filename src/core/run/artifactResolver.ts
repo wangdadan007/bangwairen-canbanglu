@@ -6,6 +6,8 @@ import type {
   ArtifactProgressKind,
   ArtifactState,
   CardId,
+  PlayableRoleId,
+  RouteTendencyId,
   TutorialArtifactOffer,
   TutorialArtifactOfferStage,
   TutorialRunState,
@@ -44,6 +46,18 @@ export const BOSS_CLEAR_ARTIFACT_OFFER_IDS: readonly ArtifactId[] = [
   FRACTURE_NEEDLE_ARTIFACT_ID,
   DOOM_BELL_ARTIFACT_ID,
 ]
+const MID_CHAPTER_ARTIFACT_CANDIDATE_IDS: readonly ArtifactId[] = [
+  ...MID_CHAPTER_ARTIFACT_OFFER_IDS,
+  COURT_CHIME_ARTIFACT_ID,
+  ASH_LAMP_ARTIFACT_ID,
+]
+const BOSS_CLEAR_ARTIFACT_CANDIDATE_IDS: readonly ArtifactId[] = [
+  ...BOSS_CLEAR_ARTIFACT_OFFER_IDS,
+  REGISTRY_INKSTONE_ARTIFACT_ID,
+  SEAL_DOOR_TABLET_ARTIFACT_ID,
+  ASH_LAMP_ARTIFACT_ID,
+  CINNABAR_DOU_ARTIFACT_ID,
+]
 
 export interface ArtifactProgressEvent {
   readonly kind: ArtifactProgressKind
@@ -79,6 +93,10 @@ export interface ArtifactBacklashResolution {
   readonly records: readonly ArtifactBacklashRecord[]
 }
 
+export interface ArtifactOfferContext {
+  readonly routeTendencyIds?: readonly RouteTendencyId[]
+}
+
 export function createInitialArtifactCollection(
   artifactDefinitions: readonly ArtifactDefinition[] = [],
 ): ArtifactCollectionState {
@@ -100,6 +118,7 @@ export function createStarterArtifactCollection(
 export function createTutorialArtifactOfferIfNeeded(
   run: TutorialRunState,
   artifactDefinitions: readonly ArtifactDefinition[],
+  context: ArtifactOfferContext = {},
 ): TutorialRunState {
   if (run.status === 'failed') {
     return run
@@ -120,7 +139,7 @@ export function createTutorialArtifactOfferIfNeeded(
     !hasArtifactOfferRecord(run, 'starter') &&
     run.completedEncounterIds.length === 0
   ) {
-    return createRunWithArtifactOffer(run, artifactDefinitions, 'starter')
+    return createRunWithArtifactOffer(run, artifactDefinitions, 'starter', context)
   }
 
   if (
@@ -128,7 +147,7 @@ export function createTutorialArtifactOfferIfNeeded(
     !hasArtifactOfferRecord(run, 'mid_chapter') &&
     hasReachedMidChapterArtifactCheckpoint(run)
   ) {
-    return createRunWithArtifactOffer(run, artifactDefinitions, 'mid_chapter')
+    return createRunWithArtifactOffer(run, artifactDefinitions, 'mid_chapter', context)
   }
 
   if (
@@ -136,7 +155,7 @@ export function createTutorialArtifactOfferIfNeeded(
     !hasArtifactOfferRecord(run, 'boss_clear') &&
     run.completedEncounterIds.includes(BOSS_ARTIFACT_REWARD_ENCOUNTER_ID)
   ) {
-    return createRunWithArtifactOffer(run, artifactDefinitions, 'boss_clear')
+    return createRunWithArtifactOffer(run, artifactDefinitions, 'boss_clear', context)
   }
 
   return run
@@ -459,8 +478,9 @@ function createRunWithArtifactOffer(
   run: TutorialRunState,
   artifactDefinitions: readonly ArtifactDefinition[],
   stage: TutorialArtifactOfferStage,
+  context: ArtifactOfferContext,
 ): TutorialRunState {
-  const offer = createTutorialArtifactOffer(run, artifactDefinitions, stage)
+  const offer = createTutorialArtifactOffer(run, artifactDefinitions, stage, context)
 
   return offer
     ? {
@@ -474,10 +494,11 @@ function createTutorialArtifactOffer(
   run: TutorialRunState,
   artifactDefinitions: readonly ArtifactDefinition[],
   stage: TutorialArtifactOfferStage,
+  context: ArtifactOfferContext,
 ): TutorialArtifactOffer | undefined {
   const ownedArtifactIds = new Set(run.artifacts.artifacts.map((artifact) => artifact.definitionId))
   const artifactOfferRecords = run.artifactOfferRecords ?? []
-  const options = getArtifactOfferIds(stage)
+  const options = orderArtifactOfferIds(getArtifactOfferIds(stage), run.roleId, context)
     .filter((artifactDefinitionId) => !ownedArtifactIds.has(artifactDefinitionId))
     .map((artifactDefinitionId, index) => {
       const definition = artifactDefinitions.find((candidate) => candidate.id === artifactDefinitionId)
@@ -509,10 +530,86 @@ function getArtifactOfferIds(stage: TutorialArtifactOfferStage) {
   }
 
   if (stage === 'mid_chapter') {
-    return MID_CHAPTER_ARTIFACT_OFFER_IDS
+    return MID_CHAPTER_ARTIFACT_CANDIDATE_IDS
   }
 
-  return BOSS_CLEAR_ARTIFACT_OFFER_IDS
+  return BOSS_CLEAR_ARTIFACT_CANDIDATE_IDS
+}
+
+const ROLE_ARTIFACT_WEIGHTS: Record<PlayableRoleId, Readonly<Partial<Record<ArtifactId, number>>>> = {
+  role_hengjian: {
+    [CINNABAR_DOU_ARTIFACT_ID]: 7,
+    [REGISTRY_INKSTONE_ARTIFACT_ID]: 5,
+    [NAME_TETHER_SPINDLE_ARTIFACT_ID]: 4,
+    [ASH_LAMP_ARTIFACT_ID]: 2,
+  },
+  role_zhaowei: {
+    [REGISTRY_INKSTONE_ARTIFACT_ID]: 6,
+    [COURT_CHIME_ARTIFACT_ID]: 5,
+    [NAME_TETHER_SPINDLE_ARTIFACT_ID]: 5,
+    [ASH_LAMP_ARTIFACT_ID]: 2,
+  },
+  role_lianjin: {
+    [SEAL_DOOR_TABLET_ARTIFACT_ID]: 6,
+    [FRACTURE_NEEDLE_ARTIFACT_ID]: 5,
+    [DOOM_BELL_ARTIFACT_ID]: 5,
+    [ASH_LAMP_ARTIFACT_ID]: 3,
+  },
+}
+
+const ROUTE_ARTIFACT_WEIGHTS: Record<RouteTendencyId, Readonly<Partial<Record<ArtifactId, number>>>> = {
+  steady: {
+    [SEAL_DOOR_TABLET_ARTIFACT_ID]: 4,
+    [ASH_LAMP_ARTIFACT_ID]: 2,
+    [CINNABAR_DOU_ARTIFACT_ID]: 2,
+  },
+  catalogue: {
+    [NAME_TETHER_SPINDLE_ARTIFACT_ID]: 5,
+    [REGISTRY_INKSTONE_ARTIFACT_ID]: 4,
+    [CINNABAR_DOU_ARTIFACT_ID]: 3,
+  },
+  fracture: {
+    [FRACTURE_NEEDLE_ARTIFACT_ID]: 6,
+    [DOOM_BELL_ARTIFACT_ID]: 5,
+    [SEAL_DOOR_TABLET_ARTIFACT_ID]: 3,
+  },
+  supply: {
+    [ASH_LAMP_ARTIFACT_ID]: 3,
+    [CINNABAR_DOU_ARTIFACT_ID]: 2,
+    [REGISTRY_INKSTONE_ARTIFACT_ID]: 2,
+  },
+  high_pressure: {
+    [FRACTURE_NEEDLE_ARTIFACT_ID]: 5,
+    [DOOM_BELL_ARTIFACT_ID]: 4,
+    [SEAL_DOOR_TABLET_ARTIFACT_ID]: 4,
+  },
+}
+
+function orderArtifactOfferIds(
+  artifactIds: readonly ArtifactId[],
+  roleId: PlayableRoleId | undefined,
+  context: ArtifactOfferContext,
+): readonly ArtifactId[] {
+  const roleWeights = roleId ? ROLE_ARTIFACT_WEIGHTS[roleId] : undefined
+  const routeTendencyIds = context.routeTendencyIds ?? []
+
+  if (!roleWeights && routeTendencyIds.length === 0) {
+    return artifactIds
+  }
+
+  return artifactIds
+    .map((artifactId, index) => ({
+      artifactId,
+      index,
+      score:
+        (roleWeights?.[artifactId] ?? 0) +
+        routeTendencyIds.reduce(
+          (total, tendencyId) => total + (ROUTE_ARTIFACT_WEIGHTS[tendencyId]?.[artifactId] ?? 0),
+          0,
+        ),
+    }))
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map(({ artifactId }) => artifactId)
 }
 
 function hasReachedMidChapterArtifactCheckpoint(run: TutorialRunState) {

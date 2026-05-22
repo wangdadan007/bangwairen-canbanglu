@@ -643,6 +643,27 @@ button:disabled {
   font-size: 14px;
 }
 
+.route-tendency-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.route-tendency-row span {
+  border: 1px solid rgba(178, 139, 82, 0.36);
+  border-radius: 999px;
+  padding: 2px 7px;
+  color: #f0d28d;
+  background: rgba(13, 26, 25, 0.36);
+}
+
+.route-choice-hint {
+  display: block;
+  margin-top: 5px;
+  color: #d9ccb8;
+}
+
 .route-node-list em {
   border: 1px solid rgba(178, 139, 82, 0.3);
   border-radius: 999px;

@@ -1,7 +1,7 @@
 # 模板沉淀区
 
-版本：v0.6
-日期：2026-05-20
+版本：v0.7
+日期：2026-05-22
 建议路径：`docs/templates/TEMPLATE_EXTRACTION_NOTES.md`
 
 ## 1. 文件用途
@@ -50,9 +50,9 @@
 
 | 模板方向 | 主要回溯候选 | 关系说明 |
 |---|---|---|
-| `Phaser React Deckbuilder Roguelike Starter Kit` | T00-T08、T09-T13、T16-T22 / T28 / T39 / T42A、T14-T15 / T26 / T31-T38 / T49A、T23-T27 / T35 / T44、T29 / T43、T30 / T38 / T42 / T45 / T48 / T50 / T58、T40-T46 / T56-T58 | 主产品方向，吸收战斗、run flow、数据、UI、QA、存档、高级扩展和试玩交付模块。 |
+| `Phaser React Deckbuilder Roguelike Starter Kit` | T00-T08、T09-T13、T16-T22 / T28 / T39 / T42A / T65、T14-T15 / T26 / T31-T38 / T49A、T23-T27 / T35 / T44、T29 / T43、T30 / T38 / T42 / T45 / T48 / T50 / T58、T40-T46 / T56-T58 | 主产品方向，吸收战斗、run flow、数据、UI、QA、存档、高级扩展和试玩交付模块。 |
 | `Data-Driven Card Battle Engine` | T00-T08；T23-T27 / T35 / T44 | T00-T08 是核心战斗包；资源、时机窗口和 relic / artifact 可作为高级扩展。 |
-| `Roguelike Run Flow Kit` | T09-T13、T16-T22 / T28 / T39 / T42A、T29 / T43 | 重点覆盖跨战流程、路线节点、事件 / 休整 / 商店、遭遇池、结算和存档。 |
+| `Roguelike Run Flow Kit` | T09-T13、T16-T22 / T28 / T39 / T42A / T65、T29 / T43 | 重点覆盖跨战流程、路线节点、事件 / 休整 / 商店、遭遇池、结算、存档，以及路线 / 角色倾向驱动的奖励与 relic offer。 |
 | `React Card Game UI Kit` | T40-T46、T56-T58；参考 T05-T08、T20-T22 | T40-T46 是主要 UI 分层和反馈证据；T56-T58 补首局提示、读屏标签、错误边界和试玩错误反馈。 |
 | `AI Game Development Planning and QA Kit` | 初始化记录、T30 / T38 / T42 / T45 / T48 / T50 / T58-T60、T14-T15 / T26 / T31-T38 / T49A、T51 / T52-T53 / T56 | 重点覆盖 AI 协作规则、PRD 拆分、任务看板、QA、素材授权、内容覆盖、数据扩展、试玩交付、外部反馈和阶段收口流程。 |
 | `Steam-ready Vite Phaser Desktop Wrapper` | T49 | 目前只有方案评估，不作为已验证模板；等桌面打包真实完成后再升级。 |
@@ -90,6 +90,19 @@
 - 依赖与授权注意：模板化前需复核所有生产依赖、字体、素材、音频和第三方代码许可证。
 - 是否值得抽到模板：值得记录，暂不单独抽仓库。
 - 后续动作：从 T51 或下一阶段性任务开始，在任务收尾时补充是否产生模板候选。
+
+### 2026-05-22 · T65 · 角色 / 路线倾向驱动的奖励与 relic offer
+
+- 候选类型：肉鸽 run flow / build-direction resolver。
+- 主归属模板：`Roguelike Run Flow Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`React Card Game UI Kit`。
+- 涉及文件：`src/core/run/rewardResolver.ts`、`src/core/run/artifactResolver.ts`、`src/core/run/bossRoutePressureResolver.ts`、`src/core/battle/battleState.ts`、`src/ui/pages/RoutePage.tsx`、`src/ui/pages/ArtifactOfferPage.tsx`、`src/tests/rewardResolver.test.ts`、`src/tests/artifactResolver.test.ts`、`src/tests/eliteBossEncounter.test.ts`。
+- 可复用价值：把角色 archetype、路线 tendency、奖励 offer、relic offer 和 Boss 开场压力连接成一套确定性倾向系统，适合复用到其他牌组构筑肉鸽项目中，让路线选择和构筑奖励更早产生可感知回应。
+- 与本作强绑定部分：衡简、照微、莲烬、法宝、窃榜使、问名 / 归册 / 裁定等命名与规则表达属于本作。
+- 去题材化思路：抽象为 role archetype weights、route tendency weights、reward option ordering、relic offer ordering、boss opening pressure profile；示例使用中性 warrior / scout / caster 角色与 damage / control / economy / risk 标签。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时只保留 resolver 结构和中性样例数据。
+- 是否值得抽到模板：值得记录，适合成为 `Roguelike Run Flow Kit` 的中后期 build-direction 模块。
+- 后续动作：待 T66 人工试玩复核后，再决定是否把“确定性排序”升级为 seeded weighted offer 模板。
 
 ### 2026-05-19 · T00-T08 回溯 · 纯逻辑卡牌战斗核心
 
