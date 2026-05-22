@@ -1,5 +1,10 @@
 import { useMemo } from 'react'
-import { DEFAULT_PLAYABLE_ROLE_ID, getPlayableRoleDefinition } from '../../core'
+import {
+  DEFAULT_PLAYABLE_ROLE_ID,
+  getPlayableRoleDefinition,
+  getSpendInkCleanseStatus,
+  getSpendInkGuardNameStatus,
+} from '../../core'
 import type { RouteFlowKind } from '../../core'
 import { gameData } from '../../data'
 import { useAudioCue, type AudioCue } from '../audio/audioCues'
@@ -91,6 +96,8 @@ export function BattleHud({
     playCard,
     selectEnemyTarget,
     endTurn,
+    spendInkGuardName,
+    spendInkCleanse,
     restartCurrentBattle,
     restartTutorialRun,
     abandonTutorialRun,
@@ -125,6 +132,8 @@ export function BattleHud({
       ]),
     [battle],
   )
+  const inkGuardStatus = getSpendInkGuardNameStatus(battle, enemy?.instanceId)
+  const inkCleanseStatus = getSpendInkCleanseStatus(battle)
   const pressureFeedback = useMemo(
     () => createPressureFeedback(battle, cardDefinitionsById, allCardsByInstanceId),
     [allCardsByInstanceId, battle, cardDefinitionsById],
@@ -468,9 +477,34 @@ export function BattleHud({
 
       {showActiveBattlePanels ? (
         <footer className="hud-actions">
+          <button
+            type="button"
+            disabled={!canAct || !inkGuardStatus.canUse}
+            title={inkGuardStatus.reason}
+            onClick={spendInkGuardName}
+          >
+            留墨护名
+          </button>
+          <button
+            type="button"
+            disabled={!canAct || !inkCleanseStatus.canUse}
+            title={inkCleanseStatus.reason}
+            onClick={spendInkCleanse}
+          >
+            墨净污卷
+          </button>
           <button type="button" disabled={!canAct} onClick={endTurn}>
             结束回合
           </button>
+          <span className="hud-action-hint">
+            {inkGuardStatus.canUse
+              ? getInkGuardReadyText(inkGuardStatus.mode)
+              : inkGuardStatus.reason}
+            {'；'}
+            {inkCleanseStatus.canUse
+              ? getInkCleanseReadyText(inkCleanseStatus.cardDefinitionId, cardDefinitionsById)
+              : inkCleanseStatus.reason}
+          </span>
         </footer>
       ) : null}
 
@@ -935,6 +969,27 @@ function getEffectTooltip(label: string) {
   }
 
   return label
+}
+
+function getInkGuardReadyText(mode: string | undefined) {
+  if (mode === 'restore_covered_name') {
+    return '留墨护名可恢复 1 格被遮名迹'
+  }
+
+  if (mode === 'prepare_cover_name_guard') {
+    return '留墨护名可预防下一次遮名'
+  }
+
+  return '留墨护名可用'
+}
+
+function getInkCleanseReadyText(
+  cardDefinitionId: string | undefined,
+  cardDefinitionsById: ReadonlyMap<string, CardDefinition>,
+) {
+  const definition = cardDefinitionId ? cardDefinitionsById.get(cardDefinitionId) : undefined
+
+  return definition ? `墨净污卷可移除 ${t(definition.nameKey)}` : '墨净污卷可用'
 }
 
 function AltarPanel({

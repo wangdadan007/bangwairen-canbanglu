@@ -433,6 +433,7 @@ describe('core type contracts', () => {
             { index: 0, nameKey: 'enemy.paper_wraith.name_slot.0', isRevealed: false },
             { index: 1, nameKey: 'enemy.paper_wraith.name_slot.1', isRevealed: false },
           ],
+          coveredNameSlotIndices: [],
           isNamed: false,
           hasTriggeredNameBreak: false,
           intentIndex: 0,
@@ -447,6 +448,7 @@ describe('core type contracts', () => {
       exhaustPile: [],
       nextTurnIncensePenalty: 0,
       nextTurnIncenseBonus: 0,
+      nextAskNamePenalty: 0,
       resources: {
         ink: 0,
         doom: 0,

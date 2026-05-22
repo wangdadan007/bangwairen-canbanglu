@@ -1,4 +1,5 @@
 import type { TutorialRunState, TutorialRunSummary } from '../../types'
+import { isHeavyFractureEnding } from './riskThresholdResolver'
 
 export const CHAPTER_ONE_BOSS_ENCOUNTER_ID = 'encounter_boss_registry_thief'
 export const REGISTRY_THIEF_REGISTER_RULE_ID = 'register_registry_thief'
@@ -32,6 +33,7 @@ export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSumm
     ink: run.resources.ink,
     doom: run.resources.doom,
     fracture: run.resources.fracture,
+    heavyFractureEnding: isHeavyFractureEnding(run.resources),
     deckSize: run.deckCards.length,
     artifactCount: run.artifacts.artifacts.length,
     boundArtifactCount: run.artifacts.artifacts.filter(

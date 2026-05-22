@@ -376,3 +376,16 @@
 - 依赖与授权注意：新增依赖均为开发期依赖；模板化时要保留 dev-only 边界，并记录 Playwright 浏览器下载和 CI 时间成本。
 - 是否值得抽到模板：值得，适合作为 `AI Game Development Planning and QA Kit` 的 quality gate 章节。
 - 后续动作：外部试玩反馈稳定后，评估是否加入覆盖率硬阈值、更多 E2E 页面和 React Compiler 更严格 lint 规则。
+
+### 2026-05-22 · T68 · 阈值型风险惩罚与局内修补资源
+
+- 候选类型：risk threshold resolver / run resource sink / combat maintenance action。
+- 主归属模板：`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 也支持：`Roguelike Run Flow Kit`、`React Card Game UI Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/core/run/riskThresholdResolver.ts`、`src/core/battle/inkBattleResolver.ts`、`src/core/run/restResolver.ts`、`src/core/battle/battleState.ts`、`src/core/battle/nameResolver.ts`、`src/core/battle/enemyIntentResolver.ts`、`src/ui/pages/BattleHud.tsx`、`src/ui/pages/RestPage.tsx`、`src/ui/pages/RunSummaryPage.tsx`、`src/ui/pages/actionLogView.ts`、`src/tests/riskThresholdResolver.test.ts`、`src/tests/inkBattleResolver.test.ts`。
+- 可复用价值：把长期风险资源从“每点即时惩罚”改成战斗开始一次性结算的最高阈值，并提供局内资源消耗入口来修补对应压力，适合 roguelike demo 在早期给玩家可感知后果又避免完全劝退。
+- 与本作强绑定部分：墨、劫数、榜裂、问名、遮名、污卷、劫灰、残榜重裂等命名和叙事含义属于本作表达。
+- 去题材化思路：抽象为 run risk meters, highest-threshold start-of-combat penalties, temporary junk cards, first-action penalties, elite/boss pressure overrides, maintenance resource actions 和 terminal ending flags。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时应替换所有本作术语、牌 ID、敌人 intent ID 和日志文案。
+- 是否值得抽到模板：值得，适合作为 starter kit 的中后段风险经济示例，也能成为 AI QA kit 中“风险机制落地前后对照”的测试样例。
+- 后续动作：T69 人工试玩复核中观察玩家是否能理解阈值惩罚来源、墨消耗是否太稀有，以及是否需要在后续事件或休整中加入“解劫 / 止裂”入口。

@@ -975,6 +975,17 @@
     "effects": []
   },
   {
+    "id": "card_doom_ash",
+    "nameKey": "card.doom_ash.name",
+    "descriptionKey": "card.doom_ash.description",
+    "rulesTextKey": "card.doom_ash.rules",
+    "cost": 0,
+    "type": "temporary",
+    "unlockStage": "stage_run_resources",
+    "tags": ["temporary", "doom_ash", "doom", "exhaust"],
+    "effects": []
+  },
+  {
     "id": "card_cracked_whip_echo",
     "nameKey": "card.cracked_whip_echo.name",
     "descriptionKey": "card.cracked_whip_echo.description",

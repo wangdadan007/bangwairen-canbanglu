@@ -22,27 +22,44 @@ export interface AskNameInput {
 
 export function resolveAskName(state: CombatState, input: AskNameInput): CombatState {
   const target = selectNameTarget(state.enemies, input.targetEnemyInstanceId)
+  const askNamePenalty = Math.min(state.nextAskNamePenalty, input.amount)
+  const effectiveAmount = Math.max(0, input.amount - askNamePenalty)
+  const stateAfterPenalty =
+    askNamePenalty > 0
+      ? {
+          ...state,
+          nextAskNamePenalty: Math.max(0, state.nextAskNamePenalty - input.amount),
+        }
+      : state
 
   if (!target) {
-    return appendLog(state, {
+    return appendLog(stateAfterPenalty, {
       type: 'NAME_ASKED',
       sourceId: input.sourceId,
       payload: {
         amount: input.amount,
+        effectiveAmount,
+        askNamePenalty,
         result: 'no_target',
       },
     })
   }
 
-  let nextState = appendLog(state, {
+  let nextState = appendLog(stateAfterPenalty, {
     type: 'NAME_ASKED',
     sourceId: input.sourceId,
     targetId: target.instanceId,
     payload: {
       amount: input.amount,
+      effectiveAmount,
+      askNamePenalty,
       result: target.nameSlots.length === 0 ? 'discern_intent' : 'reveal_name_slot',
     },
   })
+
+  if (effectiveAmount <= 0) {
+    return nextState
+  }
 
   nextState = triggerArtifactsAfterAskName(nextState, input.sourceId)
 
@@ -50,7 +67,7 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
     return nextState
   }
 
-  for (let count = 0; count < input.amount; count += 1) {
+  for (let count = 0; count < effectiveAmount; count += 1) {
     const currentTarget = findEnemy(nextState, target.instanceId)
     const nextSlot = currentTarget?.nameSlots.find((slot) => !slot.isRevealed)
 
@@ -76,16 +93,54 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
   return nextState
 }
 
+export interface RestoreCoveredNameSlotInput {
+  readonly sourceId: GameEntityId
+  readonly targetEnemyInstanceId?: EnemyInstanceId
+}
+
+export function restoreCoveredNameSlot(
+  state: CombatState,
+  input: RestoreCoveredNameSlotInput,
+): CombatState {
+  const target = selectNameTarget(state.enemies, input.targetEnemyInstanceId)
+  const slotIndex = target?.coveredNameSlotIndices[target.coveredNameSlotIndices.length - 1]
+
+  if (!target || slotIndex === undefined) {
+    return state
+  }
+
+  let nextState = revealNameSlot(state, target, slotIndex, input.sourceId, {
+    result: 'restored_by_ink',
+  })
+  const updatedTarget = findEnemy(nextState, target.instanceId)
+
+  if (updatedTarget && shouldTriggerNaming(updatedTarget)) {
+    nextState = markEnemyNamed(nextState, updatedTarget, input.sourceId)
+    nextState = triggerRegisterAfterEnemyNamed(nextState, {
+      sourceId: input.sourceId,
+      targetId: updatedTarget.instanceId,
+    })
+    nextState = triggerNameBreak(nextState, updatedTarget.instanceId, input.sourceId)
+    nextState = triggerArtifactsAfterEnemyNamed(nextState, input.sourceId)
+  }
+
+  return nextState
+}
+
 function revealNameSlot(
   state: CombatState,
   target: EnemyState,
   slotIndex: number,
   sourceId: GameEntityId,
+  payload?: Record<string, string>,
 ): CombatState {
   const enemies = state.enemies.map((enemy) =>
     enemy.instanceId === target.instanceId
       ? {
           ...enemy,
+          coveredNameSlotIndices: enemy.coveredNameSlotIndices.filter(
+            (coveredSlotIndex) => coveredSlotIndex !== slotIndex,
+          ),
           nameSlots: enemy.nameSlots.map((slot) =>
             slot.index === slotIndex
               ? {
@@ -113,6 +168,7 @@ function revealNameSlot(
     payload: {
       slotIndex,
       nameKey: revealedSlot?.nameKey ?? null,
+      ...payload,
     },
   })
 }

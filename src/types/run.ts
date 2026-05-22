@@ -179,6 +179,7 @@ export interface TutorialRunSummary {
   readonly ink: number
   readonly doom: number
   readonly fracture: number
+  readonly heavyFractureEnding: boolean
   readonly deckSize: number
   readonly artifactCount: number
   readonly boundArtifactCount: number

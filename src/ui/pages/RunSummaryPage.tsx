@@ -40,6 +40,14 @@ export function RunSummaryPage({ summary, t, onRestart }: RunSummaryPageProps) {
         </div>
       ) : null}
 
+      {summary.heavyFractureEnding ? (
+        <div className="boss-summary">
+          <span>终审标记</span>
+          <strong>残榜重裂</strong>
+          <small>榜裂已达 5，后续终审评价会记入重裂痕。</small>
+        </div>
+      ) : null}
+
       <div className="run-summary-grid" aria-label="本局记录">
         <SummaryMetric label="伏诛" value={summary.vanquishCount} />
         <SummaryMetric label="归册" value={summary.catalogueCount} />

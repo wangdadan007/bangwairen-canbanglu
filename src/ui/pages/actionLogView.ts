@@ -502,10 +502,45 @@ export function formatLogEntry(
     }。`
   }
 
+  if (entry.type === 'INK_SPENT') {
+    const action = getPayloadString(entry.payload.action)
+    const result = getPayloadString(entry.payload.result)
+    const cardDefinitionId = getPayloadString(entry.payload.cardDefinitionId)
+    const cardDefinition = cardDefinitionId ? cardDefinitionsById.get(cardDefinitionId) : undefined
+
+    if (action === 'guard_name') {
+      return result === 'restore_covered_name'
+        ? `留墨护名：墨 -${getPayloadNumber(entry.payload.amount) ?? 0}，恢复被遮名迹，余墨 ${
+            getPayloadNumber(entry.payload.currentInk) ?? 0
+          }。`
+        : `留墨护名：墨 -${getPayloadNumber(entry.payload.amount) ?? 0}，预先护住下一次遮名，余墨 ${
+            getPayloadNumber(entry.payload.currentInk) ?? 0
+          }。`
+    }
+
+    if (action === 'cleanse_card') {
+      return `墨净污卷：墨 -${getPayloadNumber(entry.payload.amount) ?? 0}，移除 ${
+        cardDefinition ? t(cardDefinition.nameKey) : '污卷 / 劫灰'
+      }，余墨 ${getPayloadNumber(entry.payload.currentInk) ?? 0}。`
+    }
+
+    return `墨 -${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
+      getPayloadNumber(entry.payload.currentInk) ?? 0
+    }。`
+  }
+
+  if (entry.type === 'INK_ACTION_REJECTED') {
+    return `墨法未成：${getPayloadString(entry.payload.reason) ?? '当前不可用'}。`
+  }
+
   if (entry.type === 'DOOM_GAINED') {
     return `劫数 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
       getPayloadNumber(entry.payload.currentDoom) ?? 0
     }。`
+  }
+
+  if (entry.type === 'RISK_THRESHOLD_APPLIED') {
+    return formatRiskThresholdLog(entry, cardDefinitionsById)
   }
 
   if (entry.type === 'REGISTER_RULE_TRIGGERED') {
@@ -646,12 +681,24 @@ export function formatLogEntry(
   }
 
   if (entry.type === 'NAME_ASKED') {
+    const askNamePenalty = getPayloadNumber(entry.payload.askNamePenalty) ?? 0
+
+    if (askNamePenalty > 0) {
+      return `名籍松动：本次问名 -${askNamePenalty}，${
+        getPayloadNumber(entry.payload.effectiveAmount) ?? 0
+      } 格生效。`
+    }
+
     return getPayloadString(entry.payload.result) === 'discern_intent'
       ? `${sourceCardName ?? '问名'}转为辨势。`
       : `${sourceCardName ?? '问名'}查明真名（问名）。`
   }
 
   if (entry.type === 'NAME_SLOT_REVEALED') {
+    if (getPayloadString(entry.payload.result) === 'restored_by_ink') {
+      return `名迹复现：${t(getPayloadString(entry.payload.nameKey))}。`
+    }
+
     return `名格显现：${t(getPayloadString(entry.payload.nameKey))}。`
   }
 
@@ -702,6 +749,10 @@ export function formatLogEntry(
       ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${getMoveLabel(
           getPayloadString(entry.payload.moveType),
         )}被断异动阻止。`
+      : result === 'prepared_by_ink'
+        ? `留墨护名准备就绪：下一次${getMoveLabel(
+            getPayloadString(entry.payload.moveType),
+          )}会被墨迹护住。`
       : `${sourceCardName ?? '符诏'}准备断异动：${getMoveLabel(
           getPayloadString(entry.payload.moveType),
         )}。`
@@ -814,7 +865,10 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     entry.type === 'ENEMY_NAMED' ||
     entry.type === 'CARD_ANNOTATION_TRIGGERED' ||
     entry.type === 'INK_GAINED' ||
+    entry.type === 'INK_SPENT' ||
+    entry.type === 'INK_ACTION_REJECTED' ||
     entry.type === 'DOOM_GAINED' ||
+    entry.type === 'RISK_THRESHOLD_APPLIED' ||
     entry.type === 'ALTAR_PLACED' ||
     entry.type === 'ALTAR_TRIGGERED' ||
     entry.type === 'ALTAR_EXPIRED'
@@ -860,6 +914,54 @@ function formatRegisterRuleLog(entry: ActionLogEntry) {
   }
 
   return `${ruleName}触发。`
+}
+
+function formatRiskThresholdLog(
+  entry: ActionLogEntry,
+  cardDefinitionsById: ReadonlyMap<string, CardDefinition>,
+) {
+  const resource = getPayloadString(entry.payload.resource)
+  const threshold = getPayloadNumber(entry.payload.threshold) ?? 0
+  const stateLabel = getPayloadString(entry.payload.stateLabel) ?? ''
+  const result = getPayloadString(entry.payload.result)
+  const cardDefinitionId = getPayloadString(entry.payload.cardDefinitionId)
+  const cardDefinition = cardDefinitionId ? cardDefinitionsById.get(cardDefinitionId) : undefined
+  const riskName = resource === 'doom' ? '劫数' : '榜裂'
+  const prefix = `${riskName} ${threshold}：${stateLabel}`
+
+  if (result === 'draw_penalty') {
+    return `${prefix}，本场开局少抽 ${getPayloadNumber(entry.payload.amount) ?? 0} 张。`
+  }
+
+  if (result === 'incense_penalty') {
+    return `${prefix}，本场首回合香火 -${getPayloadNumber(entry.payload.amount) ?? 0}。`
+  }
+
+  if (result === 'doom_ash') {
+    return `${prefix}，${cardDefinition ? t(cardDefinition.nameKey) : '劫灰'}临时入手。`
+  }
+
+  if (result === 'elite_boss_abnormal') {
+    return `${prefix}，精英 / Boss 开场提前压出一次异动。`
+  }
+
+  if (result === 'fouled_scroll') {
+    return `${prefix}，${cardDefinition ? t(cardDefinition.nameKey) : '污卷'}进入抽牌堆。`
+  }
+
+  if (result === 'ask_name_penalty') {
+    return `${prefix}，本场首次问名收益 -${getPayloadNumber(entry.payload.amount) ?? 0}。`
+  }
+
+  if (result === 'boss_high_fracture') {
+    return `${prefix}，Boss 开场改为高榜裂异动。`
+  }
+
+  if (result === 'terminal_marker') {
+    return `${prefix}，终局将标记为残榜重裂。`
+  }
+
+  return `${prefix}，本场只记录。`
 }
 
 function getRegisterRuleName(ruleId: string | undefined) {

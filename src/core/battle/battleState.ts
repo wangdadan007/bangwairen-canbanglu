@@ -53,20 +53,47 @@ export interface CreateBattleStateInput {
   readonly artifacts?: ArtifactCollectionState
   readonly registerEntries?: CombatState['registerEntries']
   readonly extraHandDefinitionIds?: readonly CardId[]
+  readonly extraDrawPileDefinitionIds?: readonly CardId[]
   readonly artifactBacklashRecords?: readonly ArtifactBacklashRecord[]
   readonly unlocks?: UnlockState
   readonly initialEnemyIntentIds?: Readonly<Record<string, string>>
   readonly openingIncenseBonus?: number
+  readonly openingIncensePenalty?: number
+  readonly openingDrawCount?: number
+  readonly openingAskNamePenalty?: number
+  readonly openingRiskLogRecords?: readonly OpeningRiskLogRecord[]
+}
+
+export interface OpeningRiskLogRecord {
+  readonly resource: 'doom' | 'fracture'
+  readonly threshold: number
+  readonly stateLabel: string
+  readonly result:
+    | 'record_only'
+    | 'draw_penalty'
+    | 'incense_penalty'
+    | 'doom_ash'
+    | 'elite_boss_abnormal'
+    | 'fouled_scroll'
+    | 'ask_name_penalty'
+    | 'boss_high_fracture'
+    | 'terminal_marker'
+  readonly amount?: number
+  readonly cardDefinitionId?: CardId
+  readonly enemyDefinitionId?: string
+  readonly intentId?: string
 }
 
 export function createInitialBattleState(input: CreateBattleStateInput): CombatState {
   const deckDefinitionIds = input.deckDefinitionIds ?? DEFAULT_STARTER_DECK_IDS
   const deckCards = input.deckCards
   const extraHandDefinitionIds = input.extraHandDefinitionIds ?? []
+  const extraDrawPileDefinitionIds = input.extraDrawPileDefinitionIds ?? []
   assertDeckDefinitionsExist(
     [
       ...(deckCards ? deckCards.map((card) => card.definitionId) : deckDefinitionIds),
       ...extraHandDefinitionIds,
+      ...extraDrawPileDefinitionIds,
     ],
     input.cardDefinitions,
   )
@@ -75,6 +102,7 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     ? createCardInstancesFromRunDeck(deckCards)
     : createCardInstances(deckDefinitionIds)
   const extraHandCards = createTemporaryCardInstances(extraHandDefinitionIds)
+  const extraDrawPileCards = createTemporaryCardInstances(extraDrawPileDefinitionIds)
   const enemyDefinitions = input.enemyDefinitions ?? (input.enemyDefinition ? [input.enemyDefinition] : [])
 
   if (enemyDefinitions.length === 0) {
@@ -115,12 +143,13 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
       },
     },
     enemies,
-    drawPile: deck,
+    drawPile: [...deck, ...extraDrawPileCards],
     hand: extraHandCards,
     discardPile: [],
     exhaustPile: [],
-    nextTurnIncensePenalty: 0,
+    nextTurnIncensePenalty: Math.max(0, Math.floor(input.openingIncensePenalty ?? 0)),
     nextTurnIncenseBonus: Math.max(0, Math.floor(input.openingIncenseBonus ?? 0)),
+    nextAskNamePenalty: Math.max(0, Math.floor(input.openingAskNamePenalty ?? 0)),
     resources: input.resources ?? createInitialTutorialResourceState(),
     temporaryResourceDelta: input.temporaryResourceDelta ?? createInitialTutorialResourceState(),
     temporaryPlayerFormDelta,
@@ -145,8 +174,27 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
       playerCurrentForm: playerForm.current,
       playerMaxForm: playerForm.max,
       deckSize: deck.length,
+      extraDrawPileCount: extraDrawPileCards.length,
     },
   })
+
+  for (const riskLogRecord of input.openingRiskLogRecords ?? []) {
+    state = appendLog(state, {
+      type: 'RISK_THRESHOLD_APPLIED',
+      sourceId: 'system',
+      targetId: riskLogRecord.enemyDefinitionId,
+      payload: {
+        resource: riskLogRecord.resource,
+        threshold: riskLogRecord.threshold,
+        stateLabel: riskLogRecord.stateLabel,
+        result: riskLogRecord.result,
+        amount: riskLogRecord.amount ?? null,
+        cardDefinitionId: riskLogRecord.cardDefinitionId ?? null,
+        enemyDefinitionId: riskLogRecord.enemyDefinitionId ?? null,
+        intentId: riskLogRecord.intentId ?? null,
+      },
+    })
+  }
 
   for (const backlashRecord of input.artifactBacklashRecords ?? []) {
     state = appendLog(state, {
@@ -161,7 +209,7 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     })
   }
 
-  return startPlayerTurn(state, DEFAULT_HAND_DRAW)
+  return startPlayerTurn(state, input.openingDrawCount ?? DEFAULT_HAND_DRAW)
 }
 
 function createTemporaryBattlePlayerForm(
@@ -248,6 +296,7 @@ export function createEnemyState(
     maxForm: definition.maxForm,
     currentForm: definition.maxForm,
     nameSlots,
+    coveredNameSlotIndices: [],
     isNamed: false,
     hasTriggeredNameBreak: false,
     intentIndex: initialIntentIndex,

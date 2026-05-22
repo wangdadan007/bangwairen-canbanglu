@@ -70,7 +70,10 @@ export type ActionLogType =
   | 'INCENSE_GAINED'
   | 'INCENSE_SPENT'
   | 'INK_GAINED'
+  | 'INK_SPENT'
+  | 'INK_ACTION_REJECTED'
   | 'DOOM_GAINED'
+  | 'RISK_THRESHOLD_APPLIED'
   | 'PLAYER_FORM_LOST'
   | 'DEFEAT_SETTLED'
   | 'ALTAR_PLACED'
@@ -114,6 +117,7 @@ export interface CombatState {
   readonly exhaustPile: readonly CardInstance[]
   readonly nextTurnIncensePenalty: number
   readonly nextTurnIncenseBonus: number
+  readonly nextAskNamePenalty: number
   readonly resources: TutorialResourceState
   readonly temporaryResourceDelta: TutorialResourceState
   readonly temporaryPlayerFormDelta: number
@@ -135,8 +139,21 @@ export interface PlayCardCommand {
   readonly targetEnemyInstanceId?: string
 }
 
+export interface SpendInkGuardNameCommand {
+  readonly type: 'SPEND_INK_GUARD_NAME'
+  readonly targetEnemyInstanceId?: string
+}
+
+export interface SpendInkCleanseCommand {
+  readonly type: 'SPEND_INK_CLEANSE'
+}
+
 export interface EndTurnCommand {
   readonly type: 'END_TURN'
 }
 
-export type BattleCommand = PlayCardCommand | EndTurnCommand
+export type BattleCommand =
+  | PlayCardCommand
+  | SpendInkGuardNameCommand
+  | SpendInkCleanseCommand
+  | EndTurnCommand

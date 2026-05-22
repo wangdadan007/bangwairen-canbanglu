@@ -270,6 +270,11 @@ function coverOneRevealedNameSlot(
         candidate.instanceId === currentEnemy.instanceId
           ? {
               ...candidate,
+              coveredNameSlotIndices: candidate.coveredNameSlotIndices.includes(
+                revealedSlot.index,
+              )
+                ? candidate.coveredNameSlotIndices
+                : [...candidate.coveredNameSlotIndices, revealedSlot.index],
               nameSlots: candidate.nameSlots.map((slot) =>
                 slot.index === revealedSlot.index
                   ? {

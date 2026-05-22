@@ -116,10 +116,11 @@ export function RestPage({
       <div className="rest-options">
         {options.map((option) => {
           const isRemoveCard = option.id === 'remove_card'
-          const canChoose = !isRemoveCard || Boolean(selectedCard)
+          const hasEnoughInk = option.id !== 'red_ink_service' || run.resources.ink >= 1
+          const canChoose = (!isRemoveCard || Boolean(selectedCard)) && hasEnoughInk
           const disabledReason = canChoose
             ? undefined
-            : getRestDisabledReason(option.id, selectedCard)
+            : getRestDisabledReason(option.id, selectedCard, run)
 
           return (
             <button
@@ -161,9 +162,14 @@ export function RestPage({
 function getRestDisabledReason(
   optionId: TutorialRestOptionId,
   selectedCard: RunDeckCard | undefined,
+  run: TutorialRunState,
 ) {
   if (optionId === 'remove_card' && !selectedCard) {
     return '请先在当前牌组里选一张牌'
+  }
+
+  if (optionId === 'red_ink_service' && run.resources.ink < 1) {
+    return '墨不足，需 1 墨'
   }
 
   return '当前不能休整'

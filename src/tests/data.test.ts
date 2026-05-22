@@ -6,7 +6,7 @@ describe('initial game data', () => {
     const data = loadGameData()
 
     expect(data.artifacts).toHaveLength(11)
-    expect(data.cards).toHaveLength(45)
+    expect(data.cards).toHaveLength(46)
     expect(data.enemies).toHaveLength(16)
     expect(data.encounters).toHaveLength(25)
     expect(data.events).toHaveLength(9)
@@ -182,6 +182,7 @@ describe('initial game data', () => {
     ])
     expect(getCardDefinition('card_cracked_whip_echo', data)?.type).toBe('temporary')
     expect(getCardDefinition('card_fouled_scroll', data)?.effects).toEqual([])
+    expect(getCardDefinition('card_doom_ash', data)?.effects).toEqual([])
 
     const paperWraith = getEnemyDefinition('enemy_paper_wraith', data)
     expect(paperWraith?.maxForm).toBe(18)

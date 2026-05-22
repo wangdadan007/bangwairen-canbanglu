@@ -20,6 +20,7 @@ import {
   reduceBattleState,
   reorderPendingTutorialRedInkOffer,
   resolveArtifactBacklashesAtBattleStart,
+  resolveBattleStartRisk,
   resolveTutorialArtifactOffer,
   resolveTutorialEvent,
   resolveTutorialRedInk,
@@ -161,6 +162,58 @@ export function useTutorialRunFlow({
           current.battle,
           {
             type: 'END_TURN',
+          },
+          battleContext,
+        ),
+      }
+    })
+  }
+
+  function spendInkGuardName() {
+    setViewState((current) => {
+      const currentEnemy = getSelectedLivingEnemy(current.battle, current.selectedEnemyInstanceId)
+
+      if (
+        !currentEnemy ||
+        hasPendingRunChoice(current.run) ||
+        current.run.status !== 'active' ||
+        current.battle.phase !== 'player_turn' ||
+        current.battle.result.status !== 'ongoing'
+      ) {
+        return current
+      }
+
+      return {
+        ...current,
+        battle: reduceBattleState(
+          current.battle,
+          {
+            type: 'SPEND_INK_GUARD_NAME',
+            targetEnemyInstanceId: currentEnemy.instanceId,
+          },
+          battleContext,
+        ),
+      }
+    })
+  }
+
+  function spendInkCleanse() {
+    setViewState((current) => {
+      if (
+        hasPendingRunChoice(current.run) ||
+        current.run.status !== 'active' ||
+        current.battle.phase !== 'player_turn' ||
+        current.battle.result.status !== 'ongoing'
+      ) {
+        return current
+      }
+
+      return {
+        ...current,
+        battle: reduceBattleState(
+          current.battle,
+          {
+            type: 'SPEND_INK_CLEANSE',
           },
           battleContext,
         ),
@@ -552,6 +605,8 @@ export function useTutorialRunFlow({
       playCard,
       selectEnemyTarget,
       endTurn,
+      spendInkGuardName,
+      spendInkCleanse,
       restartCurrentBattle,
       restartTutorialRun,
       abandonTutorialRun,
@@ -615,9 +670,14 @@ function createBattle(
   artifacts?: TutorialRunState['artifacts'],
   registerEntries: TutorialRunState['verdict']['registerEntries'] = [],
   extraHandDefinitionIds: readonly CardId[] = [],
+  extraDrawPileDefinitionIds: readonly CardId[] = [],
   artifactBacklashRecords: readonly ArtifactBacklashRecord[] = [],
   initialEnemyIntentIds: Readonly<Record<string, string>> = {},
   openingIncenseBonus = 0,
+  openingIncensePenalty = 0,
+  openingDrawCount?: number,
+  openingAskNamePenalty = 0,
+  openingRiskLogRecords: Parameters<typeof createInitialBattleState>[0]['openingRiskLogRecords'] = [],
 ) {
   return createInitialBattleState({
     cardDefinitions: gameData.cards,
@@ -633,9 +693,14 @@ function createBattle(
     artifacts,
     registerEntries,
     extraHandDefinitionIds,
+    extraDrawPileDefinitionIds,
     artifactBacklashRecords,
     initialEnemyIntentIds,
     openingIncenseBonus,
+    openingIncensePenalty,
+    openingDrawCount,
+    openingAskNamePenalty,
+    openingRiskLogRecords,
   })
 }
 
@@ -695,6 +760,7 @@ function createInitialTutorialBattleView(
           0,
           run.artifacts,
           run.verdict.registerEntries,
+          undefined,
           undefined,
           undefined,
           createInitialEnemyIntentIdsForRoute(
@@ -790,6 +856,15 @@ function createBattleForEncounter(
   const enemyDefinitions = getEncounterEnemyDefinitionIds(encounter).map((enemyDefinitionId) =>
     getEnemyDefinition(enemyDefinitionId),
   )
+  const baseInitialEnemyIntentIds = createInitialEnemyIntentIdsForRoute(
+    enemyDefinitions.map((enemyDefinition) => enemyDefinition.id),
+    route.routeTendencyIds ?? [],
+  )
+  const riskResolution = resolveBattleStartRisk({
+    resources: battleResources,
+    enemyDefinitions,
+    initialEnemyIntentIds: baseInitialEnemyIntentIds,
+  })
 
   return {
     run: nextRun,
@@ -804,13 +879,18 @@ function createBattleForEncounter(
       backlashResolution.temporaryPlayerFormDelta,
       nextRun.artifacts,
       nextRun.verdict.registerEntries,
-      backlashResolution.extraHandDefinitionIds,
+      [
+        ...backlashResolution.extraHandDefinitionIds,
+        ...riskResolution.extraHandDefinitionIds,
+      ],
+      riskResolution.extraDrawPileDefinitionIds,
       backlashResolution.records,
-      createInitialEnemyIntentIdsForRoute(
-        enemyDefinitions.map((enemyDefinition) => enemyDefinition.id),
-        route.routeTendencyIds ?? [],
-      ),
+      riskResolution.initialEnemyIntentIds,
       battleStartBonus?.incense ?? 0,
+      riskResolution.openingIncensePenalty,
+      riskResolution.openingDrawCount,
+      riskResolution.openingAskNamePenalty,
+      riskResolution.openingRiskLogRecords,
     ),
   }
 }

@@ -4,6 +4,7 @@ import { discardHand } from './drawResolver'
 import { startPlayerTurn } from './turnFlow'
 import { appendLog } from '../log/actionLog'
 import { triggerHumanAltars } from './altarResolver'
+import { spendInkCleanse, spendInkGuardName } from './inkBattleResolver'
 import type { BattleCommand, CardDefinition, CombatState, EnemyDefinition } from '../../types'
 
 export interface BattleReducerContext {
@@ -27,6 +28,14 @@ export function reduceBattleState(
       targetEnemyInstanceId: command.targetEnemyInstanceId,
       cardDefinitions: context.cardDefinitions,
     })
+  }
+
+  if (command.type === 'SPEND_INK_GUARD_NAME') {
+    return spendInkGuardName(state, command.targetEnemyInstanceId)
+  }
+
+  if (command.type === 'SPEND_INK_CLEANSE') {
+    return spendInkCleanse(state)
   }
 
   return endPlayerTurn(state, context)

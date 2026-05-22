@@ -81,6 +81,7 @@ export interface EnemyState {
   readonly maxForm: number
   readonly currentForm: number
   readonly nameSlots: readonly NameSlotState[]
+  readonly coveredNameSlotIndices: readonly number[]
   readonly isNamed: boolean
   readonly hasTriggeredNameBreak: boolean
   readonly intentIndex: number

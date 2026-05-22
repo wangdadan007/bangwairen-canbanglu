@@ -15,6 +15,10 @@ import {
   restoreTutorialPlayerForm,
 } from './playerFormResolver'
 import { createTutorialRedInkOffer } from './redInkResolver'
+import {
+  applyTutorialResourceDelta,
+  canSpendTutorialResources,
+} from './resourceResolver'
 
 export const REST_OPTION_RESTORE_FORM: TutorialRestOptionId = 'restore_form'
 export const REST_OPTION_REMOVE_CARD: TutorialRestOptionId = 'remove_card'
@@ -94,13 +98,14 @@ export function resolveTutorialRest(
 
   if (input.optionId === REST_OPTION_RESTORE_FORM) {
     const formRestore = restoreTutorialPlayerForm(run.playerForm, RESTORE_PLAYER_FORM_AMOUNT)
-      const record = createRestRecord(run, input, {
-        formRestored: formRestore.restored,
-        playerCurrentFormAfter: formRestore.playerForm.current,
-        playerMaxFormAfter: formRestore.playerForm.max,
-        createdRedInkOffer: false,
-        clearedArtifactBacklash: false,
-      })
+    const record = createRestRecord(run, input, {
+      formRestored: formRestore.restored,
+      playerCurrentFormAfter: formRestore.playerForm.current,
+      playerMaxFormAfter: formRestore.playerForm.max,
+      createdRedInkOffer: false,
+      clearedArtifactBacklash: false,
+      inkDelta: 0,
+    })
 
     return {
       ...run,
@@ -125,6 +130,7 @@ export function resolveTutorialRest(
       playerMaxFormAfter: run.playerForm.max,
       createdRedInkOffer: false,
       clearedArtifactBacklash: false,
+      inkDelta: 0,
     })
 
     return {
@@ -147,6 +153,7 @@ export function resolveTutorialRest(
       playerCurrentFormAfter: run.playerForm.current,
       playerMaxFormAfter: run.playerForm.max,
       createdRedInkOffer: false,
+      inkDelta: 0,
     })
 
     return {
@@ -158,16 +165,24 @@ export function resolveTutorialRest(
     }
   }
 
+  if (!canSpendTutorialResources(run.resources, { ink: -1 })) {
+    throw new Error('Rest red ink service requires 1 ink')
+  }
+
   const record = createRestRecord(run, input, {
     formRestored: 0,
     playerCurrentFormAfter: run.playerForm.current,
     playerMaxFormAfter: run.playerForm.max,
     createdRedInkOffer: true,
     clearedArtifactBacklash: false,
+    inkDelta: -1,
   })
 
   return {
     ...run,
+    resources: applyTutorialResourceDelta(run.resources, {
+      ink: -1,
+    }),
     pendingRedInk: createTutorialRedInkOffer(run),
     rests: {
       records: [...run.rests.records, record],
@@ -206,6 +221,7 @@ function createRestRecord(
     readonly maintainedArtifactId?: string
     readonly maintainedArtifactDefinitionId?: string
     readonly clearedArtifactBacklash: boolean
+    readonly inkDelta: number
     readonly formRestored: number
     readonly playerCurrentFormAfter: number
     readonly playerMaxFormAfter: number
@@ -221,6 +237,7 @@ function createRestRecord(
     maintainedArtifactId: result.maintainedArtifactId,
     maintainedArtifactDefinitionId: result.maintainedArtifactDefinitionId,
     clearedArtifactBacklash: result.clearedArtifactBacklash,
+    inkDelta: result.inkDelta,
     formRestored: result.formRestored,
     playerCurrentFormAfter: result.playerCurrentFormAfter,
     playerMaxFormAfter: result.playerMaxFormAfter,

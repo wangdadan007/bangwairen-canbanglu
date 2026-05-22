@@ -47,7 +47,7 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
       (encounter) => (encounter.enemySlots?.length ?? 1) > 1,
     )
 
-    expect(gameData.cards).toHaveLength(45)
+    expect(gameData.cards).toHaveLength(46)
     expect(rewardCards).toHaveLength(36)
     expect(gameData.artifacts).toHaveLength(11)
     expect(gameData.events).toHaveLength(9)
@@ -338,8 +338,13 @@ function completeRouteSmoke({
     }
 
     if (flowKind === 'rest') {
-      const option = getAvailableRestOptions(run).find((candidate) => candidate.id === 'red_ink_service')
-      const fallbackOption = option ?? getAvailableRestOptions(run)[0]
+      const restOptions = getAvailableRestOptions(run)
+      const option =
+        run.resources.ink >= 1
+          ? restOptions.find((candidate) => candidate.id === 'red_ink_service')
+          : undefined
+      const fallbackOption =
+        option ?? restOptions.find((candidate) => candidate.id !== 'red_ink_service')
 
       if (!fallbackOption) {
         throw new Error('No rest option available')

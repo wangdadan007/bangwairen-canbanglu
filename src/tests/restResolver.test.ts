@@ -71,6 +71,7 @@ describe('T21 rest resolver', () => {
       playerCurrentFormAfter: 72,
       playerMaxFormAfter: 72,
       createdRedInkOffer: false,
+      inkDelta: 0,
     })
   })
 
@@ -103,10 +104,11 @@ describe('T21 rest resolver', () => {
       playerCurrentFormAfter: 64,
       playerMaxFormAfter: 72,
       createdRedInkOffer: false,
+      inkDelta: 0,
     })
   })
 
-  it('creates a red ink offer from the rest service after the preview unlock', () => {
+  it('spends ink to create a red ink offer from the rest service after the preview unlock', () => {
     const coreRun = createInitialTutorialRunState(gameData.tutorialUnlocks)
     const abnormalRun = advanceTutorialRun(
       coreRun,
@@ -120,11 +122,26 @@ describe('T21 rest resolver', () => {
       gameData.tutorialUnlocks,
       'vanquish',
     )
-    const nextRun = resolveTutorialRest(redInkRun, {
+    expect(() =>
+      resolveTutorialRest(redInkRun, {
+        optionId: 'red_ink_service',
+        routeNodeId: restRouteNodeId,
+      }),
+    ).toThrow('Rest red ink service requires 1 ink')
+
+    const inkReadyRun = {
+      ...redInkRun,
+      resources: {
+        ...redInkRun.resources,
+        ink: 1,
+      },
+    }
+    const nextRun = resolveTutorialRest(inkReadyRun, {
       optionId: 'red_ink_service',
       routeNodeId: restRouteNodeId,
     })
 
+    expect(nextRun.resources.ink).toBe(0)
     expect(nextRun.pendingRedInk?.options.map((option) => option.id)).toEqual(
       expect.arrayContaining([
         'red_ink_return_incense',
@@ -138,6 +155,7 @@ describe('T21 rest resolver', () => {
         id: 'rest_record_1',
         routeNodeId: restRouteNodeId,
         optionId: 'red_ink_service',
+        inkDelta: -1,
         createdRedInkOffer: true,
       }),
     )
@@ -189,6 +207,7 @@ describe('T21 rest resolver', () => {
         optionId: 'maintain_artifact',
         maintainedArtifactDefinitionId: 'artifact_whip_fragment',
         clearedArtifactBacklash: true,
+        inkDelta: 0,
         createdRedInkOffer: false,
       }),
     )

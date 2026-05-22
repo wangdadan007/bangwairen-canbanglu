@@ -1991,7 +1991,14 @@ button:disabled {
 }
 
 .hud-actions button {
-  width: 100%;
+  flex: 1 1 130px;
+}
+
+.hud-action-hint {
+  color: #b8aa91;
+  flex: 1 0 100%;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .empty-state {
