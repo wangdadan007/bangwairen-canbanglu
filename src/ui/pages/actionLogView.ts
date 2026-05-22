@@ -65,7 +65,8 @@ const termTooltips: Record<string, string> = {
   ink: '墨：中后段高级资源，用于问名、朱批或裁定相关收益。',
   doom: '劫数：以未来风险换当前爆发的负债资源。',
   fracture: '榜裂：削籍或强行取利留下的世界恶化程度。',
-  altar: '三坛：人坛、地坛、天坛，各自拥有不同触发时机。',
+  altar:
+    '三坛：人坛在回合结束收束本回合动作，地坛在敌人行动前压住压力，天坛在下回合开始提前布置。',
   artifact: '法宝：牌组外器物，不进入抽牌堆，可触发认主、过载与反噬。',
 }
 
@@ -525,36 +526,51 @@ export function formatLogEntry(
       ? cardDefinitionsById.get(sourceDefinitionId)
       : undefined
 
-    return `奉坛：${getAltarSlotLabel(getPayloadString(entry.payload.slot))}置入${
+    const slot = getPayloadString(entry.payload.slot)
+
+    return `奉坛：${getAltarSlotLabel(slot)}置入${
       sourceDefinition ? t(sourceDefinition.nameKey) : '符诏'
-    }。`
+    }，${getAltarWindowHint(slot)}。`
   }
 
   if (entry.type === 'ALTAR_TRIGGERED') {
-    const slotLabel = getAltarSlotLabel(getPayloadString(entry.payload.slot))
+    const slot = getPayloadString(entry.payload.slot)
+    const slotLabel = getAltarSlotLabel(slot)
     const result = getPayloadString(entry.payload.result)
 
     if (result === 'gain_ink') {
-      return `${slotLabel}触发：墨 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
+      const reason = getPayloadString(entry.payload.reason)
+
+      return `${slotLabel}触发：${getAltarInkReasonLabel(
+        slot,
+        reason,
+      )}，墨 +${getPayloadNumber(entry.payload.amount) ?? 0}，当前 ${
         getPayloadNumber(entry.payload.currentInk) ?? 0
       }。`
     }
 
     if (result === 'counter_abnormal') {
-      return `${slotLabel}触发：准备断异动 ${getMoveLabel(
+      return `${slotLabel}触发：敌人行动前准备断异动 ${getMoveLabel(
         getPayloadString(entry.payload.moveType),
       )}。`
     }
 
     if (result === 'ask_name') {
-      return `${slotLabel}触发：问名 ${getPayloadNumber(entry.payload.amount) ?? 0}。`
+      return `${slotLabel}触发：下回合开始问名 ${
+        getPayloadNumber(entry.payload.amount) ?? 0
+      }。`
     }
 
-    return `${slotLabel}未触发。`
+    return `${slotLabel}未触发：${getAltarSkipReasonLabel(
+      slot,
+      getPayloadString(entry.payload.reason),
+    )}。`
   }
 
   if (entry.type === 'ALTAR_EXPIRED') {
-    return `${getAltarSlotLabel(getPayloadString(entry.payload.slot))}归寂。`
+    return `${getAltarSlotLabel(getPayloadString(entry.payload.slot))}归寂：${getAltarExpireReasonLabel(
+      getPayloadString(entry.payload.reason),
+    )}。`
   }
 
   if (entry.type === 'ARTIFACT_TRIGGERED') {
@@ -948,16 +964,88 @@ export function getAltarSlotLabel(slot: string | undefined) {
   return '坛位'
 }
 
+export function getAltarSlotWindowLabel(slot: string | undefined) {
+  if (slot === 'human') {
+    return '回合结束窗口'
+  }
+
+  if (slot === 'earth') {
+    return '敌人行动前窗口'
+  }
+
+  if (slot === 'heaven') {
+    return '下回合开始窗口'
+  }
+
+  return '触发窗口'
+}
+
+export function getAltarWindowHint(slot: string | undefined) {
+  if (slot === 'human') {
+    return '回合结束时读取本回合问名、正名或朱批成果'
+  }
+
+  if (slot === 'earth') {
+    return '敌人行动前读取当前来势或异动压力'
+  }
+
+  if (slot === 'heaven') {
+    return '下回合开始提前布置问名、抽牌、墨或归册条件'
+  }
+
+  return '按对应坛位窗口触发'
+}
+
 export function getAltarEffectLabel(altar: AltarState) {
   if (altar.effect.type === 'gain_ink_for_name_progress') {
-    return '回合末问名得墨'
+    return '回合末收束得墨'
   }
 
   if (altar.effect.type === 'counter_abnormal_or_gain_ink') {
-    return '敌方回合断异动'
+    return '敌动前断异动'
   }
 
   return '下回合问名得墨'
+}
+
+function getAltarInkReasonLabel(slot: string | undefined, reason: string | undefined) {
+  if (reason === 'name_progress') {
+    return '回合末收束本回合问名、正名或朱批成果'
+  }
+
+  if (reason === 'no_abnormal_move') {
+    return '敌人行动前未遇可断异动，转为守坛余墨'
+  }
+
+  if (reason === 'heaven_altar') {
+    return '下回合开始完成天坛预布'
+  }
+
+  return getAltarWindowHint(slot)
+}
+
+function getAltarSkipReasonLabel(slot: string | undefined, reason: string | undefined) {
+  if (reason === 'no_name_progress') {
+    return '本回合没有问名、正名或朱批成果可收束'
+  }
+
+  if (reason === 'no_target') {
+    return '没有可问名目标'
+  }
+
+  return `${getAltarWindowHint(slot)}，但条件未满足`
+}
+
+function getAltarExpireReasonLabel(reason: string | undefined) {
+  if (reason === 'replaced') {
+    return '同坛位被新的奉坛替换'
+  }
+
+  if (reason === 'triggered') {
+    return '本次窗口已结算'
+  }
+
+  return '坛位效果已结束'
 }
 
 function getIntentKindLabel(intentKind: string | undefined) {

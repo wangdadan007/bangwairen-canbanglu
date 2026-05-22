@@ -21,6 +21,8 @@ import {
   formatLogEntry,
   getAltarEffectLabel,
   getAltarSlotLabel,
+  getAltarSlotWindowLabel,
+  getAltarWindowHint,
   getCardEffectLabels,
   getCurrentAbnormalMove,
   getEnemyDefinitionName,
@@ -951,10 +953,15 @@ function AltarPanel({
         const sourceCard = altar ? cardDefinitionsById.get(altar.sourceCardDefinitionId) : undefined
 
         return (
-          <div className={altar ? 'altar-slot active' : 'altar-slot'} key={slot}>
+          <div
+            aria-label={`${getAltarSlotLabel(slot)}，${getAltarWindowHint(slot)}`}
+            className={altar ? 'altar-slot active' : 'altar-slot'}
+            key={slot}
+            title={getAltarWindowHint(slot)}
+          >
             <span>{getAltarSlotLabel(slot)}</span>
             <strong>{altar ? getAltarEffectLabel(altar) : '未奉坛'}</strong>
-            <small>{sourceCard ? t(sourceCard.nameKey) : '空位'}</small>
+            <small>{sourceCard ? t(sourceCard.nameKey) : getAltarSlotWindowLabel(slot)}</small>
           </div>
         )
       })}

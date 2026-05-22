@@ -1,6 +1,6 @@
 # 模板沉淀区
 
-版本：v0.9
+版本：v1.0
 日期：2026-05-22
 建议路径：`docs/templates/TEMPLATE_EXTRACTION_NOTES.md`
 
@@ -50,8 +50,8 @@
 
 | 模板方向 | 主要回溯候选 | 关系说明 |
 |---|---|---|
-| `Phaser React Deckbuilder Roguelike Starter Kit` | T00-T08、T09-T13 / T65A / T66、T16-T22 / T28 / T39 / T42A / T65、T14-T15 / T26 / T31-T38 / T49A、T23-T27 / T35 / T44、T29 / T43、T30 / T38 / T42 / T45 / T48 / T50 / T58、T40-T46 / T56-T58 | 主产品方向，吸收战斗、run flow、数据、UI、QA、存档、高级扩展和试玩交付模块。 |
-| `Data-Driven Card Battle Engine` | T00-T08；T23-T27 / T35 / T44 | T00-T08 是核心战斗包；资源、时机窗口和 relic / artifact 可作为高级扩展。 |
+| `Phaser React Deckbuilder Roguelike Starter Kit` | T00-T08、T09-T13 / T65A / T66、T16-T22 / T28 / T39 / T42A / T65、T14-T15 / T26 / T31-T38 / T49A、T23-T27 / T35 / T44 / T67、T29 / T43、T30 / T38 / T42 / T45 / T48 / T50 / T58、T40-T46 / T56-T58 | 主产品方向，吸收战斗、run flow、数据、UI、QA、存档、高级扩展和试玩交付模块。 |
+| `Data-Driven Card Battle Engine` | T00-T08；T23-T27 / T35 / T44 / T67 | T00-T08 是核心战斗包；资源、时机窗口和 relic / artifact 可作为高级扩展。 |
 | `Roguelike Run Flow Kit` | T09-T13 / T65A / T66、T16-T22 / T28 / T39 / T42A / T65、T29 / T43 | 重点覆盖跨战流程、路线节点、事件 / 休整 / 商店、遭遇池、结算、存档，以及路线 / 角色倾向驱动的奖励、relic offer、卡牌改造 offer、敌人专属 run modifier 与风险收益判词池。 |
 | `React Card Game UI Kit` | T40-T46、T56-T58；参考 T05-T08、T20-T22 | T40-T46 是主要 UI 分层和反馈证据；T56-T58 补首局提示、读屏标签、错误边界和试玩错误反馈。 |
 | `AI Game Development Planning and QA Kit` | 初始化记录、T30 / T38 / T42 / T45 / T48 / T50 / T58-T60、T14-T15 / T26 / T31-T38 / T49A、T51 / T52-T53 / T56 | 重点覆盖 AI 协作规则、PRD 拆分、任务看板、QA、素材授权、内容覆盖、数据扩展、试玩交付、外部反馈和阶段收口流程。 |
@@ -128,7 +128,20 @@
 - 去题材化思路：抽象为 enemy-specific run modifiers、post-battle verdict options、risk meter delta、next-combat start bonus、combat trigger windows；示例使用中性 elite_a / elite_b / boss_flag、energy / currency / curse / delayed bonus 命名。
 - 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时只保留 resolver、触发窗口和中性样例数据。
 - 是否值得抽到模板：值得记录，适合作为 `Roguelike Run Flow Kit` 的 advanced run reward 模块。
-- 后续动作：待 T67 人工试玩确认收益强度和显示可读性后，再决定是否抽象为通用 rule registry。
+- 后续动作：待 T68 人工试玩确认收益强度和显示可读性后，再决定是否抽象为通用 rule registry。
+
+### 2026-05-22 · T67 · 时间窗口型延迟效果与触发提示模板
+
+- 候选类型：战斗时机窗口 / card timing template / UI feedback pattern。
+- 主归属模板：`Data-Driven Card Battle Engine`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`React Card Game UI Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`docs/prd/PRD-gameplay.md`、`src/ui/pages/actionLogView.ts`、`src/ui/pages/BattleHud.tsx`、`src/ui/pages/firstRunGuidance.ts`、`src/data/localization/zh-CN.json`、`src/tests/altarResolver.test.ts`、`src/tests/data.test.ts`。
+- 可复用价值：把“打出一张牌，布置到未来某个战斗窗口，再按窗口读取条件结算”的规则拆成规则定义、卡牌模板、触发 / 跳过 / 归寂日志和 HUD 提示，可复用到其他卡牌游戏的 stance、trap、delayed spell、reaction slot 或 next-turn setup 系统。
+- 与本作强绑定部分：人坛、地坛、天坛、问名、正名、朱批、墨、归册等命名和仪式感属于本作。
+- 去题材化思路：抽象为 timing slots，例如 end_of_player_turn、before_enemy_action、next_player_turn_start；卡牌模板使用 trigger window、condition reader、fallback、expiration reason 和 UI hint。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时只保留中性时机窗口和样例日志。
+- 是否值得抽到模板：值得记录，适合作为卡牌战斗引擎的 advanced timing module。
+- 后续动作：后续若把 `三坛合符` 改为三选一或多窗口联动，再观察是否需要补通用 choice UI 模板。
 
 ### 2026-05-19 · T00-T08 回溯 · 纯逻辑卡牌战斗核心
 

@@ -202,7 +202,7 @@ export function createFirstRunGuidance({
       tone: 'altar',
       eyebrow: '三坛',
       title: '三坛看的是触发时机',
-      body: '人坛在回合末，地坛在敌方行动前，天坛在下回合开始；它们不是普通延迟破形。',
+      body: '人坛收束本回合动作，地坛预判敌人行动，天坛准备下回合开局；它们不是普通延迟破形。',
       terms: ['人坛', '地坛', '天坛'],
     }
   }
