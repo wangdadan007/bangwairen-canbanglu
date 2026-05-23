@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { gameData } from '../data'
-import { createInitialBattleState, reduceBattleState, type BattleReducerContext } from '../core'
-import type { CombatState, EnemyDefinition } from '../types'
+import {
+  createInitialArtifactCollection,
+  createInitialBattleState,
+  reduceBattleState,
+  type BattleReducerContext,
+} from '../core'
+import type { CombatState, EnemyDefinition, EnemyId } from '../types'
 
 const paperWraith = gameData.enemies[0]
 const context: BattleReducerContext = {
@@ -112,9 +117,41 @@ describe('name resolver', () => {
     )
 
     const askLog = nextState.actionLog.find((entry) => entry.type === 'NAME_ASKED')
+    const discernLog = nextState.actionLog.find((entry) => entry.type === 'INTENT_DISCERNED')
     expect(askLog?.payload.result).toBe('discern_intent')
+    expect(discernLog?.payload.result).toBe('next_previewed')
     expect(nextState.enemies[0].currentForm).toBe(17)
+    expect(nextState.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
     expect(nextState.enemies[0].isNamed).toBe(false)
+  })
+
+  it('lets bone mirror reveal a masked elite intent before previewing later moves', () => {
+    const incenseClerk = getEnemy('enemy_incense_clerk')
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: incenseClerk,
+      deckDefinitionIds: ['card_ask_name'],
+      artifacts: createInitialArtifactCollection(gameData.artifacts),
+    })
+    const askName = state.hand[0]
+
+    expect(state.enemies[0].currentIntentVisibility).toBe('masked')
+
+    const nextState = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: askName.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      {
+        cardDefinitions: gameData.cards,
+        enemyDefinitions: [incenseClerk],
+      },
+    )
+
+    expect(nextState.enemies[0].currentIntentVisibility).toBe('revealed')
+    expect(nextState.enemies[0].nextIntentPreview).toBeUndefined()
   })
 
   it('settles as vanquish when form reaches zero before naming', () => {
@@ -192,6 +229,16 @@ describe('name resolver', () => {
     )
   })
 })
+
+function getEnemy(definitionId: EnemyId): EnemyDefinition {
+  const enemy = gameData.enemies.find((candidate) => candidate.id === definitionId)
+
+  if (!enemy) {
+    throw new Error(`Missing enemy definition: ${definitionId}`)
+  }
+
+  return enemy
+}
 
 function withEnemyCurrentForm(state: CombatState, currentForm: number): CombatState {
   return {

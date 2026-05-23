@@ -437,6 +437,8 @@ describe('core type contracts', () => {
           isNamed: false,
           hasTriggeredNameBreak: false,
           intentIndex: 0,
+          currentIntentVisibility: 'revealed',
+          intentMaskMode: 'none',
           incomingForce: 5,
           blockedAbnormalMoveTypes: [],
           traits: ['tutorial'],

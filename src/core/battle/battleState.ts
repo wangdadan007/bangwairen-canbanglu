@@ -14,6 +14,7 @@ import type {
   CombatState,
   EnemyDefinition,
   EnemyIntentDefinition,
+  EnemyIntentMaskMode,
   EnemyState,
   RunDeckCard,
   TutorialResourceState,
@@ -104,13 +105,25 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
   const extraHandCards = createTemporaryCardInstances(extraHandDefinitionIds)
   const extraDrawPileCards = createTemporaryCardInstances(extraDrawPileDefinitionIds)
   const enemyDefinitions = input.enemyDefinitions ?? (input.enemyDefinition ? [input.enemyDefinition] : [])
+  const hiddenIntentEnemyIds = createHiddenIntentEnemyIdSet(
+    enemyDefinitions,
+    input.openingRiskLogRecords ?? [],
+  )
+  const hasIntentBacklash = (input.artifactBacklashRecords ?? []).some(
+    (record) => record.effectType === 'hide_intent_before_ask_name',
+  )
 
   if (enemyDefinitions.length === 0) {
     throw new Error('createInitialBattleState requires at least one enemy definition')
   }
 
   const enemies = enemyDefinitions.map((enemyDefinition, index) =>
-    createEnemyState(enemyDefinition, index, input.initialEnemyIntentIds?.[enemyDefinition.id]),
+    createEnemyState(
+      enemyDefinition,
+      index,
+      input.initialEnemyIntentIds?.[enemyDefinition.id],
+      getInitialIntentMaskMode(enemyDefinition, index, hiddenIntentEnemyIds, hasIntentBacklash),
+    ),
   )
   const maxIncense = DEFAULT_MAX_INCENSE + (input.maxIncenseBonus ?? 0)
   const persistentPlayerForm = normalizeTutorialPlayerFormState(
@@ -271,6 +284,7 @@ export function createEnemyState(
   definition: EnemyDefinition,
   index: number,
   initialIntentId?: string,
+  initialIntentMaskMode = getDefaultIntentMaskMode(definition),
 ): EnemyState {
   const initialIntentIndex = Math.max(
     0,
@@ -279,6 +293,7 @@ export function createEnemyState(
       : 0,
   )
   const currentIntent = definition.intents[initialIntentIndex]
+  const nextIntent = getNextIntent(definition, initialIntentIndex)
   const nameSlots = Array.from({ length: definition.nameSlots }, (_, slotIndex) => {
     const slotDefinition = definition.nameSlotDefinitions?.find((slot) => slot.index === slotIndex)
 
@@ -301,10 +316,70 @@ export function createEnemyState(
     hasTriggeredNameBreak: false,
     intentIndex: initialIntentIndex,
     currentIntent,
+    currentIntentVisibility:
+      initialIntentMaskMode === 'none' ? 'revealed' : 'masked',
+    intentMaskMode: initialIntentMaskMode,
+    nextIntent,
     incomingForce: getIncomingForce(currentIntent),
     blockedAbnormalMoveTypes: [],
     traits: definition.traits,
   }
+}
+
+function createHiddenIntentEnemyIdSet(
+  enemyDefinitions: readonly EnemyDefinition[],
+  openingRiskLogRecords: readonly OpeningRiskLogRecord[],
+) {
+  const hiddenIntentEnemyIds = new Set<string>()
+
+  for (const record of openingRiskLogRecords) {
+    if (
+      record.resource === 'fracture' &&
+      record.enemyDefinitionId &&
+      (record.result === 'ask_name_penalty' || record.result === 'boss_high_fracture')
+    ) {
+      hiddenIntentEnemyIds.add(record.enemyDefinitionId)
+    }
+  }
+
+  for (const enemyDefinition of enemyDefinitions) {
+    if (enemyDefinition.tier === 'elite' || enemyDefinition.tier === 'boss') {
+      hiddenIntentEnemyIds.add(enemyDefinition.id)
+    }
+  }
+
+  return hiddenIntentEnemyIds
+}
+
+function getInitialIntentMaskMode(
+  definition: EnemyDefinition,
+  index: number,
+  hiddenIntentEnemyIds: ReadonlySet<string>,
+  hasIntentBacklash: boolean,
+): EnemyIntentMaskMode {
+  const defaultMaskMode = getDefaultIntentMaskMode(definition)
+
+  if (defaultMaskMode === 'always') {
+    return defaultMaskMode
+  }
+
+  if (hiddenIntentEnemyIds.has(definition.id) || (hasIntentBacklash && index === 0)) {
+    return 'current_only'
+  }
+
+  return defaultMaskMode
+}
+
+function getDefaultIntentMaskMode(definition: EnemyDefinition): EnemyIntentMaskMode {
+  return definition.tier === 'elite' || definition.tier === 'boss' ? 'always' : 'none'
+}
+
+function getNextIntent(definition: EnemyDefinition, currentIntentIndex: number) {
+  if (definition.intents.length === 0) {
+    return undefined
+  }
+
+  return definition.intents[(currentIntentIndex + 1) % definition.intents.length]
 }
 
 function getIncomingForce(intent: EnemyIntentDefinition | undefined): number {

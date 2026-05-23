@@ -65,6 +65,7 @@ import type {
   CardDefinition,
   CombatState,
   EncounterDefinition,
+  EnemyIntentDefinition,
   EnemyState,
   RouteNodeDefinition,
   TutorialRunState,
@@ -684,10 +685,12 @@ function EnemyPanel({
   readonly onSelect: () => void
 }) {
   const formPercent = Math.max(0, Math.min(100, (enemy.currentForm / enemy.maxForm) * 100))
-  const intentLabel = enemy.currentIntent ? t(enemy.currentIntent.nameKey) : '无'
+  const isIntentMasked = enemy.currentIntentVisibility === 'masked'
+  const intentLabel = getCurrentIntentLabel(enemy.currentIntent, isIntentMasked, enemy.tier)
   const abnormalMove = getCurrentAbnormalMove(enemy)
-  const hasPreparedCounter = abnormalMove
-    ? enemy.blockedAbnormalMoveTypes.includes(abnormalMove.type)
+  const visibleAbnormalMove = isIntentMasked ? undefined : abnormalMove
+  const hasPreparedCounter = visibleAbnormalMove
+    ? enemy.blockedAbnormalMoveTypes.includes(visibleAbnormalMove.type)
     : false
   const intentKind =
     enemy.currentIntent?.kind === 'abnormal_move'
@@ -696,11 +699,26 @@ function EnemyPanel({
         ? '来势'
         : '待定'
   const intentTone =
-    enemy.currentIntent?.kind === 'abnormal_move'
+    isIntentMasked
+      ? 'hidden'
+      : enemy.currentIntent?.kind === 'abnormal_move'
       ? 'abnormal'
       : enemy.incomingForce > 0
         ? 'incoming'
         : 'quiet'
+  const nextIntentTone =
+    enemy.nextIntentPreview?.kind === 'abnormal_move'
+      ? 'abnormal'
+      : enemy.nextIntentPreview?.kind === 'incoming_force'
+        ? 'incoming'
+        : 'hidden'
+  const nextIntentLabel = enemy.nextIntentPreview
+    ? getPreviewIntentLabel(enemy.nextIntentPreview)
+    : '未辨'
+  const nextIntentDetail = enemy.nextIntentPreview
+    ? getPreviewIntentDetail(enemy.nextIntentPreview)
+    : '辨势后显示，用于规划下回合。'
+  const visibleIncomingForce = isIntentMasked ? null : enemy.incomingForce
 
   return (
     <article
@@ -775,7 +793,9 @@ function EnemyPanel({
         </span>
         <strong>{intentLabel}</strong>
         <small>
-          {abnormalMove
+          {isIntentMasked
+            ? '辨势可揭示具体行动'
+            : visibleAbnormalMove
             ? hasPreparedCounter
               ? '专门处理已布置'
               : '需要专门效果处理'
@@ -784,44 +804,113 @@ function EnemyPanel({
               : '暂无直接来势'}
         </small>
       </div>
+      <div className={`intent-next-preview ${nextIntentTone}`} aria-label="后一动预告">
+        <span>后一动</span>
+        <strong>{nextIntentLabel}</strong>
+        <small>{nextIntentDetail}</small>
+      </div>
       <div className="intent-detail-grid" aria-label="敌人意图详情">
         <div>
           <span title={getTermTooltip('incoming_force')}>当前来势值</span>
-          <strong>{enemy.incomingForce}</strong>
+          <strong>{visibleIncomingForce ?? '未辨'}</strong>
         </div>
-        <div className={abnormalMove ? 'intent-alert active' : 'intent-alert'}>
+        <div className={visibleAbnormalMove ? 'intent-alert active' : 'intent-alert'}>
           <span title={getTermTooltip('abnormal_move')}>异动预警</span>
-          <strong>{abnormalMove ? t(abnormalMove.descriptionKey) : '无'}</strong>
+          <strong>
+            {isIntentMasked
+              ? '势影遮蔽'
+              : visibleAbnormalMove
+                ? t(visibleAbnormalMove.descriptionKey)
+                : '无'}
+          </strong>
         </div>
       </div>
       <div className="intent-rule-grid" aria-label="来势与异动处理状态">
-        <div className={enemy.incomingForce > 0 ? 'rule-note active' : 'rule-note'}>
+        <div
+          className={!isIntentMasked && enemy.incomingForce > 0 ? 'rule-note active' : 'rule-note'}
+        >
           <span title={getTermTooltip('seal_momentum')}>压住来势（封势）</span>
           <strong>
-            {enemy.incomingForce > 0
+            {isIntentMasked
+              ? '需先辨势'
+              : enemy.incomingForce > 0
               ? `可处理 ${enemy.incomingForce} 点`
-              : abnormalMove
+              : visibleAbnormalMove
                 ? '本次不是来势'
                 : '暂无来势'}
           </strong>
         </div>
         <div
           className={
-            abnormalMove ? (hasPreparedCounter ? 'rule-note secured' : 'rule-note danger') : 'rule-note'
+            visibleAbnormalMove
+              ? hasPreparedCounter
+                ? 'rule-note secured'
+                : 'rule-note danger'
+              : 'rule-note'
           }
         >
           <span title={getTermTooltip('counter_abnormal_move')}>专门处理（断异动）</span>
           <strong>
-            {abnormalMove
+            {isIntentMasked
+              ? '需先辨势'
+              : visibleAbnormalMove
               ? hasPreparedCounter
-                ? `已盯住${getMoveLabel(abnormalMove.type)}`
-                : `${getMoveLabel(abnormalMove.type)}未处理`
+                ? `已盯住${getMoveLabel(visibleAbnormalMove.type)}`
+                : `${getMoveLabel(visibleAbnormalMove.type)}未处理`
               : '暂无异动'}
           </strong>
         </div>
       </div>
     </article>
   )
+}
+
+function getCurrentIntentLabel(
+  intent: EnemyIntentDefinition | undefined,
+  isIntentMasked: boolean,
+  tier: EnemyState['tier'],
+) {
+  if (!intent) {
+    return '无'
+  }
+
+  if (!isIntentMasked) {
+    return t(intent.nameKey)
+  }
+
+  if (tier === 'boss') {
+    return '窃榜使正在翻检残榜'
+  }
+
+  if (intent.kind === 'incoming_force') {
+    return '来势：强弱不明'
+  }
+
+  return '异动：影迹不明'
+}
+
+function getPreviewIntentLabel(intent: EnemyIntentDefinition) {
+  const prefix = intent.kind === 'incoming_force' ? '来势' : '异动'
+
+  return `${prefix}：${t(intent.nameKey)}`
+}
+
+function getPreviewIntentDetail(intent: EnemyIntentDefinition) {
+  const incomingForce = intent.effects.reduce(
+    (total, effect) => total + (effect.type === 'INCOMING_FORCE' ? effect.amount : 0),
+    0,
+  )
+  const abnormalMove = intent.effects.find((effect) => effect.type === 'ABNORMAL_MOVE')?.move
+
+  if (incomingForce > 0) {
+    return `预计来势 ${incomingForce}，可提前规划封势或抢收束。`
+  }
+
+  if (abnormalMove) {
+    return `${getMoveLabel(abnormalMove.type)}，可提前准备断异动、地坛或问名节奏。`
+  }
+
+  return '已照见后一动。'
 }
 
 function PressureFeedbackPanel({ feedback }: { readonly feedback: PressureFeedback }) {

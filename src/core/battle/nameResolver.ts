@@ -3,6 +3,7 @@ import {
   triggerArtifactsAfterAskName,
   triggerArtifactsAfterEnemyNamed,
 } from './artifactBattleResolver'
+import { discernEnemyIntent } from './intentInsightResolver'
 import { triggerRegisterAfterEnemyNamed } from './registerBattleResolver'
 import type { CombatState, EnemyInstanceId, EnemyState, EnemyTier, GameEntityId } from '../../types'
 
@@ -61,9 +62,19 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
     return nextState
   }
 
+  if (target.nameSlots.length === 0) {
+    nextState = discernEnemyIntent(nextState, {
+        sourceId: input.sourceId,
+        targetEnemyInstanceId: target.instanceId,
+        reason: 'ask_name_fallback',
+      })
+
+    return triggerArtifactsAfterAskName(nextState, input.sourceId)
+  }
+
   nextState = triggerArtifactsAfterAskName(nextState, input.sourceId)
 
-  if (target.nameSlots.length === 0 || target.isNamed) {
+  if (target.isNamed) {
     return nextState
   }
 

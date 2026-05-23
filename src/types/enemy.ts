@@ -5,6 +5,10 @@ export type EnemyTier = 'minion' | 'normal' | 'key_normal' | 'elite' | 'boss'
 
 export type EnemyIntentKind = 'incoming_force' | 'abnormal_move'
 
+export type EnemyIntentVisibility = 'revealed' | 'masked'
+
+export type EnemyIntentMaskMode = 'none' | 'current_only' | 'always'
+
 export type AbnormalMoveType =
   | 'steal_incense'
   | 'add_fouled_scroll'
@@ -86,6 +90,10 @@ export interface EnemyState {
   readonly hasTriggeredNameBreak: boolean
   readonly intentIndex: number
   readonly currentIntent?: EnemyIntentDefinition
+  readonly currentIntentVisibility: EnemyIntentVisibility
+  readonly intentMaskMode: EnemyIntentMaskMode
+  readonly nextIntent?: EnemyIntentDefinition
+  readonly nextIntentPreview?: EnemyIntentDefinition
   readonly incomingForce: number
   readonly blockedAbnormalMoveTypes: readonly AbnormalMoveType[]
   readonly traits: readonly string[]

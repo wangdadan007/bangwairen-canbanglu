@@ -304,21 +304,40 @@ function advanceEnemyIntent(
 
   const nextIntentIndex = (enemy.intentIndex + 1) % definition.intents.length
   const nextIntent = definition.intents[nextIntentIndex]
+  const followingIntent = definition.intents[(nextIntentIndex + 1) % definition.intents.length]
   const enemies = state.enemies.map((candidate) =>
     candidate.instanceId === enemy.instanceId
-      ? {
-          ...candidate,
-          intentIndex: nextIntentIndex,
-          currentIntent: nextIntent,
-          incomingForce: getIncomingForce(nextIntent),
-          blockedAbnormalMoveTypes: [],
-        }
+      ? advanceSingleEnemyIntent(candidate, nextIntentIndex, nextIntent, followingIntent)
       : candidate,
   )
 
   return {
     ...state,
     enemies,
+  }
+}
+
+function advanceSingleEnemyIntent(
+  enemy: EnemyState,
+  nextIntentIndex: number,
+  nextIntent: EnemyIntentDefinition | undefined,
+  followingIntent: EnemyIntentDefinition | undefined,
+): EnemyState {
+  const nextMaskMode = enemy.intentMaskMode === 'current_only' ? 'none' : enemy.intentMaskMode
+  const hasPreviewedNextIntent =
+    Boolean(nextIntent) && enemy.nextIntentPreview?.id === nextIntent?.id
+
+  return {
+    ...enemy,
+    intentIndex: nextIntentIndex,
+    currentIntent: nextIntent,
+    currentIntentVisibility:
+      hasPreviewedNextIntent || nextMaskMode === 'none' ? 'revealed' : 'masked',
+    intentMaskMode: nextMaskMode,
+    nextIntent: followingIntent,
+    nextIntentPreview: undefined,
+    incomingForce: getIncomingForce(nextIntent),
+    blockedAbnormalMoveTypes: [],
   }
 }
 

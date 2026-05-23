@@ -58,6 +58,12 @@ const BOSS_CLEAR_ARTIFACT_CANDIDATE_IDS: readonly ArtifactId[] = [
   ASH_LAMP_ARTIFACT_ID,
   CINNABAR_DOU_ARTIFACT_ID,
 ]
+const HIDE_INTENT_BACKLASH_ARTIFACT_IDS: readonly ArtifactId[] = [
+  BONE_MIRROR_ARTIFACT_ID,
+  COURT_CHIME_ARTIFACT_ID,
+  NAME_TETHER_SPINDLE_ARTIFACT_ID,
+  REGISTRY_INKSTONE_ARTIFACT_ID,
+]
 
 export interface ArtifactProgressEvent {
   readonly kind: ArtifactProgressKind
@@ -339,6 +345,13 @@ export function resolveArtifactBacklashesAtBattleStart(
         effectType: 'temporary_player_form_loss',
         amount: Math.abs(playerFormDelta),
         playerFormDelta,
+      })
+    }
+
+    if (HIDE_INTENT_BACKLASH_ARTIFACT_IDS.includes(artifact.definitionId)) {
+      records.push({
+        artifactId: artifact.id,
+        effectType: 'hide_intent_before_ask_name',
       })
     }
 

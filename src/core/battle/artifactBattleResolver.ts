@@ -8,6 +8,7 @@ import {
   REGISTRY_INKSTONE_ARTIFACT_ID,
   WHIP_FRAGMENT_ARTIFACT_ID,
 } from '../run/artifactResolver'
+import { applyEnemyIntentDiscernment } from './intentInsightResolver'
 import type {
   ArtifactId,
   CardDefinition,
@@ -164,15 +165,18 @@ function resolveAskNameArtifactTrigger(
     )
   }
 
-  return appendLog(state, {
+  const discernment = applyEnemyIntentDiscernment(state, target?.instanceId)
+
+  return appendLog(discernment.state, {
     type: 'ARTIFACT_TRIGGERED',
     sourceId: artifactId,
     targetId: target?.instanceId,
     payload: {
       effectType: 'peek_intent_after_ask_name',
-      result: 'peeked',
-      intentId: target?.currentIntent?.id ?? null,
-      intentKind: target?.currentIntent?.kind ?? null,
+      result: discernment.result,
+      intentId: discernment.intent?.id ?? null,
+      intentKind: discernment.intent?.kind ?? null,
+      previewTurnOffset: discernment.previewTurnOffset ?? null,
       boundBonus: getArtifactBindingStatus(state, artifactId) === 'bound' ? trigger.boundBonus : 0,
     },
   })

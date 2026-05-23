@@ -402,3 +402,16 @@
 - 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时应替换所有本作术语、牌 ID、敌人 intent ID 和日志文案。
 - 是否值得抽到模板：值得，适合作为 starter kit 的中后段风险经济示例，也能成为 AI QA kit 中“风险机制落地前后对照”的测试样例。
 - 后续动作：T69 人工试玩复核中观察玩家是否能理解阈值惩罚来源、墨消耗是否太稀有，以及是否需要在后续事件或休整中加入“解劫 / 止裂”入口。
+
+### 2026-05-23 · T70 · 意图可见性与后一动预告
+
+- 候选类型：combat intent visibility / masked telegraph / next-action preview UI。
+- 主归属模板：`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 也支持：`React Card Game UI Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/types/enemy.ts`、`src/types/battle.ts`、`src/core/battle/battleState.ts`、`src/core/battle/enemyIntentResolver.ts`、`src/core/battle/intentInsightResolver.ts`、`src/core/battle/nameResolver.ts`、`src/core/battle/artifactBattleResolver.ts`、`src/core/run/artifactResolver.ts`、`src/ui/pages/BattleHud.tsx`、`src/ui/pages/actionLogView.ts`、`src/ui/styles.css`、`src/tests/nameResolver.test.ts`、`src/tests/artifactResolver.test.ts`、`src/tests/types.test.ts`。
+- 可复用价值：把敌人行动信息拆成“当前行动可见性、遮蔽模式、下一动、下一动预告”四层，让普通战保持明牌公平，关键战保留信息压力，并让侦察类卡牌 / relic 在明牌场景下仍有稳定价值。
+- 与本作强绑定部分：辨势、遮势、来势、异动、问名、照骨镜、法宝反噬、榜裂等命名和具体 UI 文案属于本作表达。
+- 去题材化思路：抽象为 visible intent, masked intent, inspect intent, next-intent preview, elite / boss masking rules, risk-triggered temporary masking 和 combat log feedback。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时应替换本作术语、敌人 intent ID 和中文 actionLog 文案。
+- 是否值得抽到模板：值得，适合作为 deckbuilder starter kit 中“明牌公平 + 局部隐藏信息”的范例，也适合作为 UI kit 的弱权重预告槽组件。
+- 后续动作：T71 三角色浏览器试玩中重点观察玩家是否理解遮势与后一动、照微信息优势是否成立，以及 Boss 遮势是否太压迫。

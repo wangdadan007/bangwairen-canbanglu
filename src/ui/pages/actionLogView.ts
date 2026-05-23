@@ -203,6 +203,7 @@ export function createRitualFeedback(
         'ENEMY_SETTLED',
         'VICTORY_SETTLED',
         'DEFEAT_SETTLED',
+        'INTENT_DISCERNED',
         'ARTIFACT_TRIGGERED',
         'ARTIFACT_BACKLASH_TRIGGERED',
       ].includes(candidate.type),
@@ -245,6 +246,23 @@ export function createRitualFeedback(
           ? '无名目标转为辨势，仍保留弱收益。'
           : '名格揭示会推动正名与归册收益。',
       audioCue: 'ask_name',
+    }
+  }
+
+  if (entry.type === 'INTENT_DISCERNED') {
+    const result = getPayloadString(entry.payload.result)
+    const intentKind = getIntentKindLabel(getPayloadString(entry.payload.intentKind))
+
+    return {
+      id: entry.id,
+      tone: 'ask',
+      label: '辨势反馈',
+      title: result === 'current_revealed' ? `照见本次${intentKind}` : `照见后一动${intentKind}`,
+      detail:
+        result === 'current_revealed'
+          ? '遮蔽的行动已揭开，可以据此决定封势、断异动或抢收束。'
+          : '后一动已显影，可用于规划下回合与三坛窗口。',
+      audioCue: 'preview',
     }
   }
 
@@ -380,6 +398,17 @@ export function createBossPressureFeedback(battle: CombatState): RitualFeedback 
       title: `${bossName}已收束`,
       detail: '本章终点压力解除，等待伏诛或归册结算。',
       audioCue: 'settlement',
+    }
+  }
+
+  if (bossEnemy.currentIntentVisibility === 'masked') {
+    return {
+      id: cueId,
+      tone: 'boss',
+      label: 'Boss 压力',
+      title: `${bossName}势影遮蔽`,
+      detail: '本次行动仍可被辨势揭开；若已明牌，辨势会照见后一动。',
+      audioCue: 'pressure',
     }
   }
 
@@ -614,9 +643,7 @@ export function formatLogEntry(
     const effectType = getPayloadString(entry.payload.effectType)
 
     if (effectType === 'peek_intent_after_ask_name') {
-      return `${artifactName}照见下一动：${getIntentKindLabel(
-        getPayloadString(entry.payload.intentKind),
-      )}。`
+      return `${artifactName}${formatIntentDiscernment(entry)}。`
     }
 
     if (effectType === 'seal_momentum_after_ask_name') {
@@ -671,6 +698,10 @@ export function formatLogEntry(
       return `${artifactName}反噬：本场己形临时 ${playerFormDelta}。`
     }
 
+    if (getPayloadString(entry.payload.effectType) === 'hide_intent_before_ask_name') {
+      return `${artifactName}反噬：本场开局行动意图被遮蔽。`
+    }
+
     return `${artifactName}反噬已结算。`
   }
 
@@ -700,6 +731,11 @@ export function formatLogEntry(
     }
 
     return `名格显现：${t(getPayloadString(entry.payload.nameKey))}。`
+  }
+
+  if (entry.type === 'INTENT_DISCERNED') {
+    const sourceName = sourceCardName ?? '辨势'
+    return `${sourceName}${formatIntentDiscernment(entry)}。`
   }
 
   if (entry.type === 'ENEMY_NAMED') {
@@ -863,6 +899,7 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     entry.type === 'NAME_ASKED' ||
     entry.type === 'NAME_SLOT_REVEALED' ||
     entry.type === 'ENEMY_NAMED' ||
+    entry.type === 'INTENT_DISCERNED' ||
     entry.type === 'CARD_ANNOTATION_TRIGGERED' ||
     entry.type === 'INK_GAINED' ||
     entry.type === 'INK_SPENT' ||
@@ -1160,6 +1197,25 @@ function getIntentKindLabel(intentKind: string | undefined) {
   }
 
   return '未记名行动'
+}
+
+function formatIntentDiscernment(entry: ActionLogEntry) {
+  const result = getPayloadString(entry.payload.result)
+  const intentKindLabel = getIntentKindLabel(getPayloadString(entry.payload.intentKind))
+
+  if (result === 'current_revealed') {
+    return `揭开本次${intentKindLabel}`
+  }
+
+  if (result === 'next_previewed') {
+    return `照见后一动：${intentKindLabel}`
+  }
+
+  if (result === 'no_target') {
+    return '未找到可辨势目标'
+  }
+
+  return '未照见行动'
 }
 
 export function getEnemyDefinitionName(definitionId: string) {

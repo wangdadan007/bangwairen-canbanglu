@@ -142,7 +142,7 @@ export function createFirstRunGuidance({
       tone: 'boss',
       eyebrow: '终点压力',
       title: 'Boss 会同时考问问名与防守',
-      body: '窃榜使会用来势、遮名、塞污卷挤压节奏；先看下一动，再决定封势、断异动，或抢正名归册。',
+      body: '窃榜使会用来势、遮名、塞污卷挤压节奏；先辨势看清遮势或后一动，再决定封势、断异动，或抢正名归册。',
       terms: ['Boss', '来势', '异动', '归册'],
     }
   }
@@ -163,7 +163,7 @@ export function createFirstRunGuidance({
         tone: 'core',
         eyebrow: '照微首战',
         title: '先问名照行动，再决定收束',
-        body: '照骨镜会在首次问名后照见下一动；照微己形低，但问名密度高，前两场尽量抢正名和归册奖励。',
+        body: '照骨镜会在首次问名后辨势；照微己形低，但问名密度高，前两场尽量抢正名和归册奖励。',
         terms: ['照骨镜', '问名', '来势', '归册'],
       }
     }

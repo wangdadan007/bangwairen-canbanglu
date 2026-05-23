@@ -346,10 +346,11 @@ describe('T17 artifact foundation', () => {
     expect(mirrorLog?.payload).toEqual(
       expect.objectContaining({
         effectType: 'peek_intent_after_ask_name',
-        result: 'peeked',
+        result: 'next_previewed',
         intentId: 'intent_paper_wraith_scrape',
       }),
     )
+    expect(afterAsk.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
     expect(
       afterAsk.artifacts.artifacts.find(
         (artifact) => artifact.definitionId === 'artifact_bone_mirror',
@@ -478,7 +479,7 @@ describe('T17 artifact foundation', () => {
     expect(nameTetherLog?.payload).toEqual(
       expect.objectContaining({
         effectType: 'peek_intent_after_ask_name',
-        result: 'peeked',
+        result: 'next_previewed',
         intentKind: 'incoming_force',
       }),
     )
@@ -487,6 +488,36 @@ describe('T17 artifact foundation', () => {
         (artifact) => artifact.definitionId === 'artifact_name_tether_spindle',
       )?.triggerCountThisBattle,
     ).toBe(1)
+  })
+
+  it('resolves intent-hiding backlash into a masked opening intent', () => {
+    const artifacts = {
+      artifacts: createInitialArtifactCollection(gameData.artifacts).artifacts.map((artifact) =>
+        artifact.definitionId === 'artifact_bone_mirror'
+          ? {
+              ...artifact,
+              pendingBacklash: true,
+            }
+          : artifact,
+      ),
+    }
+    const resolution = resolveArtifactBacklashesAtBattleStart(artifacts, {
+      ink: 0,
+      doom: 0,
+      fracture: 0,
+    })
+    const battle = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[0],
+      artifacts: resolution.artifacts,
+      artifactBacklashRecords: resolution.records,
+    })
+
+    expect(resolution.records.some((record) => record.effectType === 'hide_intent_before_ask_name')).toBe(
+      true,
+    )
+    expect(battle.enemies[0].currentIntentVisibility).toBe('masked')
+    expect(battle.enemies[0].intentMaskMode).toBe('current_only')
   })
 
   it('uses fracture needle to improve erase verdict card rewards', () => {
