@@ -5,6 +5,7 @@ import {
 } from './artifactBattleResolver'
 import { discernEnemyIntent } from './intentInsightResolver'
 import { triggerRegisterAfterEnemyNamed } from './registerBattleResolver'
+import { triggerThunderLead } from './shapeStatusResolver'
 import type { CombatState, EnemyInstanceId, EnemyState, EnemyTier, GameEntityId } from '../../types'
 
 const NAME_BREAK_RATIOS: Readonly<Record<EnemyTier, number>> = {
@@ -69,13 +70,14 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
         reason: 'ask_name_fallback',
       })
 
-    return triggerArtifactsAfterAskName(nextState, input.sourceId)
+    nextState = triggerArtifactsAfterAskName(nextState, input.sourceId)
+    return triggerThunderLead(nextState, target.instanceId, input.sourceId)
   }
 
   nextState = triggerArtifactsAfterAskName(nextState, input.sourceId)
 
   if (target.isNamed) {
-    return nextState
+    return triggerThunderLead(nextState, target.instanceId, input.sourceId)
   }
 
   for (let count = 0; count < effectiveAmount; count += 1) {
@@ -101,7 +103,7 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
     nextState = triggerArtifactsAfterEnemyNamed(nextState, input.sourceId)
   }
 
-  return nextState
+  return triggerThunderLead(nextState, target.instanceId, input.sourceId)
 }
 
 export interface RestoreCoveredNameSlotInput {
@@ -132,6 +134,7 @@ export function restoreCoveredNameSlot(
       targetId: updatedTarget.instanceId,
     })
     nextState = triggerNameBreak(nextState, updatedTarget.instanceId, input.sourceId)
+    nextState = triggerThunderLead(nextState, updatedTarget.instanceId, input.sourceId)
     nextState = triggerArtifactsAfterEnemyNamed(nextState, input.sourceId)
   }
 

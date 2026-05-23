@@ -144,6 +144,8 @@ export interface EnemyState {
   readonly tier: EnemyTier
   readonly maxForm: number
   readonly currentForm: number
+  readonly fireMark?: number
+  readonly thunderLead?: number
   readonly nameSlots: readonly NameSlotState[]
   readonly coveredNameSlotIndices: readonly number[]
   readonly isNamed: boolean

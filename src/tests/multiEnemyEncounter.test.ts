@@ -48,7 +48,7 @@ describe('T42A multi-enemy encounter MVP', () => {
     const imp = state.enemies[1]
     const thunder = getHandCard(state, 'card_thunder_splinter')
     const afterImp = reduceBattleState(
-      withEnemyCurrentForm(state, imp.instanceId, 8),
+      withEnemyCurrentForm(state, imp.instanceId, 3),
       {
         type: 'PLAY_CARD',
         cardInstanceId: thunder.instanceId,
@@ -126,6 +126,58 @@ describe('T42A multi-enemy encounter MVP', () => {
         (entry) => entry.type === 'FORM_BROKEN' && entry.targetId === imp.instanceId,
       ),
     ).toHaveLength(1)
+  })
+
+  it('applies low-strength break-form cards to every living enemy', () => {
+    const state = createBattle(['card_sweep_ash_talisman'], [
+      getEnemy('enemy_paper_wraith'),
+      getEnemy('enemy_nameless_paper_imp'),
+    ])
+    const primary = state.enemies[0]
+    const imp = state.enemies[1]
+    const sweepAsh = getHandCard(state, 'card_sweep_ash_talisman')
+
+    const nextState = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: sweepAsh.instanceId,
+        targetEnemyInstanceId: primary.instanceId,
+      },
+      context,
+    )
+
+    expect(nextState.enemies[0].currentForm).toBe(primary.currentForm - 2)
+    expect(nextState.enemies[1].currentForm).toBe(imp.currentForm - 2)
+    expect(nextState.actionLog.filter((entry) => entry.type === 'FORM_BROKEN')).toHaveLength(2)
+  })
+
+  it('can apply a break-form bonus only to nameless enemies', () => {
+    const state = createBattle(['card_chase_imp_talisman'], [
+      getEnemy('enemy_paper_wraith'),
+      getEnemy('enemy_nameless_paper_imp'),
+    ])
+    const primary = state.enemies[0]
+    const imp = state.enemies[1]
+    const chaseImp = getHandCard(state, 'card_chase_imp_talisman')
+
+    const nextState = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: chaseImp.instanceId,
+        targetEnemyInstanceId: primary.instanceId,
+      },
+      context,
+    )
+
+    expect(nextState.enemies[0].currentForm).toBe(primary.currentForm - 1)
+    expect(nextState.enemies[1].currentForm).toBe(imp.currentForm - 2)
+    expect(
+      nextState.actionLog.filter(
+        (entry) => entry.type === 'FORM_BROKEN' && entry.targetId === imp.instanceId,
+      ),
+    ).toHaveLength(2)
   })
 })
 

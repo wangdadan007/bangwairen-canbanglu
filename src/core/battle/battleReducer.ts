@@ -6,6 +6,8 @@ import { appendLog } from '../log/actionLog'
 import { triggerHumanAltars } from './altarResolver'
 import { spendInkCleanse, spendInkGuardName } from './inkBattleResolver'
 import { refreshCurrentIncomingForceModifiers } from './incomingForceResolver'
+import { triggerFireMarksAtTurnEnd } from './shapeStatusResolver'
+import { settleVictoryIfNeeded } from './victoryResolver'
 import type { BattleCommand, CardDefinition, CombatState, EnemyDefinition } from '../../types'
 
 export interface BattleReducerContext {
@@ -60,6 +62,12 @@ function endPlayerTurn(state: CombatState, context: BattleReducerContext): Comba
   })
 
   nextState = triggerHumanAltars(nextState)
+  nextState = settleVictoryIfNeeded(triggerFireMarksAtTurnEnd(nextState))
+
+  if (nextState.result.status !== 'ongoing') {
+    return nextState
+  }
+
   nextState = discardHand(nextState)
   nextState = executeEnemyTurn(nextState, context.enemyDefinitions)
 

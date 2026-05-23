@@ -781,6 +781,12 @@ function EnemyPanel({
           <span className="name-slot revealed">无名</span>
         )}
       </div>
+      {(enemy.fireMark ?? 0) > 0 || (enemy.thunderLead ?? 0) > 0 ? (
+        <div className="enemy-status-effects" aria-label="破形附着">
+          {(enemy.fireMark ?? 0) > 0 ? <span>火印 {enemy.fireMark}</span> : null}
+          {(enemy.thunderLead ?? 0) > 0 ? <span>雷引 {enemy.thunderLead}</span> : null}
+        </div>
+      ) : null}
 
       <div className={`intent-banner ${intentTone}`} aria-label="敌人下一次行动">
         <span

@@ -236,6 +236,91 @@ describe('battle core loop', () => {
       expect.arrayContaining(['INK_GAINED', 'DOOM_GAINED']),
     )
   })
+
+  it('triggers T74 thunder lead when a marked enemy is asked for its name', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: paperWraith,
+      deckDefinitionIds: ['card_thunder_splinter', 'card_ask_name'],
+    })
+    const thunderCard = state.hand.find((card) => card.definitionId === 'card_thunder_splinter')
+    const askNameCard = state.hand.find((card) => card.definitionId === 'card_ask_name')
+
+    if (!thunderCard || !askNameCard) {
+      throw new Error('Expected thunder and ask-name cards in opening hand')
+    }
+
+    const afterThunder = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: thunderCard.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      context,
+    )
+    const afterAskName = reduceBattleState(
+      withPendingArtifactBreakShapeBonus(afterThunder),
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: askNameCard.instanceId,
+        targetEnemyInstanceId: afterThunder.enemies[0].instanceId,
+      },
+      context,
+    )
+
+    expect(afterThunder.enemies[0].currentForm).toBe(15)
+    expect(afterThunder.enemies[0].thunderLead).toBe(3)
+    expect(afterAskName.enemies[0].currentForm).toBe(12)
+    expect(afterAskName.enemies[0].thunderLead).toBe(0)
+    expect(afterAskName.pendingArtifactBreakShapeBonus).toEqual({
+      artifactId: 'artifact_whip_fragment',
+      amount: 2,
+    })
+    expect(afterAskName.actionLog.map((entry) => entry.type)).toEqual(
+      expect.arrayContaining(['THUNDER_LEAD_APPLIED', 'NAME_ASKED', 'THUNDER_LEAD_TRIGGERED']),
+    )
+  })
+
+  it('ticks T74 fire mark at the end of the player turn', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: paperWraith,
+      deckDefinitionIds: ['card_cinnabar_return_slip'],
+    })
+    const fireCard = state.hand.find((card) => card.definitionId === 'card_cinnabar_return_slip')
+
+    if (!fireCard) {
+      throw new Error('Expected fire mark card in opening hand')
+    }
+
+    const afterFireCard = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: fireCard.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      context,
+    )
+    const nextTurn = reduceBattleState(
+      withPendingArtifactBreakShapeBonus(afterFireCard),
+      { type: 'END_TURN' },
+      context,
+    )
+
+    expect(afterFireCard.enemies[0].currentForm).toBe(18)
+    expect(afterFireCard.enemies[0].fireMark).toBe(2)
+    expect(nextTurn.enemies[0].currentForm).toBe(16)
+    expect(nextTurn.enemies[0].fireMark).toBe(1)
+    expect(nextTurn.pendingArtifactBreakShapeBonus).toEqual({
+      artifactId: 'artifact_whip_fragment',
+      amount: 2,
+    })
+    expect(nextTurn.actionLog.map((entry) => entry.type)).toEqual(
+      expect.arrayContaining(['FIRE_MARK_APPLIED', 'FIRE_MARK_TRIGGERED']),
+    )
+  })
 })
 
 function withPlayerIncense(state: CombatState, incense: number): CombatState {
@@ -269,5 +354,15 @@ function withEnemyCurrentForm(state: CombatState, currentForm: number): CombatSt
           }
         : enemy,
     ),
+  }
+}
+
+function withPendingArtifactBreakShapeBonus(state: CombatState): CombatState {
+  return {
+    ...state,
+    pendingArtifactBreakShapeBonus: {
+      artifactId: 'artifact_whip_fragment',
+      amount: 2,
+    },
   }
 }

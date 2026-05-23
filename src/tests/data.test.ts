@@ -6,7 +6,7 @@ describe('initial game data', () => {
     const data = loadGameData()
 
     expect(data.artifacts).toHaveLength(11)
-    expect(data.cards).toHaveLength(46)
+    expect(data.cards).toHaveLength(48)
     expect(data.enemies).toHaveLength(16)
     expect(data.encounters).toHaveLength(25)
     expect(data.events).toHaveLength(9)
@@ -101,22 +101,21 @@ describe('initial game data', () => {
       amount: 10,
     })
     expect(getCardDefinition('card_trace_name_slip', data)?.tags).toContain('catalogue_reward')
-    expect(getCardDefinition('card_thunder_splinter', data)?.effects[0]).toEqual({
-      type: 'BREAK_SHAPE',
-      target: 'selected_enemy',
-      amount: 8,
-    })
+    expect(getCardDefinition('card_thunder_splinter', data)?.effects.map((effect) => effect.type)).toEqual([
+      'BREAK_SHAPE',
+      'APPLY_THUNDER_LEAD',
+    ])
     expect(getCardDefinition('card_name_hook_charm', data)?.effects.map((effect) => effect.type)).toEqual([
       'ASK_NAME',
       'BREAK_SHAPE',
       'DRAW',
     ])
     expect(getCardDefinition('card_heavy_edict', data)?.effects[1]).toEqual({
-      type: 'DRAW',
-      target: 'self',
-      count: 1,
+      type: 'SEAL_MOMENTUM',
+      target: 'selected_enemy',
+      amount: 2,
       condition: {
-        type: 'THIS_TURN_NAMED_ENEMY',
+        type: 'TARGET_IS_NAMED',
       },
     })
     expect(getCardDefinition('card_mirror_slip', data)?.tags).toContain('catalogue_reward')
@@ -178,6 +177,7 @@ describe('initial game data', () => {
     expect(getCardDefinition('card_doom_flash_talisman', data)?.effects.map((effect) => effect.type)).toEqual([
       'GAIN_DOOM',
       'BREAK_SHAPE',
+      'APPLY_FIRE_MARK',
     ])
     expect(getCardDefinition('card_cracked_whip_echo', data)?.type).toBe('temporary')
     expect(getCardDefinition('card_fouled_scroll', data)?.effects).toEqual([])
@@ -518,10 +518,10 @@ describe('initial game data', () => {
       sealMomentum: data.cards.filter((card) => card.tags.includes('seal_momentum')),
     }
 
-    expect(cardsByDirection.breakForm).toHaveLength(14)
+    expect(cardsByDirection.breakForm).toHaveLength(18)
     expect(cardsByDirection.askName).toHaveLength(9)
-    expect(cardsByDirection.sealMomentum).toHaveLength(9)
-    expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(36)
+    expect(cardsByDirection.sealMomentum).toHaveLength(10)
+    expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(38)
     expect(
       data.cards.filter((card) => card.effects.some((effect) => effect.type === 'ASK_NAME')),
     ).toHaveLength(8)

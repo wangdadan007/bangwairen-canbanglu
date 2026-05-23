@@ -312,6 +312,8 @@ export function createEnemyState(
     tier: definition.tier,
     maxForm: definition.maxForm,
     currentForm: definition.maxForm,
+    fireMark: 0,
+    thunderLead: 0,
     nameSlots,
     coveredNameSlotIndices: [],
     isNamed: false,

@@ -1611,6 +1611,22 @@ button:disabled {
   background: rgba(81, 31, 28, 0.5);
 }
 
+.enemy-status-effects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.enemy-status-effects span {
+  border: 1px solid rgba(224, 180, 93, 0.45);
+  border-radius: 999px;
+  padding: 4px 9px;
+  color: #f0d49c;
+  font-size: 12px;
+  background: rgba(112, 33, 28, 0.28);
+}
+
 .intent-banner {
   display: grid;
   gap: 5px;

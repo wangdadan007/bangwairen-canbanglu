@@ -7,6 +7,8 @@ export type EffectTarget =
   | 'all_enemies'
   | 'random_enemy'
 
+export type EffectTargetFilter = 'nameless'
+
 export type EffectCondition =
   | {
       readonly type: 'TARGET_HAS_REVEALED_NAME_SLOT'
@@ -29,6 +31,9 @@ export type EffectCondition =
 
 export type CardEffect =
   | BreakShapeEffect
+  | ApplyFireMarkEffect
+  | TriggerFireMarkEffect
+  | ApplyThunderLeadEffect
   | AskNameEffect
   | SealMomentumEffect
   | CounterAbnormalMoveEffect
@@ -41,6 +46,27 @@ export type CardEffect =
 export interface BreakShapeEffect {
   readonly type: 'BREAK_SHAPE'
   readonly target: Extract<EffectTarget, 'selected_enemy' | 'all_enemies' | 'random_enemy'>
+  readonly targetFilter?: EffectTargetFilter
+  readonly amount: number
+  readonly condition?: EffectCondition
+}
+
+export interface ApplyFireMarkEffect {
+  readonly type: 'APPLY_FIRE_MARK'
+  readonly target: Extract<EffectTarget, 'selected_enemy' | 'all_enemies'>
+  readonly amount: number
+  readonly condition?: EffectCondition
+}
+
+export interface TriggerFireMarkEffect {
+  readonly type: 'TRIGGER_FIRE_MARK'
+  readonly target: Extract<EffectTarget, 'selected_enemy' | 'all_enemies'>
+  readonly condition?: EffectCondition
+}
+
+export interface ApplyThunderLeadEffect {
+  readonly type: 'APPLY_THUNDER_LEAD'
+  readonly target: Extract<EffectTarget, 'selected_enemy'>
   readonly amount: number
   readonly condition?: EffectCondition
 }

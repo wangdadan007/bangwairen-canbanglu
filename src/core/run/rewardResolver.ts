@@ -186,6 +186,9 @@ const ROLE_REWARD_TAG_WEIGHTS: Record<PlayableRoleId, Readonly<Record<string, nu
   role_hengjian: {
     catalogue_reward: 6,
     red_ink_preview: 5,
+    whip: 4,
+    judgement: 4,
+    formation: 3,
     draw: 3,
     ask_name: 2,
     ink: 2,
@@ -193,8 +196,11 @@ const ROLE_REWARD_TAG_WEIGHTS: Record<PlayableRoleId, Readonly<Record<string, nu
   },
   role_zhaowei: {
     ask_name: 6,
+    thunder: 5,
+    whip: 4,
     counter_abnormal_move: 4,
     abnormal_move: 4,
+    formation: 3,
     incoming_force: 3,
     heaven_altar: 3,
     draw: 2,
@@ -202,7 +208,10 @@ const ROLE_REWARD_TAG_WEIGHTS: Record<PlayableRoleId, Readonly<Record<string, nu
   },
   role_lianjin: {
     break_form: 6,
+    fire: 5,
+    thunder: 4,
     gain_incense: 4,
+    judgement: 3,
     doom: 3,
     fracture: 3,
     artifact: 2,

@@ -1,13 +1,15 @@
 import { appendLog } from '../log/actionLog'
 import { applyTutorialResourceDelta } from '../run/resourceResolver'
 import { placeAltar } from './altarResolver'
-import {
-  consumePendingBreakShapeBonus,
-  triggerArtifactsAfterBreakShapeCardPlayed,
-} from './artifactBattleResolver'
+import { triggerArtifactsAfterBreakShapeCardPlayed } from './artifactBattleResolver'
 import { drawCards } from './drawResolver'
 import { resolveAskName } from './nameResolver'
-import { consumePendingRegisterBreakShapeBonus } from './registerBattleResolver'
+import { breakEnemyForm, selectEnemyTargets } from './shapeResolver'
+import {
+  applyFireMark,
+  applyThunderLead,
+  triggerFireMark,
+} from './shapeStatusResolver'
 import { settleVictoryIfNeeded } from './victoryResolver'
 import type {
   CardDefinition,
@@ -17,7 +19,6 @@ import type {
   CombatState,
   CounterAbnormalMoveEffect,
   EnemyInstanceId,
-  EnemyState,
   SealMomentumEffect,
 } from '../../types'
 
@@ -158,7 +159,42 @@ function resolveCardEffect(
   targetEnemyInstanceId?: EnemyInstanceId,
 ): CombatState {
   if (effect.type === 'BREAK_SHAPE') {
-    return breakEnemyForm(state, card, effect.amount, targetEnemyInstanceId)
+    return breakEnemyForm(
+      state,
+      {
+        sourceId: card.instanceId,
+        targetEnemyInstanceId,
+        amount: effect.amount,
+        targetType: effect.target,
+        targetFilter: effect.targetFilter,
+      },
+    )
+  }
+
+  if (effect.type === 'APPLY_FIRE_MARK') {
+    return applyFireMark(state, {
+      sourceId: card.instanceId,
+      targetEnemyInstanceId,
+      amount: effect.amount,
+      targetType: effect.target,
+    })
+  }
+
+  if (effect.type === 'TRIGGER_FIRE_MARK') {
+    return triggerFireMark(state, {
+      sourceId: card.instanceId,
+      targetEnemyInstanceId,
+      targetType: effect.target,
+    })
+  }
+
+  if (effect.type === 'APPLY_THUNDER_LEAD') {
+    return applyThunderLead(state, {
+      sourceId: card.instanceId,
+      targetEnemyInstanceId,
+      amount: effect.amount,
+      targetType: effect.target,
+    })
   }
 
   if (effect.type === 'DRAW') {
@@ -241,11 +277,15 @@ function resolveCardEffect(
     })
   }
 
-  return resolveAskName(state, {
-    sourceId: card.instanceId,
-    targetEnemyInstanceId,
-    amount: effect.amount,
-  })
+  if (effect.type === 'ASK_NAME') {
+    return resolveAskName(state, {
+      sourceId: card.instanceId,
+      targetEnemyInstanceId,
+      amount: effect.amount,
+    })
+  }
+
+  return state
 }
 
 function sealIncomingForce(
@@ -326,82 +366,6 @@ function counterAbnormalMove(
   }
 
   return nextState
-}
-
-function breakEnemyForm(
-  state: CombatState,
-  card: CardInstance,
-  amount: number,
-  targetEnemyInstanceId?: EnemyInstanceId,
-): CombatState {
-  const targets = selectEnemyTargets(state.enemies, targetEnemyInstanceId)
-  let nextState = state
-
-  for (const target of targets) {
-    let breakAmount = amount
-
-    if (nextState.pendingArtifactBreakShapeBonus) {
-      const consumedBonus = consumePendingBreakShapeBonus(nextState, target.instanceId)
-      nextState = consumedBonus.state
-      breakAmount += consumedBonus.bonusAmount
-    }
-
-    if (nextState.pendingRegisterBreakShapeBonus) {
-      const consumedBonus = consumePendingRegisterBreakShapeBonus(nextState, target.instanceId)
-      nextState = consumedBonus.state
-      breakAmount += consumedBonus.bonusAmount
-    }
-
-    const nextCurrentForm = Math.max(0, target.currentForm - breakAmount)
-    const brokenAmount = target.currentForm - nextCurrentForm
-
-    nextState = {
-      ...nextState,
-      enemies: nextState.enemies.map((enemy) =>
-        enemy.instanceId === target.instanceId
-          ? {
-              ...enemy,
-              currentForm: nextCurrentForm,
-            }
-          : enemy,
-      ),
-    }
-
-    nextState = appendLog(nextState, {
-      type: 'FORM_BROKEN',
-      sourceId: card.instanceId,
-      targetId: target.instanceId,
-      payload: {
-        amount: brokenAmount,
-        currentForm: nextCurrentForm,
-      },
-    })
-  }
-
-  return nextState
-}
-
-function selectEnemyTargets(
-  enemies: readonly EnemyState[],
-  targetEnemyInstanceId?: EnemyInstanceId,
-  targetType: 'selected_enemy' | 'all_enemies' | 'random_enemy' = 'selected_enemy',
-): readonly EnemyState[] {
-  if (targetType === 'all_enemies') {
-    return enemies.filter((enemy) => enemy.currentForm > 0)
-  }
-
-  if (targetEnemyInstanceId) {
-    const selectedEnemy = enemies.find(
-      (enemy) => enemy.instanceId === targetEnemyInstanceId && enemy.currentForm > 0,
-    )
-
-    if (selectedEnemy) {
-      return [selectedEnemy]
-    }
-  }
-
-  const firstLivingEnemy = enemies.find((enemy) => enemy.currentForm > 0)
-  return firstLivingEnemy ? [firstLivingEnemy] : []
 }
 
 function isEffectConditionMet(

@@ -213,6 +213,10 @@ export function createRitualFeedback(
     .find((candidate) =>
       [
         'FORM_BROKEN',
+        'FIRE_MARK_APPLIED',
+        'FIRE_MARK_TRIGGERED',
+        'THUNDER_LEAD_APPLIED',
+        'THUNDER_LEAD_TRIGGERED',
         'NAME_ASKED',
         'NAME_SLOT_REVEALED',
         'ENEMY_NAMED',
@@ -243,6 +247,37 @@ export function createRitualFeedback(
       label: '破形反馈',
       title: `${sourceCardName ?? '符诏'}击破敌形 ${amount}`,
       detail: `${targetEnemyName}余形 ${currentForm}，战斗结果不因表现层改变。`,
+      audioCue: 'break',
+    }
+  }
+
+  if (
+    entry.type === 'FIRE_MARK_APPLIED' ||
+    entry.type === 'FIRE_MARK_TRIGGERED' ||
+    entry.type === 'THUNDER_LEAD_APPLIED' ||
+    entry.type === 'THUNDER_LEAD_TRIGGERED'
+  ) {
+    const amount = getPayloadNumber(entry.payload.amount) ?? 0
+    const currentForm = getPayloadNumber(entry.payload.currentForm) ?? 0
+
+    return {
+      id: entry.id,
+      tone: 'break',
+      label: entry.type.startsWith('FIRE') ? '火印反馈' : '雷引反馈',
+      title:
+        entry.type === 'FIRE_MARK_APPLIED'
+          ? `${sourceCardName ?? '符诏'}施加火印 ${amount}`
+          : entry.type === 'THUNDER_LEAD_APPLIED'
+            ? `${sourceCardName ?? '符诏'}埋下雷引 ${amount}`
+            : entry.type === 'FIRE_MARK_TRIGGERED'
+              ? `火印灼形 ${amount}`
+              : `雷引破形 ${amount}`,
+      detail:
+        entry.type === 'FIRE_MARK_APPLIED'
+          ? `当前火印 ${getPayloadNumber(entry.payload.currentFireMark) ?? 0}。`
+          : entry.type === 'THUNDER_LEAD_APPLIED'
+            ? `当前雷引 ${getPayloadNumber(entry.payload.currentThunderLead) ?? 0}。`
+            : `${targetEnemyName}余形 ${currentForm}。`,
       audioCue: 'break',
     }
   }
@@ -729,6 +764,32 @@ export function formatLogEntry(
     }余形 ${getPayloadNumber(entry.payload.currentForm) ?? 0}。`
   }
 
+  if (entry.type === 'FIRE_MARK_APPLIED') {
+    return `${sourceCardName ?? '符诏'}施加火印 ${
+      getPayloadNumber(entry.payload.amount) ?? 0
+    }，当前火印 ${getPayloadNumber(entry.payload.currentFireMark) ?? 0}。`
+  }
+
+  if (entry.type === 'FIRE_MARK_TRIGGERED') {
+    return `火印灼形 ${getPayloadNumber(entry.payload.amount) ?? 0}，${
+      targetEnemyName ?? '敌方'
+    }余形 ${getPayloadNumber(entry.payload.currentForm) ?? 0}，火印余 ${
+      getPayloadNumber(entry.payload.remainingFireMark) ?? 0
+    }。`
+  }
+
+  if (entry.type === 'THUNDER_LEAD_APPLIED') {
+    return `${sourceCardName ?? '符诏'}埋下雷引 ${
+      getPayloadNumber(entry.payload.amount) ?? 0
+    }，当前雷引 ${getPayloadNumber(entry.payload.currentThunderLead) ?? 0}。`
+  }
+
+  if (entry.type === 'THUNDER_LEAD_TRIGGERED') {
+    return `雷引触发，破形 ${getPayloadNumber(entry.payload.amount) ?? 0}，${
+      targetEnemyName ?? '敌方'
+    }余形 ${getPayloadNumber(entry.payload.currentForm) ?? 0}。`
+  }
+
   if (entry.type === 'NAME_ASKED') {
     const askNamePenalty = getPayloadNumber(entry.payload.askNamePenalty) ?? 0
 
@@ -876,6 +937,14 @@ export function getCardEffectLabels(definition: CardDefinition, card?: CardInsta
           return '劫数'
         }
 
+        if (effect.type === 'APPLY_FIRE_MARK' || effect.type === 'TRIGGER_FIRE_MARK') {
+          return '火印'
+        }
+
+        if (effect.type === 'APPLY_THUNDER_LEAD') {
+          return '雷引'
+        }
+
         return '奉坛'
       }),
     ),
@@ -905,6 +974,10 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
 
   if (
     entry.type === 'FORM_BROKEN' ||
+    entry.type === 'FIRE_MARK_APPLIED' ||
+    entry.type === 'FIRE_MARK_TRIGGERED' ||
+    entry.type === 'THUNDER_LEAD_APPLIED' ||
+    entry.type === 'THUNDER_LEAD_TRIGGERED' ||
     entry.type === 'NAME_BREAK_TRIGGERED' ||
     entry.type === 'ENEMY_SETTLED' ||
     entry.type === 'DEFEAT_SETTLED'
