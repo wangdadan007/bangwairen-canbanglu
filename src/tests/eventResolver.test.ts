@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
   advanceTutorialRun,
+  completeCurrentRouteNode,
+  createInitialRouteState,
   createInitialTutorialRunState,
   getAvailableEventOptions,
+  getCurrentRouteEvent,
   getRouteEventCandidates,
   getRouteBattleEncounterIds,
+  selectReachableRouteNode,
   resolveTutorialEvent,
 } from '../core'
 import { gameData } from '../data'
@@ -248,6 +252,26 @@ describe('T20 event resolver', () => {
       'card_name_net_talisman',
     ])
   })
+
+  it('can surface the bound artifact event on a seeded real route event node', () => {
+    const seededRouteState = createFractureLateEventRouteState()
+    const lateEventNode = route.nodes.find((node) => node.id === seededRouteState.currentNodeId)
+    const run = createRunAfterRouteBattles(seededRouteState, 5)
+    const event = getCurrentRouteEvent(lateEventNode, gameData.events, run, seededRouteState)
+
+    if (!event) {
+      throw new Error('Missing seeded route event')
+    }
+
+    const addedCardIds = getAvailableEventOptions(event, run).flatMap((option) =>
+      option.effects.flatMap((effect) =>
+        effect.type === 'ADD_CARD' ? [effect.cardDefinitionId] : [],
+      ),
+    )
+
+    expect(event.id).toBe('event_bound_artifact_case')
+    expect(addedCardIds).toContain('card_artifact_polish_slip')
+  })
 })
 
 function createResourceRun() {
@@ -279,5 +303,44 @@ function createResourceRun() {
     gameData.encounters,
     gameData.tutorialUnlocks,
     'vanquish',
+  )
+}
+
+function createFractureLateEventRouteState() {
+  const firstChoice = completeCurrentRouteNode(
+    route,
+    completeCurrentRouteNode(
+      route,
+      completeCurrentRouteNode(route, createInitialRouteState(route, 7)),
+    ),
+  )
+  const fractureChoice = completeCurrentRouteNode(
+    route,
+    selectReachableRouteNode(route, firstChoice, 'route_node_fracture_fortune_breaker'),
+  )
+  const fractureShop = completeCurrentRouteNode(
+    route,
+    selectReachableRouteNode(
+      route,
+      fractureChoice,
+      'route_node_late_scroll_stuffer_clerk',
+    ),
+  )
+
+  return completeCurrentRouteNode(route, fractureShop)
+}
+
+function createRunAfterRouteBattles(routeState: ReturnType<typeof createInitialRouteState>, battleCount: number) {
+  const encounterIds = getRouteBattleEncounterIds(route, routeState)
+
+  return encounterIds.slice(0, battleCount).reduce(
+    (currentRun) =>
+      advanceTutorialRun(
+        currentRun,
+        gameData.encounters,
+        gameData.tutorialUnlocks,
+        'vanquish',
+      ),
+    createInitialTutorialRunState(gameData.tutorialUnlocks, encounterIds),
   )
 }

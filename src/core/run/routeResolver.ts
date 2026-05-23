@@ -1,6 +1,7 @@
 import type {
   EncounterDefinition,
   EncounterId,
+  EventId,
   RouteDefinition,
   RouteNodeDefinition,
   RouteNodeId,
@@ -30,6 +31,7 @@ export function createInitialRouteState(route: RouteDefinition, seed = createRou
     reachableNodeIds: [route.startNodeId],
     routeTendencyIds: [],
     encounterSelections: createEncounterSelections(route, seed),
+    eventSelections: createEventSelections(route, seed),
   }
 }
 
@@ -313,6 +315,24 @@ function createEncounterSelections(route: RouteDefinition, seed: number) {
     }
 
     battleNodeIndex += 1
+  }
+
+  return selections
+}
+
+function createEventSelections(route: RouteDefinition, seed: number) {
+  const selections: Record<RouteNodeId, EventId> = {}
+  let eventNodeIndex = 0
+
+  for (const node of route.nodes) {
+    const pool = node.eventPoolIds
+
+    if (!pool?.length) {
+      continue
+    }
+
+    selections[node.id] = pool[getSeededIndex(seed, eventNodeIndex, pool.length)]
+    eventNodeIndex += 1
   }
 
   return selections

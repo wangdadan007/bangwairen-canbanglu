@@ -402,7 +402,7 @@ export function useTutorialRunFlow({
       }
 
       const node = getCurrentRouteNode(tutorialRoute, current.route)
-      const event = getCurrentRouteEvent(node, gameData.events, current.run)
+      const event = getCurrentRouteEvent(node, gameData.events, current.run, current.route)
 
       if (!event) {
         return current

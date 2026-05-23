@@ -4,6 +4,7 @@ import type {
   EventEffect,
   EventOptionDefinition,
   RouteNodeDefinition,
+  RouteState,
   RunDeckCardId,
   TutorialEventRecord,
   TutorialEventState,
@@ -55,8 +56,15 @@ export function getCurrentRouteEvent(
   node: RouteNodeDefinition | undefined,
   events: readonly EventDefinition[],
   run: TutorialRunState,
+  routeState?: RouteState,
 ): EventDefinition | undefined {
-  return getRouteEventCandidates(node, events, run)[0]
+  const candidates = getRouteEventCandidates(node, events, run)
+  const selectedEventId = node?.id ? routeState?.eventSelections?.[node.id] : undefined
+  const selectedEvent = selectedEventId
+    ? candidates.find((event) => event.id === selectedEventId)
+    : undefined
+
+  return selectedEvent ?? candidates[0]
 }
 
 export function getAvailableEventOptions(

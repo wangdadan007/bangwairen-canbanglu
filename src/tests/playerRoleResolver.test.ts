@@ -27,21 +27,27 @@ describe('T62 playable roles', () => {
         roleId: HENGJIAN_ROLE_ID,
         maxForm: 72,
         starterArtifactId: 'artifact_whip_fragment',
+        deckSize: 12,
         askNameCount: 2,
+        cutSupplyCount: 1,
         zhuFuCount: 4,
       },
       {
         roleId: ZHAOWEI_ROLE_ID,
         maxForm: 64,
         starterArtifactId: 'artifact_bone_mirror',
+        deckSize: 12,
         askNameCount: 3,
+        cutSupplyCount: 1,
         zhuFuCount: 3,
       },
       {
         roleId: LIANJIN_ROLE_ID,
         maxForm: 78,
         starterArtifactId: RED_SASH_FIRE_WHEEL_ARTIFACT_ID,
+        deckSize: 12,
         askNameCount: 1,
+        cutSupplyCount: 1,
         zhuFuCount: 5,
       },
     ] as const
@@ -67,7 +73,11 @@ describe('T62 playable roles', () => {
         run.artifacts.artifacts.map((artifact) => artifact.definitionId),
       ).toEqual([expectation.starterArtifactId])
       expect(starterOfferRun.pendingArtifactOffer).toBeUndefined()
+      expect(run.deckDefinitionIds).toHaveLength(expectation.deckSize)
       expect(countCards(run.deckDefinitionIds, 'card_ask_name')).toBe(expectation.askNameCount)
+      expect(countCards(run.deckDefinitionIds, 'card_cut_supply_talisman')).toBe(
+        expectation.cutSupplyCount,
+      )
       expect(countCards(run.deckDefinitionIds, 'card_zhu_fu')).toBe(expectation.zhuFuCount)
     }
   })

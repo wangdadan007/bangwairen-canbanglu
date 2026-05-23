@@ -320,7 +320,7 @@ function completeRouteSmoke({
     }
 
     if (flowKind === 'event') {
-      const event = getCurrentRouteEvent(node, gameData.events, run)
+      const event = getCurrentRouteEvent(node, gameData.events, run, routeState)
 
       if (event) {
         const option = getAvailableEventOptions(event, run)[0]

@@ -143,6 +143,19 @@
 - 是否值得抽到模板：值得记录，适合作为卡牌战斗引擎的 advanced timing module。
 - 后续动作：后续若把 `三坛合符` 改为三选一或多窗口联动，再观察是否需要补通用 choice UI 模板。
 
+### 2026-05-23 · T69 · 内容可达性审计与 reward offer 覆盖护栏
+
+- 候选类型：内容 QA / reward pool reachability / deterministic offer coverage。
+- 主归属模板：`AI Game Development Planning and QA Kit`。
+- 也支持：`Roguelike Run Flow Kit`、`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 涉及文件：`src/core/run/rewardResolver.ts`、`src/core/run/routeResolver.ts`、`src/core/run/eventResolver.ts`、`src/tests/cardReachability.test.ts`、`src/tests/playerRoleResolver.test.ts`、`docs/tasks/PROJECT_PLAN.md`。
+- 可复用价值：把“内容数据存在”升级成“玩家流程真实可达”的自动化护栏，能捕捉奖励池尾部内容永远不展示、事件池内容被路线展示逻辑遮住、非临时卡缺少获得渠道、角色起始牌组数量漂移等问题。
+- 与本作强绑定部分：衡简、照微、莲烬、香火、断供符、裁定等命名属于本作。
+- 去题材化思路：抽象为 content reachability audit、starter deck size invariant、reward pool vs actual offer union、seeded route event visibility、channel registry；示例使用 card / reward / shop / event / post-battle choice 等中性渠道。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时只保留测试结构和中性样例数据。
+- 是否值得抽到模板：值得记录，适合作为内容规模类项目的 QA guardrail。
+- 后续动作：后续如果 reward offer 或 route event 改为 seeded random，应把本轮确定性轮换测试升级为 seed coverage / sampling coverage 测试。
+
 ### 2026-05-19 · T00-T08 回溯 · 纯逻辑卡牌战斗核心
 
 - 候选类型：纯逻辑卡牌战斗引擎 / 主模板核心模块。

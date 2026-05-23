@@ -42,7 +42,7 @@
     "tutorialOrder": 6,
     "lessonKey": "encounter.mid.fortune_breaker.lesson",
     "completionKey": "encounter.mid.fortune_breaker.completion",
-    "unlocksOnVictory": []
+    "unlocksOnVictory": ["stage_run_resources", "stage_three_altars"]
   },
   {
     "id": "encounter_mid_ash_altar_child",
@@ -231,7 +231,7 @@
     "tutorialOrder": 5,
     "lessonKey": "encounter.elite.incense_clerk.lesson",
     "completionKey": "encounter.elite.incense_clerk.completion",
-    "unlocksOnVictory": []
+    "unlocksOnVictory": ["stage_run_resources", "stage_three_altars"]
   },
   {
     "id": "encounter_elite_fire_fleeing_name",

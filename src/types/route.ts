@@ -31,6 +31,7 @@ export interface RouteState {
   readonly reachableNodeIds: readonly RouteNodeId[]
   readonly routeTendencyIds?: readonly RouteTendencyId[]
   readonly encounterSelections?: Readonly<Record<RouteNodeId, EncounterId>>
+  readonly eventSelections?: Readonly<Record<RouteNodeId, EventId>>
 }
 
 export type RouteNodeStatus = 'completed' | 'current' | 'reachable' | 'locked'

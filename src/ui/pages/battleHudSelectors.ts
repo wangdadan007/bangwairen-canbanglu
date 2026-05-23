@@ -19,7 +19,12 @@ export function selectBattleHudState(viewState: TutorialBattleViewState) {
   const currentEncounter = hasPendingRunChoice(run)
     ? undefined
     : getCurrentRouteEncounter(tutorialRoute, viewState.route, gameData.encounters)
-  const currentRouteEvent = getCurrentRouteEvent(currentRouteNode, gameData.events, run)
+  const currentRouteEvent = getCurrentRouteEvent(
+    currentRouteNode,
+    gameData.events,
+    run,
+    viewState.route,
+  )
   const currentEventOptions = currentRouteEvent
     ? getAvailableEventOptions(currentRouteEvent, run)
     : []

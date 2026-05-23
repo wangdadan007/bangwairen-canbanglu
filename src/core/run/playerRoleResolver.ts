@@ -84,6 +84,7 @@ export const PLAYABLE_ROLE_DEFINITIONS: readonly PlayableRoleDefinition[] = [
       'card_zhu_fu',
       'card_split_form_talisman',
       'card_guard_desk_talisman',
+      'card_cut_supply_talisman',
       'card_ask_name',
       'card_mark_forehead',
       'card_order_scroll',

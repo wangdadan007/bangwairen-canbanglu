@@ -168,8 +168,13 @@ function selectRewardOptions({
           ...sortCardsByRolePreference(cards, roleId),
         ])
   const optionCount = quality === 'high' ? 3 : 2
+  const rotatedCards = rotateRewardCandidates({
+    cards: orderedCards,
+    fixedHeadCount: quality === 'high' ? 1 : 0,
+    offsetSeed: `${encounter.id}:${quality}:${latestStageId ?? 'none'}:${roleId ?? 'default'}`,
+  })
 
-  return orderedCards.slice(0, optionCount).map((card, index) => ({
+  return rotatedCards.slice(0, optionCount).map((card, index) => ({
     id: `${encounter.id}_${quality}_${index + 1}_${card.id}`,
     type: 'card',
     cardDefinitionId: card.id,
@@ -243,4 +248,42 @@ function uniqueCards(cards: readonly CardDefinition[]): readonly CardDefinition[
   }
 
   return unique
+}
+
+function rotateRewardCandidates({
+  cards,
+  fixedHeadCount,
+  offsetSeed,
+}: {
+  readonly cards: readonly CardDefinition[]
+  readonly fixedHeadCount: number
+  readonly offsetSeed: string
+}): readonly CardDefinition[] {
+  if (cards.length <= fixedHeadCount + 1) {
+    return cards
+  }
+
+  const fixedHead = cards.slice(0, fixedHeadCount)
+  const rotatableTail = cards.slice(fixedHeadCount)
+  const offset = getStableOffset(offsetSeed, rotatableTail.length)
+
+  return [
+    ...fixedHead,
+    ...rotatableTail.slice(offset),
+    ...rotatableTail.slice(0, offset),
+  ]
+}
+
+function getStableOffset(seed: string, modulo: number): number {
+  if (modulo <= 1) {
+    return 0
+  }
+
+  let hash = 0
+
+  for (const char of seed) {
+    hash = (hash * 31 + char.charCodeAt(0)) % 2147483647
+  }
+
+  return hash % modulo
 }
