@@ -154,7 +154,6 @@ describe('initial game data', () => {
       altarEffect: {
         type: 'counter_abnormal_or_gain_ink',
         amount: 1,
-        moveType: 'steal_incense',
       },
     })
     expect(getCardDefinition('card_heaven_altar_oracle', data)?.tags).toContain(
@@ -216,14 +215,45 @@ describe('initial game data', () => {
     expect(unlitTempleWarden?.tier).toBe('normal')
     expect(unlitTempleWarden?.maxForm).toBe(24)
     expect(unlitTempleWarden?.nameSlots).toBe(2)
-    expect(unlitTempleWarden?.intents.every((intent) => intent.kind === 'incoming_force')).toBe(
-      true,
+    expect(unlitTempleWarden?.intents.map((intent) => intent.kind)).toEqual([
+      'incoming_force',
+      'abnormal_move',
+      'incoming_force',
+    ])
+    expect(unlitTempleWarden?.intents[1].effects[0]).toEqual(
+      expect.objectContaining({
+        type: 'ABNORMAL_MOVE',
+        move: expect.objectContaining({
+          type: 'summon',
+          summon: expect.objectContaining({
+            enemyDefinitionId: 'enemy_nameless_paper_imp',
+            maxLivingEnemies: 2,
+          }),
+        }),
+      }),
     )
 
     const fortuneBreaker = getEnemyDefinition('enemy_fortune_breaker', data)
     expect(fortuneBreaker?.tier).toBe('normal')
     expect(fortuneBreaker?.maxForm).toBe(26)
     expect(fortuneBreaker?.traits).toContain('doom')
+    expect(fortuneBreaker?.intents.map((intent) => intent.kind)).toEqual([
+      'abnormal_move',
+      'incoming_force',
+      'incoming_force',
+    ])
+    expect(fortuneBreaker?.intents[0].effects[0]).toEqual(
+      expect.objectContaining({
+        type: 'ABNORMAL_MOVE',
+        move: expect.objectContaining({
+          type: 'custom',
+          doomBargain: {
+            doomAmount: 1,
+            nextTurnIncenseBonus: 1,
+          },
+        }),
+      }),
+    )
 
     const ashAltarChild = getEnemyDefinition('enemy_ash_altar_child', data)
     expect(ashAltarChild?.tier).toBe('normal')

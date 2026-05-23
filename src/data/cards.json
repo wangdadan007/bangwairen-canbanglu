@@ -473,8 +473,7 @@
         "altarSlot": "earth",
         "altarEffect": {
           "type": "counter_abnormal_or_gain_ink",
-          "amount": 1,
-          "moveType": "steal_incense"
+          "amount": 1
         }
       }
     ]

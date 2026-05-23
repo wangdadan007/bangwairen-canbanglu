@@ -1,16 +1,23 @@
 import { appendLog } from '../log/actionLog'
+import { applyTutorialResourceDelta } from '../run/resourceResolver'
 import { triggerEarthAltars } from './altarResolver'
+import { createEnemyState } from './battleState'
 import { triggerRegisterAfterAbnormalMoveCountered } from './registerBattleResolver'
 import type {
   AbnormalMoveDefinition,
   CardInstance,
   CombatState,
   EnemyDefinition,
+  FouledScrollDestination,
   EnemyIntentDefinition,
   EnemyState,
+  HealFormTarget,
+  JsonValue,
 } from '../../types'
 
 const FOULED_SCROLL_CARD_ID = 'card_fouled_scroll'
+const DEFAULT_FOULED_SCROLL_DESTINATION: FouledScrollDestination = 'discard_pile'
+const DEFAULT_SUMMON_LIVING_ENEMY_LIMIT = 3
 
 export function executeEnemyTurn(
   state: CombatState,
@@ -66,7 +73,13 @@ function executeEnemyIntent(
     }
 
     if (effect.type === 'ABNORMAL_MOVE') {
-      nextState = executeAbnormalMove(nextState, enemy, enemy.currentIntent.id, effect.move)
+      nextState = executeAbnormalMove(
+        nextState,
+        enemy,
+        enemy.currentIntent,
+        effect.move,
+        enemyDefinitions,
+      )
     }
   }
 
@@ -133,9 +146,12 @@ function applyIncomingForceToPlayer(
 function executeAbnormalMove(
   state: CombatState,
   enemy: EnemyState,
-  intentId: string,
+  intent: EnemyIntentDefinition,
   move: AbnormalMoveDefinition,
+  enemyDefinitions: readonly EnemyDefinition[],
 ): CombatState {
+  const intentId = intent.id
+
   if (enemy.blockedAbnormalMoveTypes.includes(move.type)) {
     const counteredState = appendLog(state, {
       type: 'ABNORMAL_MOVE_COUNTERED',
@@ -143,6 +159,7 @@ function executeAbnormalMove(
       targetId: 'player',
       payload: {
         intentId,
+        intentNameKey: intent.nameKey,
         moveType: move.type,
         result: 'prevented',
       },
@@ -156,12 +173,13 @@ function executeAbnormalMove(
   }
 
   let nextState = state
+  const { amount, isFirstUse } = getResolvedMoveAmount(nextState, enemy, intentId, move)
   let resultPayload = {}
 
   if (move.type === 'steal_incense') {
     nextState = {
       ...nextState,
-      nextTurnIncensePenalty: nextState.nextTurnIncensePenalty + (move.amount ?? 1),
+      nextTurnIncensePenalty: nextState.nextTurnIncensePenalty + amount,
     }
     resultPayload = {
       nextTurnIncensePenalty: nextState.nextTurnIncensePenalty,
@@ -169,33 +187,66 @@ function executeAbnormalMove(
   }
 
   if (move.type === 'add_fouled_scroll') {
-    const addedCards = createFouledScrollCards(nextState, move.amount ?? 1)
-    nextState = {
-      ...nextState,
-      discardPile: [...nextState.discardPile, ...addedCards],
-    }
+    const destination = getResolvedFouledScrollDestination(move, isFirstUse)
+    const addedCards = createFouledScrollCards(nextState, amount)
+    nextState = addFouledScrollCardsToDestination(nextState, addedCards, destination)
     resultPayload = {
       addedCardDefinitionId: FOULED_SCROLL_CARD_ID,
       addedCardCount: addedCards.length,
+      destination,
+      drawPileCount: nextState.drawPile.length,
       discardPileCount: nextState.discardPile.length,
     }
   }
 
   if (move.type === 'cover_name') {
-    const { state: coveredState, coveredSlotIndex } = coverOneRevealedNameSlot(nextState, enemy)
-    nextState = coveredState
-    resultPayload = {
-      coveredSlotIndex,
+    const disruptedResult = move.disruptAltar
+      ? disruptMostRecentAltar(nextState, enemy)
+      : {
+          state: nextState,
+          disruptedAltarId: null,
+          disruptedAltarSlot: null,
+        }
+    nextState = disruptedResult.state
+
+    if (disruptedResult.disruptedAltarId) {
+      resultPayload = {
+        coveredSlotIndex: null,
+        disruptedAltarId: disruptedResult.disruptedAltarId,
+        disruptedAltarSlot: disruptedResult.disruptedAltarSlot,
+      }
+    } else {
+      const { state: coveredState, coveredSlotIndex, result } = coverOneRevealedNameSlot(
+        nextState,
+        enemy,
+      )
+      nextState = coveredState
+      const fallbackIncomingForce =
+        result === 'enemy_named' ? move.whenNamedIncomingForce : move.fallbackIncomingForce
+      const fallbackIncomingForceApplied =
+        coveredSlotIndex === null && fallbackIncomingForce && fallbackIncomingForce > 0
+          ? fallbackIncomingForce
+          : 0
+
+      if (fallbackIncomingForceApplied > 0) {
+        nextState = applyIncomingForceToPlayer(nextState, enemy, fallbackIncomingForceApplied)
+      }
+
+      resultPayload = {
+        coveredSlotIndex,
+        coverNameResult: result,
+        fallbackIncomingForceApplied,
+      }
     }
   }
 
   if (move.type === 'heal_form') {
-    const healAmount = move.amount ?? 1
-    const nextCurrentForm = Math.min(enemy.maxForm, enemy.currentForm + healAmount)
+    const healTarget = selectHealFormTarget(nextState, enemy, move.healTarget ?? 'self')
+    const nextCurrentForm = Math.min(healTarget.maxForm, healTarget.currentForm + amount)
     nextState = {
       ...nextState,
       enemies: nextState.enemies.map((candidate) =>
-        candidate.instanceId === enemy.instanceId
+        candidate.instanceId === healTarget.instanceId
           ? {
               ...candidate,
               currentForm: nextCurrentForm,
@@ -204,9 +255,22 @@ function executeAbnormalMove(
       ),
     }
     resultPayload = {
-      healedAmount: nextCurrentForm - enemy.currentForm,
+      targetEnemyInstanceId: healTarget.instanceId,
+      healedAmount: nextCurrentForm - healTarget.currentForm,
       currentForm: nextCurrentForm,
     }
+  }
+
+  if (move.type === 'summon') {
+    const summonResult = executeSummonMove(nextState, enemyDefinitions, move, amount)
+    nextState = summonResult.state
+    resultPayload = summonResult.payload
+  }
+
+  if (move.type === 'custom') {
+    const customResult = executeCustomMove(nextState, enemy, move)
+    nextState = customResult.state
+    resultPayload = customResult.payload
   }
 
   return appendLog(nextState, {
@@ -215,11 +279,207 @@ function executeAbnormalMove(
     targetId: 'player',
     payload: {
       intentId,
+      intentNameKey: intent.nameKey,
       moveType: move.type,
-      amount: move.amount ?? null,
+      amount,
+      configuredAmount: move.amount ?? null,
+      isFirstUse,
       ...resultPayload,
     },
   })
+}
+
+function executeSummonMove(
+  state: CombatState,
+  enemyDefinitions: readonly EnemyDefinition[],
+  move: AbnormalMoveDefinition,
+  resolvedAmount: number,
+): {
+  readonly state: CombatState
+  readonly payload: Record<string, JsonValue>
+} {
+  const summonDefinitionId = move.summon?.enemyDefinitionId
+  const summonDefinition = enemyDefinitions.find((candidate) => candidate.id === summonDefinitionId)
+  const requestedCount = Math.max(1, Math.floor(move.summon?.count ?? resolvedAmount))
+  const maxLivingEnemies = Math.max(
+    1,
+    Math.floor(move.summon?.maxLivingEnemies ?? DEFAULT_SUMMON_LIVING_ENEMY_LIMIT),
+  )
+  const livingEnemyCountBefore = state.enemies.filter((candidate) => candidate.currentForm > 0).length
+
+  if (!summonDefinitionId || !summonDefinition) {
+    return {
+      state,
+      payload: {
+        summonResult: 'missing_definition',
+        summonEnemyDefinitionId: summonDefinitionId ?? null,
+        requestedCount,
+        livingEnemyCountBefore,
+        maxLivingEnemies,
+      },
+    }
+  }
+
+  const availableSlots = Math.max(0, maxLivingEnemies - livingEnemyCountBefore)
+  const summonCount = Math.min(requestedCount, availableSlots)
+
+  if (summonCount <= 0) {
+    return {
+      state,
+      payload: {
+        summonResult: 'blocked_by_limit',
+        summonEnemyDefinitionId: summonDefinition.id,
+        requestedCount,
+        summonCount: 0,
+        livingEnemyCountBefore,
+        maxLivingEnemies,
+      },
+    }
+  }
+
+  const summonedEnemies = Array.from({ length: summonCount }, (_, index) =>
+    createEnemyState(summonDefinition, state.enemies.length + index),
+  )
+
+  return {
+    state: {
+      ...state,
+      enemies: [...state.enemies, ...summonedEnemies],
+    },
+    payload: {
+      summonResult: 'summoned',
+      summonEnemyDefinitionId: summonDefinition.id,
+      summonedEnemyInstanceIds: summonedEnemies.map((enemy) => enemy.instanceId),
+      requestedCount,
+      summonCount,
+      livingEnemyCountBefore,
+      livingEnemyCountAfter: livingEnemyCountBefore + summonCount,
+      maxLivingEnemies,
+    },
+  }
+}
+
+function executeCustomMove(
+  state: CombatState,
+  enemy: EnemyState,
+  move: AbnormalMoveDefinition,
+): {
+  readonly state: CombatState
+  readonly payload: Record<string, JsonValue>
+} {
+  if (!move.doomBargain) {
+    return {
+      state,
+      payload: {
+        customResult: 'no_effect',
+      },
+    }
+  }
+
+  const doomAmount = Math.max(0, Math.floor(move.doomBargain.doomAmount ?? move.amount ?? 0))
+  const incenseAmount = Math.max(0, Math.floor(move.doomBargain.incenseAmount ?? 0))
+  const nextTurnIncenseBonusAdded = Math.max(
+    0,
+    Math.floor(move.doomBargain.nextTurnIncenseBonus ?? 0),
+  )
+  let nextState = state
+  let currentDoom = state.resources.doom
+  let currentIncense = state.player.incense
+
+  if (incenseAmount > 0) {
+    currentIncense += incenseAmount
+    nextState = appendLog(
+      {
+        ...nextState,
+        player: {
+          ...nextState.player,
+          incense: currentIncense,
+        },
+      },
+      {
+        type: 'INCENSE_GAINED',
+        sourceId: enemy.instanceId,
+        targetId: 'player',
+        payload: {
+          amount: incenseAmount,
+          currentIncense,
+          reason: 'doom_bargain',
+        },
+      },
+    )
+  }
+
+  if (nextTurnIncenseBonusAdded > 0) {
+    nextState = {
+      ...nextState,
+      nextTurnIncenseBonus: nextState.nextTurnIncenseBonus + nextTurnIncenseBonusAdded,
+    }
+  }
+
+  if (doomAmount > 0) {
+    const resources = applyTutorialResourceDelta(nextState.resources, {
+      doom: doomAmount,
+    })
+    currentDoom = resources.doom
+    nextState = appendLog(
+      {
+        ...nextState,
+        resources,
+      },
+      {
+        type: 'DOOM_GAINED',
+        sourceId: enemy.instanceId,
+        targetId: 'player',
+        payload: {
+          amount: doomAmount,
+          currentDoom,
+          reason: 'doom_bargain',
+        },
+      },
+    )
+  }
+
+  return {
+    state: nextState,
+    payload: {
+      customResult: 'doom_bargain',
+      doomAmount,
+      currentDoom,
+      incenseAmount,
+      currentIncense,
+      nextTurnIncenseBonusAdded,
+      nextTurnIncenseBonus: nextState.nextTurnIncenseBonus,
+    },
+  }
+}
+
+function getResolvedMoveAmount(
+  state: CombatState,
+  enemy: EnemyState,
+  intentId: string,
+  move: AbnormalMoveDefinition,
+) {
+  const isFirstUse = !hasExecutedMoveBefore(state, enemy, intentId, move)
+
+  return {
+    amount: isFirstUse ? (move.firstUseAmount ?? move.amount ?? 1) : (move.amount ?? 1),
+    isFirstUse,
+  }
+}
+
+function hasExecutedMoveBefore(
+  state: CombatState,
+  enemy: EnemyState,
+  intentId: string,
+  move: AbnormalMoveDefinition,
+) {
+  return state.actionLog.some(
+    (entry) =>
+      entry.type === 'ABNORMAL_MOVE_EXECUTED' &&
+      entry.sourceId === enemy.instanceId &&
+      entry.payload.intentId === intentId &&
+      entry.payload.moveType === move.type,
+  )
 }
 
 function createFouledScrollCards(
@@ -235,19 +495,104 @@ function createFouledScrollCards(
   }))
 }
 
+function getResolvedFouledScrollDestination(
+  move: AbnormalMoveDefinition,
+  isFirstUse: boolean,
+): FouledScrollDestination {
+  if (isFirstUse && move.firstUseDestination) {
+    return move.firstUseDestination
+  }
+
+  return move.destination ?? DEFAULT_FOULED_SCROLL_DESTINATION
+}
+
+function addFouledScrollCardsToDestination(
+  state: CombatState,
+  addedCards: readonly CardInstance[],
+  destination: FouledScrollDestination,
+): CombatState {
+  if (destination === 'draw_pile_top') {
+    return {
+      ...state,
+      drawPile: [...addedCards, ...state.drawPile],
+    }
+  }
+
+  if (destination === 'draw_pile') {
+    return {
+      ...state,
+      drawPile: [...state.drawPile, ...addedCards],
+    }
+  }
+
+  return {
+    ...state,
+    discardPile: [...state.discardPile, ...addedCards],
+  }
+}
+
+function disruptMostRecentAltar(
+  state: CombatState,
+  enemy: EnemyState,
+): {
+  readonly state: CombatState
+  readonly disruptedAltarId: string | null
+  readonly disruptedAltarSlot: string | null
+} {
+  const altar = state.altars[state.altars.length - 1]
+
+  if (!altar) {
+    return {
+      state,
+      disruptedAltarId: null,
+      disruptedAltarSlot: null,
+    }
+  }
+
+  const nextState: CombatState = {
+    ...state,
+    altars: state.altars.filter((candidate) => candidate.id !== altar.id),
+  }
+
+  return {
+    state: appendLog(nextState, {
+      type: 'ALTAR_EXPIRED',
+      sourceId: altar.id,
+      targetId: altar.targetEnemyInstanceId,
+      payload: {
+        slot: altar.slot,
+        reason: 'disrupted_by_abnormal_move',
+        disruptedByEnemyInstanceId: enemy.instanceId,
+      },
+    }),
+    disruptedAltarId: altar.id,
+    disruptedAltarSlot: altar.slot,
+  }
+}
+
 function coverOneRevealedNameSlot(
   state: CombatState,
   enemy: EnemyState,
 ): {
   readonly state: CombatState
   readonly coveredSlotIndex: number | null
+  readonly result: 'covered' | 'enemy_named' | 'no_revealed_name' | 'no_target'
 } {
   const currentEnemy = state.enemies.find((candidate) => candidate.instanceId === enemy.instanceId)
 
-  if (!currentEnemy || currentEnemy.isNamed) {
+  if (!currentEnemy) {
     return {
       state,
       coveredSlotIndex: null,
+      result: 'no_target',
+    }
+  }
+
+  if (currentEnemy.isNamed) {
+    return {
+      state,
+      coveredSlotIndex: null,
+      result: 'enemy_named',
     }
   }
 
@@ -260,6 +605,7 @@ function coverOneRevealedNameSlot(
     return {
       state,
       coveredSlotIndex: null,
+      result: 'no_revealed_name',
     }
   }
 
@@ -288,7 +634,36 @@ function coverOneRevealedNameSlot(
       ),
     },
     coveredSlotIndex: revealedSlot.index,
+    result: 'covered',
   }
+}
+
+function selectHealFormTarget(
+  state: CombatState,
+  enemy: EnemyState,
+  targetMode: HealFormTarget,
+): EnemyState {
+  const currentEnemy = state.enemies.find((candidate) => candidate.instanceId === enemy.instanceId)
+
+  if (targetMode === 'self' || !currentEnemy) {
+    return currentEnemy ?? enemy
+  }
+
+  const woundedAlly = state.enemies
+    .filter(
+      (candidate) =>
+        candidate.instanceId !== enemy.instanceId &&
+        candidate.currentForm > 0 &&
+        candidate.currentForm < candidate.maxForm,
+    )
+    .sort((first, second) => {
+      const firstRatio = first.currentForm / first.maxForm
+      const secondRatio = second.currentForm / second.maxForm
+
+      return firstRatio - secondRatio
+    })[0]
+
+  return woundedAlly ?? currentEnemy
 }
 
 function advanceEnemyIntent(

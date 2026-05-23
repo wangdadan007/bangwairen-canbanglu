@@ -156,6 +156,19 @@
 - 是否值得抽到模板：值得记录，适合作为内容规模类项目的 QA guardrail。
 - 后续动作：后续如果 reward offer 或 route event 改为 seeded random，应把本轮确定性轮换测试升级为 seed coverage / sampling coverage 测试。
 
+### 2026-05-23 · T72 · 低成本召唤异动与普通怪风险交易模板
+
+- 候选类型：战斗敌人意图 / summon resolver / risk trade custom move。
+- 主归属模板：`Data-Driven Card Battle Engine`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`Roguelike Run Flow Kit`、`React Card Game UI Kit`。
+- 涉及文件：`src/types/enemy.ts`、`src/core/battle/enemyIntentResolver.ts`、`src/core/battle/altarResolver.ts`、`src/data/enemies.json`、`src/data/cards.json`、`src/ui/pages/actionLogView.ts`、`src/tests/enemyIntent.test.ts`、`src/tests/chapterOneBalance.test.ts`。
+- 可复用价值：把敌人召唤拆成数据里的召唤目标、数量和场上上限，把普通怪专属风险交易拆成“短期收益 + 风险资源增加 + 可反制”的最小模式，适合复用到其他卡牌战斗项目的 minion summon、enemy reinforcements、pact / debt enemy move。
+- 与本作强绑定部分：无灯庙祝、无名纸祟、断签客、倒签入账、香火、劫数和三坛文案属于本作。
+- 去题材化思路：抽象为 summon target id、living enemy cap、summon result log、risk bargain effect、next-turn energy bonus、risk meter delta、counter window；示例使用中性 enemy_summoner、enemy_minion、debt_move、energy / risk 命名。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时只保留 resolver、schema、日志格式和中性样例数据。
+- 是否值得抽到模板：值得记录，适合作为战斗引擎的 enemy action extension 模块。
+- 后续动作：T73 人工试玩后再观察召唤上限、通用地坛反制和风险交易强度是否需要进一步参数化。
+
 ### 2026-05-19 · T00-T08 回溯 · 纯逻辑卡牌战斗核心
 
 - 候选类型：纯逻辑卡牌战斗引擎 / 主模板核心模块。
@@ -415,3 +428,16 @@
 - 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时应替换本作术语、敌人 intent ID 和中文 actionLog 文案。
 - 是否值得抽到模板：值得，适合作为 deckbuilder starter kit 中“明牌公平 + 局部隐藏信息”的范例，也适合作为 UI kit 的弱权重预告槽组件。
 - 后续动作：T71 三角色浏览器试玩中重点观察玩家是否理解遮势与后一动、照微信息优势是否成立，以及 Boss 遮势是否太压迫。
+
+### 2026-05-23 · T71 · 第一章异动分层差异化
+
+- 候选类型：enemy abnormal move authoring / encounter pressure differentiation / data-driven enemy skill variants。
+- 主归属模板：`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 也支持：`Data-Driven Card Battle Engine`、`Roguelike Run Flow Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/types/enemy.ts`、`src/core/battle/enemyIntentResolver.ts`、`src/data/enemies.json`、`src/data/localization/zh-CN.json`、`src/ui/pages/actionLogView.ts`、`src/tests/enemyIntent.test.ts`、`docs/prd/PRD-gameplay.md`、`docs/prd/PRD-content-scope.md`、`docs/tasks/PROJECT_PLAN.md`。
+- 可复用价值：把敌人技能从“同一底层效果换名”推进为数据驱动的轻 / 强差异化：普通怪通过落点、目标、失败兜底和组合场景轻调，精英 / Boss 通过首次强度、正名前后差异、资源干扰和路线压力建立身份。
+- 与本作强绑定部分：异动、偷香、污卷、遮名、回形、三坛、形、名迹、窃榜使等命名和具体敌人 ID 属于本作表达。
+- 去题材化思路：抽象为 abnormal action type, first-use modifier, junk-card destination, reveal-hide fallback, support-heal target selection, board-object disruption 和 boss route pressure profile。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时应替换本作术语、敌人名、卡 ID、日志文案和路线倾向命名。
+- 是否值得抽到模板：值得，适合作为 deckbuilder starter kit 的 enemy authoring 示例，也能作为 QA kit 的“设计表到真实战斗验证”案例。
+- 后续动作：T72 三角色人工试玩中观察普通怪轻差异是否足够可读、精英 / Boss 首次强化是否过强，以及斗部空壳挪坛是否需要更明显的 HUD 预警。

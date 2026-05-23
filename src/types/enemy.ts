@@ -17,9 +17,34 @@ export type AbnormalMoveType =
   | 'cover_name'
   | 'custom'
 
+export type FouledScrollDestination = 'discard_pile' | 'draw_pile' | 'draw_pile_top'
+
+export type HealFormTarget = 'self' | 'most_wounded_ally'
+
+export interface SummonMoveDefinition {
+  readonly enemyDefinitionId: EnemyId
+  readonly count?: number
+  readonly maxLivingEnemies?: number
+}
+
+export interface DoomBargainMoveDefinition {
+  readonly doomAmount?: number
+  readonly incenseAmount?: number
+  readonly nextTurnIncenseBonus?: number
+}
+
 export interface AbnormalMoveDefinition {
   readonly type: AbnormalMoveType
   readonly amount?: number
+  readonly firstUseAmount?: number
+  readonly destination?: FouledScrollDestination
+  readonly firstUseDestination?: FouledScrollDestination
+  readonly fallbackIncomingForce?: number
+  readonly whenNamedIncomingForce?: number
+  readonly healTarget?: HealFormTarget
+  readonly disruptAltar?: boolean
+  readonly summon?: SummonMoveDefinition
+  readonly doomBargain?: DoomBargainMoveDefinition
   readonly descriptionKey: LocalizationKey
 }
 

@@ -122,7 +122,7 @@ export function createPressureFeedback(
   }
 
   if (entry.type === 'ABNORMAL_MOVE_COUNTERED') {
-    const moveLabel = getMoveLabel(getPayloadString(entry.payload.moveType))
+    const moveLabel = getAbnormalMoveLogLabel(entry)
     const result = getPayloadString(entry.payload.result)
 
     return {
@@ -142,18 +142,15 @@ export function createPressureFeedback(
   }
 
   if (entry.type === 'ABNORMAL_MOVE_EXECUTED') {
-    const moveLabel = getMoveLabel(getPayloadString(entry.payload.moveType))
-    const incensePenalty = getPayloadNumber(entry.payload.nextTurnIncensePenalty) ?? 0
+    const moveLabel = getAbnormalMoveLogLabel(entry)
+    const executionDetail = formatAbnormalMoveExecutionDetail(entry)
 
     return {
       id: entry.id,
       tone: 'abnormal',
       label: '异动生效',
       title: `${sourceName}发动${moveLabel}`,
-      detail:
-        incensePenalty > 0
-          ? `下回合香火将受扰 -${incensePenalty}。`
-          : '本次异动已经结算。',
+      detail: executionDetail ? `${executionDetail}。` : '本次异动已经结算。',
       audioCue: 'pressure',
     }
   }
@@ -771,19 +768,19 @@ export function formatLogEntry(
   }
 
   if (entry.type === 'ABNORMAL_MOVE_EXECUTED') {
-    const incensePenalty = getPayloadNumber(entry.payload.nextTurnIncensePenalty) ?? 0
+    const executionDetail = formatAbnormalMoveExecutionDetail(entry)
 
-    return `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}发动异动：${getMoveLabel(
-      getPayloadString(entry.payload.moveType),
-    )}${incensePenalty > 0 ? `，下回合香火受扰 -${incensePenalty}` : ''}。`
+    return `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}发动异动：${getAbnormalMoveLogLabel(
+      entry,
+    )}${executionDetail ? `，${executionDetail}` : ''}。`
   }
 
   if (entry.type === 'ABNORMAL_MOVE_COUNTERED') {
     const result = getPayloadString(entry.payload.result)
 
     return result === 'prevented'
-      ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${getMoveLabel(
-          getPayloadString(entry.payload.moveType),
+      ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${getAbnormalMoveLogLabel(
+          entry,
         )}被断异动阻止。`
       : result === 'prepared_by_ink'
         ? `留墨护名准备就绪：下一次${getMoveLabel(
@@ -1031,6 +1028,101 @@ export function getSettlementText(settlement: VictorySettlement) {
     : '敌形已散，获得普通奖励。'
 }
 
+function formatAbnormalMoveExecutionDetail(entry: ActionLogEntry) {
+  const moveType = getPayloadString(entry.payload.moveType)
+  const amount = getPayloadNumber(entry.payload.amount) ?? 0
+  const incensePenalty = getPayloadNumber(entry.payload.nextTurnIncensePenalty) ?? 0
+  const nextTurnIncenseBonusAdded =
+    getPayloadNumber(entry.payload.nextTurnIncenseBonusAdded) ?? 0
+  const doomAmount = getPayloadNumber(entry.payload.doomAmount) ?? 0
+  const destination = getPayloadString(entry.payload.destination)
+  const fallbackIncomingForceApplied =
+    getPayloadNumber(entry.payload.fallbackIncomingForceApplied) ?? 0
+  const healedAmount = getPayloadNumber(entry.payload.healedAmount) ?? 0
+  const disruptedAltarSlot = getPayloadString(entry.payload.disruptedAltarSlot)
+  const summonResult = getPayloadString(entry.payload.summonResult)
+
+  if (moveType === 'steal_incense' && incensePenalty > 0) {
+    return `本次扰香 -${amount}，下回合累计受扰 -${incensePenalty}`
+  }
+
+  if (moveType === 'add_fouled_scroll') {
+    if (destination === 'draw_pile_top') {
+      return `污卷压到抽牌堆顶 ${amount} 张`
+    }
+
+    if (destination === 'draw_pile') {
+      return `污卷进入抽牌堆 ${amount} 张`
+    }
+
+    return `污卷进入弃牌堆 ${amount} 张`
+  }
+
+  if (moveType === 'cover_name') {
+    if (disruptedAltarSlot) {
+      return `${getAltarSlotLabel(disruptedAltarSlot)}被挪空`
+    }
+
+    if (fallbackIncomingForceApplied > 0) {
+      return `无可遮名迹，改为冲击己形 ${fallbackIncomingForceApplied}`
+    }
+
+    const coveredSlotIndex = getPayloadNumber(entry.payload.coveredSlotIndex)
+
+    return coveredSlotIndex === undefined
+      ? '没有可遮名迹'
+      : `遮去第 ${coveredSlotIndex + 1} 格名迹`
+  }
+
+  if (moveType === 'heal_form') {
+    return `回形 ${healedAmount}`
+  }
+
+  if (moveType === 'summon') {
+    const summonedEnemyDefinitionId = getPayloadString(entry.payload.summonEnemyDefinitionId)
+    const summonedEnemyName = summonedEnemyDefinitionId
+      ? getEnemyDefinitionName(summonedEnemyDefinitionId)
+      : '杂祟'
+
+    if (summonResult === 'summoned') {
+      return `召出${summonedEnemyName} ${getPayloadNumber(entry.payload.summonCount) ?? amount} 名`
+    }
+
+    if (summonResult === 'blocked_by_limit') {
+      return `场上已有 ${getPayloadNumber(entry.payload.livingEnemyCountBefore) ?? 0} 名敌方，召唤未成`
+    }
+
+    return '召唤未成'
+  }
+
+  if (moveType === 'custom' && getPayloadString(entry.payload.customResult) === 'doom_bargain') {
+    const effects: string[] = []
+
+    if (nextTurnIncenseBonusAdded > 0) {
+      effects.push(`下回合香火 +${nextTurnIncenseBonusAdded}`)
+    }
+
+    if (doomAmount > 0) {
+      effects.push(`劫数 +${doomAmount}`)
+    }
+
+    return effects.length > 0 ? effects.join('，') : '劫数入账'
+  }
+
+  return undefined
+}
+
+function getAbnormalMoveLogLabel(entry: ActionLogEntry) {
+  const moveType = getPayloadString(entry.payload.moveType)
+  const intentNameKey = getPayloadString(entry.payload.intentNameKey)
+
+  if ((moveType === 'summon' || moveType === 'custom') && intentNameKey) {
+    return t(intentNameKey)
+  }
+
+  return getMoveLabel(moveType)
+}
+
 export function getRouteFlowLabel(flowKind: RouteFlowKind) {
   if (flowKind === 'event') {
     return '事件节点'
@@ -1082,6 +1174,14 @@ export function getMoveLabel(moveType: string | undefined) {
 
   if (moveType === 'heal_form') {
     return '回形'
+  }
+
+  if (moveType === 'summon') {
+    return '召唤异动'
+  }
+
+  if (moveType === 'custom') {
+    return '专属异动'
   }
 
   return moveType ?? '异动'
@@ -1182,6 +1282,10 @@ function getAltarExpireReasonLabel(reason: string | undefined) {
 
   if (reason === 'triggered') {
     return '本次窗口已结算'
+  }
+
+  if (reason === 'disrupted_by_abnormal_move') {
+    return '被敌方异动挪空'
   }
 
   return '坛位效果已结束'

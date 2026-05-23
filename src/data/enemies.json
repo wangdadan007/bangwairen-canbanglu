@@ -223,7 +223,7 @@
       }
     ],
     "tier": "normal",
-    "traits": ["chapter_one", "mid_chapter", "human_altar_preview", "incoming_force"],
+    "traits": ["chapter_one", "mid_chapter", "human_altar_preview", "incoming_force", "abnormal_move", "summon"],
     "intents": [
       {
         "id": "intent_unlit_temple_warden_sweep_ashes",
@@ -233,6 +233,25 @@
           {
             "type": "INCOMING_FORCE",
             "amount": 5
+          }
+        ]
+      },
+      {
+        "id": "intent_unlit_temple_warden_call_paper_imp",
+        "nameKey": "enemy.unlit_temple_warden.intent.call_paper_imp",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "summon",
+              "amount": 1,
+              "summon": {
+                "enemyDefinitionId": "enemy_nameless_paper_imp",
+                "maxLivingEnemies": 2
+              },
+              "descriptionKey": "enemy.unlit_temple_warden.intent.call_paper_imp.description"
+            }
           }
         ]
       },
@@ -277,8 +296,27 @@
       }
     ],
     "tier": "normal",
-    "traits": ["chapter_one", "mid_chapter", "doom", "incoming_force"],
+    "traits": ["chapter_one", "mid_chapter", "doom", "incoming_force", "abnormal_move", "custom"],
     "intents": [
+      {
+        "id": "intent_fortune_breaker_reverse_lot_debt",
+        "nameKey": "enemy.fortune_breaker.intent.reverse_lot_debt",
+        "kind": "abnormal_move",
+        "effects": [
+          {
+            "type": "ABNORMAL_MOVE",
+            "move": {
+              "type": "custom",
+              "amount": 1,
+              "doomBargain": {
+                "doomAmount": 1,
+                "nextTurnIncenseBonus": 1
+              },
+              "descriptionKey": "enemy.fortune_breaker.intent.reverse_lot_debt.description"
+            }
+          }
+        ]
+      },
       {
         "id": "intent_fortune_breaker_crack_lot",
         "nameKey": "enemy.fortune_breaker.intent.crack_lot",
@@ -401,6 +439,7 @@
             "move": {
               "type": "add_fouled_scroll",
               "amount": 1,
+              "destination": "discard_pile",
               "descriptionKey": "enemy.plague_paper_figure.intent.stain_scroll.description"
             }
           }
@@ -459,6 +498,8 @@
             "move": {
               "type": "add_fouled_scroll",
               "amount": 1,
+              "destination": "discard_pile",
+              "firstUseDestination": "draw_pile_top",
               "descriptionKey": "enemy.scroll_stuffer_clerk.intent.stuff_scroll.description"
             }
           }
@@ -517,6 +558,8 @@
             "move": {
               "type": "cover_name",
               "amount": 1,
+              "fallbackIncomingForce": 2,
+              "whenNamedIncomingForce": 2,
               "descriptionKey": "enemy.fleeing_name_paper_horse.intent.hide_trace.description"
             }
           }
@@ -565,6 +608,7 @@
             "move": {
               "type": "heal_form",
               "amount": 4,
+              "healTarget": "most_wounded_ally",
               "descriptionKey": "enemy.offering_table_afterimage.intent.restore_shape.description"
             }
           }
@@ -626,6 +670,7 @@
             "move": {
               "type": "cover_name",
               "amount": 1,
+              "whenNamedIncomingForce": 2,
               "descriptionKey": "enemy.fire_fleeing_name.intent.burn_name.description"
             }
           }
@@ -699,6 +744,7 @@
             "move": {
               "type": "cover_name",
               "amount": 1,
+              "disruptAltar": true,
               "descriptionKey": "enemy.dipper_empty_shell.intent.blank_name.description"
             }
           }
@@ -772,6 +818,7 @@
             "move": {
               "type": "steal_incense",
               "amount": 1,
+              "firstUseAmount": 2,
               "descriptionKey": "enemy.incense_clerk.intent.audit_offering.description"
             }
           }
@@ -854,6 +901,7 @@
             "move": {
               "type": "steal_incense",
               "amount": 1,
+              "firstUseAmount": 2,
               "descriptionKey": "enemy.registry_thief.intent.pinch_offering.description"
             }
           }
@@ -869,6 +917,8 @@
             "move": {
               "type": "cover_name",
               "amount": 1,
+              "fallbackIncomingForce": 2,
+              "whenNamedIncomingForce": 2,
               "descriptionKey": "enemy.registry_thief.intent.cloak_stolen_name.description"
             }
           }
@@ -884,6 +934,8 @@
             "move": {
               "type": "add_fouled_scroll",
               "amount": 1,
+              "destination": "discard_pile",
+              "firstUseDestination": "draw_pile_top",
               "descriptionKey": "enemy.registry_thief.intent.tear_registry.description"
             }
           }

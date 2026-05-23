@@ -30,8 +30,10 @@ describe('T53 chapter-one balance guardrails', () => {
     expect([...abnormalMoves].sort()).toEqual([
       'add_fouled_scroll',
       'cover_name',
+      'custom',
       'heal_form',
       'steal_incense',
+      'summon',
     ])
 
     for (const moveType of abnormalMoves) {
@@ -83,7 +85,7 @@ function collectEnemyAbnormalMoves(enemies: readonly EnemyDefinition[]) {
   for (const enemy of enemies) {
     for (const intent of enemy.intents) {
       for (const effect of intent.effects) {
-        if (effect.type === 'ABNORMAL_MOVE' && effect.move.type !== 'custom') {
+        if (effect.type === 'ABNORMAL_MOVE') {
           moveTypes.add(effect.move.type)
         }
       }
@@ -109,6 +111,7 @@ function collectDirectCounterMoves(cards: readonly CardDefinition[]) {
 
 function collectEarthAltarFallbackMoves(cards: readonly CardDefinition[]) {
   const moveTypes = new Set<AbnormalMoveType>()
+  let hasGenericEarthCounter = false
 
   for (const card of cards) {
     for (const effect of card.effects) {
@@ -120,7 +123,27 @@ function collectEarthAltarFallbackMoves(cards: readonly CardDefinition[]) {
       ) {
         moveTypes.add(effect.altarEffect.moveType)
       }
+
+      if (
+        effect.type === 'PLACE_ALTAR' &&
+        effect.altarSlot === 'earth' &&
+        effect.altarEffect.type === 'counter_abnormal_or_gain_ink' &&
+        !effect.altarEffect.moveType
+      ) {
+        hasGenericEarthCounter = true
+      }
     }
+  }
+
+  if (hasGenericEarthCounter) {
+    return new Set<AbnormalMoveType>([
+      'steal_incense',
+      'add_fouled_scroll',
+      'heal_form',
+      'summon',
+      'cover_name',
+      'custom',
+    ])
   }
 
   return moveTypes
