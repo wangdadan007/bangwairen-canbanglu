@@ -2,6 +2,10 @@ import { appendLog } from '../log/actionLog'
 import { applyTutorialResourceDelta } from '../run/resourceResolver'
 import { triggerEarthAltars } from './altarResolver'
 import { createEnemyState } from './battleState'
+import {
+  isIncomingForceConditionMet,
+  resolveIncomingForceAmount,
+} from './incomingForceResolver'
 import { triggerRegisterAfterAbnormalMoveCountered } from './registerBattleResolver'
 import type {
   AbnormalMoveDefinition,
@@ -12,6 +16,7 @@ import type {
   EnemyIntentDefinition,
   EnemyState,
   HealFormTarget,
+  IncomingForceAftereffectDefinition,
   JsonValue,
 } from '../../types'
 
@@ -55,10 +60,17 @@ function executeEnemyIntent(
   }
 
   let nextState = state
+  let forceMaskNextIntent = false
 
   for (const effect of enemy.currentIntent.effects) {
     if (effect.type === 'INCOMING_FORCE') {
-      const amount = enemy.incomingForce
+      const currentEnemy = getCurrentEnemyState(nextState, enemy)
+      const amount = currentEnemy.incomingForce
+      const incomingForceResolution = resolveIncomingForceAmount(
+        nextState,
+        currentEnemy,
+        enemy.currentIntent,
+      )
       nextState = appendLog(nextState, {
         type: 'INCOMING_FORCE_CREATED',
         sourceId: enemy.instanceId,
@@ -66,10 +78,23 @@ function executeEnemyIntent(
         payload: {
           intentId: enemy.currentIntent.id,
           amount,
-          baseAmount: effect.amount,
+          baseAmount: incomingForceResolution.baseAmount,
+          bonusAmount: incomingForceResolution.bonusAmount,
+          bonusDescriptionKeys: incomingForceResolution.bonuses.map((bonus) => bonus.descriptionKey),
         },
       })
       nextState = applyIncomingForceToPlayer(nextState, enemy, amount)
+
+      if (nextState.result.status === 'ongoing') {
+        const aftereffectResult = applyIncomingForceAftereffects(
+          nextState,
+          currentEnemy,
+          effect.aftereffects ?? [],
+          amount,
+        )
+        nextState = aftereffectResult.state
+        forceMaskNextIntent = forceMaskNextIntent || aftereffectResult.forceMaskNextIntent
+      }
     }
 
     if (effect.type === 'ABNORMAL_MOVE') {
@@ -87,7 +112,9 @@ function executeEnemyIntent(
     return nextState
   }
 
-  return advanceEnemyIntent(nextState, enemy, enemyDefinitions)
+  return advanceEnemyIntent(nextState, enemy, enemyDefinitions, {
+    forceMaskCurrentIntent: forceMaskNextIntent,
+  })
 }
 
 function applyIncomingForceToPlayer(
@@ -141,6 +168,137 @@ function applyIncomingForceToPlayer(
       reasonKey: 'battle.defeat.player_form_broken',
     },
   })
+}
+
+function applyIncomingForceAftereffects(
+  state: CombatState,
+  enemy: EnemyState,
+  aftereffects: readonly IncomingForceAftereffectDefinition[],
+  incomingForceAmount: number,
+): {
+  readonly state: CombatState
+  readonly forceMaskNextIntent: boolean
+} {
+  let nextState = state
+  let forceMaskNextIntent = false
+
+  for (const aftereffect of aftereffects) {
+    if (
+      aftereffect.condition &&
+      !isIncomingForceConditionMet(nextState, enemy, aftereffect.condition)
+    ) {
+      continue
+    }
+
+    if (incomingForceAmount <= 0) {
+      nextState = appendIncomingForceAftereffectLog(nextState, enemy, aftereffect, {
+        result: 'suppressed',
+        reason: 'fully_sealed',
+      })
+      continue
+    }
+
+    if (aftereffect.type === 'expire_latest_altar') {
+      const result = expireLatestAltarByIncomingForce(nextState, enemy)
+      nextState = result.state
+
+      if (!result.expiredAltarId) {
+        continue
+      }
+
+      nextState = appendIncomingForceAftereffectLog(nextState, enemy, aftereffect, {
+        result: 'triggered',
+        expiredAltarId: result.expiredAltarId,
+        expiredAltarSlot: result.expiredAltarSlot,
+      })
+      continue
+    }
+
+    if (aftereffect.type === 'mask_next_intent') {
+      forceMaskNextIntent = true
+      nextState = appendIncomingForceAftereffectLog(nextState, enemy, aftereffect, {
+        result: 'triggered',
+      })
+      continue
+    }
+
+    if (aftereffect.type === 'add_fouled_scroll') {
+      const addedCards = createFouledScrollCards(
+        nextState,
+        Math.max(1, Math.floor(aftereffect.amount ?? 1)),
+      )
+      nextState = addFouledScrollCardsToDestination(nextState, addedCards, 'discard_pile')
+      nextState = appendIncomingForceAftereffectLog(nextState, enemy, aftereffect, {
+        result: 'triggered',
+        addedCardDefinitionId: FOULED_SCROLL_CARD_ID,
+        addedCardCount: addedCards.length,
+        destination: 'discard_pile',
+        discardPileCount: nextState.discardPile.length,
+      })
+    }
+  }
+
+  return {
+    state: nextState,
+    forceMaskNextIntent,
+  }
+}
+
+function appendIncomingForceAftereffectLog(
+  state: CombatState,
+  enemy: EnemyState,
+  aftereffect: IncomingForceAftereffectDefinition,
+  payload: Record<string, JsonValue>,
+): CombatState {
+  return appendLog(state, {
+    type: 'INCOMING_FORCE_AFTEREFFECT',
+    sourceId: enemy.instanceId,
+    targetId: 'player',
+    payload: {
+      aftereffectType: aftereffect.type,
+      descriptionKey: aftereffect.descriptionKey,
+      ...payload,
+    },
+  })
+}
+
+function expireLatestAltarByIncomingForce(
+  state: CombatState,
+  enemy: EnemyState,
+): {
+  readonly state: CombatState
+  readonly expiredAltarId: string | null
+  readonly expiredAltarSlot: string | null
+} {
+  const altar = state.altars[state.altars.length - 1]
+
+  if (!altar) {
+    return {
+      state,
+      expiredAltarId: null,
+      expiredAltarSlot: null,
+    }
+  }
+
+  const nextState: CombatState = {
+    ...state,
+    altars: state.altars.filter((candidate) => candidate.id !== altar.id),
+  }
+
+  return {
+    state: appendLog(nextState, {
+      type: 'ALTAR_EXPIRED',
+      sourceId: altar.id,
+      targetId: altar.targetEnemyInstanceId,
+      payload: {
+        slot: altar.slot,
+        reason: 'shaken_by_incoming_force',
+        disruptedByEnemyInstanceId: enemy.instanceId,
+      },
+    }),
+    expiredAltarId: altar.id,
+    expiredAltarSlot: altar.slot,
+  }
 }
 
 function executeAbnormalMove(
@@ -666,10 +824,15 @@ function selectHealFormTarget(
   return woundedAlly ?? currentEnemy
 }
 
+interface AdvanceEnemyIntentOptions {
+  readonly forceMaskCurrentIntent?: boolean
+}
+
 function advanceEnemyIntent(
   state: CombatState,
   enemy: EnemyState,
   enemyDefinitions: readonly EnemyDefinition[],
+  options: AdvanceEnemyIntentOptions = {},
 ): CombatState {
   const definition = enemyDefinitions.find((candidate) => candidate.id === enemy.definitionId)
 
@@ -682,7 +845,14 @@ function advanceEnemyIntent(
   const followingIntent = definition.intents[(nextIntentIndex + 1) % definition.intents.length]
   const enemies = state.enemies.map((candidate) =>
     candidate.instanceId === enemy.instanceId
-      ? advanceSingleEnemyIntent(candidate, nextIntentIndex, nextIntent, followingIntent)
+      ? advanceSingleEnemyIntent(
+          state,
+          candidate,
+          nextIntentIndex,
+          nextIntent,
+          followingIntent,
+          options,
+        )
       : candidate,
   )
 
@@ -693,36 +863,32 @@ function advanceEnemyIntent(
 }
 
 function advanceSingleEnemyIntent(
+  state: CombatState,
   enemy: EnemyState,
   nextIntentIndex: number,
   nextIntent: EnemyIntentDefinition | undefined,
   followingIntent: EnemyIntentDefinition | undefined,
+  options: AdvanceEnemyIntentOptions,
 ): EnemyState {
   const nextMaskMode = enemy.intentMaskMode === 'current_only' ? 'none' : enemy.intentMaskMode
   const hasPreviewedNextIntent =
     Boolean(nextIntent) && enemy.nextIntentPreview?.id === nextIntent?.id
+  const isNextIntentRevealed =
+    !options.forceMaskCurrentIntent && (hasPreviewedNextIntent || nextMaskMode === 'none')
 
   return {
     ...enemy,
     intentIndex: nextIntentIndex,
     currentIntent: nextIntent,
-    currentIntentVisibility:
-      hasPreviewedNextIntent || nextMaskMode === 'none' ? 'revealed' : 'masked',
+    currentIntentVisibility: isNextIntentRevealed ? 'revealed' : 'masked',
     intentMaskMode: nextMaskMode,
     nextIntent: followingIntent,
     nextIntentPreview: undefined,
-    incomingForce: getIncomingForce(nextIntent),
+    incomingForce: resolveIncomingForceAmount(state, enemy, nextIntent).amount,
     blockedAbnormalMoveTypes: [],
   }
 }
 
-function getIncomingForce(intent: EnemyIntentDefinition | undefined): number {
-  if (!intent) {
-    return 0
-  }
-
-  return intent.effects.reduce(
-    (total, effect) => total + (effect.type === 'INCOMING_FORCE' ? effect.amount : 0),
-    0,
-  )
+function getCurrentEnemyState(state: CombatState, enemy: EnemyState): EnemyState {
+  return state.enemies.find((candidate) => candidate.instanceId === enemy.instanceId) ?? enemy
 }

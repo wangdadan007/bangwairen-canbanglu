@@ -48,10 +48,45 @@ export interface AbnormalMoveDefinition {
   readonly descriptionKey: LocalizationKey
 }
 
+export type IncomingForceBonusCondition =
+  | 'summoned_enemy_alive'
+  | 'custom_abnormal_executed_this_turn'
+  | 'abnormal_move_executed_this_turn'
+  | 'fouled_scroll_in_piles'
+  | 'covered_name_slot_exists'
+  | 'steal_incense_executed'
+  | 'altar_active'
+  | 'boss_route_catalogue'
+  | 'boss_route_fracture'
+
+export interface IncomingForceBonusDefinition {
+  readonly amount: number
+  readonly condition: IncomingForceBonusCondition
+  readonly descriptionKey: LocalizationKey
+  readonly enemyDefinitionId?: EnemyId
+  readonly moveType?: AbnormalMoveType
+  readonly intentId?: string
+}
+
+export type IncomingForceAftereffectType =
+  | 'expire_latest_altar'
+  | 'mask_next_intent'
+  | 'add_fouled_scroll'
+
+export interface IncomingForceAftereffectDefinition {
+  readonly type: IncomingForceAftereffectType
+  readonly condition?: IncomingForceBonusCondition
+  readonly descriptionKey: LocalizationKey
+  readonly amount?: number
+}
+
 export type EnemyIntentEffect =
   | {
       readonly type: 'INCOMING_FORCE'
       readonly amount: number
+      readonly descriptionKey?: LocalizationKey
+      readonly bonuses?: readonly IncomingForceBonusDefinition[]
+      readonly aftereffects?: readonly IncomingForceAftereffectDefinition[]
     }
   | {
       readonly type: 'ABNORMAL_MOVE'

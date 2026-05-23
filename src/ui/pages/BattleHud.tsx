@@ -719,6 +719,9 @@ function EnemyPanel({
     ? getPreviewIntentDetail(enemy.nextIntentPreview)
     : '辨势后显示，用于规划下回合。'
   const visibleIncomingForce = isIntentMasked ? null : enemy.incomingForce
+  const incomingForceAttachment = isIntentMasked
+    ? undefined
+    : getIncomingForceAttachmentText(enemy.currentIntent)
 
   return (
     <article
@@ -825,6 +828,12 @@ function EnemyPanel({
           </strong>
         </div>
       </div>
+      {incomingForceAttachment ? (
+        <div className="intent-attachment-note">
+          <span title={getTermTooltip('incoming_force')}>来势附带</span>
+          <strong>{incomingForceAttachment}</strong>
+        </div>
+      ) : null}
       <div className="intent-rule-grid" aria-label="来势与异动处理状态">
         <div
           className={!isIntentMasked && enemy.incomingForce > 0 ? 'rule-note active' : 'rule-note'}
@@ -911,6 +920,23 @@ function getPreviewIntentDetail(intent: EnemyIntentDefinition) {
   }
 
   return '已照见后一动。'
+}
+
+function getIncomingForceAttachmentText(intent: EnemyIntentDefinition | undefined) {
+  const detailKeys =
+    intent?.effects.flatMap((effect) => {
+      if (effect.type !== 'INCOMING_FORCE') {
+        return []
+      }
+
+      return [
+        effect.descriptionKey,
+        ...(effect.bonuses?.map((bonus) => bonus.descriptionKey) ?? []),
+        ...(effect.aftereffects?.map((aftereffect) => aftereffect.descriptionKey) ?? []),
+      ].filter((key): key is string => Boolean(key))
+    }) ?? []
+
+  return Array.from(new Set(detailKeys)).map((key) => t(key)).join(' ')
 }
 
 function PressureFeedbackPanel({ feedback }: { readonly feedback: PressureFeedback }) {

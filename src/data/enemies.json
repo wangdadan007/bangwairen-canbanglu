@@ -262,7 +262,16 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 6
+            "amount": 6,
+            "descriptionKey": "enemy.unlit_temple_warden.intent.ring_table.incoming",
+            "bonuses": [
+              {
+                "amount": 1,
+                "condition": "summoned_enemy_alive",
+                "enemyDefinitionId": "enemy_nameless_paper_imp",
+                "descriptionKey": "enemy.unlit_temple_warden.intent.ring_table.bonus.paper_imp"
+              }
+            ]
           }
         ]
       }
@@ -324,7 +333,16 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 6
+            "amount": 6,
+            "descriptionKey": "enemy.fortune_breaker.intent.crack_lot.incoming",
+            "bonuses": [
+              {
+                "amount": 1,
+                "condition": "custom_abnormal_executed_this_turn",
+                "intentId": "intent_fortune_breaker_reverse_lot_debt",
+                "descriptionKey": "enemy.fortune_breaker.intent.crack_lot.bonus.debt"
+              }
+            ]
           }
         ]
       },
@@ -393,7 +411,17 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 5
+            "amount": 5,
+            "descriptionKey": "enemy.ash_altar_child.intent.press_bowl.incoming",
+            "bonuses": [
+              {
+                "amount": 1,
+                "condition": "abnormal_move_executed_this_turn",
+                "moveType": "steal_incense",
+                "intentId": "intent_ash_altar_child_scatter_ash",
+                "descriptionKey": "enemy.ash_altar_child.intent.press_bowl.bonus.unhandled_ash"
+              }
+            ]
           }
         ]
       }
@@ -512,7 +540,15 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 5
+            "amount": 5,
+            "descriptionKey": "enemy.scroll_stuffer_clerk.intent.slam_case.incoming",
+            "bonuses": [
+              {
+                "amount": 1,
+                "condition": "fouled_scroll_in_piles",
+                "descriptionKey": "enemy.scroll_stuffer_clerk.intent.slam_case.bonus.fouled_scroll"
+              }
+            ]
           }
         ]
       }
@@ -572,7 +608,15 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 7
+            "amount": 7,
+            "descriptionKey": "enemy.fleeing_name_paper_horse.intent.kick_dust.incoming",
+            "bonuses": [
+              {
+                "amount": 1,
+                "condition": "covered_name_slot_exists",
+                "descriptionKey": "enemy.fleeing_name_paper_horse.intent.kick_dust.bonus.covered_name"
+              }
+            ]
           }
         ]
       }
@@ -656,7 +700,15 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 8
+            "amount": 8,
+            "descriptionKey": "enemy.fire_fleeing_name.intent.flame_stamp.incoming",
+            "bonuses": [
+              {
+                "amount": 2,
+                "condition": "covered_name_slot_exists",
+                "descriptionKey": "enemy.fire_fleeing_name.intent.flame_stamp.bonus.covered_name"
+              }
+            ]
           }
         ]
       },
@@ -683,7 +735,15 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 10
+            "amount": 10,
+            "descriptionKey": "enemy.fire_fleeing_name.intent.break_tablet.incoming",
+            "bonuses": [
+              {
+                "amount": 2,
+                "condition": "covered_name_slot_exists",
+                "descriptionKey": "enemy.fire_fleeing_name.intent.break_tablet.bonus.covered_name"
+              }
+            ]
           }
         ]
       }
@@ -757,7 +817,22 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 9
+            "amount": 9,
+            "descriptionKey": "enemy.dipper_empty_shell.intent.fall_star.incoming",
+            "bonuses": [
+              {
+                "amount": 1,
+                "condition": "altar_active",
+                "descriptionKey": "enemy.dipper_empty_shell.intent.fall_star.bonus.altar"
+              }
+            ],
+            "aftereffects": [
+              {
+                "type": "expire_latest_altar",
+                "condition": "altar_active",
+                "descriptionKey": "enemy.dipper_empty_shell.intent.fall_star.aftereffect.altar"
+              }
+            ]
           }
         ]
       }
@@ -804,7 +879,15 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 7
+            "amount": 7,
+            "descriptionKey": "enemy.incense_clerk.intent.lift_censer.incoming",
+            "bonuses": [
+              {
+                "amount": 2,
+                "condition": "steal_incense_executed",
+                "descriptionKey": "enemy.incense_clerk.intent.lift_censer.bonus.incense_debt"
+              }
+            ]
           }
         ]
       },
@@ -948,7 +1031,21 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 11
+            "amount": 11,
+            "descriptionKey": "enemy.registry_thief.intent.final_stamp.incoming",
+            "aftereffects": [
+              {
+                "type": "mask_next_intent",
+                "condition": "boss_route_catalogue",
+                "descriptionKey": "enemy.registry_thief.intent.final_stamp.aftereffect.catalogue"
+              },
+              {
+                "type": "add_fouled_scroll",
+                "condition": "boss_route_fracture",
+                "amount": 1,
+                "descriptionKey": "enemy.registry_thief.intent.final_stamp.aftereffect.fracture"
+              }
+            ]
           }
         ]
       }

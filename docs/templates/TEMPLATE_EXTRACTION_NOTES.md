@@ -441,3 +441,16 @@
 - 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时应替换本作术语、敌人名、卡 ID、日志文案和路线倾向命名。
 - 是否值得抽到模板：值得，适合作为 deckbuilder starter kit 的 enemy authoring 示例，也能作为 QA kit 的“设计表到真实战斗验证”案例。
 - 后续动作：T72 三角色人工试玩中观察普通怪轻差异是否足够可读、精英 / Boss 首次强化是否过强，以及斗部空壳挪坛是否需要更明显的 HUD 预警。
+
+### 2026-05-23 · T73 · 数据驱动来势附带与全封压制后果
+
+- 候选类型：enemy incoming action modifier / attack rider / full-block suppression feedback。
+- 主归属模板：`Data-Driven Card Battle Engine`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`React Card Game UI Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/types/enemy.ts`、`src/core/battle/incomingForceResolver.ts`、`src/core/battle/enemyIntentResolver.ts`、`src/core/battle/altarResolver.ts`、`src/data/enemies.json`、`src/data/localization/zh-CN.json`、`src/ui/pages/BattleHud.tsx`、`src/ui/pages/actionLogView.ts`、`src/tests/enemyIntent.test.ts`、`docs/tasks/PROJECT_PLAN.md`。
+- 可复用价值：把敌人攻击从纯数值扩展为数据声明的条件加压和未全封后果，同时保留“防御足够时压住后果”的公平反馈，适合卡牌肉鸽中精英 / Boss 攻击身份化。
+- 与本作强绑定部分：来势、封势、坛位、污卷、遮势、终审拍案、窃榜使路线压力等命名属于本作表达。
+- 去题材化思路：抽象为 incoming action base amount, conditional bonus, on-unblocked rider, full-block suppression log 和 UI preview text；样例可替换为 armor break、trap shake、next-intent mask、junk-card injection。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时应替换本作术语、敌人 intent ID、卡 ID 和中文日志文案。
+- 是否值得抽到模板：值得，适合作为战斗引擎的 enemy intent authoring 扩展，也能作为 UI kit 的“attack rider preview / suppression feedback”组件范例。
+- 后续动作：T74 三角色人工试玩中观察来势附带是否足够可读，尤其是斗部空壳震坛和窃榜使终审路线压力是否需要更强 HUD 预警。

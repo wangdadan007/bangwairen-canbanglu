@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { createInitialBattleState, reduceBattleState, type BattleReducerContext } from '../core'
+import {
+  createInitialBattleState,
+  reduceBattleState,
+  type BattleReducerContext,
+  type OpeningRiskLogRecord,
+} from '../core'
 import { gameData } from '../data'
 import type { CardId, CombatState, EnemyDefinition, EnemyId } from '../types'
 
@@ -419,6 +424,251 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
       }),
     )
   })
+
+  it('turns a successful summon into a stronger follow-up incoming force', () => {
+    const state = createBattleAtIntent(
+      'enemy_unlit_temple_warden',
+      'intent_unlit_temple_warden_call_paper_imp',
+    )
+    const nextTurn = reduceBattleState(state, { type: 'END_TURN' }, context)
+
+    expect(nextTurn.enemies[0].currentIntent?.id).toBe('intent_unlit_temple_warden_ring_table')
+    expect(nextTurn.enemies[0].incomingForce).toBe(7)
+    expect(nextTurn.enemies.map((enemy) => enemy.definitionId)).toContain(
+      'enemy_nameless_paper_imp',
+    )
+  })
+
+  it('lowers a conditional incoming-force bonus when its support target is cleared', () => {
+    const state = createBattleAtIntent(
+      'enemy_unlit_temple_warden',
+      'intent_unlit_temple_warden_call_paper_imp',
+      ['card_heavy_split_form_talisman'],
+    )
+    const nextTurn = reduceBattleState(state, { type: 'END_TURN' }, context)
+    const summonedEnemy = nextTurn.enemies.find(
+      (enemy) => enemy.definitionId === 'enemy_nameless_paper_imp',
+    )
+
+    expect(nextTurn.enemies[0].incomingForce).toBe(7)
+    expect(summonedEnemy).toBeDefined()
+
+    const afterBreakSummon = playFirstCardOnTarget(
+      nextTurn,
+      'card_heavy_split_form_talisman',
+      summonedEnemy!.instanceId,
+    )
+
+    expect(afterBreakSummon.enemies[0].incomingForce).toBe(6)
+  })
+
+  it('adds small incoming-force pressure after ordinary abnormal moves resolve', () => {
+    const fortuneState = createBattleAtIntent(
+      'enemy_fortune_breaker',
+      'intent_fortune_breaker_reverse_lot_debt',
+    )
+    const afterFortuneMove = reduceBattleState(fortuneState, { type: 'END_TURN' }, context)
+
+    expect(afterFortuneMove.enemies[0].currentIntent?.id).toBe(
+      'intent_fortune_breaker_crack_lot',
+    )
+    expect(afterFortuneMove.enemies[0].incomingForce).toBe(7)
+
+    const scrollState = createBattleAtIntent(
+      'enemy_scroll_stuffer_clerk',
+      'intent_scroll_stuffer_clerk_stuff_scroll',
+    )
+    const afterScrollMove = reduceBattleState(scrollState, { type: 'END_TURN' }, context)
+
+    expect(afterScrollMove.enemies[0].currentIntent?.id).toBe(
+      'intent_scroll_stuffer_clerk_slam_case',
+    )
+    expect(afterScrollMove.enemies[0].incomingForce).toBe(6)
+  })
+
+  it('keeps ash-altar follow-up pressure lower when earth altar counters the prior move', () => {
+    const unhandledState = createBattleAtIntent(
+      'enemy_ash_altar_child',
+      'intent_ash_altar_child_scatter_ash',
+    )
+    const afterUnhandledMove = reduceBattleState(unhandledState, { type: 'END_TURN' }, context)
+
+    expect(afterUnhandledMove.enemies[0].currentIntent?.id).toBe(
+      'intent_ash_altar_child_press_bowl',
+    )
+    expect(afterUnhandledMove.enemies[0].incomingForce).toBe(6)
+
+    const guardedState = createBattleAtIntent(
+      'enemy_ash_altar_child',
+      'intent_ash_altar_child_scatter_ash',
+      ['card_earth_altar_watch'],
+    )
+    const earthAltarCard = getHandCard(guardedState, 'card_earth_altar_watch')
+    const afterAltar = reduceBattleState(
+      guardedState,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: earthAltarCard.instanceId,
+        targetEnemyInstanceId: guardedState.enemies[0].instanceId,
+      },
+      context,
+    )
+    const afterCounteredMove = reduceBattleState(afterAltar, { type: 'END_TURN' }, context)
+
+    expect(afterCounteredMove.enemies[0].currentIntent?.id).toBe(
+      'intent_ash_altar_child_press_bowl',
+    )
+    expect(afterCounteredMove.enemies[0].incomingForce).toBe(5)
+  })
+
+  it('lets elite incoming force remember its prior identity pressure', () => {
+    const clerkState = createBattleAtIntent(
+      'enemy_incense_clerk',
+      'intent_incense_clerk_audit_offering',
+    )
+    const afterAudit = reduceBattleState(clerkState, { type: 'END_TURN' }, context)
+    const afterStamp = reduceBattleState(afterAudit, { type: 'END_TURN' }, context)
+
+    expect(afterStamp.enemies[0].currentIntent?.id).toBe('intent_incense_clerk_lift_censer')
+    expect(afterStamp.enemies[0].incomingForce).toBe(9)
+
+    const fireState = createBattleAtIntent(
+      'enemy_fire_fleeing_name',
+      'intent_fire_fleeing_name_burn_name',
+      ['card_ask_name'],
+    )
+    const afterAsk = playFirstCard(fireState, 'card_ask_name')
+    const afterBurn = reduceBattleState(afterAsk, { type: 'END_TURN' }, context)
+
+    expect(afterBurn.enemies[0].currentIntent?.id).toBe(
+      'intent_fire_fleeing_name_break_tablet',
+    )
+    expect(afterBurn.enemies[0].incomingForce).toBe(12)
+  })
+
+  it('lets unsealed dipper falling-star pressure shake an active heaven altar', () => {
+    const state = createBattleAtIntent(
+      'enemy_dipper_empty_shell',
+      'intent_dipper_empty_shell_fall_star',
+      ['card_heaven_altar_oracle'],
+    )
+    const altarCard = getHandCard(state, 'card_heaven_altar_oracle')
+    const afterAltar = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: altarCard.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      context,
+    )
+
+    expect(afterAltar.enemies[0].incomingForce).toBe(10)
+
+    const nextTurn = reduceBattleState(afterAltar, { type: 'END_TURN' }, context)
+
+    expect(nextTurn.actionLog).toContainEqual(
+      expect.objectContaining({
+        type: 'INCOMING_FORCE_AFTEREFFECT',
+        payload: expect.objectContaining({
+          aftereffectType: 'expire_latest_altar',
+          result: 'triggered',
+          expiredAltarSlot: 'heaven',
+        }),
+      }),
+    )
+    expect(nextTurn.actionLog).toContainEqual(
+      expect.objectContaining({
+        type: 'ALTAR_EXPIRED',
+        payload: expect.objectContaining({
+          reason: 'shaken_by_incoming_force',
+        }),
+      }),
+    )
+  })
+
+  it('suppresses incoming-force aftereffects when the incoming force is fully sealed', () => {
+    const state = createBattleAtIntent(
+      'enemy_dipper_empty_shell',
+      'intent_dipper_empty_shell_fall_star',
+      ['card_heaven_altar_oracle', 'card_press_door_charm', 'card_press_door_charm'],
+    )
+    const afterAltar = playFirstCard(state, 'card_heaven_altar_oracle')
+    const afterFirstSeal = playFirstCard(afterAltar, 'card_press_door_charm')
+    const afterSecondSeal = playFirstCard(afterFirstSeal, 'card_press_door_charm')
+    const nextTurn = reduceBattleState(afterSecondSeal, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'INCOMING_FORCE_AFTEREFFECT')?.payload).toEqual(
+      expect.objectContaining({
+        aftereffectType: 'expire_latest_altar',
+        result: 'suppressed',
+        reason: 'fully_sealed',
+      }),
+    )
+    expect(
+      nextTurn.actionLog.some(
+        (entry) =>
+          entry.type === 'ALTAR_EXPIRED' &&
+          entry.payload.reason === 'shaken_by_incoming_force',
+      ),
+    ).toBe(false)
+  })
+
+  it('lets registry-thief final stamp read the opening route pressure', () => {
+    const fractureState = createBattleAtIntentWithRisk(
+      'enemy_registry_thief',
+      'intent_registry_thief_final_stamp',
+      {
+        resource: 'fracture',
+        threshold: 5,
+        stateLabel: '高榜裂',
+        result: 'boss_high_fracture',
+        enemyDefinitionId: 'enemy_registry_thief',
+        intentId: 'intent_registry_thief_tear_registry',
+      },
+    )
+    const afterFractureStamp = reduceBattleState(fractureState, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(afterFractureStamp, 'INCOMING_FORCE_AFTEREFFECT')?.payload).toEqual(
+      expect.objectContaining({
+        aftereffectType: 'add_fouled_scroll',
+        result: 'triggered',
+        addedCardDefinitionId: 'card_fouled_scroll',
+        destination: 'discard_pile',
+      }),
+    )
+    expect(afterFractureStamp.discardPile.map((card) => card.definitionId)).toContain(
+      'card_fouled_scroll',
+    )
+
+    const catalogueState = withEnemyNextIntentPreview(
+      createBattleAtIntentWithRisk(
+        'enemy_registry_thief',
+        'intent_registry_thief_final_stamp',
+        {
+          resource: 'fracture',
+          threshold: 3,
+          stateLabel: '归册压力',
+          result: 'record_only',
+          enemyDefinitionId: 'enemy_registry_thief',
+          intentId: 'intent_registry_thief_cloak_stolen_name',
+        },
+      ),
+      'intent_registry_thief_press_registry',
+    )
+    const afterCatalogueStamp = reduceBattleState(catalogueState, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(afterCatalogueStamp, 'INCOMING_FORCE_AFTEREFFECT')?.payload).toEqual(
+      expect.objectContaining({
+        aftereffectType: 'mask_next_intent',
+        result: 'triggered',
+      }),
+    )
+    expect(afterCatalogueStamp.enemies[0].currentIntent?.id).toBe(
+      'intent_registry_thief_press_registry',
+    )
+    expect(afterCatalogueStamp.enemies[0].currentIntentVisibility).toBe('masked')
+  })
 })
 
 function createBattle(enemyDefinitionId: EnemyId, deckDefinitionIds?: readonly CardId[]) {
@@ -444,7 +694,51 @@ function createBattleAtIntent(
   })
 }
 
+function createBattleAtIntentWithRisk(
+  enemyDefinitionId: EnemyId,
+  intentId: string,
+  openingRiskLogRecord: OpeningRiskLogRecord,
+  deckDefinitionIds?: readonly CardId[],
+) {
+  return createInitialBattleState({
+    cardDefinitions: gameData.cards,
+    enemyDefinition: getEnemy(enemyDefinitionId),
+    deckDefinitionIds,
+    initialEnemyIntentIds: {
+      [enemyDefinitionId]: intentId,
+    },
+    openingRiskLogRecords: [openingRiskLogRecord],
+  })
+}
+
+function withEnemyNextIntentPreview(state: CombatState, intentId: string): CombatState {
+  return {
+    ...state,
+    enemies: state.enemies.map((enemy, index) => {
+      if (index !== 0) {
+        return enemy
+      }
+
+      const definition = getEnemy(enemy.definitionId)
+      const intent = definition.intents.find((candidate) => candidate.id === intentId)
+
+      return {
+        ...enemy,
+        nextIntentPreview: intent,
+      }
+    }),
+  }
+}
+
 function playFirstCard(state: CombatState, definitionId: CardId) {
+  return playFirstCardOnTarget(state, definitionId, state.enemies[0].instanceId)
+}
+
+function playFirstCardOnTarget(
+  state: CombatState,
+  definitionId: CardId,
+  targetEnemyInstanceId: string,
+) {
   const card = getHandCard(state, definitionId)
 
   return reduceBattleState(
@@ -452,7 +746,7 @@ function playFirstCard(state: CombatState, definitionId: CardId) {
     {
       type: 'PLAY_CARD',
       cardInstanceId: card.instanceId,
-      targetEnemyInstanceId: state.enemies[0].instanceId,
+      targetEnemyInstanceId,
     },
     context,
   )

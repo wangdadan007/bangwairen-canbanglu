@@ -1727,6 +1727,27 @@ button:disabled {
   background: rgba(91, 33, 30, 0.42);
 }
 
+.intent-attachment-note {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  border: 1px solid rgba(201, 79, 61, 0.45);
+  border-radius: 6px;
+  padding: 8px;
+  background: rgba(91, 33, 30, 0.28);
+}
+
+.intent-attachment-note span {
+  color: #d0b892;
+  font-size: 12px;
+}
+
+.intent-attachment-note strong {
+  color: #f3e3cf;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .intent-rule-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

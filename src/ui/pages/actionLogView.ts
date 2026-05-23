@@ -95,6 +95,7 @@ export function createPressureFeedback(
         'INCOMING_FORCE_SEALED',
         'ABNORMAL_MOVE_COUNTERED',
         'ABNORMAL_MOVE_EXECUTED',
+        'INCOMING_FORCE_AFTEREFFECT',
         'INCOMING_FORCE_CREATED',
         'PLAYER_FORM_LOST',
       ].includes(candidate.type),
@@ -151,6 +152,25 @@ export function createPressureFeedback(
       label: '异动生效',
       title: `${sourceName}发动${moveLabel}`,
       detail: executionDetail ? `${executionDetail}。` : '本次异动已经结算。',
+      audioCue: 'pressure',
+    }
+  }
+
+  if (entry.type === 'INCOMING_FORCE_AFTEREFFECT') {
+    const result = getPayloadString(entry.payload.result)
+
+    return {
+      id: entry.id,
+      tone: result === 'suppressed' ? 'sealed' : 'incoming',
+      label: result === 'suppressed' ? '来势后果被压住' : '来势后果',
+      title:
+        result === 'suppressed'
+          ? '附带后果未触发'
+          : `${sourceName}触发${getIncomingForceAftereffectLabel(entry)}`,
+      detail:
+        result === 'suppressed'
+          ? '本次来势已被完全封住，附带后果没有生效。'
+          : getIncomingForceAftereffectDetail(entry),
       audioCue: 'pressure',
     }
   }
@@ -375,6 +395,7 @@ export function createBossPressureFeedback(battle: CombatState): RitualFeedback 
         (entry.sourceId === bossEnemy.instanceId || entry.targetId === bossEnemy.instanceId) &&
         [
           'INCOMING_FORCE_CREATED',
+          'INCOMING_FORCE_AFTEREFFECT',
           'ABNORMAL_MOVE_EXECUTED',
           'ABNORMAL_MOVE_COUNTERED',
           'NAME_BREAK_TRIGGERED',
@@ -758,6 +779,17 @@ export function formatLogEntry(
       : `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}来势已被完全压住。`
   }
 
+  if (entry.type === 'INCOMING_FORCE_AFTEREFFECT') {
+    const result = getPayloadString(entry.payload.result)
+    const label = getIncomingForceAftereffectLabel(entry)
+
+    return result === 'suppressed'
+      ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${label}被完全封势压住。`
+      : `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}触发${label}：${getIncomingForceAftereffectDetail(
+          entry,
+        )}`
+  }
+
   if (entry.type === 'INCOMING_FORCE_SEALED') {
     const amount = getPayloadNumber(entry.payload.amount) ?? 0
     const remaining = getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0
@@ -851,7 +883,7 @@ export function getCardEffectLabels(definition: CardDefinition, card?: CardInsta
 }
 
 export function getLogEntryClassName(entry: ActionLogEntry) {
-  if (entry.type === 'INCOMING_FORCE_CREATED') {
+  if (entry.type === 'INCOMING_FORCE_CREATED' || entry.type === 'INCOMING_FORCE_AFTEREFFECT') {
     return 'log-entry incoming'
   }
 
@@ -1123,6 +1155,42 @@ function getAbnormalMoveLogLabel(entry: ActionLogEntry) {
   return getMoveLabel(moveType)
 }
 
+function getIncomingForceAftereffectLabel(entry: ActionLogEntry) {
+  const aftereffectType = getPayloadString(entry.payload.aftereffectType)
+
+  if (aftereffectType === 'expire_latest_altar') {
+    return '坛位余震'
+  }
+
+  if (aftereffectType === 'mask_next_intent') {
+    return '终审遮势'
+  }
+
+  if (aftereffectType === 'add_fouled_scroll') {
+    return '终审污卷'
+  }
+
+  return t(getPayloadString(entry.payload.descriptionKey))
+}
+
+function getIncomingForceAftereffectDetail(entry: ActionLogEntry) {
+  const aftereffectType = getPayloadString(entry.payload.aftereffectType)
+
+  if (aftereffectType === 'expire_latest_altar') {
+    return `${getAltarSlotLabel(getPayloadString(entry.payload.expiredAltarSlot))}被来势震散。`
+  }
+
+  if (aftereffectType === 'mask_next_intent') {
+    return '后一动重新遮势。'
+  }
+
+  if (aftereffectType === 'add_fouled_scroll') {
+    return `污卷进入弃牌堆 ${getPayloadNumber(entry.payload.addedCardCount) ?? 1} 张。`
+  }
+
+  return t(getPayloadString(entry.payload.descriptionKey))
+}
+
 export function getRouteFlowLabel(flowKind: RouteFlowKind) {
   if (flowKind === 'event') {
     return '事件节点'
@@ -1286,6 +1354,10 @@ function getAltarExpireReasonLabel(reason: string | undefined) {
 
   if (reason === 'disrupted_by_abnormal_move') {
     return '被敌方异动挪空'
+  }
+
+  if (reason === 'shaken_by_incoming_force') {
+    return '被未封住的来势震散'
   }
 
   return '坛位效果已结束'

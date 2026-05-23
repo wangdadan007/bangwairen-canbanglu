@@ -1,6 +1,7 @@
 import { appendLog } from '../log/actionLog'
 import { applyTutorialResourceDelta } from '../run/resourceResolver'
 import { resolveAskName } from './nameResolver'
+import { refreshUnsealedCurrentIncomingForceBonuses } from './incomingForceResolver'
 import {
   triggerRegisterAfterAltarPlaced,
   triggerRegisterAfterAltarTriggered,
@@ -64,10 +65,12 @@ export function placeAltar(state: CombatState, input: PlaceAltarInput): CombatSt
     },
   })
 
-  return triggerRegisterAfterAltarPlaced(nextState, {
+  nextState = triggerRegisterAfterAltarPlaced(nextState, {
     sourceId: altar.id,
     targetId: altar.targetEnemyInstanceId,
   })
+
+  return refreshUnsealedCurrentIncomingForceBonuses(nextState)
 }
 
 export function triggerHumanAltars(state: CombatState): CombatState {

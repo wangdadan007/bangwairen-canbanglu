@@ -5,6 +5,7 @@ import {
   normalizeTutorialPlayerFormState,
 } from '../run/playerFormResolver'
 import { createInitialTutorialResourceState } from '../run/resourceResolver'
+import { getIncomingForceBaseAmount, resolveCurrentIncomingForces } from './incomingForceResolver'
 import { startPlayerTurn } from './turnFlow'
 import type {
   ArtifactCollectionState,
@@ -13,7 +14,6 @@ import type {
   CardInstance,
   CombatState,
   EnemyDefinition,
-  EnemyIntentDefinition,
   EnemyIntentMaskMode,
   EnemyState,
   RunDeckCard,
@@ -176,6 +176,8 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     },
   }
 
+  state = resolveCurrentIncomingForces(state)
+
   state = appendLog(state, {
     type: 'BATTLE_STARTED',
     sourceId: 'system',
@@ -320,7 +322,7 @@ export function createEnemyState(
       initialIntentMaskMode === 'none' ? 'revealed' : 'masked',
     intentMaskMode: initialIntentMaskMode,
     nextIntent,
-    incomingForce: getIncomingForce(currentIntent),
+    incomingForce: getIncomingForceBaseAmount(currentIntent),
     blockedAbnormalMoveTypes: [],
     traits: definition.traits,
   }
@@ -380,17 +382,6 @@ function getNextIntent(definition: EnemyDefinition, currentIntentIndex: number) 
   }
 
   return definition.intents[(currentIntentIndex + 1) % definition.intents.length]
-}
-
-function getIncomingForce(intent: EnemyIntentDefinition | undefined): number {
-  if (!intent) {
-    return 0
-  }
-
-  return intent.effects.reduce(
-    (total, effect) => total + (effect.type === 'INCOMING_FORCE' ? effect.amount : 0),
-    0,
-  )
 }
 
 function assertDeckDefinitionsExist(
