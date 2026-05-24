@@ -4,6 +4,7 @@ import {
   createInitialTutorialPlayerFormState,
   normalizeTutorialPlayerFormState,
 } from '../run/playerFormResolver'
+import { createInitialIncenseSealState } from '../run/incenseSealResolver'
 import { createInitialTutorialResourceState } from '../run/resourceResolver'
 import { getIncomingForceBaseAmount, resolveCurrentIncomingForces } from './incomingForceResolver'
 import { startPlayerTurn } from './turnFlow'
@@ -51,6 +52,7 @@ export interface CreateBattleStateInput {
   readonly playerCurrentForm?: number
   readonly playerMaxForm?: number
   readonly resources?: TutorialResourceState
+  readonly incenseSeals?: CombatState['incenseSeals']
   readonly temporaryResourceDelta?: TutorialResourceState
   readonly temporaryPlayerFormDelta?: number
   readonly artifacts?: ArtifactCollectionState
@@ -177,7 +179,9 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     nextTurnIncensePenalty: Math.max(0, Math.floor(input.openingIncensePenalty ?? 0)),
     nextTurnIncenseBonus: Math.max(0, Math.floor(input.openingIncenseBonus ?? 0)),
     nextAskNamePenalty: Math.max(0, Math.floor(input.openingAskNamePenalty ?? 0)),
+    nameGuardCharges: 0,
     resources: input.resources ?? createInitialTutorialResourceState(),
+    incenseSeals: input.incenseSeals ?? createInitialIncenseSealState(),
     temporaryResourceDelta: input.temporaryResourceDelta ?? createInitialTutorialResourceState(),
     temporaryPlayerFormDelta,
     altars: [],

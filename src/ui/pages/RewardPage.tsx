@@ -32,6 +32,10 @@ export function RewardPage({
         <span>{offer.options.length} 选 1</span>
       </div>
       <p className="reward-copy">{qualityText}</p>
+      <div className="shop-state-row" aria-label="战后香火钱">
+        <span>香火钱 +{offer.incenseMoneyReward}</span>
+        <span>奖励位：基础 / 倾向 / 惊喜</span>
+      </div>
 
       <div className="reward-options">
         {offer.options.map((option) => {
@@ -46,7 +50,9 @@ export function RewardPage({
             >
               <span className="card-topline">
                 <strong>{definition ? t(definition.nameKey) : option.cardDefinitionId}</strong>
-                <span>{definition?.cost ?? '?'} 香火</span>
+                <span>
+                  {getRarityLabel(definition?.rarity)} · {definition?.cost ?? '?'} 香火
+                </span>
               </span>
               <span className="card-rules">
                 {definition ? t(definition.rulesTextKey) : '缺少卡牌定义'}
@@ -74,6 +80,18 @@ export function RewardPage({
       </div>
     </section>
   )
+}
+
+function getRarityLabel(rarity: CardDefinition['rarity'] | undefined) {
+  if (rarity === 'rare') {
+    return '秘传'
+  }
+
+  if (rarity === 'uncommon') {
+    return '精良'
+  }
+
+  return '普通'
 }
 
 function getTagLabel(tag: string) {

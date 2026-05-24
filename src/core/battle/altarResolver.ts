@@ -1,5 +1,6 @@
 import { appendLog } from '../log/actionLog'
 import { applyTutorialResourceDelta } from '../run/resourceResolver'
+import { drawCards } from './drawResolver'
 import { resolveAskName } from './nameResolver'
 import { refreshUnsealedCurrentIncomingForceBonuses } from './incomingForceResolver'
 import {
@@ -85,7 +86,9 @@ export function triggerHumanAltars(state: CombatState): CombatState {
   for (const altar of humanAltars) {
     const hasNameProgress = hasNameProgressThisTurn(nextState)
 
-    if (hasNameProgress) {
+    if (altar.effect.type === 'draw_if_named_or_ink' && hasNameProgress) {
+      nextState = triggerHumanDrawAltar(nextState, altar)
+    } else if (hasNameProgress) {
       nextState = gainInkFromAltar(nextState, altar, 'name_progress')
     } else {
       nextState = appendLog(nextState, {
@@ -105,6 +108,28 @@ export function triggerHumanAltars(state: CombatState): CombatState {
   }
 
   return nextState
+}
+
+function triggerHumanDrawAltar(state: CombatState, altar: AltarState): CombatState {
+  let nextState = appendLog(state, {
+    type: 'ALTAR_TRIGGERED',
+    sourceId: altar.id,
+    targetId: altar.targetEnemyInstanceId,
+    payload: {
+      slot: altar.slot,
+      effectType: altar.effect.type,
+      result: 'draw',
+      reason: 'name_progress',
+      count: getAltarAmount(altar),
+    },
+  })
+
+  nextState = drawCards(nextState, getAltarAmount(altar))
+
+  return triggerRegisterAfterAltarTriggered(nextState, {
+    sourceId: altar.id,
+    targetId: altar.targetEnemyInstanceId,
+  })
 }
 
 export function triggerEarthAltars(state: CombatState): CombatState {

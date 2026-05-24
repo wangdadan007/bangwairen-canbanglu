@@ -42,6 +42,7 @@ describe('T56 first run guidance', () => {
         encounterId: 'encounter_tutorial_paper_wraith',
         settlement: 'catalogue',
         quality: 'high',
+        incenseMoneyReward: 12,
         options: [],
       },
     } as const

@@ -7,6 +7,7 @@ import type {
 import type { CardEffect } from './effect'
 
 export type CardType = 'talisman' | 'edict' | 'ritual' | 'counter' | 'temporary'
+export type CardRarity = 'common' | 'uncommon' | 'rare'
 
 export interface CardDefinition {
   readonly id: CardId
@@ -16,6 +17,7 @@ export interface CardDefinition {
   readonly cost: number
   readonly type: CardType
   readonly unlockStage: UnlockStageId
+  readonly rarity: CardRarity
   readonly effects: readonly CardEffect[]
   readonly tags: readonly string[]
 }

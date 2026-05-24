@@ -115,11 +115,16 @@ describe('T80 linzhao battle rules', () => {
     const state = createBattle([
       'card_trace_name_slip',
       'card_heavy_split_form_talisman',
-      'card_heavy_split_form_talisman',
     ])
     const afterLinzhao = playCard(state, 'card_trace_name_slip')
-    const afterFirstBreak = playCard(afterLinzhao, 'card_heavy_split_form_talisman')
-    const afterVictory = playCard(afterFirstBreak, 'card_heavy_split_form_talisman')
+    const lowFormState = {
+      ...afterLinzhao,
+      enemies: afterLinzhao.enemies.map((enemy) => ({
+        ...enemy,
+        currentForm: 12,
+      })),
+    }
+    const afterVictory = playCard(lowFormState, 'card_heavy_split_form_talisman')
 
     expect(afterVictory.result.status).toBe('victory')
     expect(afterVictory.linzhao).toHaveLength(0)

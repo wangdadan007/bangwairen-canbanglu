@@ -225,6 +225,111 @@
     "unlocksOnVictory": []
   },
   {
+    "id": "encounter_multi_ash_altar_bell_patrol",
+    "nameKey": "encounter.multi.ash_altar_bell_patrol.name",
+    "enemyDefinitionId": "enemy_ash_altar_child",
+    "enemySlots": [
+      {
+        "id": "primary",
+        "enemyDefinitionId": "enemy_ash_altar_child",
+        "role": "primary"
+      },
+      {
+        "id": "bell_patrol",
+        "enemyDefinitionId": "enemy_bronze_bell_patrol",
+        "role": "support"
+      }
+    ],
+    "tutorialOrder": 25,
+    "lessonKey": "encounter.multi.ash_altar_bell_patrol.lesson",
+    "completionKey": "encounter.multi.ash_altar_bell_patrol.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_multi_unlit_warden_paper_imp",
+    "nameKey": "encounter.multi.unlit_warden_paper_imp.name",
+    "enemyDefinitionId": "enemy_unlit_temple_warden",
+    "enemySlots": [
+      {
+        "id": "primary",
+        "enemyDefinitionId": "enemy_unlit_temple_warden",
+        "role": "primary"
+      },
+      {
+        "id": "paper_imp",
+        "enemyDefinitionId": "enemy_nameless_paper_imp",
+        "role": "support"
+      }
+    ],
+    "tutorialOrder": 26,
+    "lessonKey": "encounter.multi.unlit_warden_paper_imp.lesson",
+    "completionKey": "encounter.multi.unlit_warden_paper_imp.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_multi_plague_scroll_clerk",
+    "nameKey": "encounter.multi.plague_scroll_clerk.name",
+    "enemyDefinitionId": "enemy_plague_paper_figure",
+    "enemySlots": [
+      {
+        "id": "primary",
+        "enemyDefinitionId": "enemy_plague_paper_figure",
+        "role": "primary"
+      },
+      {
+        "id": "scroll_clerk",
+        "enemyDefinitionId": "enemy_scroll_stuffer_clerk",
+        "role": "support"
+      }
+    ],
+    "tutorialOrder": 27,
+    "lessonKey": "encounter.multi.plague_scroll_clerk.lesson",
+    "completionKey": "encounter.multi.plague_scroll_clerk.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_multi_fleeing_horse_louse",
+    "nameKey": "encounter.multi.fleeing_horse_louse.name",
+    "enemyDefinitionId": "enemy_fleeing_name_paper_horse",
+    "enemySlots": [
+      {
+        "id": "primary",
+        "enemyDefinitionId": "enemy_fleeing_name_paper_horse",
+        "role": "primary"
+      },
+      {
+        "id": "ash_louse",
+        "enemyDefinitionId": "enemy_incense_ash_louse",
+        "role": "support"
+      }
+    ],
+    "tutorialOrder": 28,
+    "lessonKey": "encounter.multi.fleeing_horse_louse.lesson",
+    "completionKey": "encounter.multi.fleeing_horse_louse.completion",
+    "unlocksOnVictory": []
+  },
+  {
+    "id": "encounter_multi_plague_offering_table",
+    "nameKey": "encounter.multi.plague_offering_table.name",
+    "enemyDefinitionId": "enemy_plague_paper_figure",
+    "enemySlots": [
+      {
+        "id": "primary",
+        "enemyDefinitionId": "enemy_plague_paper_figure",
+        "role": "primary"
+      },
+      {
+        "id": "offering_table",
+        "enemyDefinitionId": "enemy_offering_table_afterimage",
+        "role": "support"
+      }
+    ],
+    "tutorialOrder": 29,
+    "lessonKey": "encounter.multi.plague_offering_table.lesson",
+    "completionKey": "encounter.multi.plague_offering_table.completion",
+    "unlocksOnVictory": []
+  },
+  {
     "id": "encounter_elite_incense_clerk",
     "nameKey": "encounter.elite.incense_clerk.name",
     "enemyDefinitionId": "enemy_incense_clerk",

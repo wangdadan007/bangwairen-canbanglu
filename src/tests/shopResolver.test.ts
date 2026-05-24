@@ -40,27 +40,29 @@ describe('T22 shop resolver', () => {
       'card_zhu_fu',
     ])
 
-    expect(getAvailableShopItems(coreRun, gameData.shopItems, gameData.cards).map((item) => item.id)).toEqual([
-      'shop_remove_card',
+    expect(getShopItems(coreRun).map((item) => item.kind)).toEqual(['card', 'remove_card'])
+    expect(getShopItems(abnormalRun).map((item) => item.kind)).toEqual([
+      'card',
+      'card',
+      'card',
+      'remove_card',
     ])
-    expect(
-      getAvailableShopItems(abnormalRun, gameData.shopItems, gameData.cards).map((item) => item.id),
-    ).toEqual(['shop_card_press_door_charm', 'shop_remove_card'])
-    expect(
-      getAvailableShopItems(redInkRun, gameData.shopItems, gameData.cards).map((item) => item.id),
-    ).toEqual(['shop_card_press_door_charm', 'shop_remove_card', 'shop_red_ink_service'])
-    expect(
-      getAvailableShopItems(humanAltarRun, gameData.shopItems, gameData.cards).map((item) => item.id),
-    ).toEqual([
-      'shop_card_trace_name_slip',
-      'shop_card_press_door_charm',
-      'shop_card_red_ink_trial',
-      'shop_remove_card',
-      'shop_red_ink_service',
+    expect(getShopItems(redInkRun).map((item) => item.kind)).toEqual([
+      'card',
+      'card',
+      'card',
+      'remove_card',
+      'red_ink_service',
     ])
-    expect(
-      getAvailableShopItems(oneCardRun, gameData.shopItems, gameData.cards).map((item) => item.id),
-    ).toEqual([])
+    expect(getShopItems(humanAltarRun).map((item) => item.kind)).toEqual([
+      'card',
+      'card',
+      'card',
+      'remove_card',
+      'red_ink_service',
+      'incense_seal',
+    ])
+    expect(getShopItems(oneCardRun).map((item) => item.kind)).toEqual(['card'])
   })
 
   it('buys a card, spends incense money, and records the purchase', () => {
@@ -81,36 +83,40 @@ describe('T22 shop resolver', () => {
       gameData.tutorialUnlocks,
       'vanquish',
     )
+    const cardItem = getShopItems(run).find((item) => item.kind === 'card')
+
+    if (!cardItem?.cardDefinitionId) {
+      throw new Error('Expected shop card item')
+    }
+
     const nextRun = resolveTutorialShopPurchase(
       run,
       {
-        itemId: 'shop_card_trace_name_slip',
+        itemId: cardItem.id,
         routeNodeId: shopRouteNodeId,
       },
       gameData.shopItems,
       gameData.cards,
+      gameData.artifacts,
+      gameData.incenseSeals,
     )
 
-    expect(nextRun.currency.incenseMoney).toBe(run.currency.incenseMoney - 35)
-    expect(nextRun.deckDefinitionIds).toEqual([...run.deckDefinitionIds, 'card_trace_name_slip'])
-    expect(nextRun.deckCards[nextRun.deckCards.length - 1]?.definitionId).toBe(
-      'card_trace_name_slip',
-    )
-    expect(nextRun.shops.purchasedItemIds).toEqual(['shop_card_trace_name_slip'])
+    expect(nextRun.currency.incenseMoney).toBe(run.currency.incenseMoney - cardItem.cost)
+    expect(nextRun.deckDefinitionIds).toEqual([...run.deckDefinitionIds, cardItem.cardDefinitionId])
+    expect(nextRun.deckCards[nextRun.deckCards.length - 1]?.definitionId).toBe(cardItem.cardDefinitionId)
+    expect(nextRun.shops.purchasedItemIds).toEqual([cardItem.id])
     expect(nextRun.shops.records[0]).toEqual(
       expect.objectContaining({
         id: 'shop_record_1',
         routeNodeId: shopRouteNodeId,
-        itemId: 'shop_card_trace_name_slip',
+        itemId: cardItem.id,
         kind: 'card',
-        cost: 35,
-        purchasedCardDefinitionId: 'card_trace_name_slip',
+        cost: cardItem.cost,
+        purchasedCardDefinitionId: cardItem.cardDefinitionId,
         createdRedInkOffer: false,
       }),
     )
-    expect(
-      getAvailableShopItems(nextRun, gameData.shopItems, gameData.cards).map((item) => item.id),
-    ).not.toContain('shop_card_trace_name_slip')
+    expect(getShopItems(nextRun).map((item) => item.id)).not.toContain(cardItem.id)
   })
 
   it('rejects purchases when incense money is insufficient', () => {
@@ -136,17 +142,25 @@ describe('T22 shop resolver', () => {
         incenseMoney: 0,
       },
     }
+    const cardItem = getShopItems(run).find((item) => item.kind === 'card')
+
+    if (!cardItem) {
+      throw new Error('Expected shop card item')
+    }
 
     expect(() =>
       resolveTutorialShopPurchase(
         run,
         {
-          itemId: 'shop_card_trace_name_slip',
+          itemId: cardItem.id,
+          routeNodeId: shopRouteNodeId,
         },
         gameData.shopItems,
         gameData.cards,
+        gameData.artifacts,
+        gameData.incenseSeals,
       ),
-    ).toThrow('Not enough incense money for shop item: shop_card_trace_name_slip')
+    ).toThrow(`Not enough incense money for shop item: ${cardItem.id}`)
   })
 
   it('uses the remove card service on the selected deck card', () => {
@@ -160,22 +174,24 @@ describe('T22 shop resolver', () => {
     const nextRun = resolveTutorialShopPurchase(
       run,
       {
-        itemId: 'shop_remove_card',
+        itemId: `shop_remove_card_${shopRouteNodeId}`,
         deckCardId: targetCard.id,
         routeNodeId: shopRouteNodeId,
       },
       gameData.shopItems,
       gameData.cards,
+      gameData.artifacts,
+      gameData.incenseSeals,
     )
 
-    expect(nextRun.currency.incenseMoney).toBe(run.currency.incenseMoney - 30)
+    expect(nextRun.currency.incenseMoney).toBe(run.currency.incenseMoney - 45)
     expect(nextRun.deckCards.some((card) => card.id === targetCard.id)).toBe(false)
     expect(nextRun.deckDefinitionIds.filter((cardId) => cardId === 'card_zhu_fu')).toHaveLength(
       run.deckDefinitionIds.filter((cardId) => cardId === 'card_zhu_fu').length - 1,
     )
     expect(nextRun.shops.records[0]).toEqual(
       expect.objectContaining({
-        itemId: 'shop_remove_card',
+        itemId: `shop_remove_card_${shopRouteNodeId}`,
         kind: 'remove_card',
         removedDeckCardId: targetCard.id,
         removedCardDefinitionId: 'card_zhu_fu',
@@ -183,8 +199,8 @@ describe('T22 shop resolver', () => {
       }),
     )
     expect(
-      getAvailableShopItems(nextRun, gameData.shopItems, gameData.cards).map((item) => item.id),
-    ).not.toContain('shop_remove_card')
+      getShopItems(nextRun).map((item) => item.id),
+    ).not.toContain(`shop_remove_card_${shopRouteNodeId}`)
   })
 
   it('buys a temporary red ink service after the red ink unlock', () => {
@@ -204,11 +220,13 @@ describe('T22 shop resolver', () => {
     const nextRun = resolveTutorialShopPurchase(
       redInkRun,
       {
-        itemId: 'shop_red_ink_service',
+        itemId: `shop_red_ink_service_${shopRouteNodeId}`,
         routeNodeId: shopRouteNodeId,
       },
       gameData.shopItems,
       gameData.cards,
+      gameData.artifacts,
+      gameData.incenseSeals,
     )
 
     expect(nextRun.currency.incenseMoney).toBe(redInkRun.currency.incenseMoney - 60)
@@ -222,10 +240,58 @@ describe('T22 shop resolver', () => {
     )
     expect(nextRun.shops.records[0]).toEqual(
       expect.objectContaining({
-        itemId: 'shop_red_ink_service',
+        itemId: `shop_red_ink_service_${shopRouteNodeId}`,
         kind: 'red_ink_service',
         cost: 60,
         createdRedInkOffer: true,
+      }),
+    )
+  })
+
+  it('sells one-shot incense seals after the human altar unlock', () => {
+    const run = advanceTutorialRun(
+      advanceTutorialRun(
+        advanceTutorialRun(
+          createInitialTutorialRunState(gameData.tutorialUnlocks, tutorialPlusEncounterIds),
+          gameData.encounters,
+          gameData.tutorialUnlocks,
+          'vanquish',
+        ),
+        gameData.encounters,
+        gameData.tutorialUnlocks,
+        'vanquish',
+      ),
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+    const sealItem = getShopItems(run).find((item) => item.kind === 'incense_seal')
+
+    if (!sealItem?.incenseSealDefinitionId) {
+      throw new Error('Expected incense seal shop item')
+    }
+
+    const nextRun = resolveTutorialShopPurchase(
+      run,
+      {
+        itemId: sealItem.id,
+        routeNodeId: shopRouteNodeId,
+      },
+      gameData.shopItems,
+      gameData.cards,
+      gameData.artifacts,
+      gameData.incenseSeals,
+    )
+
+    expect(nextRun.currency.incenseMoney).toBe(run.currency.incenseMoney - sealItem.cost)
+    expect(nextRun.incenseSeals.seals.map((seal) => seal.definitionId)).toContain(
+      sealItem.incenseSealDefinitionId,
+    )
+    expect(nextRun.shops.records[0]).toEqual(
+      expect.objectContaining({
+        itemId: sealItem.id,
+        kind: 'incense_seal',
+        purchasedIncenseSealDefinitionId: sealItem.incenseSealDefinitionId,
       }),
     )
   })
@@ -266,3 +332,10 @@ describe('T22 shop resolver', () => {
     ).toThrow('Shop item is not available: shop_artifact_seal_door_tablet')
   })
 })
+
+function getShopItems(run: ReturnType<typeof createInitialTutorialRunState>) {
+  return getAvailableShopItems(run, gameData.shopItems, gameData.cards, gameData.artifacts, {
+    routeNodeId: shopRouteNodeId,
+    incenseSealDefinitions: gameData.incenseSeals,
+  })
+}

@@ -220,6 +220,7 @@ describe('T21 rest resolver', () => {
         encounterId: 'encounter_tutorial_paper_wraith',
         settlement: 'vanquish',
         quality: 'ordinary',
+        incenseMoneyReward: 12,
         options: [],
       },
     } as const

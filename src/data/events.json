@@ -400,6 +400,21 @@
             "amount": 1
           }
         ]
+      },
+      {
+        "id": "event_covered_name_stable_take_guard_seal",
+        "nameKey": "event.covered_name_stable.option.take_guard_seal.name",
+        "descriptionKey": "event.covered_name_stable.option.take_guard_seal.description",
+        "rewardKey": "event.covered_name_stable.option.take_guard_seal.reward",
+        "costKey": "event.covered_name_stable.option.take_guard_seal.cost",
+        "requiredUnlockStages": ["stage_three_altars"],
+        "flags": [],
+        "effects": [
+          {
+            "type": "ADD_INCENSE_SEAL",
+            "incenseSealDefinitionId": "seal_guard_name"
+          }
+        ]
       }
     ]
   }

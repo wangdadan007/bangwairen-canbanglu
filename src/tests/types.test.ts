@@ -26,6 +26,7 @@ describe('core type contracts', () => {
       descriptionKey: 'card.zhu_fu.description',
       rulesTextKey: 'card.zhu_fu.rules',
       cost: 1,
+      rarity: 'common',
       type: 'talisman',
       unlockStage: 'stage_core',
       tags: ['starter', 'break_form'],
@@ -162,6 +163,11 @@ describe('core type contracts', () => {
         doom: 0,
         fracture: 0,
       },
+      incenseSeals: {
+        maxSlots: 2,
+        seals: [],
+        records: [],
+      },
       unlocks: {
         stages: ['stage_core'],
         keywords: ['break_form'],
@@ -185,6 +191,7 @@ describe('core type contracts', () => {
       rewards: [],
       redInkRecords: [],
       artifactOfferRecords: [],
+      incenseSealOfferRecords: [],
     } satisfies TutorialRunState
 
     expect(run.encounterIds[0]).toBe(encounter.id)
@@ -351,6 +358,11 @@ describe('core type contracts', () => {
           doom: 0,
           fracture: 0,
         },
+        incenseSeals: {
+          maxSlots: 2,
+          seals: [],
+          records: [],
+        },
         unlocks: {
           stages: ['stage_core'],
           keywords: ['break_form'],
@@ -374,6 +386,7 @@ describe('core type contracts', () => {
         rewards: [],
         redInkRecords: [],
         artifactOfferRecords: [],
+        incenseSealOfferRecords: [],
       },
       route: {
         routeId: 'route_chapter_one_skeleton',
@@ -452,10 +465,16 @@ describe('core type contracts', () => {
       nextTurnIncensePenalty: 0,
       nextTurnIncenseBonus: 0,
       nextAskNamePenalty: 0,
+      nameGuardCharges: 0,
       resources: {
         ink: 0,
         doom: 0,
         fracture: 0,
+      },
+      incenseSeals: {
+        maxSlots: 2,
+        seals: [],
+        records: [],
       },
       temporaryResourceDelta: {
         ink: 0,

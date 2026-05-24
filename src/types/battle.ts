@@ -12,6 +12,7 @@ import type {
 } from './common'
 import type { EnemyState } from './enemy'
 import type { LinzhaoTrigger } from './effect'
+import type { IncenseSealInstanceId, IncenseSealState } from './incenseSeal'
 import type { TutorialResourceState } from './resource'
 import type { TutorialRegisterRuleId, TutorialVerdictRegisterEntry } from './verdict'
 
@@ -78,6 +79,9 @@ export type ActionLogType =
   | 'LINZHAO_PLACED'
   | 'LINZHAO_TRIGGERED'
   | 'LINZHAO_CLEARED'
+  | 'INCENSE_SEAL_GAINED'
+  | 'INCENSE_SEAL_USED'
+  | 'INCENSE_SEAL_REJECTED'
   | 'PILE_SHUFFLED'
   | 'INCENSE_GAINED'
   | 'INCENSE_SPENT'
@@ -164,7 +168,9 @@ export interface CombatState {
   readonly nextTurnIncensePenalty: number
   readonly nextTurnIncenseBonus: number
   readonly nextAskNamePenalty: number
+  readonly nameGuardCharges: number
   readonly resources: TutorialResourceState
+  readonly incenseSeals: IncenseSealState
   readonly temporaryResourceDelta: TutorialResourceState
   readonly temporaryPlayerFormDelta: number
   readonly altars: readonly AltarState[]
@@ -196,6 +202,12 @@ export interface SpendInkCleanseCommand {
   readonly type: 'SPEND_INK_CLEANSE'
 }
 
+export interface UseIncenseSealCommand {
+  readonly type: 'USE_INCENSE_SEAL'
+  readonly incenseSealInstanceId: IncenseSealInstanceId
+  readonly targetEnemyInstanceId?: string
+}
+
 export interface EndTurnCommand {
   readonly type: 'END_TURN'
 }
@@ -204,4 +216,5 @@ export type BattleCommand =
   | PlayCardCommand
   | SpendInkGuardNameCommand
   | SpendInkCleanseCommand
+  | UseIncenseSealCommand
   | EndTurnCommand

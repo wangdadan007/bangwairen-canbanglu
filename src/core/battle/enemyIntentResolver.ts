@@ -2,6 +2,7 @@ import { appendLog } from '../log/actionLog'
 import { applyTutorialResourceDelta } from '../run/resourceResolver'
 import { triggerEarthAltars } from './altarResolver'
 import { createEnemyState } from './battleState'
+import { consumeNameGuardForCoverName } from './incenseSealBattleResolver'
 import {
   isIncomingForceConditionMet,
   resolveIncomingForceAmount,
@@ -405,42 +406,53 @@ function executeAbnormalMove(
   }
 
   if (move.type === 'cover_name') {
-    const disruptedResult = move.disruptAltar && !isDowngradedByNamedPhase
-      ? disruptMostRecentAltar(nextState, enemy)
-      : {
-          state: nextState,
-          disruptedAltarId: null,
-          disruptedAltarSlot: null,
-        }
-    nextState = disruptedResult.state
+    const guardedState = consumeNameGuardForCoverName(nextState, enemy.instanceId)
 
-    if (disruptedResult.disruptedAltarId) {
+    if (guardedState) {
+      nextState = guardedState
       resultPayload = {
         coveredSlotIndex: null,
-        disruptedAltarId: disruptedResult.disruptedAltarId,
-        disruptedAltarSlot: disruptedResult.disruptedAltarSlot,
+        coverNameResult: 'prevented_by_incense_seal',
+        fallbackIncomingForceApplied: 0,
       }
     } else {
-      const { state: coveredState, coveredSlotIndex, result } = coverOneRevealedNameSlot(
-        nextState,
-        enemy,
-      )
-      nextState = coveredState
-      const fallbackIncomingForce =
-        result === 'enemy_named' ? move.whenNamedIncomingForce : move.fallbackIncomingForce
-      const fallbackIncomingForceApplied =
-        coveredSlotIndex === null && fallbackIncomingForce && fallbackIncomingForce > 0
-          ? fallbackIncomingForce
-          : 0
+      const disruptedResult = move.disruptAltar && !isDowngradedByNamedPhase
+        ? disruptMostRecentAltar(nextState, enemy)
+        : {
+            state: nextState,
+            disruptedAltarId: null,
+            disruptedAltarSlot: null,
+          }
+      nextState = disruptedResult.state
 
-      if (fallbackIncomingForceApplied > 0) {
-        nextState = applyIncomingForceToPlayer(nextState, enemy, fallbackIncomingForceApplied)
-      }
+      if (disruptedResult.disruptedAltarId) {
+        resultPayload = {
+          coveredSlotIndex: null,
+          disruptedAltarId: disruptedResult.disruptedAltarId,
+          disruptedAltarSlot: disruptedResult.disruptedAltarSlot,
+        }
+      } else {
+        const { state: coveredState, coveredSlotIndex, result } = coverOneRevealedNameSlot(
+          nextState,
+          enemy,
+        )
+        nextState = coveredState
+        const fallbackIncomingForce =
+          result === 'enemy_named' ? move.whenNamedIncomingForce : move.fallbackIncomingForce
+        const fallbackIncomingForceApplied =
+          coveredSlotIndex === null && fallbackIncomingForce && fallbackIncomingForce > 0
+            ? fallbackIncomingForce
+            : 0
 
-      resultPayload = {
-        coveredSlotIndex,
-        coverNameResult: result,
-        fallbackIncomingForceApplied,
+        if (fallbackIncomingForceApplied > 0) {
+          nextState = applyIncomingForceToPlayer(nextState, enemy, fallbackIncomingForceApplied)
+        }
+
+        resultPayload = {
+          coveredSlotIndex,
+          coverNameResult: result,
+          fallbackIncomingForceApplied,
+        }
       }
     }
   }

@@ -16,6 +16,7 @@ import type {
   PlayableRoleId,
   PlayableRoleDefinition,
   VictorySettlement,
+  IncenseSealDefinition,
 } from '../../types'
 import { DEFAULT_STARTER_DECK_IDS } from '../battle/battleState'
 import {
@@ -37,6 +38,10 @@ import {
   createInitialTutorialCurrencyState,
   createInitialTutorialShopState,
 } from './shopResolver'
+import {
+  createEliteIncenseSealOffer,
+  createInitialIncenseSealState,
+} from './incenseSealResolver'
 import { createInitialTutorialResourceState } from './resourceResolver'
 import {
   createInitialTutorialPlayerFormState,
@@ -74,6 +79,7 @@ export function createInitialTutorialRunState(
     currency: createInitialTutorialCurrencyState(),
     playerForm: createInitialTutorialPlayerFormState(role?.playerMaxForm),
     resources: createInitialTutorialResourceState(),
+    incenseSeals: createInitialIncenseSealState(),
     unlocks: createUnlockState(['stage_core'], tutorialUnlocks),
     verdict: createInitialTutorialVerdictState(),
     events: createInitialTutorialEventState(),
@@ -82,6 +88,7 @@ export function createInitialTutorialRunState(
     rewards: [],
     redInkRecords: [],
     artifactOfferRecords: [],
+    incenseSealOfferRecords: [],
   }
 }
 
@@ -141,12 +148,20 @@ export function advanceTutorialRun(
   resources?: TutorialResourceState,
   playerForm?: TutorialPlayerFormState,
   registerEntries?: readonly TutorialVerdictRegisterEntry[],
+  incenseSeals?: TutorialRunState['incenseSeals'],
+  incenseSealDefinitions: readonly IncenseSealDefinition[] = [],
 ): TutorialRunState {
   if (run.status !== 'active') {
     return run
   }
 
-  if (run.pendingVerdict || run.pendingReward || run.pendingRedInk || run.pendingArtifactOffer) {
+  if (
+    run.pendingVerdict ||
+    run.pendingReward ||
+    run.pendingRedInk ||
+    run.pendingArtifactOffer ||
+    run.pendingIncenseSealOffer
+  ) {
     throw new Error('Resolve pending tutorial offer before advancing the run')
   }
 
@@ -157,11 +172,13 @@ export function advanceTutorialRun(
   }
 
   const nextCompletedEncounterIds = [...run.completedEncounterIds, currentEncounter.id]
+  const incenseMoneyReward = getIncenseMoneyReward(currentEncounter)
   const nextSettlements: readonly TutorialRunSettlementRecord[] = [
     ...run.settlements,
     {
       encounterId: currentEncounter.id,
       settlement,
+      incenseMoneyReward,
     },
   ]
   const nextUnlocks = mergeUnlockStages(
@@ -178,8 +195,12 @@ export function advanceTutorialRun(
     currentEncounterIndex: isComplete ? run.currentEncounterIndex : nextEncounterIndex,
     completedEncounterIds: nextCompletedEncounterIds,
     settlements: nextSettlements,
+    currency: {
+      incenseMoney: run.currency.incenseMoney + incenseMoneyReward,
+    },
     artifacts: advanceArtifactsAfterBattle(run.artifacts, artifactProgress),
     resources: resources ?? run.resources,
+    incenseSeals: incenseSeals ?? run.incenseSeals,
     playerForm: playerForm ? normalizeTutorialPlayerFormState(playerForm) : run.playerForm,
     verdict: registerEntries
       ? {
@@ -201,12 +222,33 @@ export function advanceTutorialRun(
       ? createTutorialRewardOffer({
           encounter: currentEncounter,
           settlement,
+          incenseMoneyReward,
           unlocks: nextUnlocks,
           cardDefinitions,
           roleId: run.roleId,
         })
       : undefined,
+    pendingIncenseSealOffer: createEliteIncenseSealOffer(
+      {
+        ...run,
+        incenseSeals: incenseSeals ?? run.incenseSeals,
+      },
+      currentEncounter.id,
+      incenseSealDefinitions,
+    ),
   }
+}
+
+export function getIncenseMoneyReward(encounter: EncounterDefinition): number {
+  if (encounter.id.startsWith('encounter_boss_')) {
+    return 0
+  }
+
+  if (encounter.id.startsWith('encounter_elite_')) {
+    return 28
+  }
+
+  return 12
 }
 
 function areEncounterIdsEqual(
@@ -235,6 +277,7 @@ export function failTutorialRun(
     pendingReward: undefined,
     pendingRedInk: undefined,
     pendingArtifactOffer: undefined,
+    pendingIncenseSealOffer: undefined,
   }
 }
 

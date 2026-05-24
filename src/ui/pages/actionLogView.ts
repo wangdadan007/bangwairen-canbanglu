@@ -47,6 +47,9 @@ const enemyDefinitionsById = new Map(gameData.enemies.map((enemy) => [enemy.id, 
 const artifactDefinitionsById = new Map(
   gameData.artifacts.map((artifact) => [artifact.id, artifact]),
 )
+const incenseSealDefinitionsById = new Map<string, (typeof gameData.incenseSeals)[number]>(
+  gameData.incenseSeals.map((seal) => [seal.id, seal]),
+)
 
 const termTooltips: Record<string, string> = {
   shape: '敌人的形体（形）：敌人的战斗实体。形归零即本场胜利。',
@@ -70,6 +73,7 @@ const termTooltips: Record<string, string> = {
     '三坛：人坛在回合结束收束本回合动作，地坛在敌人行动前压住压力，天坛在下回合开始提前布置。',
   linzhao: '临诏：由牌打出的本场持续规则。打出后挂入临诏区，不进本场抽弃牌循环。',
   artifact: '法宝：牌组外器物，不进入抽牌堆，可触发认主、过载与反噬。',
+  incense_seal: '香封：一次性战术资源，占槽，战斗内使用后消耗，不进入牌组。',
 }
 
 export function t(key: string | undefined) {
@@ -108,7 +112,11 @@ export function createPressureFeedback(
   }
 
   const sourceCardName = getCardName(entry.sourceId, cardDefinitionsById, allCardsByInstanceId)
-  const sourceName = sourceCardName ?? sourceEnemyName(entry.sourceId, battle) ?? '敌方'
+  const sourceName =
+    sourceCardName ??
+    getIncenseSealNameFromLog(entry) ??
+    sourceEnemyName(entry.sourceId, battle) ??
+    '敌方'
 
   if (entry.type === 'INCOMING_FORCE_SEALED') {
     const amount = getPayloadNumber(entry.payload.amount) ?? 0
@@ -262,7 +270,11 @@ export function createRitualFeedback(
     const amount = getPayloadNumber(entry.payload.amount) ?? 0
     const currentForm = getPayloadNumber(entry.payload.currentForm) ?? 0
     const sourceName =
-      sourceCardName ?? getLinzhaoName(entry.sourceId, battle) ?? getSourceNameFromPayload(entry) ?? '符诏'
+      sourceCardName ??
+      getLinzhaoName(entry.sourceId, battle) ??
+      getIncenseSealNameFromLog(entry) ??
+      getSourceNameFromPayload(entry) ??
+      '符诏'
 
     return {
       id: entry.id,
@@ -924,10 +936,11 @@ export function formatLogEntry(
   if (entry.type === 'INCOMING_FORCE_SEALED') {
     const amount = getPayloadNumber(entry.payload.amount) ?? 0
     const remaining = getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0
+    const sourceName = sourceCardName ?? getIncenseSealNameFromLog(entry) ?? '符诏'
 
     return amount > 0
-      ? `${sourceCardName ?? '符诏'}封势 ${amount}，剩余来势 ${remaining}。`
-      : `${sourceCardName ?? '符诏'}封势未生效：当前没有可压住的来势。`
+      ? `${sourceName}封势 ${amount}，剩余来势 ${remaining}。`
+      : `${sourceName}封势未生效：当前没有可压住的来势。`
   }
 
   if (entry.type === 'ABNORMAL_MOVE_EXECUTED') {
@@ -953,9 +966,17 @@ export function formatLogEntry(
         ? `留墨护名准备就绪：下一次${getMoveLabel(
             getPayloadString(entry.payload.moveType),
           )}会被墨迹护住。`
-      : `${sourceCardName ?? '符诏'}准备断异动：${getMoveLabel(
+      : `${sourceCardName ?? getIncenseSealNameFromLog(entry) ?? '符诏'}准备断异动：${getMoveLabel(
           getPayloadString(entry.payload.moveType),
         )}。`
+  }
+
+  if (entry.type === 'INCENSE_SEAL_USED') {
+    return formatIncenseSealUsedLog(entry)
+  }
+
+  if (entry.type === 'INCENSE_SEAL_REJECTED') {
+    return `${getIncenseSealNameFromLog(entry) ?? '香封'}未能启用。`
   }
 
   if (entry.type === 'VICTORY_SETTLED') {
@@ -1092,7 +1113,9 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     entry.type === 'ALTAR_EXPIRED' ||
     entry.type === 'LINZHAO_PLACED' ||
     entry.type === 'LINZHAO_TRIGGERED' ||
-    entry.type === 'LINZHAO_CLEARED'
+    entry.type === 'LINZHAO_CLEARED' ||
+    entry.type === 'INCENSE_SEAL_USED' ||
+    entry.type === 'INCENSE_SEAL_REJECTED'
   ) {
     return 'log-entry name'
   }
@@ -1730,6 +1753,57 @@ function getSourceNameFromPayload(entry: ActionLogEntry) {
   const sourceNameKey = getPayloadString(entry.payload.sourceNameKey)
 
   return sourceNameKey ? t(sourceNameKey) : undefined
+}
+
+export function getIncenseSealName(sealDefinitionId: string | undefined) {
+  const definition = sealDefinitionId ? incenseSealDefinitionsById.get(sealDefinitionId) : undefined
+
+  return definition ? t(definition.nameKey) : '香封'
+}
+
+function getIncenseSealNameFromLog(entry: ActionLogEntry) {
+  return getIncenseSealName(getPayloadString(entry.payload.sealDefinitionId))
+}
+
+function formatIncenseSealUsedLog(entry: ActionLogEntry) {
+  const sealName = getIncenseSealNameFromLog(entry)
+  const result = getPayloadString(entry.payload.result)
+
+  if (result === 'prepared_guard') {
+    return `${sealName}已启用：护住下一次遮名。`
+  }
+
+  if (result === 'prevented_cover_name') {
+    return `${sealName}护名生效：本次遮名被挡下。`
+  }
+
+  if (result === 'revealed_covered_name') {
+    return `${sealName}揭开被遮名格。`
+  }
+
+  if (result === 'cleansed') {
+    return `${sealName}净去污卷 ${getPayloadNumber(entry.payload.removedCount) ?? 0} 张。`
+  }
+
+  if (result === 'suppressed') {
+    return `${sealName}压住来势 ${getPayloadNumber(entry.payload.amount) ?? 0}。`
+  }
+
+  if (result === 'prepared_counter') {
+    return `${sealName}准备断异动：${getMoveLabel(getPayloadString(entry.payload.moveType))}。`
+  }
+
+  if (result === 'gained_incense_draw') {
+    return `${sealName}回香 +${getPayloadNumber(entry.payload.amount) ?? 0}，抽 ${
+      getPayloadNumber(entry.payload.drawCount) ?? 0
+    }。`
+  }
+
+  if (result === 'broke_shape') {
+    return `${sealName}破形 ${getPayloadNumber(entry.payload.amount) ?? 0}。`
+  }
+
+  return `${sealName}已消耗。`
 }
 
 function getEnemyName(targetId: string | undefined, battle: CombatState) {

@@ -67,7 +67,8 @@
         "encounterPoolIds": [
           "encounter_mid_ash_altar_child",
           "encounter_pool_bronze_bell_patrol_return",
-          "encounter_multi_paper_wraith_imp"
+          "encounter_multi_paper_wraith_imp",
+          "encounter_multi_ash_altar_bell_patrol"
         ],
         "routeTendencyIds": ["steady"],
         "nextNodeIds": ["route_node_steady_incense_clerk"]
@@ -90,6 +91,7 @@
         "encounterPoolIds": [
           "encounter_multi_offering_table_mouse",
           "encounter_multi_thief_mouse_louse",
+          "encounter_multi_unlit_warden_paper_imp",
           "encounter_pool_offering_table_afterimage_return"
         ],
         "routeTendencyIds": ["steady"],
@@ -166,7 +168,8 @@
         "encounterPoolIds": [
           "encounter_late_fleeing_name_paper_horse",
           "encounter_pool_fleeing_name_paper_horse_return",
-          "encounter_multi_offering_table_mouse"
+          "encounter_multi_offering_table_mouse",
+          "encounter_multi_fleeing_horse_louse"
         ],
         "routeTendencyIds": ["catalogue", "high_pressure"],
         "nextNodeIds": ["route_node_catalogue_altar_crosscheck"]
@@ -194,7 +197,8 @@
         "encounterPoolIds": [
           "encounter_late_plague_paper_figure",
           "encounter_late_scroll_stuffer_clerk",
-          "encounter_pool_offering_table_afterimage_return"
+          "encounter_pool_offering_table_afterimage_return",
+          "encounter_multi_plague_offering_table"
         ],
         "routeTendencyIds": ["catalogue", "high_pressure"],
         "nextNodeIds": ["route_node_boss_registry_thief"]
@@ -209,7 +213,8 @@
           "encounter_late_fleeing_name_paper_horse",
           "encounter_pool_fleeing_name_paper_horse_return",
           "encounter_pool_offering_table_afterimage_return",
-          "encounter_multi_offering_table_mouse"
+          "encounter_multi_offering_table_mouse",
+          "encounter_multi_fleeing_horse_louse"
         ],
         "routeTendencyIds": ["catalogue", "high_pressure"],
         "nextNodeIds": ["route_node_catalogue_event_altar_crosscheck"]
@@ -246,7 +251,8 @@
         "encounterPoolIds": [
           "encounter_late_plague_paper_figure",
           "encounter_late_scroll_stuffer_clerk",
-          "encounter_pool_offering_table_afterimage_return"
+          "encounter_pool_offering_table_afterimage_return",
+          "encounter_multi_plague_offering_table"
         ],
         "routeTendencyIds": ["catalogue", "high_pressure"],
         "nextNodeIds": ["route_node_boss_registry_thief"]
@@ -284,7 +290,8 @@
         "encounterPoolIds": [
           "encounter_late_scroll_stuffer_clerk",
           "encounter_pool_scroll_stuffer_clerk_return",
-          "encounter_pool_offering_table_afterimage_return"
+          "encounter_pool_offering_table_afterimage_return",
+          "encounter_multi_plague_scroll_clerk"
         ],
         "routeTendencyIds": ["fracture", "high_pressure"],
         "nextNodeIds": ["route_node_fracture_shop"]
@@ -328,7 +335,8 @@
         "encounterPoolIds": [
           "encounter_late_plague_paper_figure",
           "encounter_late_scroll_stuffer_clerk",
-          "encounter_pool_plague_paper_figure_return"
+          "encounter_pool_plague_paper_figure_return",
+          "encounter_multi_plague_scroll_clerk"
         ],
         "routeTendencyIds": ["fracture", "high_pressure"],
         "nextNodeIds": ["route_node_fracture_event_name_pressure"]
@@ -342,7 +350,8 @@
         "encounterPoolIds": [
           "encounter_late_fleeing_name_paper_horse",
           "encounter_multi_offering_table_mouse",
-          "encounter_pool_offering_table_afterimage_return"
+          "encounter_pool_offering_table_afterimage_return",
+          "encounter_multi_fleeing_horse_louse"
         ],
         "routeTendencyIds": ["fracture"],
         "nextNodeIds": ["route_node_late_event"]
@@ -356,7 +365,8 @@
         "encounterPoolIds": [
           "encounter_late_plague_paper_figure",
           "encounter_pool_plague_paper_figure_return",
-          "encounter_pool_scroll_stuffer_clerk_return"
+          "encounter_pool_scroll_stuffer_clerk_return",
+          "encounter_multi_plague_scroll_clerk"
         ],
         "routeTendencyIds": ["fracture", "high_pressure"],
         "nextNodeIds": ["route_node_late_event_after_shop"]
@@ -400,7 +410,8 @@
         "encounterPoolIds": [
           "encounter_late_fleeing_name_paper_horse",
           "encounter_multi_offering_table_mouse",
-          "encounter_pool_incense_ash_louse"
+          "encounter_pool_incense_ash_louse",
+          "encounter_multi_fleeing_horse_louse"
         ],
         "routeTendencyIds": ["fracture", "high_pressure"],
         "nextNodeIds": ["route_node_third_elite"]

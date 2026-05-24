@@ -9,8 +9,10 @@ import type {
   TutorialEventRecord,
   TutorialEventState,
   TutorialRunState,
+  IncenseSealId,
 } from '../../types'
 import { appendRunDeckCard, removeFirstMatchingRunDeckCard } from './deckResolver'
+import { addIncenseSealToRun } from './incenseSealResolver'
 import { createTutorialRedInkOffer } from './redInkResolver'
 import {
   applyTutorialResourceDelta,
@@ -87,7 +89,13 @@ export function resolveTutorialEvent(
     return run
   }
 
-  if (run.pendingVerdict || run.pendingReward || run.pendingRedInk) {
+  if (
+    run.pendingVerdict ||
+    run.pendingReward ||
+    run.pendingRedInk ||
+    run.pendingArtifactOffer ||
+    run.pendingIncenseSealOffer
+  ) {
     throw new Error('Resolve pending run choice before resolving an event')
   }
 
@@ -113,6 +121,7 @@ export function resolveTutorialEvent(
     eventId: event.id,
     optionId: option.id,
     addedCardDefinitionIds: result.addedCardDefinitionIds,
+    addedIncenseSealDefinitionIds: result.addedIncenseSealDefinitionIds,
     removedDeckCardIds: result.removedDeckCardIds,
     removedCardDefinitionIds: result.removedCardDefinitionIds,
     inkDelta: result.inkDelta,
@@ -121,10 +130,16 @@ export function resolveTutorialEvent(
     createdRedInkOffer: result.createdRedInkOffer,
   }
 
+  const runWithSeals = result.addedIncenseSealDefinitionIds.reduce(
+    (currentRun, sealDefinitionId) => addIncenseSealToRun(currentRun, sealDefinitionId, 'event'),
+    run,
+  )
+
   return {
     ...run,
     deckDefinitionIds: result.deckDefinitionIds,
     deckCards: result.deckCards,
+    incenseSeals: runWithSeals.incenseSeals,
     resources: applyTutorialResourceDelta(run.resources, {
       ink: result.inkDelta,
       doom: result.doomDelta,
@@ -166,6 +181,7 @@ interface EventEffectResult {
   readonly deckDefinitionIds: readonly CardId[]
   readonly deckCards: TutorialRunState['deckCards']
   readonly addedCardDefinitionIds: readonly CardId[]
+  readonly addedIncenseSealDefinitionIds: readonly IncenseSealId[]
   readonly removedDeckCardIds: readonly RunDeckCardId[]
   readonly removedCardDefinitionIds: readonly CardId[]
   readonly inkDelta: number
@@ -181,6 +197,7 @@ function applyEventEffects(
   let deckDefinitionIds = run.deckDefinitionIds
   let deckCards = run.deckCards
   const addedCardDefinitionIds: CardId[] = []
+  const addedIncenseSealDefinitionIds: IncenseSealId[] = []
   const removedDeckCardIds: RunDeckCardId[] = []
   const removedCardDefinitionIds: CardId[] = []
   let inkDelta = 0
@@ -227,12 +244,17 @@ function applyEventEffects(
     if (effect.type === 'CREATE_RED_INK_OFFER') {
       createdRedInkOffer = true
     }
+
+    if (effect.type === 'ADD_INCENSE_SEAL') {
+      addedIncenseSealDefinitionIds.push(effect.incenseSealDefinitionId)
+    }
   }
 
   return {
     deckDefinitionIds,
     deckCards,
     addedCardDefinitionIds,
+    addedIncenseSealDefinitionIds,
     removedDeckCardIds,
     removedCardDefinitionIds,
     inkDelta,

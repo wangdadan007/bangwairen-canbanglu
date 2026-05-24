@@ -1,4 +1,5 @@
 import type { RouteState, TutorialRunState, TutorialSaveData } from '../../types'
+import { createInitialIncenseSealState } from './incenseSealResolver'
 import { normalizeTutorialPlayerFormState } from './playerFormResolver'
 import { isPlayableRoleId } from './playerRoleResolver'
 import {
@@ -120,10 +121,13 @@ function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
     ...value,
     roleId: isPlayableRoleId(value.roleId) ? value.roleId : undefined,
     playerForm: normalizeTutorialPlayerFormState(value.playerForm),
+    incenseSeals: value.incenseSeals ?? createInitialIncenseSealState(),
     pendingArtifactOffer: value.pendingArtifactOffer,
+    pendingIncenseSealOffer: value.pendingIncenseSealOffer,
     rewards: value.rewards ?? [],
     redInkRecords: value.redInkRecords ?? [],
     artifactOfferRecords: value.artifactOfferRecords ?? [],
+    incenseSealOfferRecords: value.incenseSealOfferRecords ?? [],
     nextBattleStartBonus: value.nextBattleStartBonus,
   }
 }

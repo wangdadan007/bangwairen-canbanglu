@@ -7,6 +7,7 @@ import type { TutorialResourceState } from './resource'
 import type { PlayableRoleId } from './role'
 import type { RouteTendencyId } from './route'
 import type { TutorialCurrencyState, TutorialShopState } from './shop'
+import type { IncenseSealId, IncenseSealState } from './incenseSeal'
 import type {
   TutorialNextBattleStartBonus,
   TutorialVerdictOffer,
@@ -23,6 +24,7 @@ export type TutorialArtifactOfferStage = 'starter' | 'mid_chapter' | 'boss_clear
 export interface TutorialRunSettlementRecord {
   readonly encounterId: EncounterId
   readonly settlement: VictorySettlement
+  readonly incenseMoneyReward: number
 }
 
 export interface TutorialRewardOption {
@@ -36,6 +38,7 @@ export interface TutorialRewardOffer {
   readonly encounterId: EncounterId
   readonly settlement: VictorySettlement
   readonly quality: RewardQuality
+  readonly incenseMoneyReward: number
   readonly options: readonly TutorialRewardOption[]
 }
 
@@ -43,8 +46,30 @@ export interface TutorialRewardRecord {
   readonly encounterId: EncounterId
   readonly settlement: VictorySettlement
   readonly quality: RewardQuality
+  readonly incenseMoneyReward: number
   readonly offeredCardDefinitionIds: readonly CardId[]
   readonly selectedCardDefinitionId?: CardId
+  readonly skipped: boolean
+}
+
+export interface TutorialIncenseSealOption {
+  readonly id: string
+  readonly incenseSealDefinitionId: IncenseSealId
+}
+
+export interface TutorialIncenseSealOffer {
+  readonly id: string
+  readonly source: 'elite'
+  readonly encounterId: EncounterId
+  readonly options: readonly TutorialIncenseSealOption[]
+}
+
+export interface TutorialIncenseSealOfferRecord {
+  readonly id: string
+  readonly source: 'elite'
+  readonly encounterId: EncounterId
+  readonly offeredIncenseSealDefinitionIds: readonly IncenseSealId[]
+  readonly selectedIncenseSealDefinitionId?: IncenseSealId
   readonly skipped: boolean
 }
 
@@ -118,6 +143,7 @@ export interface TutorialEventRecord {
   readonly eventId: EventId
   readonly optionId: string
   readonly addedCardDefinitionIds: readonly CardId[]
+  readonly addedIncenseSealDefinitionIds: readonly IncenseSealId[]
   readonly removedDeckCardIds: readonly RunDeckCardId[]
   readonly removedCardDefinitionIds: readonly CardId[]
   readonly inkDelta: number
@@ -145,6 +171,7 @@ export interface TutorialRunState {
   readonly currency: TutorialCurrencyState
   readonly playerForm: TutorialPlayerFormState
   readonly resources: TutorialResourceState
+  readonly incenseSeals: IncenseSealState
   readonly unlocks: UnlockState
   readonly verdict: TutorialVerdictState
   readonly events: TutorialEventState
@@ -152,11 +179,13 @@ export interface TutorialRunState {
   readonly shops: TutorialShopState
   readonly pendingVerdict?: TutorialVerdictOffer
   readonly pendingReward?: TutorialRewardOffer
+  readonly pendingIncenseSealOffer?: TutorialIncenseSealOffer
   readonly pendingRedInk?: TutorialRedInkOffer
   readonly pendingArtifactOffer?: TutorialArtifactOffer
   readonly rewards: readonly TutorialRewardRecord[]
   readonly redInkRecords: readonly TutorialRedInkRecord[]
   readonly artifactOfferRecords: readonly TutorialArtifactRecord[]
+  readonly incenseSealOfferRecords: readonly TutorialIncenseSealOfferRecord[]
   readonly nextBattleStartBonus?: TutorialNextBattleStartBonus
 }
 
@@ -177,6 +206,9 @@ export interface TutorialRunSummary {
   readonly restCount: number
   readonly shopPurchaseCount: number
   readonly incenseMoney: number
+  readonly incenseMoneyEarned: number
+  readonly incenseSealCount: number
+  readonly incenseSealUsedCount: number
   readonly playerCurrentForm: number
   readonly playerMaxForm: number
   readonly ink: number

@@ -3,6 +3,9 @@ import type {
   ArtifactDefinition,
   CardDefinition,
   CardId,
+  IncenseSealDefinition,
+  IncenseSealId,
+  IncenseSealInstanceId,
   RunDeckCard,
   RunDeckCardId,
   TutorialRunState,
@@ -14,9 +17,14 @@ export interface ShopPageProps {
   readonly deckCards: readonly RunDeckCard[]
   readonly artifactDefinitionsById: ReadonlyMap<string, ArtifactDefinition>
   readonly cardDefinitionsById: ReadonlyMap<CardId, CardDefinition>
+  readonly incenseSealDefinitionsById: ReadonlyMap<IncenseSealId, IncenseSealDefinition>
   readonly run: TutorialRunState
   readonly t: (key: string | undefined) => string
-  readonly onBuy: (itemId: string, deckCardId?: RunDeckCardId) => void
+  readonly onBuy: (
+    itemId: string,
+    deckCardId?: RunDeckCardId,
+    replaceIncenseSealInstanceId?: IncenseSealInstanceId,
+  ) => void
   readonly onLeave: () => void
 }
 
@@ -25,13 +33,20 @@ export function ShopPage({
   deckCards,
   artifactDefinitionsById,
   cardDefinitionsById,
+  incenseSealDefinitionsById,
   run,
   t,
   onBuy,
   onLeave,
 }: ShopPageProps) {
   const [selectedDeckCardId, setSelectedDeckCardId] = useState(deckCards[0]?.id ?? '')
+  const [selectedIncenseSealId, setSelectedIncenseSealId] = useState(
+    run.incenseSeals.seals[0]?.id ?? '',
+  )
   const selectedCard = deckCards.find((card) => card.id === selectedDeckCardId)
+  const selectedIncenseSeal = run.incenseSeals.seals.find(
+    (seal) => seal.id === selectedIncenseSealId,
+  )
 
   return (
     <section className="shop-page" aria-label="商店页">
@@ -48,6 +63,9 @@ export function ShopPage({
         <span>香火钱 {run.currency.incenseMoney}</span>
         <span>牌组 {deckCards.length} 张</span>
         <span>已购 {run.shops.records.length} 次</span>
+        <span>
+          香封 {run.incenseSeals.seals.length} / {run.incenseSeals.maxSlots}
+        </span>
         <span>墨 {run.resources.ink}</span>
         <span>劫数 {run.resources.doom}</span>
         <span>榜裂 {run.resources.fracture}</span>
@@ -85,18 +103,45 @@ export function ShopPage({
 
         <div className="shop-column">
           <h4>商品</h4>
+          {run.incenseSeals.seals.length >= run.incenseSeals.maxSlots ? (
+            <div className="shop-seal-replace" aria-label="香封替换选择">
+              <span>香封槽已满，购买新香封会替换：</span>
+              <select
+                value={selectedIncenseSealId}
+                onChange={(event) => setSelectedIncenseSealId(event.target.value)}
+              >
+                {run.incenseSeals.seals.map((seal) => {
+                  const definition = incenseSealDefinitionsById.get(seal.definitionId)
+
+                  return (
+                    <option key={seal.id} value={seal.id}>
+                      {definition ? t(definition.nameKey) : seal.definitionId}
+                    </option>
+                  )
+                })}
+              </select>
+            </div>
+          ) : null}
           <div className="shop-item-list">
             {items.map((item) => {
               const isRemoveCard = item.kind === 'remove_card'
+              const isIncenseSeal = item.kind === 'incense_seal'
               const canAfford = run.currency.incenseMoney >= item.cost
-              const canChoose = canAfford && (!isRemoveCard || Boolean(selectedCard))
+              const canChoose =
+                canAfford &&
+                (!isRemoveCard || Boolean(selectedCard)) &&
+                (!isIncenseSeal ||
+                  run.incenseSeals.seals.length < run.incenseSeals.maxSlots ||
+                  Boolean(selectedIncenseSeal))
               const disabledReason = canChoose
                 ? undefined
                 : getShopDisabledReason({
                     item,
                     isRemoveCard,
+                    isIncenseSeal,
                     canAfford,
                     selectedCard,
+                    selectedIncenseSeal,
                   })
 
               return (
@@ -109,7 +154,10 @@ export function ShopPage({
                   onClick={() =>
                     isRemoveCard
                       ? selectedCard && onBuy(item.id, selectedCard.id)
-                      : onBuy(item.id)
+                      : isIncenseSeal &&
+                          run.incenseSeals.seals.length >= run.incenseSeals.maxSlots
+                        ? onBuy(item.id, undefined, selectedIncenseSeal?.id)
+                        : onBuy(item.id)
                   }
                 >
                   <span className="card-topline">
@@ -121,8 +169,10 @@ export function ShopPage({
                     {getItemLabels(
                       item,
                       selectedCard,
+                      selectedIncenseSeal,
                       artifactDefinitionsById,
                       cardDefinitionsById,
+                      incenseSealDefinitionsById,
                       t,
                     ).map((label) => (
                       <span key={label}>{label}</span>
@@ -148,13 +198,17 @@ export function ShopPage({
 function getShopDisabledReason({
   item,
   isRemoveCard,
+  isIncenseSeal,
   canAfford,
   selectedCard,
+  selectedIncenseSeal,
 }: {
   readonly item: TutorialShopItemDefinition
   readonly isRemoveCard: boolean
+  readonly isIncenseSeal: boolean
   readonly canAfford: boolean
   readonly selectedCard: RunDeckCard | undefined
+  readonly selectedIncenseSeal: TutorialRunState['incenseSeals']['seals'][number] | undefined
 }) {
   if (!canAfford) {
     return `香火钱不足：需要 ${item.cost}`
@@ -164,14 +218,20 @@ function getShopDisabledReason({
     return '请先在牌册里选一张牌'
   }
 
+  if (isIncenseSeal && !selectedIncenseSeal) {
+    return '请先选择要替换的香封'
+  }
+
   return '当前不能购买'
 }
 
 function getItemLabels(
   item: TutorialShopItemDefinition,
   selectedCard: RunDeckCard | undefined,
+  selectedIncenseSeal: TutorialRunState['incenseSeals']['seals'][number] | undefined,
   artifactDefinitionsById: ReadonlyMap<string, ArtifactDefinition>,
   cardDefinitionsById: ReadonlyMap<CardId, CardDefinition>,
+  incenseSealDefinitionsById: ReadonlyMap<IncenseSealId, IncenseSealDefinition>,
   t: (key: string | undefined) => string,
 ) {
   if (item.kind === 'card') {
@@ -198,5 +258,40 @@ function getItemLabels(
     return [`删牌：${definition ? t(definition.nameKey) : '请选择牌'}`]
   }
 
+  if (item.kind === 'cleanse_service') {
+    return ['清理污卷']
+  }
+
+  if (item.kind === 'artifact_maintenance_service') {
+    return ['清除反噬']
+  }
+
+  if (item.kind === 'incense_seal') {
+    const definition = item.incenseSealDefinitionId
+      ? incenseSealDefinitionsById.get(item.incenseSealDefinitionId)
+      : undefined
+    const replaceDefinition = selectedIncenseSeal
+      ? incenseSealDefinitionsById.get(selectedIncenseSeal.definitionId)
+      : undefined
+
+    return [
+      `香封：${definition ? t(definition.nameKey) : item.incenseSealDefinitionId ?? '未知香封'}`,
+      getIncenseSealRarityLabel(definition?.rarity),
+      replaceDefinition ? `替换：${t(replaceDefinition.nameKey)}` : '占槽一次性',
+    ]
+  }
+
   return ['进入朱批']
+}
+
+function getIncenseSealRarityLabel(rarity: IncenseSealDefinition['rarity'] | undefined) {
+  if (rarity === 'rare') {
+    return '秘传'
+  }
+
+  if (rarity === 'uncommon') {
+    return '精良'
+  }
+
+  return '普通'
 }

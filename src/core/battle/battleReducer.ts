@@ -5,14 +5,22 @@ import { startPlayerTurn } from './turnFlow'
 import { appendLog } from '../log/actionLog'
 import { triggerHumanAltars } from './altarResolver'
 import { spendInkCleanse, spendInkGuardName } from './inkBattleResolver'
+import { resolveIncenseSealUse } from './incenseSealBattleResolver'
 import { refreshCurrentIncomingForceModifiers } from './incomingForceResolver'
 import { triggerFireMarksAtTurnEnd } from './shapeStatusResolver'
 import { settleVictoryIfNeeded } from './victoryResolver'
-import type { BattleCommand, CardDefinition, CombatState, EnemyDefinition } from '../../types'
+import type {
+  BattleCommand,
+  CardDefinition,
+  CombatState,
+  EnemyDefinition,
+  IncenseSealDefinition,
+} from '../../types'
 
 export interface BattleReducerContext {
   readonly cardDefinitions: readonly CardDefinition[]
   readonly enemyDefinitions: readonly EnemyDefinition[]
+  readonly incenseSealDefinitions?: readonly IncenseSealDefinition[]
   readonly drawPerTurn?: number
 }
 
@@ -43,6 +51,16 @@ export function reduceBattleState(
 
   if (command.type === 'SPEND_INK_CLEANSE') {
     return refreshCurrentIncomingForceModifiers(spendInkCleanse(state))
+  }
+
+  if (command.type === 'USE_INCENSE_SEAL') {
+    return refreshCurrentIncomingForceModifiers(
+      resolveIncenseSealUse(state, {
+        incenseSealInstanceId: command.incenseSealInstanceId,
+        targetEnemyInstanceId: command.targetEnemyInstanceId,
+        incenseSealDefinitions: context.incenseSealDefinitions ?? [],
+      }),
+    )
   }
 
   return endPlayerTurn(state, context)

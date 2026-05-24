@@ -58,6 +58,9 @@ export function RunSummaryPage({ summary, t, onRestart }: RunSummaryPageProps) {
         <SummaryMetric label="削籍" value={summary.verdictEraseCount} />
         <SummaryMetric label="休整" value={summary.restCount} />
         <SummaryMetric label="商店" value={summary.shopPurchaseCount} />
+        <SummaryMetric label="战后香火钱" value={summary.incenseMoneyEarned} />
+        <SummaryMetric label="香封持有" value={summary.incenseSealCount} />
+        <SummaryMetric label="香封消耗" value={summary.incenseSealUsedCount} />
         <SummaryMetric
           label="己形"
           value={`${summary.playerCurrentForm} / ${summary.playerMaxForm}`}

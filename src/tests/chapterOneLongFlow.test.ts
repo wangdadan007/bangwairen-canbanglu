@@ -51,12 +51,18 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
     expect(rewardCards).toHaveLength(38)
     expect(gameData.artifacts).toHaveLength(11)
     expect(gameData.events).toHaveLength(9)
+    expect(gameData.incenseSeals).toHaveLength(6)
     expect(gameData.enemies.filter((enemy) => enemy.tier === 'elite')).toHaveLength(3)
     expect(gameData.enemies.filter((enemy) => enemy.tier === 'boss')).toHaveLength(1)
     expect(multiEnemyEncounters.map((encounter) => encounter.id)).toEqual([
       'encounter_multi_paper_wraith_imp',
       'encounter_multi_thief_mouse_louse',
       'encounter_multi_offering_table_mouse',
+      'encounter_multi_ash_altar_bell_patrol',
+      'encounter_multi_unlit_warden_paper_imp',
+      'encounter_multi_plague_scroll_clerk',
+      'encounter_multi_fleeing_horse_louse',
+      'encounter_multi_plague_offering_table',
     ])
     expect(
       ['break_form', 'ask_name', 'seal_momentum', 'artifact', 'altar'].every((tag) =>

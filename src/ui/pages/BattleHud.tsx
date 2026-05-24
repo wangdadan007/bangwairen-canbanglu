@@ -12,6 +12,7 @@ import { useAudioCue, type AudioCue } from '../audio/audioCues'
 import { ArtifactBar } from './ArtifactBar'
 import { ArtifactOfferPage } from './ArtifactOfferPage'
 import { EventPage } from './EventPage'
+import { IncenseSealOfferPage } from './IncenseSealOfferPage'
 import { RedInkPage } from './RedInkPage'
 import { RestPage } from './RestPage'
 import { RewardPage } from './RewardPage'
@@ -30,6 +31,7 @@ import {
   getAltarSlotWindowLabel,
   getAltarWindowHint,
   getCardEffectLabels,
+  getIncenseSealName,
   getCurrentAbnormalMove,
   getEnemyDefinitionName,
   getLogEntryClassName,
@@ -69,6 +71,8 @@ import type {
   EncounterDefinition,
   EnemyIntentDefinition,
   EnemyState,
+  IncenseSealDefinition,
+  IncenseSealInstance,
   RouteNodeDefinition,
   TutorialRunState,
 } from '../../types'
@@ -101,12 +105,14 @@ export function BattleHud({
     endTurn,
     spendInkGuardName,
     spendInkCleanse,
+    activateIncenseSeal,
     restartCurrentBattle,
     restartTutorialRun,
     abandonTutorialRun,
     settleBattleDefeat,
     advanceAfterVictory,
     chooseReward,
+    chooseIncenseSeal,
     chooseVerdict,
     applyRedInk,
     chooseEvent,
@@ -125,6 +131,10 @@ export function BattleHud({
       battle.result.status === 'ongoing',
   )
   const cardDefinitionsById = useMemo(() => createCardDefinitionMap(gameData.cards), [])
+  const incenseSealDefinitionsById = useMemo(
+    () => new Map(gameData.incenseSeals.map((seal) => [seal.id, seal])),
+    [],
+  )
   const allCardsByInstanceId = useMemo(
     () =>
       createCardInstanceMap([
@@ -267,7 +277,7 @@ export function BattleHud({
         />
       ) : null}
 
-      {!run.pendingArtifactOffer && run.pendingVerdict ? (
+      {!run.pendingArtifactOffer && !run.pendingIncenseSealOffer && run.pendingVerdict ? (
         <VerdictPage
           offer={run.pendingVerdict}
           t={t}
@@ -277,7 +287,17 @@ export function BattleHud({
         />
       ) : null}
 
-      {!run.pendingArtifactOffer && !run.pendingVerdict && run.pendingRedInk ? (
+      {!run.pendingArtifactOffer && run.pendingIncenseSealOffer ? (
+        <IncenseSealOfferPage
+          incenseSealDefinitionsById={incenseSealDefinitionsById}
+          offer={run.pendingIncenseSealOffer}
+          t={t}
+          onChoose={chooseIncenseSeal}
+          onSkip={() => chooseIncenseSeal()}
+        />
+      ) : null}
+
+      {!run.pendingArtifactOffer && !run.pendingIncenseSealOffer && !run.pendingVerdict && run.pendingRedInk ? (
         <RedInkPage
           cardDefinitionsById={cardDefinitionsById}
           deckCards={run.deckCards}
@@ -288,7 +308,11 @@ export function BattleHud({
         />
       ) : null}
 
-      {!run.pendingArtifactOffer && !run.pendingVerdict && !run.pendingRedInk && run.pendingReward ? (
+      {!run.pendingArtifactOffer &&
+      !run.pendingIncenseSealOffer &&
+      !run.pendingVerdict &&
+      !run.pendingRedInk &&
+      run.pendingReward ? (
         <RewardPage
           cardDefinitionsById={cardDefinitionsById}
           offer={run.pendingReward}
@@ -321,6 +345,7 @@ export function BattleHud({
           artifactDefinitionsById={artifactDefinitionsById}
           cardDefinitionsById={cardDefinitionsById}
           deckCards={run.deckCards}
+          incenseSealDefinitionsById={incenseSealDefinitionsById}
           items={currentShopItems}
           run={run}
           t={t}
@@ -410,6 +435,13 @@ export function BattleHud({
           <LinzhaoPanel
             activeLinzhao={battle.linzhao}
             cardDefinitionsById={cardDefinitionsById}
+          />
+          <IncenseSealPanel
+            canAct={canAct}
+            incenseSealDefinitionsById={incenseSealDefinitionsById}
+            seals={battle.incenseSeals.seals}
+            selectedEnemy={enemy}
+            onUse={activateIncenseSeal}
           />
         </section>
       ) : null}
@@ -636,8 +668,60 @@ function TutorialRunPanel({
         {run.pendingReward ? <span>待选奖励</span> : null}
         {run.pendingRedInk ? <span>待朱批</span> : null}
         {run.pendingArtifactOffer ? <span>待选法宝</span> : null}
+        {run.pendingIncenseSealOffer ? <span>待选香封</span> : null}
       </div>
     </section>
+  )
+}
+
+function IncenseSealPanel({
+  seals,
+  incenseSealDefinitionsById,
+  selectedEnemy,
+  canAct,
+  onUse,
+}: {
+  readonly seals: readonly IncenseSealInstance[]
+  readonly incenseSealDefinitionsById: ReadonlyMap<string, IncenseSealDefinition>
+  readonly selectedEnemy?: EnemyState
+  readonly canAct: boolean
+  readonly onUse: (incenseSealInstanceId: string) => void
+}) {
+  return (
+    <div className="incense-seal-panel" aria-label="香封槽">
+      <div className="section-title-row compact">
+        <h4>香封</h4>
+        <span>{seals.length} / 2</span>
+      </div>
+      <div className="incense-seal-list">
+        {seals.length > 0 ? (
+          seals.map((seal) => {
+            const definition = incenseSealDefinitionsById.get(seal.definitionId)
+            const needsTarget = definition?.targetMode === 'selected_enemy'
+            const isDisabled = !canAct || (needsTarget && !selectedEnemy)
+            const title = definition
+              ? `${t(definition.descriptionKey)} ${t(definition.rulesTextKey)}`
+              : seal.definitionId
+
+            return (
+              <button
+                className="incense-seal-button"
+                disabled={isDisabled}
+                key={seal.id}
+                title={isDisabled && needsTarget ? '请先选择敌方目标' : title}
+                type="button"
+                onClick={() => onUse(seal.id)}
+              >
+                <strong>{getIncenseSealName(seal.definitionId)}</strong>
+                <span>{definition ? t(definition.rulesTextKey) : '缺少香封定义'}</span>
+              </button>
+            )
+          })
+        ) : (
+          <p className="empty-state">暂无香封。</p>
+        )}
+      </div>
+    </div>
   )
 }
 

@@ -23,6 +23,7 @@ import {
   resolveBattleStartRisk,
   resolveTutorialArtifactOffer,
   resolveTutorialEvent,
+  resolveTutorialIncenseSealOffer,
   resolveTutorialRedInk,
   resolveTutorialRest,
   resolveTutorialReward,
@@ -41,6 +42,8 @@ import type {
   EncounterDefinition,
   EnemyDefinition,
   EnemyState,
+  IncenseSealId,
+  IncenseSealInstanceId,
   RedInkAnnotationId,
   RouteDefinition,
   RouteNodeId,
@@ -73,6 +76,7 @@ export interface BattleHudProps {
 const battleContext: BattleReducerContext = {
   cardDefinitions: gameData.cards,
   enemyDefinitions: gameData.enemies,
+  incenseSealDefinitions: gameData.incenseSeals,
 }
 
 export const enemyDefinitionsById = new Map(gameData.enemies.map((enemy) => [enemy.id, enemy]))
@@ -221,6 +225,34 @@ export function useTutorialRunFlow({
     })
   }
 
+  function activateIncenseSeal(incenseSealInstanceId: IncenseSealInstanceId) {
+    setViewState((current) => {
+      const currentEnemy = getSelectedLivingEnemy(current.battle, current.selectedEnemyInstanceId)
+
+      if (
+        hasPendingRunChoice(current.run) ||
+        current.run.status !== 'active' ||
+        current.battle.phase !== 'player_turn' ||
+        current.battle.result.status !== 'ongoing'
+      ) {
+        return current
+      }
+
+      return {
+        ...current,
+        battle: reduceBattleState(
+          current.battle,
+          {
+            type: 'USE_INCENSE_SEAL',
+            incenseSealInstanceId,
+            targetEnemyInstanceId: currentEnemy?.instanceId,
+          },
+          battleContext,
+        ),
+      }
+    })
+  }
+
   function restartCurrentBattle() {
     setViewState((current) => {
       if (hasPendingRunChoice(current.run)) {
@@ -309,6 +341,8 @@ export function useTutorialRunFlow({
         getPersistentBattleResources(current.battle),
         getPersistentBattlePlayerForm(current.battle),
         current.battle.registerEntries,
+        current.battle.incenseSeals,
+        gameData.incenseSeals,
       )
       const nextRun = createRouteAwareArtifactOffer(advancedRun, nextRoute)
 
@@ -324,6 +358,29 @@ export function useTutorialRunFlow({
     setViewState((current) => {
       const nextRun = createRouteAwareArtifactOffer(
         resolveTutorialReward(current.run, cardDefinitionId),
+        current.route,
+      )
+      const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
+      const nextBattleView =
+        nextEncounter && !hasPendingRunChoice(nextRun)
+          ? createBattleForEncounter(nextEncounter, nextRun, current.route)
+          : undefined
+
+      return {
+        ...current,
+        run: nextBattleView?.run ?? nextRun,
+        battle: nextBattleView?.battle ?? current.battle,
+        selectedEnemyInstanceId: nextBattleView
+          ? getFirstLivingEnemy(nextBattleView.battle)?.instanceId
+          : current.selectedEnemyInstanceId,
+      }
+    })
+  }
+
+  function chooseIncenseSeal(incenseSealDefinitionId?: IncenseSealId) {
+    setViewState((current) => {
+      const nextRun = createRouteAwareArtifactOffer(
+        resolveTutorialIncenseSealOffer(current.run, incenseSealDefinitionId),
         current.route,
       )
       const nextEncounter = getCurrentRouteEncounter(tutorialRoute, current.route, gameData.encounters)
@@ -469,7 +526,11 @@ export function useTutorialRunFlow({
     })
   }
 
-  function buyShopItem(itemId: string, deckCardId?: RunDeckCardId) {
+  function buyShopItem(
+    itemId: string,
+    deckCardId?: RunDeckCardId,
+    replaceIncenseSealInstanceId?: IncenseSealInstanceId,
+  ) {
     setViewState((current) => {
       if (hasPendingRunChoice(current.run) || current.run.status !== 'active') {
         return current
@@ -488,11 +549,15 @@ export function useTutorialRunFlow({
           {
             itemId,
             deckCardId,
+            replaceIncenseSealInstanceId,
             routeNodeId: node.id,
+            routeSeed: current.route.routeId,
+            routeTendencyIds: node.routeTendencyIds ?? current.route.routeTendencyIds,
           },
           gameData.shopItems,
           gameData.cards,
           gameData.artifacts,
+          gameData.incenseSeals,
         ),
       }
     })
@@ -608,12 +673,14 @@ export function useTutorialRunFlow({
       endTurn,
       spendInkGuardName,
       spendInkCleanse,
+      activateIncenseSeal,
       restartCurrentBattle,
       restartTutorialRun,
       abandonTutorialRun,
       settleBattleDefeat,
       advanceAfterVictory,
       chooseReward,
+      chooseIncenseSeal,
       chooseVerdict,
       applyRedInk,
       chooseEvent,
@@ -640,6 +707,7 @@ export function hasPendingRunChoice(run: TutorialRunState) {
     run.pendingVerdict ||
       run.pendingRedInk ||
       run.pendingReward ||
+      run.pendingIncenseSealOffer ||
       run.pendingArtifactOffer,
   )
 }
@@ -675,6 +743,7 @@ function createBattle(
   extraDrawPileDefinitionIds: readonly CardId[] = [],
   artifactBacklashRecords: readonly ArtifactBacklashRecord[] = [],
   initialEnemyIntentIds: Readonly<Record<string, string>> = {},
+  incenseSeals?: TutorialRunState['incenseSeals'],
   openingIncenseBonus = 0,
   openingIncensePenalty = 0,
   openingDrawCount?: number,
@@ -699,6 +768,7 @@ function createBattle(
     extraDrawPileDefinitionIds,
     artifactBacklashRecords,
     initialEnemyIntentIds,
+    incenseSeals,
     openingIncenseBonus,
     openingIncensePenalty,
     openingDrawCount,
@@ -771,6 +841,7 @@ function createInitialTutorialBattleView(
             [fallbackEncounter!.enemyDefinitionId],
             route.routeTendencyIds ?? [],
           ),
+          run.incenseSeals,
         ),
       }
 
@@ -891,6 +962,7 @@ function createBattleForEncounter(
       riskResolution.extraDrawPileDefinitionIds,
       backlashResolution.records,
       riskResolution.initialEnemyIntentIds,
+      nextRun.incenseSeals,
       battleStartBonus?.incense ?? 0,
       riskResolution.openingIncensePenalty,
       riskResolution.openingDrawCount,

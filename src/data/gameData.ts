@@ -3,6 +3,7 @@ import rawCards from './cards.json'
 import rawEnemies from './enemies.json'
 import rawEncounters from './encounters.json'
 import rawEvents from './events.json'
+import rawIncenseSeals from './incense_seals.json'
 import rawRoutes from './routes.json'
 import rawShopItems from './shop_items.json'
 import rawTutorialUnlocks from './tutorial_unlocks.json'
@@ -13,6 +14,7 @@ import type {
   EncounterDefinition,
   EnemyDefinition,
   EventDefinition,
+  IncenseSealDefinition,
   LocalizationKey,
   RouteDefinition,
   TutorialShopItemDefinition,
@@ -25,6 +27,7 @@ export interface GameData {
   readonly enemies: readonly EnemyDefinition[]
   readonly encounters: readonly EncounterDefinition[]
   readonly events: readonly EventDefinition[]
+  readonly incenseSeals: readonly IncenseSealDefinition[]
   readonly routes: readonly RouteDefinition[]
   readonly shopItems: readonly TutorialShopItemDefinition[]
   readonly tutorialUnlocks: readonly TutorialUnlockDefinition[]
@@ -36,6 +39,7 @@ const cards = rawCards as readonly CardDefinition[]
 const enemies = rawEnemies as readonly EnemyDefinition[]
 const encounters = rawEncounters as readonly EncounterDefinition[]
 const events = rawEvents as readonly EventDefinition[]
+const incenseSeals = rawIncenseSeals as readonly IncenseSealDefinition[]
 const routes = rawRoutes as readonly RouteDefinition[]
 const shopItems = rawShopItems as readonly TutorialShopItemDefinition[]
 const tutorialUnlocks = rawTutorialUnlocks as readonly TutorialUnlockDefinition[]
@@ -47,10 +51,11 @@ export function loadGameData(): GameData {
   assertUniqueIds(enemies, 'enemy')
   assertUniqueIds(encounters, 'encounter')
   assertUniqueIds(events, 'event')
+  assertUniqueIds(incenseSeals, 'incense seal')
   assertUniqueIds(routes, 'route')
   assertUniqueIds(shopItems, 'shop item')
   assertEncounterEnemyIds(encounters, enemies)
-  assertEventCardIds(events, cards)
+  assertEventReferences(events, cards, incenseSeals)
   assertShopItemReferences(shopItems, cards, artifacts)
   assertRouteNodeIds(routes)
   assertRouteReferences(routes, encounters, events)
@@ -62,6 +67,7 @@ export function loadGameData(): GameData {
     enemies,
     encounters,
     events,
+    incenseSeals,
     routes,
     shopItems,
     tutorialUnlocks,
@@ -87,6 +93,10 @@ export function getEncounterDefinition(id: string, data: GameData = loadGameData
 
 export function getEventDefinition(id: string, data: GameData = loadGameData()) {
   return data.events.find((event) => event.id === id)
+}
+
+export function getIncenseSealDefinition(id: string, data: GameData = loadGameData()) {
+  return data.incenseSeals.find((seal) => seal.id === id)
 }
 
 export function getRouteDefinition(id: string, data: GameData = loadGameData()) {
@@ -145,11 +155,13 @@ function assertEncounterEnemyIds(
   }
 }
 
-function assertEventCardIds(
+function assertEventReferences(
   events: readonly EventDefinition[],
   cards: readonly CardDefinition[],
+  incenseSealDefinitions: readonly IncenseSealDefinition[],
 ) {
   const cardIds = new Set(cards.map((card) => card.id))
+  const incenseSealIds = new Set(incenseSealDefinitions.map((seal) => seal.id))
 
   for (const event of events) {
     for (const option of event.options) {
@@ -167,6 +179,15 @@ function assertEventCardIds(
         ) {
           throw new Error(
             `Event option ${option.id} references missing removed card ${effect.cardDefinitionId}`,
+          )
+        }
+
+        if (
+          effect.type === 'ADD_INCENSE_SEAL' &&
+          !incenseSealIds.has(effect.incenseSealDefinitionId)
+        ) {
+          throw new Error(
+            `Event option ${option.id} references missing incense seal ${effect.incenseSealDefinitionId}`,
           )
         }
       }

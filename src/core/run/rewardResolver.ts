@@ -1,4 +1,5 @@
 import type {
+  CardRarity,
   CardDefinition,
   CardId,
   EncounterDefinition,
@@ -37,6 +38,7 @@ const MECHANIC_TAGS = new Set([
 export interface CreateTutorialRewardOfferInput {
   readonly encounter: EncounterDefinition
   readonly settlement: VictorySettlement
+  readonly incenseMoneyReward?: number
   readonly unlocks: UnlockState
   readonly cardDefinitions: readonly CardDefinition[]
   readonly roleId?: PlayableRoleId
@@ -45,6 +47,7 @@ export interface CreateTutorialRewardOfferInput {
 export function createTutorialRewardOffer({
   encounter,
   settlement,
+  incenseMoneyReward = 0,
   unlocks,
   cardDefinitions,
   roleId,
@@ -62,6 +65,7 @@ export function createTutorialRewardOffer({
     encounterId: encounter.id,
     settlement,
     quality,
+    incenseMoneyReward,
     options,
   }
 }
@@ -127,6 +131,7 @@ function createTutorialRewardRecord(
     encounterId: offer.encounterId,
     settlement: offer.settlement,
     quality: offer.quality,
+    incenseMoneyReward: offer.incenseMoneyReward,
     offeredCardDefinitionIds: offer.options.map((option) => option.cardDefinitionId),
     selectedCardDefinitionId,
     skipped: !selectedCardDefinitionId,
@@ -150,18 +155,20 @@ function selectRewardOptions({
   const latestStageCards = latestStageId
     ? cards.filter((card) => card.unlockStage === latestStageId)
     : []
-  const orderedCards = uniqueCards([
+  const seed = `${encounter.id}:${latestStageId ?? 'none'}:${roleId ?? 'default'}`
+  const baseCards = cards.filter((card) => card.rarity !== 'rare')
+  const tendencyCards = uniqueCards([
     ...sortCardsByRolePreference(latestStageCards, roleId),
     ...sortCardsByRolePreference(cards, roleId),
   ])
-  const optionCount = 3
-  const rotatedCards = rotateRewardCandidates({
-    cards: orderedCards,
-    fixedHeadCount: 1,
-    offsetSeed: `${encounter.id}:${latestStageId ?? 'none'}:${roleId ?? 'default'}`,
-  })
+  const surpriseCards = getSurpriseRewardCandidates(cards, unlocks, encounter)
+  const selectedCards = fillRewardSlots([
+    pickFromSlot(tendencyCards, `${seed}:tendency`, roleId, 1),
+    pickFromSlot(baseCards, `${seed}:base`, roleId, 0),
+    pickFromSlot(surpriseCards, `${seed}:surprise`, roleId, 0),
+  ], tendencyCards)
 
-  return rotatedCards.slice(0, optionCount).map((card, index) => ({
+  return selectedCards.slice(0, 3).map((card, index) => ({
     id: `${encounter.id}_${quality}_${index + 1}_${card.id}`,
     type: 'card',
     cardDefinitionId: card.id,
@@ -225,6 +232,74 @@ function sortCardsByRolePreference(
     }))
     .sort((left, right) => right.score - left.score || left.index - right.index)
     .map(({ card }) => card)
+}
+
+export function getRoleRewardTagScore(card: CardDefinition, roleId?: PlayableRoleId): number {
+  const weights = roleId ? ROLE_REWARD_TAG_WEIGHTS[roleId] : undefined
+
+  if (!weights) {
+    return 0
+  }
+
+  return card.tags.reduce((total, tag) => total + (weights[tag] ?? 0), 0)
+}
+
+export function getCardRarityWeight(rarity: CardRarity): number {
+  if (rarity === 'rare') {
+    return 8
+  }
+
+  if (rarity === 'uncommon') {
+    return 4
+  }
+
+  return 0
+}
+
+function getSurpriseRewardCandidates(
+  cards: readonly CardDefinition[],
+  unlocks: UnlockState,
+  encounter: EncounterDefinition,
+): readonly CardDefinition[] {
+  const isEliteOrLate =
+    encounter.id.startsWith('encounter_elite_') ||
+    unlocks.stages.includes('stage_three_altars') ||
+    unlocks.stages.includes('stage_run_resources')
+  const allowedRarities: readonly CardRarity[] = isEliteOrLate
+    ? ['rare', 'uncommon']
+    : ['uncommon']
+  const candidates = cards.filter((card) => allowedRarities.includes(card.rarity))
+
+  return candidates.length > 0 ? candidates : cards
+}
+
+function pickFromSlot(
+  cards: readonly CardDefinition[],
+  seed: string,
+  roleId?: PlayableRoleId,
+  fixedHeadCount = 0,
+): CardDefinition | undefined {
+  const orderedCards = sortCardsByRolePreference(cards, roleId)
+  const rotatedCards = rotateRewardCandidates({
+    cards: orderedCards,
+    fixedHeadCount: orderedCards.length > 2 ? fixedHeadCount : 0,
+    offsetSeed: seed,
+  })
+
+  return rotatedCards[0]
+}
+
+function fillRewardSlots(
+  preferredCards: readonly (CardDefinition | undefined)[],
+  fallbackCards: readonly CardDefinition[],
+): readonly CardDefinition[] {
+  const selected = uniqueCards(preferredCards.filter((card): card is CardDefinition => Boolean(card)))
+
+  if (selected.length >= 3) {
+    return selected
+  }
+
+  return uniqueCards([...selected, ...fallbackCards]).slice(0, 3)
 }
 
 function getRewardQuality(settlement: VictorySettlement): RewardQuality {

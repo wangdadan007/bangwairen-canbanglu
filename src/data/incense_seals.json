@@ -1,0 +1,70 @@
+[
+  {
+    "id": "seal_guard_name",
+    "nameKey": "incense_seal.guard_name.name",
+    "descriptionKey": "incense_seal.guard_name.description",
+    "rulesTextKey": "incense_seal.guard_name.rules",
+    "effectType": "guard_name",
+    "targetMode": "selected_enemy",
+    "amount": 1,
+    "rarity": "common",
+    "price": 32
+  },
+  {
+    "id": "seal_clean_scroll",
+    "nameKey": "incense_seal.clean_scroll.name",
+    "descriptionKey": "incense_seal.clean_scroll.description",
+    "rulesTextKey": "incense_seal.clean_scroll.rules",
+    "effectType": "cleanse_fouled_scroll",
+    "targetMode": "none",
+    "amount": 2,
+    "rarity": "common",
+    "price": 35
+  },
+  {
+    "id": "seal_suppress_force",
+    "nameKey": "incense_seal.suppress_force.name",
+    "descriptionKey": "incense_seal.suppress_force.description",
+    "rulesTextKey": "incense_seal.suppress_force.rules",
+    "effectType": "suppress_incoming_force",
+    "targetMode": "selected_enemy",
+    "amount": 6,
+    "rarity": "common",
+    "price": 38
+  },
+  {
+    "id": "seal_counter_abnormal",
+    "nameKey": "incense_seal.counter_abnormal.name",
+    "descriptionKey": "incense_seal.counter_abnormal.description",
+    "rulesTextKey": "incense_seal.counter_abnormal.rules",
+    "effectType": "counter_abnormal_move",
+    "targetMode": "selected_enemy",
+    "amount": 1,
+    "rarity": "rare",
+    "price": 55
+  },
+  {
+    "id": "seal_renew_incense",
+    "nameKey": "incense_seal.renew_incense.name",
+    "descriptionKey": "incense_seal.renew_incense.description",
+    "rulesTextKey": "incense_seal.renew_incense.rules",
+    "effectType": "gain_incense_draw",
+    "targetMode": "none",
+    "amount": 2,
+    "drawCount": 1,
+    "rarity": "uncommon",
+    "price": 42
+  },
+  {
+    "id": "seal_burn_desk",
+    "nameKey": "incense_seal.burn_desk.name",
+    "descriptionKey": "incense_seal.burn_desk.description",
+    "rulesTextKey": "incense_seal.burn_desk.rules",
+    "effectType": "break_shape",
+    "targetMode": "selected_enemy",
+    "amount": 8,
+    "namedAmount": 11,
+    "rarity": "uncommon",
+    "price": 48
+  }
+]

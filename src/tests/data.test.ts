@@ -8,10 +8,11 @@ describe('initial game data', () => {
     expect(data.artifacts).toHaveLength(11)
     expect(data.cards).toHaveLength(48)
     expect(data.enemies).toHaveLength(16)
-    expect(data.encounters).toHaveLength(25)
+    expect(data.encounters).toHaveLength(30)
     expect(data.events).toHaveLength(9)
+    expect(data.incenseSeals).toHaveLength(6)
     expect(data.routes).toHaveLength(1)
-    expect(data.shopItems).toHaveLength(5)
+    expect(data.shopItems).toHaveLength(4)
     expect(data.tutorialUnlocks).toHaveLength(6)
     expect(data.localization['card.zhu_fu.name']).toBe('朱符')
   })
@@ -22,6 +23,9 @@ describe('initial game data', () => {
     expect(new Set(data.artifacts.map((artifact) => artifact.id)).size).toBe(data.artifacts.length)
     expect(new Set(data.cards.map((card) => card.id)).size).toBe(data.cards.length)
     expect(new Set(data.enemies.map((enemy) => enemy.id)).size).toBe(data.enemies.length)
+    expect(new Set(data.incenseSeals.map((seal) => seal.id)).size).toBe(
+      data.incenseSeals.length,
+    )
     expect(new Set(data.encounters.map((encounter) => encounter.id)).size).toBe(
       data.encounters.length,
     )
@@ -95,11 +99,18 @@ describe('initial game data', () => {
     expect(getCardDefinition('card_order_scroll', data)?.effects[0].type).toBe('DRAW')
     expect(getCardDefinition('card_quiet_incense', data)?.effects[0].type).toBe('GAIN_INCENSE')
     expect(getCardDefinition('card_split_form_talisman', data)?.tags).toContain('reward')
-    expect(getCardDefinition('card_heavy_split_form_talisman', data)?.effects[0]).toEqual({
+    expect(getCardDefinition('card_heavy_split_form_talisman', data)?.effects).toEqual([
+      {
+        type: 'GAIN_DOOM',
+        target: 'self',
+        amount: 1,
+      },
+      {
       type: 'BREAK_SHAPE',
       target: 'selected_enemy',
-      amount: 10,
-    })
+        amount: 12,
+      },
+    ])
     expect(getCardDefinition('card_trace_name_slip', data)?.tags).toContain('catalogue_reward')
     expect(getCardDefinition('card_thunder_splinter', data)?.effects.map((effect) => effect.type)).toEqual([
       'BREAK_SHAPE',
@@ -358,6 +369,11 @@ describe('initial game data', () => {
       'enemy_paper_wraith',
       'enemy_incense_thief_mouse',
       'enemy_incense_thief_mouse',
+      'enemy_ash_altar_child',
+      'enemy_unlit_temple_warden',
+      'enemy_plague_paper_figure',
+      'enemy_fleeing_name_paper_horse',
+      'enemy_plague_paper_figure',
       'enemy_incense_clerk',
       'enemy_fire_fleeing_name',
       'enemy_dipper_empty_shell',
@@ -489,6 +505,7 @@ describe('initial game data', () => {
       'encounter_pool_fleeing_name_paper_horse_return',
       'encounter_pool_offering_table_afterimage_return',
       'encounter_multi_offering_table_mouse',
+      'encounter_multi_fleeing_horse_louse',
     ])
     expect(nodesById.get('route_node_unlit_temple_warden')?.routeTendencyIds).toEqual([
       'steady',
@@ -543,12 +560,15 @@ describe('initial game data', () => {
     }
 
     expect(cardsByDirection.breakForm).toHaveLength(18)
-    expect(cardsByDirection.askName).toHaveLength(8)
+    expect(cardsByDirection.askName).toHaveLength(10)
     expect(cardsByDirection.sealMomentum).toHaveLength(10)
     expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(38)
     expect(
       data.cards.filter((card) => card.effects.some((effect) => effect.type === 'ASK_NAME')),
-    ).toHaveLength(6)
+    ).toHaveLength(7)
+    expect(data.cards.filter((card) => card.rarity === 'rare')).toHaveLength(5)
+    expect(data.cards.filter((card) => card.rarity === 'uncommon')).toHaveLength(21)
+    expect(data.cards.filter((card) => card.rarity === 'common')).toHaveLength(22)
     expect(
       data.cards.filter((card) =>
         card.effects.some(
@@ -578,10 +598,12 @@ describe('initial game data', () => {
     )
 
     expect(Math.max(...directBreakAmounts)).toBeLessThanOrEqual(8)
-    expect(heavySplitForm?.effects[0]).toEqual({
+    expect(heavySplitForm?.cost).toBe(2)
+    expect(heavySplitForm?.rarity).toBe('rare')
+    expect(heavySplitForm?.effects[1]).toEqual({
       type: 'BREAK_SHAPE',
       target: 'selected_enemy',
-      amount: 10,
+      amount: 12,
     })
     expect(Math.max(...sealMomentumAmounts)).toBeLessThanOrEqual(5)
   })
@@ -594,6 +616,7 @@ describe('initial game data', () => {
     expect(hasNonAsciiKey(data.enemies)).toBe(false)
     expect(hasNonAsciiKey(data.encounters)).toBe(false)
     expect(hasNonAsciiKey(data.events)).toBe(false)
+    expect(hasNonAsciiKey(data.incenseSeals)).toBe(false)
     expect(hasNonAsciiKey(data.routes)).toBe(false)
     expect(hasNonAsciiKey(data.tutorialUnlocks)).toBe(false)
   })
@@ -677,6 +700,17 @@ describe('initial game data', () => {
     ])
 
     expect(shopLocalizationKeys.every((key) => data.localization[key])).toBe(true)
+  })
+
+  it('keeps every incense seal display key covered by localization', () => {
+    const data = loadGameData()
+    const incenseSealLocalizationKeys = data.incenseSeals.flatMap((seal) => [
+      seal.nameKey,
+      seal.descriptionKey,
+      seal.rulesTextKey,
+    ])
+
+    expect(incenseSealLocalizationKeys.every((key) => data.localization[key])).toBe(true)
   })
 
   it('keeps every route display key covered by localization', () => {

@@ -7,7 +7,10 @@
     "cost": 1,
     "type": "talisman",
     "unlockStage": "stage_core",
-    "tags": ["starter", "break_form"],
+    "tags": [
+      "starter",
+      "break_form"
+    ],
     "effects": [
       {
         "type": "BREAK_SHAPE",
@@ -22,7 +25,8 @@
           "type": "TARGET_HAS_REVEALED_NAME_SLOT"
         }
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_ask_name",
@@ -32,7 +36,10 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_core",
-    "tags": ["starter", "ask_name"],
+    "tags": [
+      "starter",
+      "ask_name"
+    ],
     "effects": [
       {
         "type": "ASK_NAME",
@@ -47,7 +54,8 @@
           "type": "TARGET_HAS_NO_NAME_SLOT"
         }
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_guard_desk_talisman",
@@ -57,14 +65,18 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_core",
-    "tags": ["starter", "seal_momentum"],
+    "tags": [
+      "starter",
+      "seal_momentum"
+    ],
     "effects": [
       {
         "type": "SEAL_MOMENTUM",
         "target": "selected_enemy",
         "amount": 3
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_cut_supply_talisman",
@@ -74,14 +86,18 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_core",
-    "tags": ["starter", "counter_abnormal_move"],
+    "tags": [
+      "starter",
+      "counter_abnormal_move"
+    ],
     "effects": [
       {
         "type": "COUNTER_ABNORMAL_MOVE",
         "target": "selected_enemy",
         "moveType": "steal_incense"
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_mark_forehead",
@@ -91,7 +107,11 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_core",
-    "tags": ["starter", "break_form", "ask_name"],
+    "tags": [
+      "starter",
+      "break_form",
+      "ask_name"
+    ],
     "effects": [
       {
         "type": "BREAK_SHAPE",
@@ -103,7 +123,8 @@
         "target": "selected_enemy",
         "amount": 1
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_order_scroll",
@@ -113,14 +134,19 @@
     "cost": 0,
     "type": "ritual",
     "unlockStage": "stage_core",
-    "tags": ["starter", "draw", "mvp_simplified"],
+    "tags": [
+      "starter",
+      "draw",
+      "mvp_simplified"
+    ],
     "effects": [
       {
         "type": "DRAW",
         "target": "self",
         "count": 1
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_quiet_incense",
@@ -130,14 +156,20 @@
     "cost": 0,
     "type": "ritual",
     "unlockStage": "stage_core",
-    "tags": ["starter", "gain_incense", "exhaust", "mvp_simplified"],
+    "tags": [
+      "starter",
+      "gain_incense",
+      "exhaust",
+      "mvp_simplified"
+    ],
     "effects": [
       {
         "type": "GAIN_INCENSE",
         "target": "self",
         "amount": 1
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_split_form_talisman",
@@ -147,31 +179,46 @@
     "cost": 1,
     "type": "talisman",
     "unlockStage": "stage_core",
-    "tags": ["reward", "break_form"],
+    "tags": [
+      "reward",
+      "break_form"
+    ],
     "effects": [
       {
         "type": "BREAK_SHAPE",
         "target": "selected_enemy",
         "amount": 6
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_heavy_split_form_talisman",
     "nameKey": "card.heavy_split_form_talisman.name",
     "descriptionKey": "card.heavy_split_form_talisman.description",
     "rulesTextKey": "card.heavy_split_form_talisman.rules",
-    "cost": 1,
+    "cost": 2,
     "type": "talisman",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "fracture", "doom", "break_form"],
+    "tags": [
+      "reward",
+      "fracture",
+      "doom",
+      "break_form"
+    ],
     "effects": [
+      {
+        "type": "GAIN_DOOM",
+        "target": "self",
+        "amount": 1
+      },
       {
         "type": "BREAK_SHAPE",
         "target": "selected_enemy",
-        "amount": 10
+        "amount": 12
       }
-    ]
+    ],
+    "rarity": "rare"
   },
   {
     "id": "card_trace_name_slip",
@@ -181,7 +228,12 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_human_altar",
-    "tags": ["reward", "catalogue_reward", "ask_name", "linzhao"],
+    "tags": [
+      "reward",
+      "catalogue_reward",
+      "ask_name",
+      "linzhao"
+    ],
     "effects": [
       {
         "type": "PLACE_LINZHAO",
@@ -193,7 +245,8 @@
         "amount": 1,
         "namedAmount": 2
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_thunder_splinter",
@@ -203,7 +256,11 @@
     "cost": 1,
     "type": "talisman",
     "unlockStage": "stage_human_altar",
-    "tags": ["reward", "break_form", "thunder"],
+    "tags": [
+      "reward",
+      "break_form",
+      "thunder"
+    ],
     "effects": [
       {
         "type": "BREAK_SHAPE",
@@ -215,7 +272,8 @@
         "target": "selected_enemy",
         "amount": 3
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_name_hook_charm",
@@ -225,7 +283,12 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_human_altar",
-    "tags": ["reward", "ask_name", "break_form", "whip"],
+    "tags": [
+      "reward",
+      "ask_name",
+      "break_form",
+      "whip"
+    ],
     "effects": [
       {
         "type": "ASK_NAME",
@@ -248,7 +311,8 @@
           "type": "THIS_TURN_NAMED_ENEMY"
         }
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_heavy_edict",
@@ -258,7 +322,12 @@
     "cost": 1,
     "type": "talisman",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "break_form", "seal_momentum", "judgement"],
+    "tags": [
+      "reward",
+      "break_form",
+      "seal_momentum",
+      "judgement"
+    ],
     "effects": [
       {
         "type": "BREAK_SHAPE",
@@ -273,7 +342,8 @@
           "type": "TARGET_IS_NAMED"
         }
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_mirror_slip",
@@ -283,7 +353,13 @@
     "cost": 0,
     "type": "edict",
     "unlockStage": "stage_core",
-    "tags": ["reward", "catalogue_reward", "ink", "draw", "exhaust"],
+    "tags": [
+      "reward",
+      "catalogue_reward",
+      "ink",
+      "draw",
+      "exhaust"
+    ],
     "effects": [
       {
         "type": "DRAW",
@@ -295,7 +371,8 @@
         "target": "self",
         "amount": 1
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_press_door_charm",
@@ -305,14 +382,19 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_abnormal_boundary",
-    "tags": ["reward", "seal_momentum", "incoming_force"],
+    "tags": [
+      "reward",
+      "seal_momentum",
+      "incoming_force"
+    ],
     "effects": [
       {
         "type": "SEAL_MOMENTUM",
         "target": "selected_enemy",
         "amount": 5
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_counterforce_talisman",
@@ -322,7 +404,13 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "seal_momentum", "incoming_force", "break_form", "judgement"],
+    "tags": [
+      "reward",
+      "seal_momentum",
+      "incoming_force",
+      "break_form",
+      "judgement"
+    ],
     "effects": [
       {
         "type": "SEAL_MOMENTUM",
@@ -334,7 +422,8 @@
         "target": "selected_enemy",
         "amount": 2
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_joint_seal_tablet",
@@ -344,14 +433,19 @@
     "cost": 2,
     "type": "counter",
     "unlockStage": "stage_abnormal_boundary",
-    "tags": ["reward", "seal_momentum", "incoming_force"],
+    "tags": [
+      "reward",
+      "seal_momentum",
+      "incoming_force"
+    ],
     "effects": [
       {
         "type": "SEAL_MOMENTUM",
         "target": "all_enemies",
         "amount": 3
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_watch_incense_line",
@@ -361,7 +455,12 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_abnormal_boundary",
-    "tags": ["reward", "counter_abnormal_move", "abnormal_move", "gain_incense"],
+    "tags": [
+      "reward",
+      "counter_abnormal_move",
+      "abnormal_move",
+      "gain_incense"
+    ],
     "effects": [
       {
         "type": "COUNTER_ABNORMAL_MOVE",
@@ -373,7 +472,8 @@
         "target": "self",
         "amount": 1
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_red_ink_trial",
@@ -383,7 +483,11 @@
     "cost": 1,
     "type": "ritual",
     "unlockStage": "stage_human_altar",
-    "tags": ["reward", "red_ink_preview", "linzhao"],
+    "tags": [
+      "reward",
+      "red_ink_preview",
+      "linzhao"
+    ],
     "effects": [
       {
         "type": "PLACE_LINZHAO",
@@ -396,7 +500,8 @@
         "firstTriggerIncense": 1,
         "recurringIncense": 1
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_sweep_ash_talisman",
@@ -406,14 +511,19 @@
     "cost": 1,
     "type": "talisman",
     "unlockStage": "stage_human_altar",
-    "tags": ["reward", "break_form", "multi_enemy"],
+    "tags": [
+      "reward",
+      "break_form",
+      "multi_enemy"
+    ],
     "effects": [
       {
         "type": "BREAK_SHAPE",
         "target": "all_enemies",
         "amount": 2
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_chase_imp_talisman",
@@ -423,7 +533,11 @@
     "cost": 1,
     "type": "talisman",
     "unlockStage": "stage_human_altar",
-    "tags": ["reward", "break_form", "multi_enemy"],
+    "tags": [
+      "reward",
+      "break_form",
+      "multi_enemy"
+    ],
     "effects": [
       {
         "type": "BREAK_SHAPE",
@@ -436,7 +550,8 @@
         "targetFilter": "nameless",
         "amount": 1
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_ink_rubbing_slip",
@@ -446,7 +561,11 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "ink", "ask_name"],
+    "tags": [
+      "reward",
+      "ink",
+      "ask_name"
+    ],
     "effects": [
       {
         "type": "ASK_NAME",
@@ -458,7 +577,8 @@
         "target": "self",
         "amount": 1
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_borrowed_doom_talisman",
@@ -468,7 +588,11 @@
     "cost": 0,
     "type": "ritual",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "doom", "gain_incense"],
+    "tags": [
+      "reward",
+      "doom",
+      "gain_incense"
+    ],
     "effects": [
       {
         "type": "GAIN_DOOM",
@@ -480,7 +604,8 @@
         "target": "self",
         "amount": 2
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_human_altar_name_sigil",
@@ -490,7 +615,13 @@
     "cost": 1,
     "type": "ritual",
     "unlockStage": "stage_human_altar",
-    "tags": ["reward", "altar", "human_altar", "formation", "ink"],
+    "tags": [
+      "reward",
+      "altar",
+      "human_altar",
+      "formation",
+      "ink"
+    ],
     "effects": [
       {
         "type": "PLACE_ALTAR",
@@ -501,7 +632,8 @@
           "amount": 1
         }
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_earth_altar_watch",
@@ -511,7 +643,14 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "altar", "earth_altar", "formation", "counter_abnormal_move", "ink"],
+    "tags": [
+      "reward",
+      "altar",
+      "earth_altar",
+      "formation",
+      "counter_abnormal_move",
+      "ink"
+    ],
     "effects": [
       {
         "type": "PLACE_ALTAR",
@@ -522,7 +661,8 @@
           "amount": 1
         }
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_heaven_altar_oracle",
@@ -532,7 +672,15 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "catalogue_reward", "altar", "heaven_altar", "formation", "ask_name", "ink"],
+    "tags": [
+      "reward",
+      "catalogue_reward",
+      "altar",
+      "heaven_altar",
+      "formation",
+      "ask_name",
+      "ink"
+    ],
     "effects": [
       {
         "type": "PLACE_ALTAR",
@@ -543,7 +691,8 @@
           "amount": 1
         }
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_ink_seal_edict",
@@ -553,7 +702,11 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "ink", "draw"],
+    "tags": [
+      "reward",
+      "ink",
+      "draw"
+    ],
     "effects": [
       {
         "type": "GAIN_INK",
@@ -565,7 +718,8 @@
         "target": "self",
         "count": 1
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_doom_flash_talisman",
@@ -575,7 +729,12 @@
     "cost": 1,
     "type": "talisman",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "doom", "break_form", "fire"],
+    "tags": [
+      "reward",
+      "doom",
+      "break_form",
+      "fire"
+    ],
     "effects": [
       {
         "type": "GAIN_DOOM",
@@ -592,7 +751,8 @@
         "target": "selected_enemy",
         "amount": 2
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_altar_echo_slip",
@@ -602,7 +762,14 @@
     "cost": 1,
     "type": "ritual",
     "unlockStage": "stage_human_altar",
-    "tags": ["reward", "altar", "human_altar", "formation", "break_form", "exhaust"],
+    "tags": [
+      "reward",
+      "altar",
+      "human_altar",
+      "formation",
+      "break_form",
+      "exhaust"
+    ],
     "effects": [
       {
         "type": "PLACE_ALTAR",
@@ -621,7 +788,8 @@
           "type": "THIS_TURN_PLACED_ALTAR"
         }
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_earth_counter_charm",
@@ -631,7 +799,13 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "earth_altar", "formation", "seal_momentum", "counter_abnormal_move"],
+    "tags": [
+      "reward",
+      "earth_altar",
+      "formation",
+      "seal_momentum",
+      "counter_abnormal_move"
+    ],
     "effects": [
       {
         "type": "SEAL_MOMENTUM",
@@ -643,7 +817,8 @@
         "target": "selected_enemy",
         "moveType": "steal_incense"
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_heaven_trace_edict",
@@ -653,7 +828,14 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "catalogue_reward", "heaven_altar", "formation", "gain_incense", "draw"],
+    "tags": [
+      "reward",
+      "catalogue_reward",
+      "heaven_altar",
+      "formation",
+      "gain_incense",
+      "draw"
+    ],
     "effects": [
       {
         "type": "DRAW",
@@ -668,7 +850,8 @@
           "type": "THIS_TURN_NAMED_ENEMY"
         }
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_artifact_polish_slip",
@@ -678,7 +861,13 @@
     "cost": 0,
     "type": "ritual",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "artifact", "ink", "draw", "exhaust"],
+    "tags": [
+      "reward",
+      "artifact",
+      "ink",
+      "draw",
+      "exhaust"
+    ],
     "effects": [
       {
         "type": "GAIN_INK",
@@ -690,7 +879,8 @@
         "target": "self",
         "count": 1
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_registry_splinter",
@@ -700,7 +890,13 @@
     "cost": 2,
     "type": "talisman",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "fracture", "doom", "break_form"],
+    "tags": [
+      "reward",
+      "fracture",
+      "doom",
+      "break_form",
+      "ask_name"
+    ],
     "effects": [
       {
         "type": "GAIN_DOOM",
@@ -710,9 +906,18 @@
       {
         "type": "BREAK_SHAPE",
         "target": "selected_enemy",
-        "amount": 8
+        "amount": 7
+      },
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 5,
+        "condition": {
+          "type": "THIS_TURN_NAMED_ENEMY"
+        }
       }
-    ]
+    ],
+    "rarity": "rare"
   },
   {
     "id": "card_clean_scroll_charm",
@@ -722,7 +927,13 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "counter_abnormal_move", "abnormal_move", "draw", "fouled_scroll"],
+    "tags": [
+      "reward",
+      "counter_abnormal_move",
+      "abnormal_move",
+      "draw",
+      "fouled_scroll"
+    ],
     "effects": [
       {
         "type": "COUNTER_ABNORMAL_MOVE",
@@ -734,7 +945,8 @@
         "target": "self",
         "count": 1
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_name_net_talisman",
@@ -744,7 +956,12 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "seal_momentum", "counter_abnormal_move", "linzhao"],
+    "tags": [
+      "reward",
+      "seal_momentum",
+      "counter_abnormal_move",
+      "linzhao"
+    ],
     "effects": [
       {
         "type": "PLACE_LINZHAO",
@@ -756,7 +973,8 @@
         "amount": 2,
         "namedAmount": 3
       }
-    ]
+    ],
+    "rarity": "rare"
   },
   {
     "id": "card_mirror_bind_edict",
@@ -766,7 +984,13 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "catalogue_reward", "artifact", "ink", "draw"],
+    "tags": [
+      "reward",
+      "catalogue_reward",
+      "artifact",
+      "ink",
+      "draw"
+    ],
     "effects": [
       {
         "type": "GAIN_INK",
@@ -778,7 +1002,8 @@
         "target": "self",
         "count": 1
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_sealback_talisman",
@@ -788,7 +1013,12 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_abnormal_boundary",
-    "tags": ["reward", "seal_momentum", "incoming_force", "draw"],
+    "tags": [
+      "reward",
+      "seal_momentum",
+      "incoming_force",
+      "draw"
+    ],
     "effects": [
       {
         "type": "SEAL_MOMENTUM",
@@ -803,7 +1033,8 @@
           "type": "TARGET_HAS_REVEALED_NAME_SLOT"
         }
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_cinnabar_return_slip",
@@ -813,14 +1044,21 @@
     "cost": 0,
     "type": "ritual",
     "unlockStage": "stage_human_altar",
-    "tags": ["reward", "red_ink_preview", "break_form", "fire", "exhaust"],
+    "tags": [
+      "reward",
+      "red_ink_preview",
+      "break_form",
+      "fire",
+      "exhaust"
+    ],
     "effects": [
       {
         "type": "APPLY_FIRE_MARK",
         "target": "selected_enemy",
         "amount": 2
       }
-    ]
+    ],
+    "rarity": "common"
   },
   {
     "id": "card_doom_account_tally",
@@ -830,7 +1068,12 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "doom", "ask_name", "draw"],
+    "tags": [
+      "reward",
+      "doom",
+      "ask_name",
+      "draw"
+    ],
     "effects": [
       {
         "type": "GAIN_DOOM",
@@ -847,7 +1090,8 @@
         "target": "self",
         "count": 1
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_whip_follow_charm",
@@ -857,7 +1101,13 @@
     "cost": 1,
     "type": "talisman",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "catalogue_reward", "artifact", "break_form", "whip"],
+    "tags": [
+      "reward",
+      "catalogue_reward",
+      "artifact",
+      "break_form",
+      "whip"
+    ],
     "effects": [
       {
         "type": "BREAK_SHAPE",
@@ -872,7 +1122,8 @@
           "type": "TARGET_HAS_REVEALED_NAME_SLOT"
         }
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_ash_lamp_counterseal",
@@ -882,7 +1133,12 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "seal_momentum", "counter_abnormal_move", "ink"],
+    "tags": [
+      "reward",
+      "seal_momentum",
+      "counter_abnormal_move",
+      "ink"
+    ],
     "effects": [
       {
         "type": "SEAL_MOMENTUM",
@@ -899,32 +1155,45 @@
         "target": "self",
         "amount": 1
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_registry_rewrite_edict",
     "nameKey": "card.registry_rewrite_edict.name",
     "descriptionKey": "card.registry_rewrite_edict.description",
     "rulesTextKey": "card.registry_rewrite_edict.rules",
-    "cost": 1,
+    "cost": 2,
     "type": "talisman",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "catalogue_reward", "break_form", "whip"],
+    "tags": [
+      "reward",
+      "catalogue_reward",
+      "ask_name",
+      "break_form",
+      "whip"
+    ],
     "effects": [
       {
-        "type": "BREAK_SHAPE",
+        "type": "ASK_NAME",
         "target": "selected_enemy",
-        "amount": 4
+        "amount": 1
       },
       {
         "type": "BREAK_SHAPE",
         "target": "selected_enemy",
-        "amount": 2,
+        "amount": 6
+      },
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 6,
         "condition": {
           "type": "TARGET_IS_NAMED"
         }
       }
-    ]
+    ],
+    "rarity": "rare"
   },
   {
     "id": "card_heaven_ink_decree",
@@ -934,7 +1203,14 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "catalogue_reward", "heaven_altar", "formation", "ask_name", "ink"],
+    "tags": [
+      "reward",
+      "catalogue_reward",
+      "heaven_altar",
+      "formation",
+      "ask_name",
+      "ink"
+    ],
     "effects": [
       {
         "type": "ASK_NAME",
@@ -954,7 +1230,8 @@
           "type": "THIS_TURN_NAMED_ENEMY"
         }
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_altar_threefold_sigil",
@@ -964,23 +1241,44 @@
     "cost": 2,
     "type": "ritual",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "altar", "human_altar", "earth_altar", "heaven_altar", "formation", "ink"],
+    "tags": [
+      "reward",
+      "altar",
+      "human_altar",
+      "earth_altar",
+      "heaven_altar",
+      "formation",
+      "ink",
+      "draw"
+    ],
     "effects": [
       {
         "type": "PLACE_ALTAR",
-        "target": "selected_enemy",
+        "target": "self",
         "altarSlot": "human",
         "altarEffect": {
-          "type": "gain_ink_for_name_progress",
+          "type": "draw_if_named_or_ink",
           "amount": 1
         }
       },
       {
         "type": "GAIN_INK",
         "target": "self",
-        "amount": 1
+        "amount": 1,
+        "condition": {
+          "type": "THIS_TURN_PLACED_ALTAR"
+        }
+      },
+      {
+        "type": "DRAW",
+        "target": "self",
+        "count": 1,
+        "condition": {
+          "type": "THIS_TURN_PLACED_ALTAR"
+        }
       }
-    ]
+    ],
+    "rarity": "rare"
   },
   {
     "id": "card_fracture_guard_talisman",
@@ -990,7 +1288,12 @@
     "cost": 1,
     "type": "counter",
     "unlockStage": "stage_run_resources",
-    "tags": ["reward", "fracture", "seal_momentum", "break_form"],
+    "tags": [
+      "reward",
+      "fracture",
+      "seal_momentum",
+      "break_form"
+    ],
     "effects": [
       {
         "type": "SEAL_MOMENTUM",
@@ -1005,7 +1308,8 @@
           "type": "TARGET_HAS_REVEALED_NAME_SLOT"
         }
       }
-    ]
+    ],
+    "rarity": "uncommon"
   },
   {
     "id": "card_fouled_scroll",
@@ -1015,8 +1319,13 @@
     "cost": 1,
     "type": "temporary",
     "unlockStage": "stage_run_resources",
-    "tags": ["temporary", "fouled_scroll", "exhaust"],
-    "effects": []
+    "tags": [
+      "temporary",
+      "fouled_scroll",
+      "exhaust"
+    ],
+    "effects": [],
+    "rarity": "common"
   },
   {
     "id": "card_doom_ash",
@@ -1026,8 +1335,14 @@
     "cost": 0,
     "type": "temporary",
     "unlockStage": "stage_run_resources",
-    "tags": ["temporary", "doom_ash", "doom", "exhaust"],
-    "effects": []
+    "tags": [
+      "temporary",
+      "doom_ash",
+      "doom",
+      "exhaust"
+    ],
+    "effects": [],
+    "rarity": "common"
   },
   {
     "id": "card_cracked_whip_echo",
@@ -1037,13 +1352,20 @@
     "cost": 0,
     "type": "temporary",
     "unlockStage": "stage_run_resources",
-    "tags": ["temporary", "artifact", "break_form", "whip", "exhaust"],
+    "tags": [
+      "temporary",
+      "artifact",
+      "break_form",
+      "whip",
+      "exhaust"
+    ],
     "effects": [
       {
         "type": "BREAK_SHAPE",
         "target": "selected_enemy",
         "amount": 3
       }
-    ]
+    ],
+    "rarity": "common"
   }
 ]

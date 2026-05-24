@@ -7,6 +7,7 @@ import {
   createTutorialRewardOffer,
   createUnlockState,
   getAvailableEventOptions,
+  getAvailableShopItems,
   getAvailableTutorialRewardCards,
   getCurrentRouteEvent,
   getRouteBattleEncounterIds,
@@ -140,11 +141,48 @@ function collectDisplayedRouteEventAddedCardIds(): Set<CardId> {
 }
 
 function collectShopCardIds(): Set<CardId> {
-  return new Set(
-    gameData.shopItems.flatMap((item) =>
-      item.kind === 'card' && item.cardDefinitionId ? [item.cardDefinitionId] : [],
-    ),
+  const cardIds = new Set<CardId>()
+  const shopNodes = gameData.routes.flatMap((route) =>
+    route.nodes.filter((node) => node.type === 'shop').map((node) => ({ route, node })),
   )
+
+  for (const roleId of ROLE_IDS) {
+    for (const unlocks of createCumulativeUnlockStates()) {
+      const run = {
+        ...createInitialTutorialRunState(
+          gameData.tutorialUnlocks,
+          undefined,
+          undefined,
+          gameData.artifacts,
+          roleId,
+        ),
+        unlocks,
+      }
+
+      for (const { route, node } of shopNodes) {
+        const items = getAvailableShopItems(
+          run,
+          gameData.shopItems,
+          gameData.cards,
+          gameData.artifacts,
+          {
+            routeNodeId: node.id,
+            routeSeed: route.id,
+            routeTendencyIds: node.routeTendencyIds,
+            incenseSealDefinitions: gameData.incenseSeals,
+          },
+        )
+
+        for (const item of items) {
+          if (item.kind === 'card' && item.cardDefinitionId) {
+            cardIds.add(item.cardDefinitionId)
+          }
+        }
+      }
+    }
+  }
+
+  return cardIds
 }
 
 function createRouteEventScenarios(seed: number) {

@@ -32,10 +32,17 @@ export function selectBattleHudState(viewState: TutorialBattleViewState) {
     currentRouteFlowKind === 'rest' ? getAvailableRestOptions(run) : []
   const currentShopItems =
     currentRouteFlowKind === 'shop'
-      ? getAvailableShopItems(run, gameData.shopItems, gameData.cards, gameData.artifacts)
+      ? getAvailableShopItems(run, gameData.shopItems, gameData.cards, gameData.artifacts, {
+          routeNodeId: currentRouteNode?.id,
+          routeSeed: viewState.route.routeId,
+          routeTendencyIds: currentRouteNode?.routeTendencyIds ?? viewState.route.routeTendencyIds,
+          incenseSealDefinitions: gameData.incenseSeals,
+        })
       : []
   const currentHeading = run.pendingArtifactOffer
     ? '法宝三选一'
+    : run.pendingIncenseSealOffer
+      ? '香封二选一'
     : currentEncounter
     ? t(currentEncounter.nameKey)
     : currentRouteEvent

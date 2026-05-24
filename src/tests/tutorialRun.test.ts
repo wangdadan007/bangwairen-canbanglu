@@ -48,6 +48,7 @@ describe('T09 tutorial run sequence', () => {
       {
         encounterId: 'encounter_tutorial_paper_wraith',
         settlement: 'catalogue',
+        incenseMoneyReward: 12,
       },
     ])
     expect(secondRun.unlocks.stages).toContain('stage_abnormal_boundary')

@@ -7,6 +7,7 @@ export type AltarEffectType =
   | 'gain_ink_for_name_progress'
   | 'counter_abnormal_or_gain_ink'
   | 'ask_name_and_gain_ink'
+  | 'draw_if_named_or_ink'
 
 export interface AltarEffectDefinition {
   readonly type: AltarEffectType

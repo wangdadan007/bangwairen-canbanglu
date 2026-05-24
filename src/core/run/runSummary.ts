@@ -28,6 +28,12 @@ export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSumm
     restCount: run.rests.records.length,
     shopPurchaseCount: run.shops.records.length,
     incenseMoney: run.currency.incenseMoney,
+    incenseMoneyEarned: run.settlements.reduce(
+      (total, record) => total + (record.incenseMoneyReward ?? 0),
+      0,
+    ),
+    incenseSealCount: run.incenseSeals.seals.length,
+    incenseSealUsedCount: run.incenseSeals.records.filter((record) => record.result === 'used').length,
     playerCurrentForm: run.playerForm.current,
     playerMaxForm: run.playerForm.max,
     ink: run.resources.ink,

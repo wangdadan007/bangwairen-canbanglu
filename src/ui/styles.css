@@ -904,6 +904,11 @@ button:disabled {
   border-left-color: #b28b52;
 }
 
+.reward-page.incense-seal-offer {
+  border-left-color: #5ca18a;
+  background: rgba(24, 77, 67, 0.34);
+}
+
 .event-page {
   display: grid;
   gap: 12px;
@@ -1357,6 +1362,26 @@ button:disabled {
 .shop-item.red-ink {
   border-color: rgba(201, 79, 61, 0.55);
   background: rgba(72, 30, 27, 0.42);
+}
+
+.shop-seal-replace {
+  display: grid;
+  gap: 6px;
+  border: 1px solid rgba(92, 161, 138, 0.38);
+  border-radius: 7px;
+  padding: 9px;
+  background: rgba(24, 77, 67, 0.24);
+  color: #d9ccb8;
+  font-size: 12px;
+}
+
+.shop-seal-replace select {
+  min-height: 34px;
+  border: 1px solid rgba(178, 139, 82, 0.5);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: #f2ddac;
+  background: rgba(19, 18, 17, 0.92);
 }
 
 .rest-option-copy,
@@ -2036,6 +2061,44 @@ button:disabled {
 .linzhao-slot strong {
   color: #e1f1ec;
   font-size: 13px;
+  line-height: 1.35;
+}
+
+.incense-seal-panel {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.section-title-row.compact {
+  margin-top: 0;
+}
+
+.incense-seal-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.incense-seal-button {
+  display: grid;
+  min-height: 72px;
+  align-content: center;
+  gap: 4px;
+  border-color: rgba(92, 161, 138, 0.58);
+  padding: 8px;
+  color: #ddf3ea;
+  background: rgba(24, 77, 67, 0.34);
+  text-align: left;
+}
+
+.incense-seal-button:hover {
+  background: rgba(38, 101, 88, 0.42);
+}
+
+.incense-seal-button span {
+  color: #b8d9ce;
+  font-size: 12px;
   line-height: 1.35;
 }
 

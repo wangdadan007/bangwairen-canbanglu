@@ -1,4 +1,5 @@
 import type { CardId, EventId, LocalizationKey, UnlockStageId } from './common'
+import type { IncenseSealId } from './incenseSeal'
 
 export type EventFlag = 'ink' | 'fracture' | 'doom' | 'red_ink'
 
@@ -29,6 +30,10 @@ export type EventEffect =
     }
   | {
       readonly type: 'CREATE_RED_INK_OFFER'
+    }
+  | {
+      readonly type: 'ADD_INCENSE_SEAL'
+      readonly incenseSealDefinitionId: IncenseSealId
     }
 
 export interface EventOptionDefinition {
