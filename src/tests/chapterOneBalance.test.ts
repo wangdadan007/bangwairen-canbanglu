@@ -17,9 +17,9 @@ describe('T53 chapter-one balance guardrails', () => {
     expect(getNameBreakLog(ordinary)?.payload.ratio).toBe(0.33)
     expect(ordinary.enemies[0].currentForm).toBe(12)
     expect(getNameBreakLog(elite)?.payload.ratio).toBe(0.24)
-    expect(elite.enemies[0].currentForm).toBe(36)
+    expect(elite.enemies[0].currentForm).toBe(28)
     expect(getNameBreakLog(boss)?.payload.ratio).toBe(0.2)
-    expect(boss.enemies[0].currentForm).toBe(67)
+    expect(boss.enemies[0].currentForm).toBe(56)
   })
 
   it('keeps every current abnormal move covered by an obtainable counter or earth-altar fallback', () => {

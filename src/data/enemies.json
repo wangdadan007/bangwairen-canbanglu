@@ -196,7 +196,7 @@
   {
     "id": "enemy_incense_ash_louse",
     "nameKey": "enemy.incense_ash_louse.name",
-    "maxForm": 12,
+    "maxForm": 10,
     "nameSlots": 0,
     "tier": "minion",
     "traits": ["chapter_one", "nameless", "abnormal_move", "steal_incense", "low_cost"],
@@ -488,7 +488,7 @@
   {
     "id": "enemy_plague_paper_figure",
     "nameKey": "enemy.plague_paper_figure.name",
-    "maxForm": 28,
+    "maxForm": 26,
     "nameSlots": 2,
     "nameSlotDefinitions": [
       {
@@ -534,7 +534,7 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 6
+            "amount": 4
           }
         ]
       }
@@ -555,7 +555,7 @@
   {
     "id": "enemy_scroll_stuffer_clerk",
     "nameKey": "enemy.scroll_stuffer_clerk.name",
-    "maxForm": 30,
+    "maxForm": 26,
     "nameSlots": 2,
     "nameSlotDefinitions": [
       {
@@ -602,7 +602,7 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 5,
+            "amount": 4,
             "descriptionKey": "enemy.scroll_stuffer_clerk.intent.slam_case.incoming",
             "bonuses": [
               {
@@ -678,7 +678,7 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 7,
+            "amount": 6,
             "descriptionKey": "enemy.fleeing_name_paper_horse.intent.kick_dust.incoming",
             "bonuses": [
               {
@@ -707,7 +707,7 @@
   {
     "id": "enemy_offering_table_afterimage",
     "nameKey": "enemy.offering_table_afterimage.name",
-    "maxForm": 16,
+    "maxForm": 12,
     "nameSlots": 0,
     "tier": "minion",
     "traits": ["chapter_one", "late_chapter", "support", "low_cost"],
@@ -721,7 +721,7 @@
             "type": "ABNORMAL_MOVE",
             "move": {
               "type": "heal_form",
-              "amount": 4,
+              "amount": 2,
               "healTarget": "most_wounded_ally",
               "descriptionKey": "enemy.offering_table_afterimage.intent.restore_shape.description"
             }
@@ -735,7 +735,7 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 4
+            "amount": 2
           }
         ]
       }
@@ -744,7 +744,7 @@
   {
     "id": "enemy_fire_fleeing_name",
     "nameKey": "enemy.fire_fleeing_name.name",
-    "maxForm": 48,
+    "maxForm": 38,
     "nameSlots": 3,
     "nameSlotDefinitions": [
       {
@@ -778,11 +778,11 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 8,
+            "amount": 6,
             "descriptionKey": "enemy.fire_fleeing_name.intent.flame_stamp.incoming",
             "bonuses": [
               {
-                "amount": 2,
+                "amount": 1,
                 "condition": "covered_name_slot_exists",
                 "descriptionKey": "enemy.fire_fleeing_name.intent.flame_stamp.bonus.covered_name"
               }
@@ -800,7 +800,7 @@
             "move": {
               "type": "cover_name",
               "amount": 1,
-              "whenNamedIncomingForce": 2,
+              "whenNamedIncomingForce": 1,
               "descriptionKey": "enemy.fire_fleeing_name.intent.burn_name.description"
             }
           }
@@ -813,11 +813,11 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 10,
+            "amount": 8,
             "descriptionKey": "enemy.fire_fleeing_name.intent.break_tablet.incoming",
             "bonuses": [
               {
-                "amount": 2,
+                "amount": 1,
                 "condition": "covered_name_slot_exists",
                 "descriptionKey": "enemy.fire_fleeing_name.intent.break_tablet.bonus.covered_name"
               }
@@ -842,7 +842,7 @@
   {
     "id": "enemy_dipper_empty_shell",
     "nameKey": "enemy.dipper_empty_shell.name",
-    "maxForm": 52,
+    "maxForm": 44,
     "nameSlots": 3,
     "nameSlotDefinitions": [
       {
@@ -876,7 +876,7 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 7
+            "amount": 4
           }
         ]
       },
@@ -903,7 +903,7 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 9,
+            "amount": 5,
             "descriptionKey": "enemy.dipper_empty_shell.intent.fall_star.incoming",
             "bonuses": [
               {
@@ -1029,7 +1029,7 @@
   {
     "id": "enemy_registry_thief",
     "nameKey": "enemy.registry_thief.name",
-    "maxForm": 84,
+    "maxForm": 70,
     "nameSlots": 3,
     "nameSlotDefinitions": [
       {
@@ -1094,7 +1094,7 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 8
+            "amount": 6
           }
         ]
       },
@@ -1124,8 +1124,8 @@
             "move": {
               "type": "cover_name",
               "amount": 1,
-              "fallbackIncomingForce": 2,
-              "whenNamedIncomingForce": 2,
+              "fallbackIncomingForce": 1,
+              "whenNamedIncomingForce": 1,
               "descriptionKey": "enemy.registry_thief.intent.cloak_stolen_name.description"
             }
           }
@@ -1155,7 +1155,7 @@
         "effects": [
           {
             "type": "INCOMING_FORCE",
-            "amount": 11,
+            "amount": 7,
             "descriptionKey": "enemy.registry_thief.intent.final_stamp.incoming",
             "aftereffects": [
               {

@@ -412,6 +412,14 @@
         "descriptionKey": "route.node.third_elite.description",
         "encounterId": "encounter_elite_dipper_empty_shell",
         "routeTendencyIds": ["fracture", "high_pressure"],
+        "nextNodeIds": ["route_node_boss_ante_rest"]
+      },
+      {
+        "id": "route_node_boss_ante_rest",
+        "type": "rest",
+        "nameKey": "route.node.boss_ante_rest.name",
+        "descriptionKey": "route.node.boss_ante_rest.description",
+        "routeTendencyIds": ["fracture", "supply"],
         "nextNodeIds": ["route_node_boss_registry_thief"]
       },
       {

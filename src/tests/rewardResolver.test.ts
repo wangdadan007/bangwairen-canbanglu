@@ -76,6 +76,10 @@ describe('T10 tutorial rewards', () => {
       ],
       gameData.tutorialUnlocks,
     )
+    const humanAltarWithoutLinzhaoKeyword = {
+      ...humanAltarUnlocks,
+      keywords: humanAltarUnlocks.keywords.filter((keyword) => keyword !== 'linzhao'),
+    }
     const resourceUnlocks = createUnlockState(
       ['stage_core', 'stage_abnormal_boundary', 'stage_red_ink_preview', 'stage_run_resources'],
       gameData.tutorialUnlocks,
@@ -95,13 +99,25 @@ describe('T10 tutorial rewards', () => {
     expect(beforeRedInk.options.map((option) => option.cardDefinitionId)).not.toContain(
       'card_red_ink_trial',
     )
-    expect(afterRedInk.map((card) => card.id)).toContain('card_red_ink_trial')
+    expect(afterRedInk.map((card) => card.id)).not.toContain('card_red_ink_trial')
     expect(afterRedInk.map((card) => card.id)).not.toContain('card_sweep_ash_talisman')
+    const humanAltarWithoutLinzhaoRewardIds = getAvailableTutorialRewardCards(
+      gameData.cards,
+      humanAltarWithoutLinzhaoKeyword,
+    ).map((card) => card.id)
+
+    expect(humanAltarWithoutLinzhaoRewardIds).not.toContain('card_trace_name_slip')
+    expect(humanAltarWithoutLinzhaoRewardIds).not.toContain('card_red_ink_trial')
     expect(getAvailableTutorialRewardCards(
       gameData.cards,
       humanAltarUnlocks,
     ).map((card) => card.id)).toEqual(
-      expect.arrayContaining(['card_sweep_ash_talisman', 'card_chase_imp_talisman']),
+      expect.arrayContaining([
+        'card_trace_name_slip',
+        'card_red_ink_trial',
+        'card_sweep_ash_talisman',
+        'card_chase_imp_talisman',
+      ]),
     )
     expect(afterRedInk.map((card) => card.id)).not.toContain('card_ink_rubbing_slip')
     expect(getAvailableTutorialRewardCards(

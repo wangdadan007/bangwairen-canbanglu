@@ -180,7 +180,7 @@
     "rulesTextKey": "card.trace_name_slip.rules",
     "cost": 1,
     "type": "edict",
-    "unlockStage": "stage_core",
+    "unlockStage": "stage_human_altar",
     "tags": ["reward", "catalogue_reward", "ask_name", "linzhao"],
     "effects": [
       {
@@ -382,7 +382,7 @@
     "rulesTextKey": "card.red_ink_trial.rules",
     "cost": 1,
     "type": "ritual",
-    "unlockStage": "stage_red_ink_preview",
+    "unlockStage": "stage_human_altar",
     "tags": ["reward", "red_ink_preview", "linzhao"],
     "effects": [
       {

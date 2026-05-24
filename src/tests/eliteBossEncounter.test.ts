@@ -66,7 +66,7 @@ describe('T31-T35 elite and boss encounter skeletons', () => {
     })
 
     expect(battle.enemies[0].definitionId).toBe('enemy_fire_fleeing_name')
-    expect(battle.enemies[0].maxForm).toBe(48)
+    expect(battle.enemies[0].maxForm).toBe(38)
     expect(battle.enemies[0].nameSlots).toHaveLength(3)
   })
 
@@ -79,7 +79,7 @@ describe('T31-T35 elite and boss encounter skeletons', () => {
 
     expect(bossEncounter?.enemyDefinitionId).toBe('enemy_registry_thief')
     expect(boss?.tier).toBe('boss')
-    expect(boss?.maxForm).toBe(84)
+    expect(boss?.maxForm).toBe(70)
     expect(boss?.intents).toHaveLength(5)
     expect(boss?.intents.map((intent) => intent.id)).toEqual([
       'intent_registry_thief_press_registry',
@@ -96,7 +96,7 @@ describe('T31-T35 elite and boss encounter skeletons', () => {
     })
 
     expect(battle.enemies[0].definitionId).toBe('enemy_registry_thief')
-    expect(battle.enemies[0].maxForm).toBe(84)
+    expect(battle.enemies[0].maxForm).toBe(70)
     expect(battle.enemies[0].nameSlots).toHaveLength(3)
     expect(battle.enemies[0].currentIntent?.id).toBe('intent_registry_thief_press_registry')
   })

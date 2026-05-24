@@ -43,7 +43,8 @@
       "altar",
       "human_altar",
       "ink",
-      "ask_name"
+      "ask_name",
+      "linzhao"
     ]
   },
   {
@@ -58,7 +59,8 @@
       "ask_name",
       "counter_abnormal_move",
       "seal_momentum",
-      "artifact"
+      "artifact",
+      "linzhao"
     ]
   }
 ]

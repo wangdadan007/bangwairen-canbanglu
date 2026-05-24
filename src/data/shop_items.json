@@ -26,7 +26,7 @@
     "cost": 45,
     "currency": "incense_money",
     "cardDefinitionId": "card_red_ink_trial",
-    "requiredUnlockStages": ["stage_red_ink_preview"]
+    "requiredUnlockStages": ["stage_human_altar"]
   },
   {
     "id": "shop_remove_card",
@@ -34,8 +34,7 @@
     "nameKey": "shop.item.remove_card.name",
     "descriptionKey": "shop.item.remove_card.description",
     "cost": 30,
-    "currency": "incense_money",
-    "repeatable": true
+    "currency": "incense_money"
   },
   {
     "id": "shop_red_ink_service",

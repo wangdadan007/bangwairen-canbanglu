@@ -8,10 +8,16 @@ import {
 import { gameData } from '../data'
 
 const shopRouteNodeId = 'route_node_first_shop'
+const tutorialPlusEncounterIds = [
+  'encounter_tutorial_paper_wraith',
+  'encounter_tutorial_incense_thief_mouse',
+  'encounter_tutorial_bronze_bell_patrol',
+  'encounter_mid_unlit_temple_warden',
+]
 
 describe('T22 shop resolver', () => {
   it('filters shop items by unlock stage and current deck state', () => {
-    const coreRun = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const coreRun = createInitialTutorialRunState(gameData.tutorialUnlocks, tutorialPlusEncounterIds)
     const abnormalRun = advanceTutorialRun(
       coreRun,
       gameData.encounters,
@@ -24,19 +30,27 @@ describe('T22 shop resolver', () => {
       gameData.tutorialUnlocks,
       'vanquish',
     )
+    const humanAltarRun = advanceTutorialRun(
+      redInkRun,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
     const oneCardRun = createInitialTutorialRunState(gameData.tutorialUnlocks, undefined, [
       'card_zhu_fu',
     ])
 
     expect(getAvailableShopItems(coreRun, gameData.shopItems, gameData.cards).map((item) => item.id)).toEqual([
-      'shop_card_trace_name_slip',
       'shop_remove_card',
     ])
     expect(
       getAvailableShopItems(abnormalRun, gameData.shopItems, gameData.cards).map((item) => item.id),
-    ).toEqual(['shop_card_trace_name_slip', 'shop_card_press_door_charm', 'shop_remove_card'])
+    ).toEqual(['shop_card_press_door_charm', 'shop_remove_card'])
     expect(
       getAvailableShopItems(redInkRun, gameData.shopItems, gameData.cards).map((item) => item.id),
+    ).toEqual(['shop_card_press_door_charm', 'shop_remove_card', 'shop_red_ink_service'])
+    expect(
+      getAvailableShopItems(humanAltarRun, gameData.shopItems, gameData.cards).map((item) => item.id),
     ).toEqual([
       'shop_card_trace_name_slip',
       'shop_card_press_door_charm',
@@ -46,11 +60,27 @@ describe('T22 shop resolver', () => {
     ])
     expect(
       getAvailableShopItems(oneCardRun, gameData.shopItems, gameData.cards).map((item) => item.id),
-    ).toEqual(['shop_card_trace_name_slip'])
+    ).toEqual([])
   })
 
   it('buys a card, spends incense money, and records the purchase', () => {
-    const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const coreRun = createInitialTutorialRunState(gameData.tutorialUnlocks, tutorialPlusEncounterIds)
+    const run = advanceTutorialRun(
+      advanceTutorialRun(
+        advanceTutorialRun(
+          coreRun,
+          gameData.encounters,
+          gameData.tutorialUnlocks,
+          'vanquish',
+        ),
+        gameData.encounters,
+        gameData.tutorialUnlocks,
+        'vanquish',
+      ),
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
     const nextRun = resolveTutorialShopPurchase(
       run,
       {
@@ -84,8 +114,24 @@ describe('T22 shop resolver', () => {
   })
 
   it('rejects purchases when incense money is insufficient', () => {
+    const coreRun = createInitialTutorialRunState(gameData.tutorialUnlocks, tutorialPlusEncounterIds)
     const run = {
-      ...createInitialTutorialRunState(gameData.tutorialUnlocks),
+      ...advanceTutorialRun(
+        advanceTutorialRun(
+          advanceTutorialRun(
+            coreRun,
+            gameData.encounters,
+            gameData.tutorialUnlocks,
+            'vanquish',
+          ),
+          gameData.encounters,
+          gameData.tutorialUnlocks,
+          'vanquish',
+        ),
+        gameData.encounters,
+        gameData.tutorialUnlocks,
+        'vanquish',
+      ),
       currency: {
         incenseMoney: 0,
       },
@@ -136,6 +182,9 @@ describe('T22 shop resolver', () => {
         createdRedInkOffer: false,
       }),
     )
+    expect(
+      getAvailableShopItems(nextRun, gameData.shopItems, gameData.cards).map((item) => item.id),
+    ).not.toContain('shop_remove_card')
   })
 
   it('buys a temporary red ink service after the red ink unlock', () => {

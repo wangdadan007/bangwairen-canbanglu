@@ -289,11 +289,11 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
     expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_EXECUTED')?.payload).toEqual(
       expect.objectContaining({
         moveType: 'heal_form',
-        healedAmount: 4,
-        currentForm: 12,
+        healedAmount: 2,
+        currentForm: 10,
       }),
     )
-    expect(nextTurn.enemies[0].currentForm).toBe(12)
+    expect(nextTurn.enemies[0].currentForm).toBe(10)
   })
 
   it('lets offering-table support heal the most wounded ally before itself', () => {
@@ -317,11 +317,11 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
       expect.objectContaining({
         moveType: 'heal_form',
         targetEnemyInstanceId: state.enemies[0].instanceId,
-        healedAmount: 4,
-        currentForm: 14,
+        healedAmount: 2,
+        currentForm: 12,
       }),
     )
-    expect(nextTurn.enemies[0].currentForm).toBe(14)
+    expect(nextTurn.enemies[0].currentForm).toBe(12)
     expect(nextTurn.enemies[1].currentForm).toBe(8)
   })
 
@@ -634,7 +634,7 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
     expect(afterScrollMove.enemies[0].currentIntent?.id).toBe(
       'intent_scroll_stuffer_clerk_slam_case',
     )
-    expect(afterScrollMove.enemies[0].incomingForce).toBe(6)
+    expect(afterScrollMove.enemies[0].incomingForce).toBe(5)
   })
 
   it('keeps ash-altar follow-up pressure lower when earth altar counters the prior move', () => {
@@ -694,7 +694,7 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
     expect(afterBurn.enemies[0].currentIntent?.id).toBe(
       'intent_fire_fleeing_name_break_tablet',
     )
-    expect(afterBurn.enemies[0].incomingForce).toBe(12)
+    expect(afterBurn.enemies[0].incomingForce).toBe(9)
   })
 
   it('lets unsealed dipper falling-star pressure shake an active heaven altar', () => {
@@ -714,7 +714,7 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
       context,
     )
 
-    expect(afterAltar.enemies[0].incomingForce).toBe(10)
+    expect(afterAltar.enemies[0].incomingForce).toBe(6)
 
     const nextTurn = reduceBattleState(afterAltar, { type: 'END_TURN' }, context)
 

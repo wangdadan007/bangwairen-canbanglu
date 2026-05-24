@@ -133,7 +133,10 @@ describe('initial game data', () => {
     })
     expect(getCardDefinition('card_watch_incense_line', data)?.tags).toContain('abnormal_move')
     expect(getCardDefinition('card_red_ink_trial', data)?.unlockStage).toBe(
-      'stage_red_ink_preview',
+      'stage_human_altar',
+    )
+    expect(data.tutorialUnlocks.find((unlock) => unlock.id === 'stage_human_altar')?.keywords).toContain(
+      'linzhao',
     )
     expect(getCardDefinition('card_ink_rubbing_slip', data)?.effects.map((effect) => effect.type)).toEqual([
       'ASK_NAME',
@@ -316,13 +319,14 @@ describe('initial game data', () => {
 
     const dipperEmptyShell = getEnemyDefinition('enemy_dipper_empty_shell', data)
     expect(dipperEmptyShell?.tier).toBe('elite')
+    expect(dipperEmptyShell?.maxForm).toBe(44)
     expect(dipperEmptyShell?.traits).toEqual(
       expect.arrayContaining(['altar', 'artifact', 'cover_name']),
     )
 
     const registryThief = getEnemyDefinition('enemy_registry_thief', data)
     expect(registryThief?.tier).toBe('boss')
-    expect(registryThief?.maxForm).toBe(84)
+    expect(registryThief?.maxForm).toBe(70)
     expect(registryThief?.nameSlots).toBe(3)
     expect(registryThief?.intents.map((intent) => intent.kind)).toEqual([
       'incoming_force',
