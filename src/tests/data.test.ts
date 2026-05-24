@@ -492,8 +492,24 @@ describe('initial game data', () => {
     expect(nodesById.get('route_node_catalogue_rest')?.nextNodeIds).toEqual([
       'route_node_catalogue_name_pressure',
     ])
+    expect(nodesById.get('route_node_catalogue_event_final_pollution')?.nextNodeIds).toEqual([
+      'route_node_catalogue_event_boss_ante_rest',
+    ])
+    expect(nodesById.get('route_node_catalogue_event_boss_ante_rest')?.routeTendencyIds).toEqual([
+      'catalogue',
+      'supply',
+    ])
+    expect(nodesById.get('route_node_catalogue_event_boss_ante_rest')?.nextNodeIds).toEqual([
+      'route_node_boss_registry_thief',
+    ])
     expect(nodesById.get('route_node_fracture_shop')?.nextNodeIds).toEqual([
       'route_node_fracture_shop_fouled_pressure',
+    ])
+    expect(nodesById.get('route_node_fracture_shop_fouled_pressure')?.encounterPoolIds).toEqual([
+      'encounter_late_plague_paper_figure',
+      'encounter_pool_plague_paper_figure_return',
+      'encounter_pool_offering_table_afterimage_return',
+      'encounter_multi_offering_table_mouse',
     ])
     expect(
       nodesById.get('route_node_unlit_temple_warden')?.encounterPoolIds,

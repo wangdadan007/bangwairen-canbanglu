@@ -1,4 +1,5 @@
 import type { RouteState, TutorialRunState, TutorialSaveData } from '../../types'
+import { normalizeRunDeckCards } from './deckResolver'
 import { createInitialIncenseSealState } from './incenseSealResolver'
 import { normalizeTutorialPlayerFormState } from './playerFormResolver'
 import { isPlayableRoleId } from './playerRoleResolver'
@@ -119,6 +120,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
   return {
     ...value,
+    deckCards: normalizeRunDeckCards(value.deckCards),
     roleId: isPlayableRoleId(value.roleId) ? value.roleId : undefined,
     playerForm: normalizeTutorialPlayerFormState(value.playerForm),
     incenseSeals: value.incenseSeals ?? createInitialIncenseSealState(),

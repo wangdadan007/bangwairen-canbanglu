@@ -72,7 +72,7 @@ export function RestPage({
               return (
                 <button
                   className={isSelected ? 'rest-deck-card selected' : 'rest-deck-card'}
-                  key={deckCard.id}
+                  key={`${deckCard.id}_${index}`}
                   type="button"
                   onClick={() => setSelectedDeckCardId(deckCard.id)}
                 >

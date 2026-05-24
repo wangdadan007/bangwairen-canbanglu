@@ -63,7 +63,7 @@ export function RedInkPage({
               return (
                 <button
                   className={isSelected ? 'red-ink-card selected' : 'red-ink-card'}
-                  key={deckCard.id}
+                  key={`${deckCard.id}_${index}`}
                   type="button"
                   onClick={() => setSelectedDeckCardId(deckCard.id)}
                 >

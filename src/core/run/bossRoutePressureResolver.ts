@@ -8,15 +8,16 @@ export const REGISTRY_THIEF_STEADY_INTENT_ID = 'intent_registry_thief_press_regi
 export function getRegistryThiefInitialIntentIdForRoute(
   routeTendencyIds: readonly RouteTendencyId[] = [],
 ): string {
-  if (
-    routeTendencyIds.includes('fracture') ||
-    routeTendencyIds.includes('high_pressure')
-  ) {
+  if (routeTendencyIds.includes('fracture')) {
     return REGISTRY_THIEF_FRACTURE_INTENT_ID
   }
 
   if (routeTendencyIds.includes('catalogue')) {
     return REGISTRY_THIEF_CATALOGUE_INTENT_ID
+  }
+
+  if (routeTendencyIds.includes('high_pressure')) {
+    return REGISTRY_THIEF_FRACTURE_INTENT_ID
   }
 
   return REGISTRY_THIEF_STEADY_INTENT_ID

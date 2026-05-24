@@ -109,6 +109,10 @@ describe('T31-T35 elite and boss encounter skeletons', () => {
     }
 
     const catalogueIntentId = getRegistryThiefInitialIntentIdForRoute(['catalogue', 'supply'])
+    const catalogueHighPressureIntentId = getRegistryThiefInitialIntentIdForRoute([
+      'catalogue',
+      'high_pressure',
+    ])
     const fractureIntentId = getRegistryThiefInitialIntentIdForRoute([
       'fracture',
       'high_pressure',
@@ -129,6 +133,7 @@ describe('T31-T35 elite and boss encounter skeletons', () => {
     })
 
     expect(catalogueIntentId).toBe('intent_registry_thief_cloak_stolen_name')
+    expect(catalogueHighPressureIntentId).toBe('intent_registry_thief_cloak_stolen_name')
     expect(fractureIntentId).toBe('intent_registry_thief_tear_registry')
     expect(catalogueBattle.enemies[0].intentIndex).toBe(2)
     expect(catalogueBattle.enemies[0].currentIntent?.id).toBe(catalogueIntentId)

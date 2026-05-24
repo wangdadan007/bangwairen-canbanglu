@@ -16,7 +16,27 @@ export function appendRunDeckCard(
   deckCards: readonly RunDeckCard[],
   definitionId: CardId,
 ): readonly RunDeckCard[] {
-  return [...deckCards, createRunDeckCard(definitionId, deckCards.length)]
+  return [...deckCards, createUniqueRunDeckCard(deckCards, definitionId)]
+}
+
+export function normalizeRunDeckCards(
+  deckCards: readonly RunDeckCard[],
+): readonly RunDeckCard[] {
+  const normalizedCards: RunDeckCard[] = []
+
+  for (const card of deckCards) {
+    if (!normalizedCards.some((candidate) => candidate.id === card.id)) {
+      normalizedCards.push(card)
+      continue
+    }
+
+    normalizedCards.push({
+      ...card,
+      id: createUniqueRunDeckCard(normalizedCards, card.definitionId).id,
+    })
+  }
+
+  return normalizedCards
 }
 
 export function annotateRunDeckCard(
@@ -98,4 +118,30 @@ function removeRunDeckCardAtIndex(
     removedDeckCardId: removedCard.id,
     removedCardDefinitionId,
   }
+}
+
+function createUniqueRunDeckCard(
+  deckCards: readonly RunDeckCard[],
+  definitionId: CardId,
+): RunDeckCard {
+  let nextIndex = getNextRunDeckCardIndex(deckCards)
+  let nextCard = createRunDeckCard(definitionId, nextIndex)
+
+  while (deckCards.some((card) => card.id === nextCard.id)) {
+    nextIndex += 1
+    nextCard = createRunDeckCard(definitionId, nextIndex)
+  }
+
+  return nextCard
+}
+
+function getNextRunDeckCardIndex(deckCards: readonly RunDeckCard[]): number {
+  const maxExistingIndex = deckCards.reduce((maxIndex, card) => {
+    const match = /^run_card_(\d+)_/.exec(card.id)
+    const parsedIndex = match ? Number.parseInt(match[1], 10) - 1 : Number.NaN
+
+    return Number.isFinite(parsedIndex) ? Math.max(maxIndex, parsedIndex) : maxIndex
+  }, -1)
+
+  return maxExistingIndex + 1
 }

@@ -83,7 +83,7 @@ export function ShopPage({
               return (
                 <button
                   className={isSelected ? 'shop-deck-card selected' : 'shop-deck-card'}
-                  key={deckCard.id}
+                  key={`${deckCard.id}_${index}`}
                   type="button"
                   onClick={() => setSelectedDeckCardId(deckCard.id)}
                 >

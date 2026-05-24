@@ -255,6 +255,14 @@
           "encounter_multi_plague_offering_table"
         ],
         "routeTendencyIds": ["catalogue", "high_pressure"],
+        "nextNodeIds": ["route_node_catalogue_event_boss_ante_rest"]
+      },
+      {
+        "id": "route_node_catalogue_event_boss_ante_rest",
+        "type": "rest",
+        "nameKey": "route.node.catalogue_event_boss_ante_rest.name",
+        "descriptionKey": "route.node.catalogue_event_boss_ante_rest.description",
+        "routeTendencyIds": ["catalogue", "supply"],
         "nextNodeIds": ["route_node_boss_registry_thief"]
       },
       {
@@ -365,8 +373,8 @@
         "encounterPoolIds": [
           "encounter_late_plague_paper_figure",
           "encounter_pool_plague_paper_figure_return",
-          "encounter_pool_scroll_stuffer_clerk_return",
-          "encounter_multi_plague_scroll_clerk"
+          "encounter_pool_offering_table_afterimage_return",
+          "encounter_multi_offering_table_mouse"
         ],
         "routeTendencyIds": ["fracture", "high_pressure"],
         "nextNodeIds": ["route_node_late_event_after_shop"]

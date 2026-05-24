@@ -87,6 +87,37 @@ describe('T29 settings and local save MVP', () => {
     expect(readTutorialSaveData(storage)).toEqual(save)
   })
 
+  it('repairs duplicate run deck card ids while reading saved runs', () => {
+    const storage = createMemoryStorage()
+    const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const duplicatedCard = run.deckCards[0]
+    const duplicateRun = {
+      ...run,
+      deckDefinitionIds: [...run.deckDefinitionIds, duplicatedCard.definitionId],
+      deckCards: [
+        ...run.deckCards,
+        {
+          ...duplicatedCard,
+        },
+      ],
+    }
+    const save = createTutorialSaveData({
+      run: duplicateRun,
+      route: createInitialRouteState(gameData.routes[0]),
+    })
+
+    writeTutorialSaveData(storage, save)
+
+    const restoredSave = readTutorialSaveData(storage)
+    const restoredDeckCards = restoredSave?.run.deckCards ?? []
+    const restoredDeckCardIds = restoredDeckCards.map((card) => card.id)
+    const lastRestoredDeckCard = restoredDeckCards[restoredDeckCards.length - 1]
+
+    expect(new Set(restoredDeckCardIds).size).toBe(restoredDeckCardIds.length)
+    expect(lastRestoredDeckCard?.definitionId).toBe(duplicatedCard.definitionId)
+    expect(lastRestoredDeckCard?.id).not.toBe(duplicatedCard.id)
+  })
+
   it('falls back safely for incompatible or malformed saves', () => {
     const storage = createMemoryStorage()
 
