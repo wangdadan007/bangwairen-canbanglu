@@ -8,6 +8,7 @@ import {
   getReachableRouteNodes,
   getRouteBattleEncounterIds,
   getRouteNodeStatus,
+  isRouteBattleNode,
   selectReachableRouteNode,
 } from '../core'
 import { gameData } from '../data'
@@ -69,7 +70,7 @@ describe('T64 chapter one branched route closure', () => {
     expect(completeCurrentRouteNode(
       route,
       selectReachableRouteNode(route, steadyBranch, 'route_node_first_shop'),
-    ).currentNodeId).toBe('route_node_steady_incense_clerk')
+    ).currentNodeId).toBe('route_node_steady_mid_altar_check')
 
     const catalogue = selectReachableRouteNode(route, firstChoice, 'route_node_first_elite')
     const catalogueBranch = completeCurrentRouteNode(route, catalogue)
@@ -132,7 +133,9 @@ describe('T64 chapter one branched route closure', () => {
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
+      'encounter_mid_ash_altar_child',
       'encounter_elite_incense_clerk',
+      'encounter_multi_offering_table_mouse',
       'encounter_late_plague_paper_figure',
       'encounter_boss_registry_thief',
     ])
@@ -141,7 +144,9 @@ describe('T64 chapter one branched route closure', () => {
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
+      defaultRouteState.encounterSelections?.route_node_steady_mid_altar_check,
       'encounter_elite_incense_clerk',
+      defaultRouteState.encounterSelections?.route_node_steady_support_pressure,
       defaultRouteState.encounterSelections?.route_node_late_plague_paper_figure,
       'encounter_boss_registry_thief',
     ])
@@ -151,9 +156,29 @@ describe('T64 chapter one branched route closure', () => {
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_elite_incense_clerk',
       'encounter_elite_fire_fleeing_name',
-      cataloguePressure.encounterSelections?.route_node_late_fleeing_name_paper_horse,
+      cataloguePressure.encounterSelections?.route_node_catalogue_name_pressure,
+      cataloguePressure.encounterSelections?.route_node_catalogue_altar_crosscheck,
+      cataloguePressure.encounterSelections?.route_node_catalogue_final_pollution,
       'encounter_boss_registry_thief',
     ])
+  })
+
+  it('keeps every concrete branch at eight or nine battles before the boss', () => {
+    const paths = collectRoutePaths(route.startNodeId)
+
+    expect(paths).toHaveLength(6)
+
+    for (const path of paths) {
+      const bossIndex = path.indexOf('route_node_boss_registry_thief')
+      const bossPreBattleCount = path
+        .slice(0, bossIndex)
+        .filter((nodeId) => isRouteBattleNode(route.nodes.find((node) => node.id === nodeId)))
+        .length
+
+      expect(bossIndex).toBeGreaterThan(0)
+      expect(bossPreBattleCount).toBeGreaterThanOrEqual(8)
+      expect(bossPreBattleCount).toBeLessThanOrEqual(9)
+    }
   })
 
   it('rejects route choices that are not currently reachable', () => {
@@ -170,4 +195,24 @@ function advanceToFirstChoice(initialState: RouteState = createInitialRouteState
     route,
     completeCurrentRouteNode(route, completeCurrentRouteNode(route, initialState)),
   )
+}
+
+function collectRoutePaths(nodeId: string, currentPath: readonly string[] = []): string[][] {
+  if (currentPath.includes(nodeId)) {
+    throw new Error(`Route cycle in test path at ${nodeId}`)
+  }
+
+  const node = route.nodes.find((routeNode) => routeNode.id === nodeId)
+
+  if (!node) {
+    throw new Error(`Missing route node in test path: ${nodeId}`)
+  }
+
+  const nextPath = [...currentPath, node.id]
+
+  if (node.nextNodeIds.length === 0) {
+    return [nextPath]
+  }
+
+  return node.nextNodeIds.flatMap((nextNodeId) => collectRoutePaths(nextNodeId, nextPath))
 }

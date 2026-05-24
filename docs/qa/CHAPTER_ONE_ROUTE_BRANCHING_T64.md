@@ -2,6 +2,8 @@
 
 日期：2026-05-21
 
+T79 更新：2026-05-24 已在保留 T64 三主线结构的前提下，将所有具体支线扩到窃榜使 Boss 前 8 场实际战斗。下表的后段结构按当前路线数据更新；T64 机器验证记录仍保留为当时的历史基线。
+
 ## 1. 范围
 
 T64 将第一章路线从线性节点升级为手工分支路线：
@@ -16,9 +18,9 @@ T64 将第一章路线从线性节点升级为手工分支路线：
 
 | 主线 | 入口 | 中段二选一 | 后段 | 风险与补给 |
 |---|---|---|---|---|
-| 稳行 | `route_node_unlit_temple_warden` | `route_node_first_shop` 或 `route_node_rest_site` | `route_node_steady_incense_clerk` -> `route_node_late_plague_paper_figure` -> Boss | 普通战压力较稳；中段必给商店或休整，适合作为基准路线。 |
-| 归册 | `route_node_first_elite` | `route_node_second_elite` 或 `route_node_mid_event` | `route_node_catalogue_rest` / `route_node_catalogue_shop` -> `route_node_late_fleeing_name_paper_horse` -> Boss | 入口和一条支线为高压精英；连续精英后固定接休整，事件支线后固定接商店。 |
-| 裂榜 | `route_node_fracture_fortune_breaker` | `route_node_first_event` 或 `route_node_late_scroll_stuffer_clerk` | `route_node_fracture_rest` / `route_node_fracture_shop` -> `route_node_late_event` -> `route_node_third_elite` -> Boss | 榜裂 / 劫数倾向更强；事件支线给休整，高压塞卷支线给商店，并在 Boss 前还有事件缓冲。 |
+| 稳行 | `route_node_unlit_temple_warden` | `route_node_first_shop` 或 `route_node_rest_site` | `route_node_steady_mid_altar_check` -> `route_node_steady_incense_clerk` -> `route_node_steady_support_pressure` -> `route_node_late_plague_paper_figure` -> Boss | 普通战压力较稳；中段必给商店或休整，后续补坛位、支援和污卷检查，适合作为基准路线。 |
+| 归册 | `route_node_first_elite` | `route_node_second_elite` 或 `route_node_mid_event` | 双精英支线：`route_node_catalogue_rest` -> `route_node_catalogue_name_pressure` -> `route_node_catalogue_altar_crosscheck` -> `route_node_catalogue_final_pollution` -> Boss；事件商店支线：`route_node_catalogue_shop` -> `route_node_late_fleeing_name_paper_horse` -> `route_node_catalogue_event_altar_crosscheck` -> `route_node_catalogue_event_fire_elite` -> `route_node_catalogue_event_final_pollution` -> Boss | 入口和至少一处支线为高压精英；连续精英后固定休整，事件支线后固定商店，并在 Boss 前补遮名、坛位和污染检查。 |
+| 裂榜 | `route_node_fracture_fortune_breaker` | `route_node_first_event` 或 `route_node_late_scroll_stuffer_clerk` | 事件休整支线：`route_node_fracture_rest` -> `route_node_fracture_event_altar_pressure` -> `route_node_fracture_event_fouled_pressure` -> `route_node_fracture_event_name_pressure` -> `route_node_late_event` -> `route_node_third_elite` -> Boss；塞卷商店支线：`route_node_fracture_shop` -> `route_node_fracture_shop_fouled_pressure` -> `route_node_late_event_after_shop` -> `route_node_fracture_shop_name_pressure` -> `route_node_third_elite` -> Boss | 榜裂 / 劫数倾向更强；事件支线给休整，高压塞卷支线给商店，两条都在 Boss 前保留污染、遮名、事件补给和斗部空壳终段考核。 |
 
 ## 3. 路线倾向记录
 

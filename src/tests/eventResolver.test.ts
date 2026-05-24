@@ -318,16 +318,19 @@ function createFractureLateEventRouteState() {
     route,
     selectReachableRouteNode(route, firstChoice, 'route_node_fracture_fortune_breaker'),
   )
-  const fractureShop = completeCurrentRouteNode(
+  const fractureRest = completeCurrentRouteNode(
     route,
     selectReachableRouteNode(
       route,
       fractureChoice,
-      'route_node_late_scroll_stuffer_clerk',
+      'route_node_first_event',
     ),
   )
+  const altarPressure = completeCurrentRouteNode(route, fractureRest)
+  const fouledPressure = completeCurrentRouteNode(route, altarPressure)
+  const namePressure = completeCurrentRouteNode(route, fouledPressure)
 
-  return completeCurrentRouteNode(route, fractureShop)
+  return completeCurrentRouteNode(route, namePressure)
 }
 
 function createRunAfterRouteBattles(routeState: ReturnType<typeof createInitialRouteState>, battleCount: number) {

@@ -160,7 +160,7 @@ describe('T09 tutorial run sequence', () => {
   it('can use route battle encounter ids for the T20 route-driven sequence', () => {
     const routeEncounterIds = getRouteBattleEncounterIds(gameData.routes[0])
     const runs = routeEncounterIds
-      .slice(0, 6)
+      .slice(0, 8)
       .reduce(
         (states, _encounterId, index) => [
           ...states,
@@ -168,7 +168,7 @@ describe('T09 tutorial run sequence', () => {
             states[states.length - 1],
             gameData.encounters,
             gameData.tutorialUnlocks,
-            index === 5 ? 'catalogue' : 'vanquish',
+            index === 7 ? 'catalogue' : 'vanquish',
           ),
         ],
         [createInitialTutorialRunState(gameData.tutorialUnlocks, routeEncounterIds)],
@@ -179,7 +179,9 @@ describe('T09 tutorial run sequence', () => {
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
+      'encounter_mid_ash_altar_child',
       'encounter_elite_incense_clerk',
+      'encounter_multi_offering_table_mouse',
       'encounter_late_plague_paper_figure',
       'encounter_boss_registry_thief',
     ])
@@ -187,22 +189,28 @@ describe('T09 tutorial run sequence', () => {
       'encounter_mid_unlit_temple_warden',
     )
     expect(getCurrentTutorialEncounter(runs[4], gameData.encounters)?.id).toBe(
-      'encounter_elite_incense_clerk',
+      'encounter_mid_ash_altar_child',
     )
     expect(getCurrentTutorialEncounter(runs[5], gameData.encounters)?.id).toBe(
-      'encounter_late_plague_paper_figure',
+      'encounter_elite_incense_clerk',
     )
     expect(getCurrentTutorialEncounter(runs[6], gameData.encounters)?.id).toBe(
+      'encounter_multi_offering_table_mouse',
+    )
+    expect(getCurrentTutorialEncounter(runs[7], gameData.encounters)?.id).toBe(
+      'encounter_late_plague_paper_figure',
+    )
+    expect(getCurrentTutorialEncounter(runs[8], gameData.encounters)?.id).toBe(
       'encounter_boss_registry_thief',
     )
-    expect(runs[6].status).toBe('active')
+    expect(runs[8].status).toBe('active')
     expect(runs[5].unlocks.stages).toContain('stage_three_altars')
     expect(runs[5].completedEncounterIds).toEqual([
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
-      'encounter_elite_incense_clerk',
+      'encounter_mid_ash_altar_child',
     ])
   })
 

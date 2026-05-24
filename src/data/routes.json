@@ -48,7 +48,7 @@
         "nameKey": "route.node.first_shop.name",
         "descriptionKey": "route.node.first_shop.description",
         "routeTendencyIds": ["steady", "supply"],
-        "nextNodeIds": ["route_node_steady_incense_clerk"]
+        "nextNodeIds": ["route_node_steady_mid_altar_check"]
       },
       {
         "id": "route_node_rest_site",
@@ -56,6 +56,20 @@
         "nameKey": "route.node.rest_site.name",
         "descriptionKey": "route.node.rest_site.description",
         "routeTendencyIds": ["steady", "supply"],
+        "nextNodeIds": ["route_node_steady_mid_altar_check"]
+      },
+      {
+        "id": "route_node_steady_mid_altar_check",
+        "type": "normal_battle",
+        "nameKey": "route.node.steady_mid_altar_check.name",
+        "descriptionKey": "route.node.steady_mid_altar_check.description",
+        "encounterId": "encounter_mid_ash_altar_child",
+        "encounterPoolIds": [
+          "encounter_mid_ash_altar_child",
+          "encounter_pool_bronze_bell_patrol_return",
+          "encounter_multi_paper_wraith_imp"
+        ],
+        "routeTendencyIds": ["steady"],
         "nextNodeIds": ["route_node_steady_incense_clerk"]
       },
       {
@@ -65,6 +79,20 @@
         "descriptionKey": "route.node.steady_incense_clerk.description",
         "encounterId": "encounter_elite_incense_clerk",
         "routeTendencyIds": ["steady", "catalogue"],
+        "nextNodeIds": ["route_node_steady_support_pressure"]
+      },
+      {
+        "id": "route_node_steady_support_pressure",
+        "type": "normal_battle",
+        "nameKey": "route.node.steady_support_pressure.name",
+        "descriptionKey": "route.node.steady_support_pressure.description",
+        "encounterId": "encounter_multi_offering_table_mouse",
+        "encounterPoolIds": [
+          "encounter_multi_offering_table_mouse",
+          "encounter_multi_thief_mouse_louse",
+          "encounter_pool_offering_table_afterimage_return"
+        ],
+        "routeTendencyIds": ["steady"],
         "nextNodeIds": ["route_node_late_plague_paper_figure"]
       },
       {
@@ -119,7 +147,7 @@
         "nameKey": "route.node.catalogue_rest.name",
         "descriptionKey": "route.node.catalogue_rest.description",
         "routeTendencyIds": ["catalogue", "supply"],
-        "nextNodeIds": ["route_node_late_fleeing_name_paper_horse"]
+        "nextNodeIds": ["route_node_catalogue_name_pressure"]
       },
       {
         "id": "route_node_catalogue_shop",
@@ -128,6 +156,48 @@
         "descriptionKey": "route.node.catalogue_shop.description",
         "routeTendencyIds": ["catalogue", "supply"],
         "nextNodeIds": ["route_node_late_fleeing_name_paper_horse"]
+      },
+      {
+        "id": "route_node_catalogue_name_pressure",
+        "type": "normal_battle",
+        "nameKey": "route.node.catalogue_name_pressure.name",
+        "descriptionKey": "route.node.catalogue_name_pressure.description",
+        "encounterId": "encounter_late_fleeing_name_paper_horse",
+        "encounterPoolIds": [
+          "encounter_late_fleeing_name_paper_horse",
+          "encounter_pool_fleeing_name_paper_horse_return",
+          "encounter_multi_offering_table_mouse"
+        ],
+        "routeTendencyIds": ["catalogue", "high_pressure"],
+        "nextNodeIds": ["route_node_catalogue_altar_crosscheck"]
+      },
+      {
+        "id": "route_node_catalogue_altar_crosscheck",
+        "type": "normal_battle",
+        "nameKey": "route.node.catalogue_altar_crosscheck.name",
+        "descriptionKey": "route.node.catalogue_altar_crosscheck.description",
+        "encounterId": "encounter_mid_ash_altar_child",
+        "encounterPoolIds": [
+          "encounter_mid_ash_altar_child",
+          "encounter_pool_bronze_bell_patrol_return",
+          "encounter_pool_unlit_temple_warden_return"
+        ],
+        "routeTendencyIds": ["catalogue"],
+        "nextNodeIds": ["route_node_catalogue_final_pollution"]
+      },
+      {
+        "id": "route_node_catalogue_final_pollution",
+        "type": "normal_battle",
+        "nameKey": "route.node.catalogue_final_pollution.name",
+        "descriptionKey": "route.node.catalogue_final_pollution.description",
+        "encounterId": "encounter_late_plague_paper_figure",
+        "encounterPoolIds": [
+          "encounter_late_plague_paper_figure",
+          "encounter_late_scroll_stuffer_clerk",
+          "encounter_pool_offering_table_afterimage_return"
+        ],
+        "routeTendencyIds": ["catalogue", "high_pressure"],
+        "nextNodeIds": ["route_node_boss_registry_thief"]
       },
       {
         "id": "route_node_late_fleeing_name_paper_horse",
@@ -140,6 +210,43 @@
           "encounter_pool_fleeing_name_paper_horse_return",
           "encounter_pool_offering_table_afterimage_return",
           "encounter_multi_offering_table_mouse"
+        ],
+        "routeTendencyIds": ["catalogue", "high_pressure"],
+        "nextNodeIds": ["route_node_catalogue_event_altar_crosscheck"]
+      },
+      {
+        "id": "route_node_catalogue_event_altar_crosscheck",
+        "type": "normal_battle",
+        "nameKey": "route.node.catalogue_event_altar_crosscheck.name",
+        "descriptionKey": "route.node.catalogue_event_altar_crosscheck.description",
+        "encounterId": "encounter_mid_ash_altar_child",
+        "encounterPoolIds": [
+          "encounter_mid_ash_altar_child",
+          "encounter_pool_bronze_bell_patrol_return",
+          "encounter_pool_unlit_temple_warden_return"
+        ],
+        "routeTendencyIds": ["catalogue"],
+        "nextNodeIds": ["route_node_catalogue_event_fire_elite"]
+      },
+      {
+        "id": "route_node_catalogue_event_fire_elite",
+        "type": "elite",
+        "nameKey": "route.node.catalogue_event_fire_elite.name",
+        "descriptionKey": "route.node.catalogue_event_fire_elite.description",
+        "encounterId": "encounter_elite_fire_fleeing_name",
+        "routeTendencyIds": ["catalogue", "high_pressure"],
+        "nextNodeIds": ["route_node_catalogue_event_final_pollution"]
+      },
+      {
+        "id": "route_node_catalogue_event_final_pollution",
+        "type": "normal_battle",
+        "nameKey": "route.node.catalogue_event_final_pollution.name",
+        "descriptionKey": "route.node.catalogue_event_final_pollution.description",
+        "encounterId": "encounter_late_plague_paper_figure",
+        "encounterPoolIds": [
+          "encounter_late_plague_paper_figure",
+          "encounter_late_scroll_stuffer_clerk",
+          "encounter_pool_offering_table_afterimage_return"
         ],
         "routeTendencyIds": ["catalogue", "high_pressure"],
         "nextNodeIds": ["route_node_boss_registry_thief"]
@@ -188,7 +295,7 @@
         "nameKey": "route.node.fracture_rest.name",
         "descriptionKey": "route.node.fracture_rest.description",
         "routeTendencyIds": ["fracture", "supply"],
-        "nextNodeIds": ["route_node_late_event"]
+        "nextNodeIds": ["route_node_fracture_event_altar_pressure"]
       },
       {
         "id": "route_node_fracture_shop",
@@ -196,7 +303,63 @@
         "nameKey": "route.node.fracture_shop.name",
         "descriptionKey": "route.node.fracture_shop.description",
         "routeTendencyIds": ["fracture", "supply"],
+        "nextNodeIds": ["route_node_fracture_shop_fouled_pressure"]
+      },
+      {
+        "id": "route_node_fracture_event_altar_pressure",
+        "type": "normal_battle",
+        "nameKey": "route.node.fracture_event_altar_pressure.name",
+        "descriptionKey": "route.node.fracture_event_altar_pressure.description",
+        "encounterId": "encounter_mid_ash_altar_child",
+        "encounterPoolIds": [
+          "encounter_mid_ash_altar_child",
+          "encounter_pool_bronze_bell_patrol_return",
+          "encounter_pool_unlit_temple_warden_return"
+        ],
+        "routeTendencyIds": ["fracture"],
+        "nextNodeIds": ["route_node_fracture_event_fouled_pressure"]
+      },
+      {
+        "id": "route_node_fracture_event_fouled_pressure",
+        "type": "normal_battle",
+        "nameKey": "route.node.fracture_event_fouled_pressure.name",
+        "descriptionKey": "route.node.fracture_event_fouled_pressure.description",
+        "encounterId": "encounter_late_plague_paper_figure",
+        "encounterPoolIds": [
+          "encounter_late_plague_paper_figure",
+          "encounter_late_scroll_stuffer_clerk",
+          "encounter_pool_plague_paper_figure_return"
+        ],
+        "routeTendencyIds": ["fracture", "high_pressure"],
+        "nextNodeIds": ["route_node_fracture_event_name_pressure"]
+      },
+      {
+        "id": "route_node_fracture_event_name_pressure",
+        "type": "normal_battle",
+        "nameKey": "route.node.fracture_event_name_pressure.name",
+        "descriptionKey": "route.node.fracture_event_name_pressure.description",
+        "encounterId": "encounter_late_fleeing_name_paper_horse",
+        "encounterPoolIds": [
+          "encounter_late_fleeing_name_paper_horse",
+          "encounter_multi_offering_table_mouse",
+          "encounter_pool_offering_table_afterimage_return"
+        ],
+        "routeTendencyIds": ["fracture"],
         "nextNodeIds": ["route_node_late_event"]
+      },
+      {
+        "id": "route_node_fracture_shop_fouled_pressure",
+        "type": "normal_battle",
+        "nameKey": "route.node.fracture_shop_fouled_pressure.name",
+        "descriptionKey": "route.node.fracture_shop_fouled_pressure.description",
+        "encounterId": "encounter_late_plague_paper_figure",
+        "encounterPoolIds": [
+          "encounter_late_plague_paper_figure",
+          "encounter_pool_plague_paper_figure_return",
+          "encounter_pool_scroll_stuffer_clerk_return"
+        ],
+        "routeTendencyIds": ["fracture", "high_pressure"],
+        "nextNodeIds": ["route_node_late_event_after_shop"]
       },
       {
         "id": "route_node_late_event",
@@ -211,6 +374,35 @@
           "event_cracked_registry_needle"
         ],
         "routeTendencyIds": ["fracture", "supply"],
+        "nextNodeIds": ["route_node_third_elite"]
+      },
+      {
+        "id": "route_node_late_event_after_shop",
+        "type": "event",
+        "nameKey": "route.node.late_event_after_shop.name",
+        "descriptionKey": "route.node.late_event_after_shop.description",
+        "eventPoolIds": [
+          "event_fouled_page_bundle",
+          "event_covered_name_stable",
+          "event_bound_artifact_case",
+          "event_lost_altar_bell",
+          "event_cracked_registry_needle"
+        ],
+        "routeTendencyIds": ["fracture", "supply"],
+        "nextNodeIds": ["route_node_fracture_shop_name_pressure"]
+      },
+      {
+        "id": "route_node_fracture_shop_name_pressure",
+        "type": "normal_battle",
+        "nameKey": "route.node.fracture_shop_name_pressure.name",
+        "descriptionKey": "route.node.fracture_shop_name_pressure.description",
+        "encounterId": "encounter_late_fleeing_name_paper_horse",
+        "encounterPoolIds": [
+          "encounter_late_fleeing_name_paper_horse",
+          "encounter_multi_offering_table_mouse",
+          "encounter_pool_incense_ash_louse"
+        ],
+        "routeTendencyIds": ["fracture", "high_pressure"],
         "nextNodeIds": ["route_node_third_elite"]
       },
       {

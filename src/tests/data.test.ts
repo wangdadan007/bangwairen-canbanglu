@@ -459,14 +459,21 @@ describe('initial game data', () => {
       'event_lost_altar_bell',
       'event_cracked_registry_needle',
     ])
+    expect(nodesById.get('route_node_late_event_after_shop')?.eventPoolIds).toEqual([
+      'event_fouled_page_bundle',
+      'event_covered_name_stable',
+      'event_bound_artifact_case',
+      'event_lost_altar_bell',
+      'event_cracked_registry_needle',
+    ])
     expect(nodesById.get('route_node_first_shop')?.nextNodeIds).toEqual([
-      'route_node_steady_incense_clerk',
+      'route_node_steady_mid_altar_check',
     ])
     expect(nodesById.get('route_node_catalogue_rest')?.nextNodeIds).toEqual([
-      'route_node_late_fleeing_name_paper_horse',
+      'route_node_catalogue_name_pressure',
     ])
     expect(nodesById.get('route_node_fracture_shop')?.nextNodeIds).toEqual([
-      'route_node_late_event',
+      'route_node_fracture_shop_fouled_pressure',
     ])
     expect(
       nodesById.get('route_node_unlit_temple_warden')?.encounterPoolIds,
@@ -491,20 +498,33 @@ describe('initial game data', () => {
     ])
     expect(
       route.nodes.filter((node) => node.type === 'event').map((node) => node.eventPoolIds?.length),
-    ).toEqual([4, 5, 5])
+    ).toEqual([4, 5, 5, 5])
     expect(nodesById.get('route_node_boss_registry_thief')?.nextNodeIds).toEqual([])
     expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
       'encounter_tutorial_paper_wraith',
       'encounter_tutorial_incense_thief_mouse',
       'encounter_tutorial_bronze_bell_patrol',
       'encounter_mid_unlit_temple_warden',
+      'encounter_mid_ash_altar_child',
       'encounter_elite_incense_clerk',
+      'encounter_multi_offering_table_mouse',
       'encounter_late_plague_paper_figure',
       'encounter_elite_incense_clerk',
       'encounter_elite_fire_fleeing_name',
       'encounter_late_fleeing_name_paper_horse',
+      'encounter_mid_ash_altar_child',
+      'encounter_late_plague_paper_figure',
+      'encounter_late_fleeing_name_paper_horse',
+      'encounter_mid_ash_altar_child',
+      'encounter_elite_fire_fleeing_name',
+      'encounter_late_plague_paper_figure',
       'encounter_mid_fortune_breaker',
       'encounter_late_scroll_stuffer_clerk',
+      'encounter_mid_ash_altar_child',
+      'encounter_late_plague_paper_figure',
+      'encounter_late_fleeing_name_paper_horse',
+      'encounter_late_plague_paper_figure',
+      'encounter_late_fleeing_name_paper_horse',
       'encounter_elite_dipper_empty_shell',
       'encounter_boss_registry_thief',
     ])
