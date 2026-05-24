@@ -16,11 +16,11 @@ export function RewardPage({
   onChooseCard,
   onSkip,
 }: RewardPageProps) {
-  const qualityLabel = offer.quality === 'high' ? '归册高质奖励' : '伏诛普通奖励'
+  const qualityLabel = offer.quality === 'high' ? '归册奖励' : '伏诛奖励'
   const qualityText =
     offer.quality === 'high'
-      ? '真名已明，奖励池多开一格，并可出现归册限定牌。'
-      : '敌形已散，奖励池保留基础成长。'
+      ? '卡牌奖励池与伏诛一致；归册的额外收益已在裁定中结算。'
+      : '卡牌奖励池与归册一致；快速收束后仍可继续补问名、正名和构筑牌。'
 
   return (
     <section className={`reward-page ${offer.quality}`} aria-label="战后奖励">

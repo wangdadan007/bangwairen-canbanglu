@@ -22,7 +22,6 @@ import { gameData } from '../data'
 import type {
   CardId,
   PlayableRoleId,
-  RewardQuality,
   RouteState,
   UnlockState,
   VictorySettlement,
@@ -69,10 +68,8 @@ function collectRewardPoolCardIds(): Set<CardId> {
   const cardIds = new Set<CardId>()
 
   for (const unlocks of createCumulativeUnlockStates()) {
-    for (const quality of ['ordinary', 'high'] as const satisfies readonly RewardQuality[]) {
-      for (const card of getAvailableTutorialRewardCards(gameData.cards, unlocks, quality)) {
-        cardIds.add(card.id)
-      }
+    for (const card of getAvailableTutorialRewardCards(gameData.cards, unlocks)) {
+      cardIds.add(card.id)
     }
   }
 

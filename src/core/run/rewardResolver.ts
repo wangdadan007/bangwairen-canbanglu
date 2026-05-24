@@ -52,7 +52,7 @@ export function createTutorialRewardOffer({
   const options = selectRewardOptions({
     encounter,
     quality,
-    cards: getAvailableTutorialRewardCards(cardDefinitions, unlocks, quality),
+    cards: getAvailableTutorialRewardCards(cardDefinitions, unlocks),
     unlocks,
     roleId,
   })
@@ -68,14 +68,9 @@ export function createTutorialRewardOffer({
 export function getAvailableTutorialRewardCards(
   cardDefinitions: readonly CardDefinition[],
   unlocks: UnlockState,
-  quality: RewardQuality,
 ): readonly CardDefinition[] {
   return cardDefinitions.filter((card) => {
     if (!card.tags.includes('reward')) {
-      return false
-    }
-
-    if (quality === 'ordinary' && card.tags.includes('catalogue_reward')) {
       return false
     }
 
@@ -154,24 +149,15 @@ function selectRewardOptions({
   const latestStageCards = latestStageId
     ? cards.filter((card) => card.unlockStage === latestStageId)
     : []
-  const highQualityCards =
-    quality === 'high' ? cards.filter((card) => card.tags.includes('catalogue_reward')) : []
-  const orderedCards =
-    quality === 'high'
-      ? uniqueCards([
-          ...sortCardsByRolePreference(highQualityCards, roleId),
-          ...sortCardsByRolePreference(latestStageCards, roleId),
-          ...sortCardsByRolePreference(cards, roleId),
-        ])
-      : uniqueCards([
-          ...sortCardsByRolePreference(latestStageCards, roleId),
-          ...sortCardsByRolePreference(cards, roleId),
-        ])
-  const optionCount = quality === 'high' ? 3 : 2
+  const orderedCards = uniqueCards([
+    ...sortCardsByRolePreference(latestStageCards, roleId),
+    ...sortCardsByRolePreference(cards, roleId),
+  ])
+  const optionCount = 3
   const rotatedCards = rotateRewardCandidates({
     cards: orderedCards,
-    fixedHeadCount: quality === 'high' ? 1 : 0,
-    offsetSeed: `${encounter.id}:${quality}:${latestStageId ?? 'none'}:${roleId ?? 'default'}`,
+    fixedHeadCount: 1,
+    offsetSeed: `${encounter.id}:${latestStageId ?? 'none'}:${roleId ?? 'default'}`,
   })
 
   return rotatedCards.slice(0, optionCount).map((card, index) => ({

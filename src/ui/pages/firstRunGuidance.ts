@@ -76,16 +76,16 @@ export function createFirstRunGuidance({
       ? {
           tone: 'reward',
           eyebrow: '归册奖励',
-          title: '问名后的收束更值钱',
-          body: '真名已明再打空敌形，会变成归册：奖励多一格，也更容易出现归册限定牌和裁定入口。',
+          title: '归册多在裁定',
+          body: '真名已明再打空敌形，会变成归册：卡牌奖励仍是同一套三选一，额外收益来自裁定。',
           terms: ['问名', '正名', '归册'],
         }
       : {
           tone: 'reward',
           eyebrow: '伏诛奖励',
           title: '快打空也能赢',
-          body: '未正名前收束是伏诛，节奏更快但奖励普通；牌组缺问名时，这条路线仍能通关。',
-          terms: ['破形', '伏诛', '普通奖励'],
+          body: '未正名前收束是伏诛，节奏更快；卡牌奖励与归册同池三选一，之后仍能继续补问名和正名牌。',
+          terms: ['破形', '伏诛', '奖励'],
         }
   }
 
@@ -237,14 +237,14 @@ function createBattleResultGuidance(battle: CombatState): FirstRunGuidance | und
           tone: 'reward',
           eyebrow: '战后',
           title: '本战归册，后续收益更高',
-          body: '归册会优先进入裁定或高质量奖励；这就是问名路线的主要回报。',
+          body: '归册会进入裁定；卡牌奖励与伏诛同池三选一，问名路线的主要回报在改榜收益。',
           terms: ['归册', '裁定', '奖励'],
         }
       : {
           tone: 'reward',
           eyebrow: '战后',
           title: '本战伏诛，路线仍可推进',
-          body: '伏诛适合快速收束，但奖励质量较低；后续有问名牌时可以再尝试归册。',
+          body: '伏诛适合快速收束，卡牌奖励仍与归册同池；后续有窗口时可以再尝试正名归册。',
           terms: ['伏诛', '破形', '奖励'],
         }
   }

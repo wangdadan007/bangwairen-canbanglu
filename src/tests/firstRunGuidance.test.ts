@@ -30,7 +30,7 @@ describe('T56 first run guidance', () => {
     expect(guidance?.body).not.toMatch(/HP|格挡/)
   })
 
-  it('makes high quality catalogue rewards legible before choosing a card', () => {
+  it('makes catalogue verdict value legible before choosing a card', () => {
     const run = {
       ...createInitialTutorialRunState(
         gameData.tutorialUnlocks,
@@ -53,8 +53,8 @@ describe('T56 first run guidance', () => {
     })
 
     expect(guidance?.tone).toBe('reward')
-    expect(guidance?.title).toContain('问名')
-    expect(guidance?.body).toContain('归册限定牌')
+    expect(guidance?.title).toContain('裁定')
+    expect(guidance?.body).toContain('同一套三选一')
   })
 
   it('uses the Boss node to surface end pressure guidance', () => {

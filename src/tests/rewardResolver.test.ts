@@ -31,7 +31,7 @@ const expectFirstRewardToMatchFamily = (
 }
 
 describe('T10 tutorial rewards', () => {
-  it('creates a smaller ordinary reward for vanquish and a larger high reward for catalogue', () => {
+  it('uses the same three-card reward pool for vanquish and catalogue', () => {
     const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
     const ordinaryRun = advanceTutorialRun(
       run,
@@ -49,15 +49,11 @@ describe('T10 tutorial rewards', () => {
     )
 
     expect(ordinaryRun.pendingReward?.quality).toBe('ordinary')
-    expect(ordinaryRun.pendingReward?.options).toHaveLength(2)
-    expect(ordinaryRun.pendingReward?.options.map((option) => option.cardDefinitionId)).not.toContain(
-      'card_trace_name_slip',
-    )
-
     expect(highRun.pendingReward?.quality).toBe('high')
+    expect(ordinaryRun.pendingReward?.options).toHaveLength(3)
     expect(highRun.pendingReward?.options).toHaveLength(3)
-    expect(highRun.pendingReward?.options.map((option) => option.cardDefinitionId)).toContain(
-      'card_trace_name_slip',
+    expect(ordinaryRun.pendingReward?.options.map((option) => option.cardDefinitionId)).toEqual(
+      highRun.pendingReward?.options.map((option) => option.cardDefinitionId),
     )
   })
 
@@ -94,7 +90,6 @@ describe('T10 tutorial rewards', () => {
     const afterRedInk = getAvailableTutorialRewardCards(
       gameData.cards,
       redInkUnlocks,
-      'ordinary',
     )
 
     expect(beforeRedInk.options.map((option) => option.cardDefinitionId)).not.toContain(
@@ -105,7 +100,6 @@ describe('T10 tutorial rewards', () => {
     expect(getAvailableTutorialRewardCards(
       gameData.cards,
       humanAltarUnlocks,
-      'ordinary',
     ).map((card) => card.id)).toEqual(
       expect.arrayContaining(['card_sweep_ash_talisman', 'card_chase_imp_talisman']),
     )
@@ -113,7 +107,6 @@ describe('T10 tutorial rewards', () => {
     expect(getAvailableTutorialRewardCards(
       gameData.cards,
       resourceUnlocks,
-      'ordinary',
     ).map((card) => card.id)).toEqual(
       expect.arrayContaining([
         'card_ink_rubbing_slip',
@@ -123,7 +116,7 @@ describe('T10 tutorial rewards', () => {
     )
   })
 
-  it('keeps T37 and T38 card additions gated by stage and reward quality', () => {
+  it('keeps T37 and T38 card additions gated by stage instead of settlement', () => {
     const resourceUnlocks = createUnlockState(
       ['stage_core', 'stage_abnormal_boundary', 'stage_red_ink_preview', 'stage_run_resources'],
       gameData.tutorialUnlocks,
@@ -139,43 +132,28 @@ describe('T10 tutorial rewards', () => {
       ],
       gameData.tutorialUnlocks,
     )
-    const resourceOrdinaryIds = getAvailableTutorialRewardCards(
+    const resourceRewardIds = getAvailableTutorialRewardCards(
       gameData.cards,
       resourceUnlocks,
-      'ordinary',
     ).map((card) => card.id)
-    const altarOrdinaryIds = getAvailableTutorialRewardCards(
+    const altarRewardIds = getAvailableTutorialRewardCards(
       gameData.cards,
       altarUnlocks,
-      'ordinary',
-    ).map((card) => card.id)
-    const altarHighIds = getAvailableTutorialRewardCards(
-      gameData.cards,
-      altarUnlocks,
-      'high',
     ).map((card) => card.id)
 
-    expect(resourceOrdinaryIds).toEqual(
+    expect(resourceRewardIds).toEqual(
       expect.arrayContaining([
         'card_clean_scroll_charm',
         'card_doom_account_tally',
         'card_fracture_guard_talisman',
       ]),
     )
-    expect(resourceOrdinaryIds).not.toContain('card_name_net_talisman')
-    expect(altarOrdinaryIds).toEqual(
+    expect(resourceRewardIds).not.toContain('card_name_net_talisman')
+    expect(altarRewardIds).toEqual(
       expect.arrayContaining([
         'card_name_net_talisman',
         'card_ash_lamp_counterseal',
         'card_altar_threefold_sigil',
-      ]),
-    )
-    expect(altarHighIds).toEqual(
-      expect.arrayContaining([
-        'card_mirror_bind_edict',
-        'card_whip_follow_charm',
-        'card_registry_rewrite_edict',
-        'card_heaven_ink_decree',
       ]),
     )
   })
@@ -243,30 +221,23 @@ describe('T10 tutorial rewards', () => {
       ['stage_core', 'stage_abnormal_boundary'],
       gameData.tutorialUnlocks,
     )
-    const coreHighRewardIds = getAvailableTutorialRewardCards(
+    const coreRewardIds = getAvailableTutorialRewardCards(
       gameData.cards,
       coreUnlocks,
-      'high',
-    ).map((card) => card.id)
-    const coreOrdinaryRewardIds = getAvailableTutorialRewardCards(
-      gameData.cards,
-      coreUnlocks,
-      'ordinary',
     ).map((card) => card.id)
     const abnormalRewardIds = getAvailableTutorialRewardCards(
       gameData.cards,
       abnormalUnlocks,
-      'ordinary',
     ).map((card) => card.id)
 
-    expect(coreHighRewardIds).toEqual(
+    expect(coreRewardIds).toEqual(
       expect.not.arrayContaining([
         'card_thunder_splinter',
         'card_name_hook_charm',
         'card_heavy_edict',
       ]),
     )
-    expect(coreOrdinaryRewardIds).not.toContain('card_mirror_slip')
+    expect(coreRewardIds).not.toContain('card_mirror_slip')
     expect(abnormalRewardIds).not.toContain('card_counterforce_talisman')
     expect(abnormalRewardIds).toEqual(
       expect.arrayContaining(['card_joint_seal_tablet']),

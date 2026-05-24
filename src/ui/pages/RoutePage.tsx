@@ -38,7 +38,7 @@ const routeTendencyCopy: Record<RouteTendencyId, { readonly label: string; reado
   },
   catalogue: {
     label: '归册',
-    hint: '名格、精英和高质奖励更集中',
+    hint: '名格、精英和裁定收益更集中',
   },
   fracture: {
     label: '裂榜',

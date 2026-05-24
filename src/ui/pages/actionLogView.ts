@@ -58,9 +58,9 @@ const termTooltips: Record<string, string> = {
   abnormal_move: '特殊行为（异动）：偷香、塞污卷、遮名、回形等，需要专门处理。',
   counter_abnormal_move: '断异动：专门处理某类异动的效果。',
   ask_name: '查明真名（问名）：揭示敌人的名格。',
-  named: '真名已明（正名）：名格全揭示后触发名破，并提高归册收益。',
-  catalogue: '归册：正名后打空敌形的高质量结算，会进入裁定。',
-  vanquish: '伏诛：未正名时打空敌形的普通结算。',
+  named: '真名已明（正名）：名格全揭示后触发名破，并打开归册裁定收益。',
+  catalogue: '归册：正名后打空敌形的结算，会进入裁定；卡牌奖励与伏诛同池。',
+  vanquish: '伏诛：未正名时打空敌形的快速结算；卡牌奖励与归册同池。',
   verdict: '战后改榜（裁定）：只包含登簿、朱批、削籍三类。',
   ink: '墨：中后段高级资源，用于问名、朱批或裁定相关收益。',
   doom: '劫数：以未来风险换当前爆发的负债资源。',
@@ -1129,8 +1129,8 @@ export function getSettlementLabel(settlement: VictorySettlement) {
 
 export function getSettlementText(settlement: VictorySettlement) {
   return settlement === 'catalogue'
-    ? '真名入卷，先入裁定，再领取高质量奖励。'
-    : '敌形已散，获得普通奖励。'
+    ? '真名入卷，先入裁定，再领取同池卡牌奖励。'
+    : '敌形已散，领取同池卡牌奖励。'
 }
 
 function formatAbnormalMoveExecutionDetail(entry: ActionLogEntry) {
