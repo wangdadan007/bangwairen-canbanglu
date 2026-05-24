@@ -2,6 +2,7 @@ import type { CardId, EncounterId, EnemyId, LocalizationKey } from './common'
 
 export type TutorialVerdictChoiceId = 'register' | 'red_ink' | 'erase'
 export type TutorialRegisterRuleId =
+  | 'register_common_docket'
   | 'register_incense_clerk'
   | 'register_fire_fleeing_name'
   | 'register_dipper_empty_shell'
@@ -16,6 +17,7 @@ export type TutorialVerdictOptionId = 'register' | 'red_ink' | TutorialEraseVari
 export interface TutorialNextBattleStartBonus {
   readonly ink: number
   readonly incense: number
+  readonly openingHandCardDefinitionIds?: readonly CardId[]
 }
 
 export interface TutorialVerdictOption {
@@ -44,6 +46,9 @@ export interface TutorialVerdictRegisterEntry {
   readonly registerRuleId?: TutorialRegisterRuleId
   readonly ruleNameKey?: LocalizationKey
   readonly ruleTextKey?: LocalizationKey
+  readonly segmentIndex?: number
+  readonly maxTriggerCount?: number
+  readonly remainingTriggerCount?: number
 }
 
 export interface TutorialVerdictRecord {
@@ -62,6 +67,8 @@ export interface TutorialVerdictRecord {
   readonly addedCardDefinitionIds?: readonly CardId[]
   readonly addedCardDefinitionId?: CardId
   readonly nextBattleStartBonus?: TutorialNextBattleStartBonus
+  readonly registerTriggerLimit?: number
+  readonly registerSegmentIndex?: number
 }
 
 export interface TutorialVerdictState {

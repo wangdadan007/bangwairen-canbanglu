@@ -70,42 +70,102 @@ describe('T12 verdict MVP', () => {
     )
   })
 
-  it('resolves register as a persistent catalogue entry and max incense bonus', () => {
+  it('does not offer duplicate ordinary register in the same segment', () => {
+    const initialRun = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const runWithCommonDocket = {
+      ...initialRun,
+      verdict: {
+        ...initialRun.verdict,
+        registerEntries: [
+          {
+            ...createRegisterEntry('register_common_docket'),
+            maxTriggerCount: 3,
+            remainingTriggerCount: 2,
+          },
+        ],
+      },
+    }
+    const paperWraith = gameData.enemies[0]
+    const catalogueRun = advanceTutorialRun(
+      runWithCommonDocket,
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'catalogue',
+      gameData.cards,
+      createVerdictContext(paperWraith),
+    )
+    const optionIds = catalogueRun.pendingVerdict?.options.map((option) => option.id)
+
+    expect(optionIds).not.toContain('register')
+    expect(optionIds).toContain('red_ink')
+  })
+
+  it('resolves ordinary register as a common narrow trigger instead of stat growth', () => {
     const run = createVerdictRun()
     const nextRun = resolveTutorialVerdict(run, 'register')
     const state = createInitialBattleState({
       cardDefinitions: gameData.cards,
       enemyDefinition: gameData.enemies[1],
-      deckCards: nextRun.deckCards,
+      deckDefinitionIds: ['card_ask_name', 'card_ask_name'],
       maxIncenseBonus: nextRun.verdict.maxIncenseBonus,
       playerCurrentForm: nextRun.playerForm.current,
       playerMaxForm: nextRun.playerForm.max,
       unlocks: nextRun.unlocks,
+      registerEntries: nextRun.verdict.registerEntries,
     })
 
     expect(nextRun.pendingVerdict).toBeUndefined()
-    expect(nextRun.verdict.maxIncenseBonus).toBe(1)
+    expect(nextRun.verdict.maxIncenseBonus).toBe(0)
     expect(nextRun.resources.fracture).toBe(0)
     expect(nextRun.verdict.registerEntries).toEqual([
       expect.objectContaining({
         encounterId: 'encounter_tutorial_paper_wraith',
         enemyDefinitionId: 'enemy_paper_wraith',
+        registerRuleId: 'register_common_docket',
+        ruleNameKey: 'verdict.register.rule.common_docket.name',
+        maxTriggerCount: 3,
+        remainingTriggerCount: 3,
       }),
     ])
     expect(nextRun.verdict.records[0]).toEqual(
       expect.objectContaining({
         choiceId: 'register',
-        maxIncenseBonusDelta: 1,
-        maxFormBonusDelta: 4,
+        registerRuleId: 'register_common_docket',
+        maxIncenseBonusDelta: 0,
+        maxFormBonusDelta: 0,
       }),
     )
     expect(nextRun.playerForm).toEqual({
-      current: 76,
-      max: 76,
+      current: 72,
+      max: 72,
     })
-    expect(state.player.maxIncense).toBe(4)
-    expect(state.player.incense).toBe(4)
-    expect(state.player.maxForm).toBe(76)
+    expect(state.player.maxIncense).toBe(3)
+    expect(state.player.incense).toBe(3)
+    expect(state.player.maxForm).toBe(72)
+
+    const afterFirstAsk = playFirstCard(state)
+    const afterSecondAsk = playFirstCard(afterFirstAsk)
+
+    expect(afterSecondAsk.resources.ink).toBe(1)
+    expect(afterSecondAsk.actionLog).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'REGISTER_RULE_TRIGGERED',
+          payload: expect.objectContaining({
+            ruleId: 'register_common_docket',
+            trigger: 'enemy_named',
+            inkDelta: 1,
+            remainingTriggerCount: 2,
+          }),
+        }),
+      ]),
+    )
+    expect(afterSecondAsk.registerEntries[0]).toEqual(
+      expect.objectContaining({
+        registerRuleId: 'register_common_docket',
+        remainingTriggerCount: 2,
+      }),
+    )
   })
 
   it('resolves elite and boss register as dedicated rules instead of generic stat bonuses', () => {
@@ -166,8 +226,22 @@ describe('T12 verdict MVP', () => {
         choiceId: 'erase',
         fractureDelta: 1,
         addedCardDefinitionId: 'card_split_form_talisman',
+        nextBattleStartBonus: {
+          ink: 0,
+          incense: 0,
+          openingHandCardDefinitionIds: ['card_split_form_talisman'],
+        },
       }),
     )
+
+    const nextBattle = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[1],
+      deckCards: nextRun.deckCards,
+      openingHandDefinitionIds: nextRun.nextBattleStartBonus?.openingHandCardDefinitionIds,
+    })
+
+    expect(nextBattle.hand.map((card) => card.definitionId)).toContain('card_split_form_talisman')
   })
 
   it('resolves the first chapter erase payoff variants', () => {
@@ -198,21 +272,68 @@ describe('T12 verdict MVP', () => {
       expect.objectContaining({
         eraseVariantId: 'erase_heavy_split_form',
         doomDelta: 1,
+        nextBattleStartBonus: {
+          ink: 0,
+          incense: 0,
+          openingHandCardDefinitionIds: ['card_heavy_split_form_talisman'],
+        },
       }),
     )
     expect(nextBattleRun.resources.fracture).toBe(1)
     expect(nextBattleRun.nextBattleStartBonus).toEqual({
       ink: 1,
-      incense: 1,
+      incense: 2,
+      openingHandCardDefinitionIds: [],
     })
     expect(nextBattleRun.verdict.records[0]).toEqual(
       expect.objectContaining({
         eraseVariantId: 'erase_next_battle_resources',
         nextBattleStartBonus: {
           ink: 1,
-          incense: 1,
+          incense: 2,
         },
       }),
+    )
+  })
+
+  it('spends common docket triggers across battles and stops at the segment cap', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[1],
+      deckDefinitionIds: ['card_ask_name'],
+      registerEntries: [
+        {
+          ...createRegisterEntry('register_common_docket'),
+          remainingTriggerCount: 1,
+          maxTriggerCount: 3,
+        },
+      ],
+    })
+    const afterAsk = playFirstCard(state)
+    const exhaustedState = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[1],
+      deckDefinitionIds: ['card_ask_name'],
+      registerEntries: afterAsk.registerEntries,
+    })
+    const afterExhaustedAsk = playFirstCard(exhaustedState)
+
+    expect(afterAsk.resources.ink).toBe(1)
+    expect(afterAsk.registerEntries[0]).toEqual(
+      expect.objectContaining({
+        remainingTriggerCount: 0,
+      }),
+    )
+    expect(afterExhaustedAsk.resources.ink).toBe(0)
+    expect(afterExhaustedAsk.actionLog).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'REGISTER_RULE_TRIGGERED',
+          payload: expect.objectContaining({
+            ruleId: 'register_common_docket',
+          }),
+        }),
+      ]),
     )
   })
 

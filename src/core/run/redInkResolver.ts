@@ -26,6 +26,17 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     nameKey: 'red_ink.return_incense.name',
     rulesTextKey: 'red_ink.return_incense.rules',
     category: 'economy',
+    compatibleCardTags: ['break_form', 'ask_name', 'seal_momentum', 'counter_abnormal_move', 'altar'],
+    compatibleEffectTypes: [
+      'BREAK_SHAPE',
+      'ASK_NAME',
+      'SEAL_MOMENTUM',
+      'COUNTER_ABNORMAL_MOVE',
+      'PLACE_ALTAR',
+    ],
+    incompatibleCardTags: ['draw', 'gain_incense'],
+    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE'],
+    minimumCardCost: 1,
     preferredRoleIds: ['role_hengjian', 'role_lianjin'],
     preferredRouteTendencyIds: ['steady', 'supply'],
     annotation: {
@@ -47,6 +58,17 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     rulesTextKey: 'red_ink.ink_drop.rules',
     category: 'economy',
     requiredUnlockStages: ['stage_run_resources'],
+    compatibleCardTags: ['break_form', 'ask_name', 'seal_momentum', 'counter_abnormal_move', 'altar'],
+    compatibleEffectTypes: [
+      'BREAK_SHAPE',
+      'ASK_NAME',
+      'SEAL_MOMENTUM',
+      'COUNTER_ABNORMAL_MOVE',
+      'PLACE_ALTAR',
+    ],
+    incompatibleCardTags: ['draw', 'gain_incense', 'ink'],
+    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE', 'GAIN_INK'],
+    minimumCardCost: 1,
     preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
     preferredRouteTendencyIds: ['catalogue', 'supply'],
     annotation: {
@@ -67,6 +89,16 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     nameKey: 'red_ink.trace_name.name',
     rulesTextKey: 'red_ink.trace_name.rules',
     category: 'ask_name',
+    compatibleCardTags: ['break_form', 'seal_momentum', 'counter_abnormal_move', 'altar'],
+    compatibleEffectTypes: [
+      'BREAK_SHAPE',
+      'SEAL_MOMENTUM',
+      'COUNTER_ABNORMAL_MOVE',
+      'PLACE_ALTAR',
+    ],
+    incompatibleCardTags: ['draw', 'gain_incense'],
+    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE'],
+    minimumCardCost: 1,
     preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
     preferredRouteTendencyIds: ['catalogue'],
     annotation: {
@@ -89,6 +121,9 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     category: 'ask_name',
     compatibleEffectTypes: ['ASK_NAME'],
     compatibleCardTags: ['ask_name'],
+    incompatibleCardTags: ['draw', 'gain_incense'],
+    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE'],
+    minimumCardCost: 1,
     preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
     preferredRouteTendencyIds: ['catalogue', 'steady'],
     annotation: {
@@ -114,6 +149,9 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     category: 'ask_name',
     compatibleCardTags: ['ask_name', 'catalogue_reward'],
     compatibleEffectTypes: ['ASK_NAME'],
+    incompatibleCardTags: ['draw', 'gain_incense'],
+    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE'],
+    minimumCardCost: 1,
     preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
     preferredRouteTendencyIds: ['catalogue'],
     annotation: {
@@ -147,6 +185,7 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     category: 'break_form',
     compatibleCardTags: ['break_form', 'ask_name'],
     compatibleEffectTypes: ['BREAK_SHAPE', 'ASK_NAME'],
+    minimumCardCost: 1,
     preferredRoleIds: ['role_lianjin'],
     preferredRouteTendencyIds: ['fracture', 'catalogue'],
     annotation: {
@@ -172,6 +211,7 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     category: 'break_form',
     compatibleCardTags: ['break_form'],
     compatibleEffectTypes: ['BREAK_SHAPE'],
+    minimumCardCost: 1,
     preferredRoleIds: ['role_lianjin'],
     preferredRouteTendencyIds: ['fracture', 'high_pressure'],
     annotation: {
@@ -311,6 +351,11 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     rulesTextKey: 'red_ink.doom_burst.rules',
     category: 'risk',
     requiredUnlockStages: ['stage_run_resources'],
+    compatibleCardTags: ['break_form'],
+    compatibleEffectTypes: ['BREAK_SHAPE'],
+    incompatibleCardTags: ['draw', 'gain_incense'],
+    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE'],
+    minimumCardCost: 1,
     preferredRoleIds: ['role_lianjin'],
     preferredRouteTendencyIds: ['fracture', 'high_pressure'],
     annotation: {
@@ -406,6 +451,27 @@ export function isRedInkOptionCompatibleWithCard(
 ) {
   const requiredTags = option.compatibleCardTags ?? []
   const requiredEffectTypes = option.compatibleEffectTypes ?? []
+  const incompatibleTags = option.incompatibleCardTags ?? []
+  const incompatibleEffectTypes = option.incompatibleEffectTypes ?? []
+
+  if (
+    option.minimumCardCost !== undefined &&
+    cardDefinition.cost < option.minimumCardCost
+  ) {
+    return false
+  }
+
+  if (incompatibleTags.some((tag) => cardDefinition.tags.includes(tag))) {
+    return false
+  }
+
+  if (
+    incompatibleEffectTypes.some((effectType) =>
+      cardDefinition.effects.some((effect) => effect.type === effectType),
+    )
+  ) {
+    return false
+  }
 
   if (requiredTags.length === 0 && requiredEffectTypes.length === 0) {
     return true

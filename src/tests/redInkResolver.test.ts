@@ -103,6 +103,80 @@ describe('T11 red ink MVP', () => {
     ).toContain('red_ink_press_momentum')
   })
 
+  it('keeps strong red ink annotations away from low-cost loop pieces', () => {
+    const run = createTutorialRedInkOfferIfNeeded(
+      withRedInkUnlocked(
+        createInitialTutorialRunState(
+          gameData.tutorialUnlocks,
+          ['encounter_tutorial_paper_wraith'],
+          ['card_order_scroll', 'card_quiet_incense', 'card_red_ink_trial', 'card_zhu_fu'],
+        ),
+        ['stage_run_resources'],
+      ),
+    )
+    const loopCard = run.deckCards.find((card) => card.definitionId === 'card_order_scroll')
+    const loopDefinition = gameData.cards.find((card) => card.id === 'card_order_scroll')
+    const strikeCard = run.deckCards.find((card) => card.definitionId === 'card_zhu_fu')
+    const strikeDefinition = gameData.cards.find((card) => card.id === 'card_zhu_fu')
+    const returnIncense = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_return_incense')
+    const traceName = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_trace_name')
+    const doomBurst = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_doom_burst')
+
+    expect(
+      returnIncense &&
+        loopDefinition &&
+        isRedInkOptionCompatibleWithCard(returnIncense, loopDefinition),
+    ).toBe(false)
+    expect(
+      traceName &&
+        loopDefinition &&
+        isRedInkOptionCompatibleWithCard(traceName, loopDefinition),
+    ).toBe(false)
+    expect(
+      doomBurst &&
+        loopDefinition &&
+        isRedInkOptionCompatibleWithCard(doomBurst, loopDefinition),
+    ).toBe(false)
+    expect(
+      returnIncense &&
+        strikeDefinition &&
+        isRedInkOptionCompatibleWithCard(returnIncense, strikeDefinition),
+    ).toBe(true)
+    expect(
+      traceName &&
+        strikeDefinition &&
+        isRedInkOptionCompatibleWithCard(traceName, strikeDefinition),
+    ).toBe(true)
+    expect(
+      doomBurst &&
+        strikeDefinition &&
+        isRedInkOptionCompatibleWithCard(doomBurst, strikeDefinition),
+    ).toBe(true)
+
+    const loopVisibleOptionIds = getVisibleRedInkOptionsForDeckCard(
+      run.pendingRedInk!,
+      loopCard,
+      loopDefinition,
+    ).map((option) => option.id)
+    const strikeVisibleOptionIds = getVisibleRedInkOptionsForDeckCard(
+      run.pendingRedInk!,
+      strikeCard,
+      strikeDefinition,
+    ).map((option) => option.id)
+
+    expect(loopVisibleOptionIds).not.toContain('red_ink_return_incense')
+    expect(loopVisibleOptionIds).not.toContain('red_ink_trace_name')
+    expect(loopVisibleOptionIds).not.toContain('red_ink_doom_burst')
+    expect(
+      strikeVisibleOptionIds,
+    ).toEqual(
+      expect.arrayContaining([
+        'red_ink_trace_name',
+        'red_ink_doom_burst',
+      ]),
+    )
+  })
+
   it('applies a permanent red ink annotation to one run deck card', () => {
     const run = createTutorialRedInkOfferIfNeeded(
       withRedInkUnlocked(createInitialTutorialRunState(gameData.tutorialUnlocks)),

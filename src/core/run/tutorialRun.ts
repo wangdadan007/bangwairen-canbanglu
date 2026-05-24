@@ -7,6 +7,7 @@ import type {
   TutorialRunSettlementRecord,
   TutorialRunFailureReason,
   TutorialRunState,
+  TutorialVerdictRegisterEntry,
   TutorialUnlockDefinition,
   TutorialResourceState,
   TutorialPlayerFormState,
@@ -139,6 +140,7 @@ export function advanceTutorialRun(
   artifactProgress?: ArtifactBattleProgressInput,
   resources?: TutorialResourceState,
   playerForm?: TutorialPlayerFormState,
+  registerEntries?: readonly TutorialVerdictRegisterEntry[],
 ): TutorialRunState {
   if (run.status !== 'active') {
     return run
@@ -179,12 +181,19 @@ export function advanceTutorialRun(
     artifacts: advanceArtifactsAfterBattle(run.artifacts, artifactProgress),
     resources: resources ?? run.resources,
     playerForm: playerForm ? normalizeTutorialPlayerFormState(playerForm) : run.playerForm,
+    verdict: registerEntries
+      ? {
+          ...run.verdict,
+          registerEntries,
+        }
+      : run.verdict,
     unlocks: nextUnlocks,
     pendingVerdict: verdictContext
       ? createTutorialVerdictOffer({
           encounter: currentEncounter,
           settlement,
           hasNextEncounter: !isComplete,
+          existingRegisterEntries: registerEntries ?? run.verdict.registerEntries,
           ...verdictContext,
         })
       : undefined,

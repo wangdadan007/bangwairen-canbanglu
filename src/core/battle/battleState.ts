@@ -55,6 +55,7 @@ export interface CreateBattleStateInput {
   readonly temporaryPlayerFormDelta?: number
   readonly artifacts?: ArtifactCollectionState
   readonly registerEntries?: CombatState['registerEntries']
+  readonly openingHandDefinitionIds?: readonly CardId[]
   readonly extraHandDefinitionIds?: readonly CardId[]
   readonly extraDrawPileDefinitionIds?: readonly CardId[]
   readonly artifactBacklashRecords?: readonly ArtifactBacklashRecord[]
@@ -90,11 +91,13 @@ export interface OpeningRiskLogRecord {
 export function createInitialBattleState(input: CreateBattleStateInput): CombatState {
   const deckDefinitionIds = input.deckDefinitionIds ?? DEFAULT_STARTER_DECK_IDS
   const deckCards = input.deckCards
+  const openingHandDefinitionIds = input.openingHandDefinitionIds ?? []
   const extraHandDefinitionIds = input.extraHandDefinitionIds ?? []
   const extraDrawPileDefinitionIds = input.extraDrawPileDefinitionIds ?? []
   assertDeckDefinitionsExist(
     [
       ...(deckCards ? deckCards.map((card) => card.definitionId) : deckDefinitionIds),
+      ...openingHandDefinitionIds,
       ...extraHandDefinitionIds,
       ...extraDrawPileDefinitionIds,
     ],
@@ -104,7 +107,11 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
   const deck = deckCards
     ? createCardInstancesFromRunDeck(deckCards)
     : createCardInstances(deckDefinitionIds)
+  const openingHandSelection = takeOpeningHandCards(deck, openingHandDefinitionIds)
   const extraHandCards = createTemporaryCardInstances(extraHandDefinitionIds)
+  const fallbackOpeningDrawPileCards = createTemporaryCardInstances(
+    openingHandSelection.missingDefinitionIds,
+  )
   const extraDrawPileCards = createTemporaryCardInstances(extraDrawPileDefinitionIds)
   const enemyDefinitions = input.enemyDefinitions ?? (input.enemyDefinition ? [input.enemyDefinition] : [])
   const hiddenIntentEnemyIds = createHiddenIntentEnemyIdSet(
@@ -158,8 +165,12 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
       },
     },
     enemies,
-    drawPile: [...deck, ...extraDrawPileCards],
-    hand: extraHandCards,
+    drawPile: [
+      ...fallbackOpeningDrawPileCards,
+      ...openingHandSelection.deck,
+      ...extraDrawPileCards,
+    ],
+    hand: [...openingHandSelection.hand, ...extraHandCards],
     discardPile: [],
     exhaustPile: [],
     nextTurnIncensePenalty: Math.max(0, Math.floor(input.openingIncensePenalty ?? 0)),
@@ -190,7 +201,8 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
       enemyCount: enemyDefinitions.length,
       playerCurrentForm: playerForm.current,
       playerMaxForm: playerForm.max,
-      deckSize: deck.length,
+      deckSize: openingHandSelection.deck.length,
+      openingHandCount: openingHandSelection.hand.length,
       extraDrawPileCount: extraDrawPileCards.length,
     },
   })
@@ -270,6 +282,37 @@ export function createCardInstancesFromRunDeck(
     isTemporary: false,
     annotations: card.annotations,
   }))
+}
+
+function takeOpeningHandCards(
+  deck: readonly CardInstance[],
+  definitionIds: readonly CardId[],
+): {
+  readonly deck: readonly CardInstance[]
+  readonly hand: readonly CardInstance[]
+  readonly missingDefinitionIds: readonly CardId[]
+} {
+  const remainingDeck = [...deck]
+  const openingHand: CardInstance[] = []
+  const missingDefinitionIds: CardId[] = []
+
+  for (const definitionId of definitionIds) {
+    const cardIndex = remainingDeck.findIndex((card) => card.definitionId === definitionId)
+
+    if (cardIndex < 0) {
+      missingDefinitionIds.push(definitionId)
+      continue
+    }
+
+    const [card] = remainingDeck.splice(cardIndex, 1)
+    openingHand.push(card)
+  }
+
+  return {
+    deck: remainingDeck,
+    hand: openingHand,
+    missingDefinitionIds,
+  }
 }
 
 export function createTemporaryCardInstances(

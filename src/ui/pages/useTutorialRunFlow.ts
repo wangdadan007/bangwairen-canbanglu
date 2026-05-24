@@ -308,6 +308,7 @@ export function useTutorialRunFlow({
         defeatedEnemy ? createArtifactBattleProgress(current.battle, defeatedEnemy) : undefined,
         getPersistentBattleResources(current.battle),
         getPersistentBattlePlayerForm(current.battle),
+        current.battle.registerEntries,
       )
       const nextRun = createRouteAwareArtifactOffer(advancedRun, nextRoute)
 
@@ -669,6 +670,7 @@ function createBattle(
   temporaryPlayerFormDelta = 0,
   artifacts?: TutorialRunState['artifacts'],
   registerEntries: TutorialRunState['verdict']['registerEntries'] = [],
+  openingHandDefinitionIds: readonly CardId[] = [],
   extraHandDefinitionIds: readonly CardId[] = [],
   extraDrawPileDefinitionIds: readonly CardId[] = [],
   artifactBacklashRecords: readonly ArtifactBacklashRecord[] = [],
@@ -692,6 +694,7 @@ function createBattle(
     temporaryPlayerFormDelta,
     artifacts,
     registerEntries,
+    openingHandDefinitionIds,
     extraHandDefinitionIds,
     extraDrawPileDefinitionIds,
     artifactBacklashRecords,
@@ -760,6 +763,7 @@ function createInitialTutorialBattleView(
           0,
           run.artifacts,
           run.verdict.registerEntries,
+          undefined,
           undefined,
           undefined,
           undefined,
@@ -879,6 +883,7 @@ function createBattleForEncounter(
       backlashResolution.temporaryPlayerFormDelta,
       nextRun.artifacts,
       nextRun.verdict.registerEntries,
+      battleStartBonus?.openingHandCardDefinitionIds ?? [],
       [
         ...backlashResolution.extraHandDefinitionIds,
         ...riskResolution.extraHandDefinitionIds,

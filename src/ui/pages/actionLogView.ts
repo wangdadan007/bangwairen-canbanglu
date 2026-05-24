@@ -1074,6 +1074,16 @@ function formatRegisterRuleLog(entry: ActionLogEntry) {
   }
 
   if (trigger === 'enemy_named') {
+    const inkDelta = getPayloadNumber(entry.payload.inkDelta) ?? 0
+
+    if (inkDelta > 0) {
+      const remainingTriggerCount = getPayloadNumber(entry.payload.remainingTriggerCount)
+
+      return `${ruleName}触发：首次正名入档，墨 +${inkDelta}${
+        remainingTriggerCount !== undefined ? `，残档剩 ${remainingTriggerCount} 层` : ''
+      }。`
+    }
+
     return `${ruleName}触发：正名后，本回合下一次破形 +${
       getPayloadNumber(entry.payload.pendingBreakShapeBonus) ?? 0
     }。`
@@ -1147,6 +1157,10 @@ function formatRiskThresholdLog(
 }
 
 function getRegisterRuleName(ruleId: string | undefined) {
+  if (ruleId === 'register_common_docket') {
+    return '残名入档'
+  }
+
   if (ruleId === 'register_incense_clerk') {
     return '香吏归案'
   }
@@ -1571,11 +1585,39 @@ function getVerdictChoiceLabel(choiceId: TutorialRunState['verdict']['records'][
 
 function getVerdictRecordDetail(record: TutorialRunState['verdict']['records'][number]) {
   if (record.choiceId === 'register') {
-    return `后续战斗香火上限 +${record.maxIncenseBonusDelta}，己形上限 +${record.maxFormBonusDelta}。`
+    if (record.registerRuleId === 'register_common_docket') {
+      return `通用登簿：本幕段最多触发 ${
+        record.registerTriggerLimit ?? 3
+      } 次，后续每场首次正名时，墨 +1。`
+    }
+
+    if (record.maxIncenseBonusDelta > 0 || record.maxFormBonusDelta > 0) {
+      return `后续战斗香火上限 +${record.maxIncenseBonusDelta}，己形上限 +${record.maxFormBonusDelta}。`
+    }
+
+    return '专属登簿规则已写入榜册，后续战斗按触发窗口生效。'
   }
 
   if (record.choiceId === 'red_ink') {
     return '裁定转入朱批服务，本局卡牌改造记录已更新。'
+  }
+
+  if (record.eraseVariantId === 'erase_gain_ink') {
+    return `榜裂 +${record.fractureDelta}，墨 +${record.inkDelta ?? 0}。`
+  }
+
+  if (record.eraseVariantId === 'erase_next_battle_resources') {
+    return `榜裂 +${record.fractureDelta}，下一战开局墨 +${
+      record.nextBattleStartBonus?.ink ?? 0
+    }、首回合香火 +${record.nextBattleStartBonus?.incense ?? 0}。`
+  }
+
+  const openingCards = record.nextBattleStartBonus?.openingHandCardDefinitionIds
+
+  if (openingCards?.length) {
+    return `榜裂 +${record.fractureDelta}${
+      record.doomDelta ? `，劫数 +${record.doomDelta}` : ''
+    }，削籍符已入牌组，下一战开局上手。`
   }
 
   return `榜裂 +${record.fractureDelta}，强收益已经写入牌组。`

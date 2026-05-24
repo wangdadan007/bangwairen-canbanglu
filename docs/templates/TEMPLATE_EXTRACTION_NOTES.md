@@ -454,3 +454,16 @@
 - 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时应替换本作术语、敌人 intent ID、卡 ID 和中文日志文案。
 - 是否值得抽到模板：值得，适合作为战斗引擎的 enemy intent authoring 扩展，也能作为 UI kit 的“attack rider preview / suppression feedback”组件范例。
 - 后续动作：T74 三角色人工试玩中观察来势附带是否足够可读，尤其是斗部空壳震坛和窃榜使终审路线压力是否需要更强 HUD 预警。
+
+### 2026-05-24 · 裁定平衡补丁 · 局内永久收益强度预算与升级兼容护栏
+
+- 候选类型：run reward balance guardrail / card upgrade compatibility policy。
+- 主归属模板：`Roguelike Run Flow Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`Data-Driven Card Battle Engine`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/core/run/verdictResolver.ts`、`src/core/battle/registerBattleResolver.ts`、`src/core/run/redInkResolver.ts`、`src/types/verdict.ts`、`src/types/run.ts`、`src/ui/pages/VerdictPage.tsx`、`src/ui/pages/actionLogView.ts`、`src/data/localization/zh-CN.json`、`src/tests/verdictResolver.test.ts`、`src/tests/redInkResolver.test.ts`、`docs/prd/PRD-gameplay.md`、`docs/prd/PRD-checklist.md`。
+- 可复用价值：把局内永久收益拆成普通 fallback、精英 / Boss 专属规则、触发窗口、每战上限、分段总额度和日志反馈，同时让卡牌升级选项声明最低费用、排除标签和排除效果，避免低费循环牌承接过强升级；短期风险选项可用“下一战开局上手 / 首回合资源”形成真实诱惑。
+- 与本作强绑定部分：登簿、朱批、削籍、残名入档、问名、正名、墨、香火、榜裂等命名和数值含义属于本作。
+- 去题材化思路：抽象为 common run modifier、elite / boss unique modifier、trigger cap、segment budget、upgrade minimum cost、excluded tags、excluded effect types、loop-risk filter 和 next-fight burst delivery；示例用中性 currency、energy、draw、status、risk 命名。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时只保留数据结构、resolver 策略和中性测试样例。
+- 是否值得抽到模板：值得，适合作为 `Roguelike Run Flow Kit` 中防止永久奖励和升级系统失控的平衡护栏章节。
+- 后续动作：后续人工试玩重点观察普通 fallback 在 3 次额度内是否仍有存在感、精英 / Boss 专属规则是否足够可识别、削籍首战爆发是否值得承担榜裂，以及升级过滤是否导致某些牌长期无可用朱批。

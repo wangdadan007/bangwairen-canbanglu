@@ -21,23 +21,31 @@ import {
   markArtifactOverloads,
 } from './artifactResolver'
 import { appendRunDeckCard } from './deckResolver'
-import { increaseTutorialPlayerMaxForm } from './playerFormResolver'
 import { createTutorialRedInkOffer } from './redInkResolver'
 import { applyTutorialResourceDelta } from './resourceResolver'
 
 export const VERDICT_ERASE_REWARD_CARD_ID: CardId = 'card_split_form_talisman'
 export const VERDICT_ERASE_HEAVY_REWARD_CARD_ID: CardId = 'card_heavy_split_form_talisman'
-export const VERDICT_REGISTER_INCENSE_BONUS = 1
-export const VERDICT_REGISTER_MAX_FORM_BONUS = 4
 export const VERDICT_ERASE_FRACTURE_DELTA = 1
 export const VERDICT_ERASE_INK_DELTA = 2
 export const VERDICT_ERASE_HEAVY_DOOM_DELTA = 1
+export const COMMON_DOCKET_TRIGGER_LIMIT = 3
+export const VERDICT_ERASE_NEXT_BATTLE_INK_DELTA = 1
+export const VERDICT_ERASE_NEXT_BATTLE_INCENSE_DELTA = 2
 
-export const REGISTER_RULE_BY_ENEMY_ID: Readonly<Partial<Record<EnemyId, {
+interface RegisterRuleDefinition {
   readonly id: TutorialRegisterRuleId
   readonly nameKey: LocalizationKey
   readonly rulesTextKey: LocalizationKey
-}>>> = {
+}
+
+export const COMMON_REGISTER_RULE: RegisterRuleDefinition = {
+  id: 'register_common_docket',
+  nameKey: 'verdict.register.rule.common_docket.name',
+  rulesTextKey: 'verdict.register.rule.common_docket.rules',
+}
+
+export const REGISTER_RULE_BY_ENEMY_ID: Readonly<Partial<Record<EnemyId, RegisterRuleDefinition>>> = {
   enemy_incense_clerk: {
     id: 'register_incense_clerk',
     nameKey: 'verdict.register.rule.incense_clerk.name',
@@ -113,6 +121,7 @@ export interface CreateTutorialVerdictOfferInput extends TutorialVerdictContext 
   readonly encounter: EncounterDefinition
   readonly settlement: VictorySettlement
   readonly hasNextEncounter?: boolean
+  readonly existingRegisterEntries?: readonly TutorialVerdictRegisterEntry[]
 }
 
 export function createInitialTutorialVerdictState(): TutorialVerdictState {
@@ -136,7 +145,11 @@ export function createTutorialVerdictOffer(
     enemyDefinitionId: input.enemyDefinitionId,
     enemyNameKey: input.enemyNameKey,
     revealedNameKeys: input.revealedNameKeys,
-    options: createTutorialVerdictOptions(Boolean(input.hasNextEncounter)),
+    options: createTutorialVerdictOptions({
+      enemyDefinitionId: input.enemyDefinitionId,
+      hasNextEncounter: Boolean(input.hasNextEncounter),
+      existingRegisterEntries: input.existingRegisterEntries ?? [],
+    }),
   }
 }
 
@@ -161,22 +174,12 @@ export function resolveTutorialVerdict(
 
   if (choiceId === 'register') {
     const entry = createRegisterEntry(run, offer)
-    const isSpecialRegister = Boolean(entry.registerRuleId)
 
     return {
       ...run,
       pendingVerdict: undefined,
-      playerForm: isSpecialRegister
-        ? run.playerForm
-        : increaseTutorialPlayerMaxForm(
-            run.playerForm,
-            VERDICT_REGISTER_MAX_FORM_BONUS,
-          ),
       verdict: {
         ...run.verdict,
-        maxIncenseBonus: isSpecialRegister
-          ? run.verdict.maxIncenseBonus
-          : run.verdict.maxIncenseBonus + VERDICT_REGISTER_INCENSE_BONUS,
         registerEntries: [...run.verdict.registerEntries, entry],
         records: [...run.verdict.records, record],
       },
@@ -232,9 +235,22 @@ function appendRunDeckCards(
   )
 }
 
-function createTutorialVerdictOptions(hasNextEncounter: boolean): readonly TutorialVerdictOption[] {
+function createTutorialVerdictOptions(input: {
+  readonly enemyDefinitionId: EnemyId
+  readonly hasNextEncounter: boolean
+  readonly existingRegisterEntries: readonly TutorialVerdictRegisterEntry[]
+}): readonly TutorialVerdictOption[] {
+  const registerRule = getRegisterRuleForEnemy(input.enemyDefinitionId)
+  const shouldHideDuplicateCommonRegister =
+    registerRule.id === COMMON_REGISTER_RULE.id &&
+    input.existingRegisterEntries.some(
+      (entry) => entry.registerRuleId === COMMON_REGISTER_RULE.id,
+    )
+
   return TUTORIAL_VERDICT_OPTIONS.filter(
-    (option) => option.id !== 'erase_next_battle_resources' || hasNextEncounter,
+    (option) =>
+      (option.id !== 'erase_next_battle_resources' || input.hasNextEncounter) &&
+      !(option.id === 'register' && shouldHideDuplicateCommonRegister),
   )
 }
 
@@ -242,7 +258,8 @@ function createRegisterEntry(
   run: TutorialRunState,
   offer: TutorialVerdictOffer,
 ): TutorialVerdictRegisterEntry {
-  const registerRule = REGISTER_RULE_BY_ENEMY_ID[offer.enemyDefinitionId]
+  const registerRule = getRegisterRuleForEnemy(offer.enemyDefinitionId)
+  const isCommonDocket = registerRule.id === COMMON_REGISTER_RULE.id
 
   return {
     id: `register_entry_${run.verdict.registerEntries.length + 1}`,
@@ -253,6 +270,9 @@ function createRegisterEntry(
     registerRuleId: registerRule?.id,
     ruleNameKey: registerRule?.nameKey,
     ruleTextKey: registerRule?.rulesTextKey,
+    segmentIndex: isCommonDocket ? getCurrentRegisterSegmentIndex(run) : undefined,
+    maxTriggerCount: isCommonDocket ? COMMON_DOCKET_TRIGGER_LIMIT : undefined,
+    remainingTriggerCount: isCommonDocket ? COMMON_DOCKET_TRIGGER_LIMIT : undefined,
   }
 }
 
@@ -262,7 +282,8 @@ function createVerdictRecord(
   option: TutorialVerdictOption,
 ): TutorialVerdictRecord {
   const choiceId = option.choiceId
-  const registerRule = choiceId === 'register' ? REGISTER_RULE_BY_ENEMY_ID[offer.enemyDefinitionId] : undefined
+  const registerRule =
+    choiceId === 'register' ? getRegisterRuleForEnemy(offer.enemyDefinitionId) : undefined
   const eraseResult =
     choiceId === 'erase'
       ? resolveEraseVariant(run, option.eraseVariantId ?? 'erase')
@@ -270,7 +291,6 @@ function createVerdictRecord(
   const addedCardDefinitionIds = eraseResult
     ? getAddedEraseRewardCardIds(run, eraseResult)
     : undefined
-  const isSpecialRegister = Boolean(registerRule)
 
   return {
     id: `verdict_record_${run.verdict.records.length + 1}`,
@@ -283,14 +303,31 @@ function createVerdictRecord(
     fractureDelta: eraseResult?.resourceDelta.fracture ?? 0,
     inkDelta: eraseResult?.resourceDelta.ink,
     doomDelta: eraseResult?.resourceDelta.doom,
-    maxIncenseBonusDelta:
-      choiceId === 'register' && !isSpecialRegister ? VERDICT_REGISTER_INCENSE_BONUS : 0,
-    maxFormBonusDelta:
-      choiceId === 'register' && !isSpecialRegister ? VERDICT_REGISTER_MAX_FORM_BONUS : 0,
+    maxIncenseBonusDelta: 0,
+    maxFormBonusDelta: 0,
     addedCardDefinitionIds,
     addedCardDefinitionId: addedCardDefinitionIds?.[0],
     nextBattleStartBonus: eraseResult?.nextBattleStartBonus,
+    registerTriggerLimit:
+      choiceId === 'register' && registerRule?.id === COMMON_REGISTER_RULE.id
+        ? COMMON_DOCKET_TRIGGER_LIMIT
+        : undefined,
+    registerSegmentIndex:
+      choiceId === 'register' && registerRule?.id === COMMON_REGISTER_RULE.id
+        ? getCurrentRegisterSegmentIndex(run)
+        : undefined,
   }
+}
+
+function getCurrentRegisterSegmentIndex(run: TutorialRunState) {
+  return run.verdict.registerEntries.reduce(
+    (currentIndex, entry) => Math.max(currentIndex, entry.segmentIndex ?? 0),
+    0,
+  )
+}
+
+function getRegisterRuleForEnemy(enemyDefinitionId: EnemyId): RegisterRuleDefinition {
+  return REGISTER_RULE_BY_ENEMY_ID[enemyDefinitionId] ?? COMMON_REGISTER_RULE
 }
 
 interface EraseVariantResult {
@@ -326,6 +363,11 @@ function resolveEraseVariant(
         doom: VERDICT_ERASE_HEAVY_DOOM_DELTA,
       },
       addedCardDefinitionIds: [VERDICT_ERASE_HEAVY_REWARD_CARD_ID],
+      nextBattleStartBonus: {
+        ink: 0,
+        incense: 0,
+        openingHandCardDefinitionIds: [VERDICT_ERASE_HEAVY_REWARD_CARD_ID],
+      },
       artifacts: run.artifacts,
     }
   }
@@ -337,8 +379,8 @@ function resolveEraseVariant(
       },
       addedCardDefinitionIds: [],
       nextBattleStartBonus: {
-        ink: 1,
-        incense: 1,
+        ink: VERDICT_ERASE_NEXT_BATTLE_INK_DELTA,
+        incense: VERDICT_ERASE_NEXT_BATTLE_INCENSE_DELTA,
       },
       artifacts: run.artifacts,
     }
@@ -349,6 +391,11 @@ function resolveEraseVariant(
       fracture: VERDICT_ERASE_FRACTURE_DELTA,
     },
     addedCardDefinitionIds: [VERDICT_ERASE_REWARD_CARD_ID],
+    nextBattleStartBonus: {
+      ink: 0,
+      incense: 0,
+      openingHandCardDefinitionIds: [VERDICT_ERASE_REWARD_CARD_ID],
+    },
     artifacts: run.artifacts,
   }
 }
@@ -401,5 +448,9 @@ function addNextBattleStartBonus(
   return {
     ink: (current?.ink ?? 0) + delta.ink,
     incense: (current?.incense ?? 0) + delta.incense,
+    openingHandCardDefinitionIds: [
+      ...(current?.openingHandCardDefinitionIds ?? []),
+      ...(delta.openingHandCardDefinitionIds ?? []),
+    ],
   }
 }

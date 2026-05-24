@@ -100,7 +100,10 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
 
     expect(result.run.status).toBe('complete')
     expect(summary.catalogueCount).toBeGreaterThan(0)
-    expect(summary.verdictRegisterCount).toBe(summary.catalogueCount)
+    expect(summary.verdictRegisterCount).toBeGreaterThan(0)
+    expect(
+      summary.verdictRegisterCount + summary.verdictRedInkCount + summary.verdictEraseCount,
+    ).toBe(summary.catalogueCount)
     expect(summary.rewardSkippedCount).toBe(result.run.settlements.length)
     expect(result.run.pendingReward).toBeUndefined()
     expect(result.run.pendingVerdict).toBeUndefined()
@@ -408,7 +411,16 @@ function resolvePendingRunChoices(
 
   for (let index = 0; index < 10; index += 1) {
     if (nextRun.pendingVerdict) {
-      nextRun = resolveTutorialVerdict(nextRun, 'register')
+      const preferredVerdictOption =
+        nextRun.pendingVerdict.options.find((option) => option.id === 'register') ??
+        nextRun.pendingVerdict.options.find((option) => option.id === 'red_ink') ??
+        nextRun.pendingVerdict.options[0]
+
+      if (!preferredVerdictOption) {
+        throw new Error(`No verdict option available: ${nextRun.pendingVerdict.id}`)
+      }
+
+      nextRun = resolveTutorialVerdict(nextRun, preferredVerdictOption.id)
       continue
     }
 

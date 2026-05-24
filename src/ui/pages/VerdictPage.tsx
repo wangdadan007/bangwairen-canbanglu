@@ -84,14 +84,14 @@ function getVerdictImpact(
   }
 
   if (option.id === 'erase_heavy_split_form') {
-    return '削籍判词：榜裂 +1，劫数 +1，加入重裂形符'
+    return '削籍判词：榜裂 +1，劫数 +1，加入重裂形符；下一战开局上手'
   }
 
   if (option.id === 'erase_next_battle_resources') {
-    return '削籍判词：榜裂 +1，下一场开局墨 +1、香火 +1'
+    return '削籍判词：榜裂 +1，下一场开局墨 +1、首回合香火 +2'
   }
 
-  return '削籍判词：榜裂 +1，并加入裂形符'
+  return '削籍判词：榜裂 +1，加入裂形符；下一战开局上手'
 }
 
 function getRegisterImpact(offer: TutorialVerdictOffer, t: VerdictPageProps['t']) {
@@ -99,7 +99,7 @@ function getRegisterImpact(offer: TutorialVerdictOffer, t: VerdictPageProps['t']
 
   return specialRule
     ? `专属登簿：${t(specialRule.nameKey)}`
-    : '通用登簿：后续战斗香火上限 +1，己形上限 +4'
+    : '通用登簿：本幕段最多 3 次，每场首次正名墨 +1'
 }
 
 function getSpecialRegisterRule(enemyDefinitionId: string) {

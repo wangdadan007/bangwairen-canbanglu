@@ -76,6 +76,9 @@ export interface TutorialRedInkOption {
   readonly preferredRouteTendencyIds?: readonly RouteTendencyId[]
   readonly compatibleCardTags?: readonly string[]
   readonly compatibleEffectTypes?: readonly string[]
+  readonly incompatibleCardTags?: readonly string[]
+  readonly incompatibleEffectTypes?: readonly string[]
+  readonly minimumCardCost?: number
 }
 
 export interface TutorialRedInkOffer {

@@ -8,9 +8,11 @@ import type {
   TutorialRegisterRuleId,
 } from '../../types'
 
+const COMMON_DOCKET_RULE_ID: TutorialRegisterRuleId = 'register_common_docket'
 const INCENSE_CLERK_RULE_ID: TutorialRegisterRuleId = 'register_incense_clerk'
 const FIRE_FLEEING_NAME_RULE_ID: TutorialRegisterRuleId = 'register_fire_fleeing_name'
 const DIPPER_EMPTY_SHELL_RULE_ID: TutorialRegisterRuleId = 'register_dipper_empty_shell'
+const DEFAULT_COMMON_DOCKET_REMAINING_TRIGGERS = 3
 
 export function triggerRegisterAfterAbnormalMoveCountered(
   state: CombatState,
@@ -59,32 +61,61 @@ export function triggerRegisterAfterEnemyNamed(
     readonly targetId?: GameEntityId
   },
 ): CombatState {
+  let nextState = state
+
+  const commonDocketEntry = getRegisterEntry(nextState, COMMON_DOCKET_RULE_ID)
+  const commonDocketRemainingTriggers = getRemainingTriggerCount(commonDocketEntry)
+
   if (
-    !hasRegisterRule(state, FIRE_FLEEING_NAME_RULE_ID) ||
-    hasTriggeredRegisterRule(state, FIRE_FLEEING_NAME_RULE_ID, 'enemy_named')
+    commonDocketEntry &&
+    commonDocketRemainingTriggers > 0 &&
+    !hasTriggeredRegisterRule(nextState, COMMON_DOCKET_RULE_ID, 'enemy_named')
   ) {
-    return state
+    const nextRemainingTriggerCount = commonDocketRemainingTriggers - 1
+    nextState = updateRegisterEntryRemainingTriggers(
+      nextState,
+      commonDocketEntry.id,
+      nextRemainingTriggerCount,
+    )
+    nextState = gainInkFromRegisterRule(nextState, COMMON_DOCKET_RULE_ID, input.sourceId, 1)
+    nextState = appendRegisterTriggerLog(nextState, {
+      ruleId: COMMON_DOCKET_RULE_ID,
+      trigger: 'enemy_named',
+      sourceId: input.sourceId,
+      targetId: input.targetId,
+      payload: {
+        inkDelta: 1,
+        remainingTriggerCount: nextRemainingTriggerCount,
+      },
+    })
   }
 
-  const nextState: CombatState = {
-    ...state,
-    pendingRegisterBreakShapeBonus: {
+  if (
+    hasRegisterRule(nextState, FIRE_FLEEING_NAME_RULE_ID) &&
+    !hasTriggeredRegisterRule(nextState, FIRE_FLEEING_NAME_RULE_ID, 'enemy_named')
+  ) {
+    nextState = {
+      ...nextState,
+      pendingRegisterBreakShapeBonus: {
+        ruleId: FIRE_FLEEING_NAME_RULE_ID,
+        amount: 3,
+        expiresTurn: nextState.turn,
+      },
+    }
+
+    nextState = appendRegisterTriggerLog(nextState, {
       ruleId: FIRE_FLEEING_NAME_RULE_ID,
-      amount: 3,
-      expiresTurn: state.turn,
-    },
+      trigger: 'enemy_named',
+      sourceId: input.sourceId,
+      targetId: input.targetId,
+      payload: {
+        pendingBreakShapeBonus: 3,
+        expiresTurn: nextState.turn,
+      },
+    })
   }
 
-  return appendRegisterTriggerLog(nextState, {
-    ruleId: FIRE_FLEEING_NAME_RULE_ID,
-    trigger: 'enemy_named',
-    sourceId: input.sourceId,
-    targetId: input.targetId,
-    payload: {
-      pendingBreakShapeBonus: 3,
-      expiresTurn: state.turn,
-    },
-  })
+  return nextState
 }
 
 export function consumePendingRegisterBreakShapeBonus(
@@ -185,6 +216,36 @@ export function triggerRegisterAfterAltarTriggered(
 
 function hasRegisterRule(state: CombatState, ruleId: TutorialRegisterRuleId) {
   return state.registerEntries.some((entry) => entry.registerRuleId === ruleId)
+}
+
+function getRegisterEntry(state: CombatState, ruleId: TutorialRegisterRuleId) {
+  return state.registerEntries.find((entry) => entry.registerRuleId === ruleId)
+}
+
+function getRemainingTriggerCount(entry: CombatState['registerEntries'][number] | undefined) {
+  if (!entry) {
+    return 0
+  }
+
+  return entry.remainingTriggerCount ?? entry.maxTriggerCount ?? DEFAULT_COMMON_DOCKET_REMAINING_TRIGGERS
+}
+
+function updateRegisterEntryRemainingTriggers(
+  state: CombatState,
+  entryId: string,
+  remainingTriggerCount: number,
+): CombatState {
+  return {
+    ...state,
+    registerEntries: state.registerEntries.map((entry) =>
+      entry.id === entryId
+        ? {
+            ...entry,
+            remainingTriggerCount,
+          }
+        : entry,
+    ),
+  }
 }
 
 function hasTriggeredRegisterRule(
