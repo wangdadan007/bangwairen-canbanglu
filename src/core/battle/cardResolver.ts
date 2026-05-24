@@ -3,6 +3,14 @@ import { applyTutorialResourceDelta } from '../run/resourceResolver'
 import { placeAltar } from './altarResolver'
 import { triggerArtifactsAfterBreakShapeCardPlayed } from './artifactBattleResolver'
 import { drawCards } from './drawResolver'
+import {
+  getLinzhaoPlayBlockReason,
+  isLinzhaoCardDefinition,
+  MAX_ACTIVE_LINZHAO,
+  placeLinzhao,
+  triggerLinzhaoAfterCardAnnotationTriggered,
+  triggerLinzhaoAfterIncomingForceSealed,
+} from './linzhaoResolver'
 import { resolveAskName } from './nameResolver'
 import { breakEnemyForm, selectEnemyTargets } from './shapeResolver'
 import {
@@ -62,6 +70,20 @@ export function resolvePlayCard(state: CombatState, input: ResolveCardInput): Co
         reason: 'not_enough_incense',
         requiredIncense: cardDefinition.cost,
         currentIncense: state.player.incense,
+      },
+    })
+  }
+
+  const linzhaoBlockReason = getLinzhaoPlayBlockReason(state, cardDefinition)
+
+  if (linzhaoBlockReason) {
+    return appendLog(state, {
+      type: 'CARD_PLAY_REJECTED',
+      sourceId: card.instanceId,
+      payload: {
+        reason: linzhaoBlockReason,
+        cardDefinitionId: cardDefinition.id,
+        limit: MAX_ACTIVE_LINZHAO,
       },
     })
   }
@@ -149,7 +171,9 @@ function resolveCardAnnotation(
     nextState = resolveCardEffect(nextState, card, effect, targetEnemyInstanceId)
   }
 
-  return nextState
+  return triggerLinzhaoAfterCardAnnotationTriggered(nextState, {
+    targetEnemyInstanceId,
+  })
 }
 
 function resolveCardEffect(
@@ -277,6 +301,10 @@ function resolveCardEffect(
     })
   }
 
+  if (effect.type === 'PLACE_LINZHAO') {
+    return placeLinzhao(state, card, effect)
+  }
+
   if (effect.type === 'ASK_NAME') {
     return resolveAskName(state, {
       sourceId: card.instanceId,
@@ -322,6 +350,12 @@ function sealIncomingForce(
         amount: sealedAmount,
         remainingIncomingForce: nextIncomingForce,
       },
+    })
+
+    nextState = triggerLinzhaoAfterIncomingForceSealed(nextState, {
+      targetEnemyInstanceId: target.instanceId,
+      sealedAmount,
+      remainingIncomingForce: nextIncomingForce,
     })
   }
 
@@ -426,6 +460,14 @@ function movePlayedCard(
 ): CombatState {
   const shouldExhaust =
     card.isTemporary || cardDefinition.type === 'temporary' || cardDefinition.tags.includes('exhaust')
+
+  if (isLinzhaoCardDefinition(cardDefinition)) {
+    return {
+      ...state,
+      linzhaoPile: [...state.linzhaoPile, card],
+    }
+  }
+
   const nextState = shouldExhaust
     ? {
         ...state,

@@ -4,6 +4,7 @@ import {
   triggerArtifactsAfterEnemyNamed,
 } from './artifactBattleResolver'
 import { discernEnemyIntent } from './intentInsightResolver'
+import { triggerLinzhaoAfterAskName } from './linzhaoResolver'
 import { triggerRegisterAfterEnemyNamed } from './registerBattleResolver'
 import { triggerThunderLead } from './shapeStatusResolver'
 import type { CombatState, EnemyInstanceId, EnemyState, EnemyTier, GameEntityId } from '../../types'
@@ -71,13 +72,21 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
       })
 
     nextState = triggerArtifactsAfterAskName(nextState, input.sourceId)
-    return triggerThunderLead(nextState, target.instanceId, input.sourceId)
+    nextState = triggerThunderLead(nextState, target.instanceId, input.sourceId)
+    return triggerLinzhaoAfterAskName(nextState, {
+      sourceId: input.sourceId,
+      targetEnemyInstanceId: target.instanceId,
+    })
   }
 
   nextState = triggerArtifactsAfterAskName(nextState, input.sourceId)
 
   if (target.isNamed) {
-    return triggerThunderLead(nextState, target.instanceId, input.sourceId)
+    nextState = triggerThunderLead(nextState, target.instanceId, input.sourceId)
+    return triggerLinzhaoAfterAskName(nextState, {
+      sourceId: input.sourceId,
+      targetEnemyInstanceId: target.instanceId,
+    })
   }
 
   for (let count = 0; count < effectiveAmount; count += 1) {
@@ -104,7 +113,11 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
     nextState = triggerArtifactsAfterEnemyNamed(nextState, input.sourceId)
   }
 
-  return triggerThunderLead(nextState, target.instanceId, input.sourceId)
+  nextState = triggerThunderLead(nextState, target.instanceId, input.sourceId)
+  return triggerLinzhaoAfterAskName(nextState, {
+    sourceId: input.sourceId,
+    targetEnemyInstanceId: target.instanceId,
+  })
 }
 
 export interface RestoreCoveredNameSlotInput {

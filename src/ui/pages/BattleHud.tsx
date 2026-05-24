@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import {
   DEFAULT_PLAYABLE_ROLE_ID,
+  getLinzhaoPlayBlockReason,
   getPlayableRoleDefinition,
   getSpendInkCleanseStatus,
   getSpendInkGuardNameStatus,
@@ -62,6 +63,7 @@ import {
 } from './useTutorialRunFlow'
 import type {
   AltarState,
+  ActiveLinzhaoState,
   CardDefinition,
   CombatState,
   EncounterDefinition,
@@ -130,6 +132,7 @@ export function BattleHud({
         ...battle.hand,
         ...battle.discardPile,
         ...battle.exhaustPile,
+        ...battle.linzhaoPile,
       ]),
     [battle],
   )
@@ -404,6 +407,10 @@ export function BattleHud({
             <Metric label="消耗区" value={battle.exhaustPile.length.toString()} />
           </div>
           <AltarPanel altars={battle.altars} cardDefinitionsById={cardDefinitionsById} />
+          <LinzhaoPanel
+            activeLinzhao={battle.linzhao}
+            cardDefinitionsById={cardDefinitionsById}
+          />
         </section>
       ) : null}
 
@@ -418,7 +425,10 @@ export function BattleHud({
               battle.hand.map((card) => {
                 const definition = cardDefinitionsById.get(card.definitionId)
                 const isAffordable = definition ? definition.cost <= battle.player.incense : false
-                const isDisabled = !canAct || !definition || !isAffordable
+                const linzhaoBlockReason = definition
+                  ? getLinzhaoPlayBlockReason(battle, definition)
+                  : undefined
+                const isDisabled = !canAct || !definition || !isAffordable || Boolean(linzhaoBlockReason)
                 const disabledReason = getCardDisabledReason({
                   battle,
                   canAct,
@@ -1048,6 +1058,16 @@ function getCardDisabledReason({
     return `香火不足：需要 ${definition.cost}，当前 ${battle.player.incense}`
   }
 
+  const linzhaoBlockReason = getLinzhaoPlayBlockReason(battle, definition)
+
+  if (linzhaoBlockReason === 'linzhao_limit_reached') {
+    return '临诏区已满'
+  }
+
+  if (linzhaoBlockReason === 'linzhao_duplicate') {
+    return '同名临诏已经在场'
+  }
+
   if (hasPendingRunChoice(run)) {
     return '请先处理待裁定 / 奖励 / 朱批 / 法宝'
   }
@@ -1094,6 +1114,10 @@ function getEffectTooltip(label: string) {
 
   if (label === '奉坛') {
     return getTermTooltip('altar')
+  }
+
+  if (label === '临诏') {
+    return getTermTooltip('linzhao')
   }
 
   return label
@@ -1145,6 +1169,43 @@ function AltarPanel({
             <span>{getAltarSlotLabel(slot)}</span>
             <strong>{altar ? getAltarEffectLabel(altar) : '未奉坛'}</strong>
             <small>{sourceCard ? t(sourceCard.nameKey) : getAltarSlotWindowLabel(slot)}</small>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function LinzhaoPanel({
+  activeLinzhao,
+  cardDefinitionsById,
+}: {
+  readonly activeLinzhao: readonly ActiveLinzhaoState[]
+  readonly cardDefinitionsById: ReadonlyMap<string, CardDefinition>
+}) {
+  const slots = [0, 1]
+
+  return (
+    <div className="linzhao-grid" aria-label="临诏状态">
+      {slots.map((slotIndex) => {
+        const active = activeLinzhao[slotIndex]
+        const sourceCard = active
+          ? cardDefinitionsById.get(active.sourceCardDefinitionId)
+          : undefined
+
+        return (
+          <div
+            className={active ? 'linzhao-slot active' : 'linzhao-slot'}
+            key={slotIndex}
+            title={active ? t(active.rulesTextKey) : getTermTooltip('linzhao')}
+          >
+            <span>临诏 {slotIndex + 1}</span>
+            <strong>{active ? t(active.nameKey) : '未落诏'}</strong>
+            <small>
+              {active
+                ? `${sourceCard ? t(sourceCard.nameKey) : '来源牌'} · 已触发 ${active.triggerCount}`
+                : '本场持续规则位'}
+            </small>
           </div>
         )
       })}

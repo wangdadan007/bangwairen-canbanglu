@@ -89,7 +89,7 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     nameKey: 'red_ink.trace_name.name',
     rulesTextKey: 'red_ink.trace_name.rules',
     category: 'ask_name',
-    compatibleCardTags: ['break_form', 'seal_momentum', 'counter_abnormal_move', 'altar'],
+    compatibleCardTags: ['break_form', 'seal_momentum', 'counter_abnormal_move', 'altar', 'linzhao'],
     compatibleEffectTypes: [
       'BREAK_SHAPE',
       'SEAL_MOMENTUM',
@@ -183,7 +183,7 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     nameKey: 'red_ink.revealed_break.name',
     rulesTextKey: 'red_ink.revealed_break.rules',
     category: 'break_form',
-    compatibleCardTags: ['break_form', 'ask_name'],
+    compatibleCardTags: ['break_form', 'ask_name', 'linzhao'],
     compatibleEffectTypes: ['BREAK_SHAPE', 'ASK_NAME'],
     minimumCardCost: 1,
     preferredRoleIds: ['role_lianjin'],
@@ -209,7 +209,7 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     nameKey: 'red_ink.named_break.name',
     rulesTextKey: 'red_ink.named_break.rules',
     category: 'break_form',
-    compatibleCardTags: ['break_form'],
+    compatibleCardTags: ['break_form', 'linzhao'],
     compatibleEffectTypes: ['BREAK_SHAPE'],
     minimumCardCost: 1,
     preferredRoleIds: ['role_lianjin'],
@@ -235,7 +235,7 @@ export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
     nameKey: 'red_ink.press_momentum.name',
     rulesTextKey: 'red_ink.press_momentum.rules',
     category: 'defense',
-    compatibleCardTags: ['seal_momentum'],
+    compatibleCardTags: ['seal_momentum', 'linzhao'],
     compatibleEffectTypes: ['SEAL_MOMENTUM'],
     preferredRoleIds: ['role_hengjian'],
     preferredRouteTendencyIds: ['steady', 'high_pressure'],
@@ -475,6 +475,10 @@ export function isRedInkOptionCompatibleWithCard(
 
   if (requiredTags.length === 0 && requiredEffectTypes.length === 0) {
     return true
+  }
+
+  if (cardDefinition.tags.includes('linzhao')) {
+    return requiredTags.includes('linzhao')
   }
 
   return (

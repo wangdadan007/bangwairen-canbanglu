@@ -2002,6 +2002,43 @@ button:disabled {
   line-height: 1.35;
 }
 
+.linzhao-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.linzhao-slot {
+  display: grid;
+  min-height: 76px;
+  align-content: center;
+  gap: 4px;
+  border: 1px dashed rgba(132, 171, 166, 0.42);
+  border-radius: 6px;
+  padding: 8px;
+  color: #a7bbb4;
+  background: rgba(16, 28, 27, 0.36);
+}
+
+.linzhao-slot.active {
+  border-style: solid;
+  border-color: rgba(132, 196, 184, 0.68);
+  background: rgba(24, 72, 66, 0.34);
+}
+
+.linzhao-slot span,
+.linzhao-slot small {
+  color: #a7bbb4;
+  font-size: 12px;
+}
+
+.linzhao-slot strong {
+  color: #e1f1ec;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
 .hand-list {
   display: grid;
   gap: 10px;

@@ -23,7 +23,7 @@ describe('T40 action log view helpers', () => {
 
     const labels = getCardEffectLabels(nameNet)
 
-    expect(labels).toEqual(['问名', '封势', '断异动'])
+    expect(labels).toEqual(['临诏'])
     expect(labels.join('')).not.toMatch(/HP|伤害|格挡/)
   })
 

@@ -1,5 +1,6 @@
 import { appendLog } from '../log/actionLog'
 import { consumePendingBreakShapeBonus } from './artifactBattleResolver'
+import { consumePendingLinzhaoBreakShapeBonus } from './linzhaoResolver'
 import { consumePendingRegisterBreakShapeBonus } from './registerBattleResolver'
 import type {
   CombatState,
@@ -45,6 +46,12 @@ export function breakEnemyForm(state: CombatState, input: BreakEnemyFormInput): 
 
     if (input.consumeBreakShapeBonuses !== false && nextState.pendingRegisterBreakShapeBonus) {
       const consumedBonus = consumePendingRegisterBreakShapeBonus(nextState, target.instanceId)
+      nextState = consumedBonus.state
+      breakAmount += consumedBonus.bonusAmount
+    }
+
+    if (input.consumeBreakShapeBonuses !== false && nextState.pendingLinzhaoBreakShapeBonus) {
+      const consumedBonus = consumePendingLinzhaoBreakShapeBonus(nextState, target.instanceId)
       nextState = consumedBonus.state
       breakAmount += consumedBonus.bonusAmount
     }

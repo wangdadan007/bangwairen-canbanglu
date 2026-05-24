@@ -1,8 +1,17 @@
 import type { AltarState } from './altar'
 import type { ArtifactCollectionState } from './artifact'
 import type { CardInstance } from './card'
-import type { ArtifactId, CardInstanceId, GameEntityId, JsonValue, UnlockStageId } from './common'
+import type {
+  ArtifactId,
+  CardId,
+  CardInstanceId,
+  GameEntityId,
+  JsonValue,
+  LocalizationKey,
+  UnlockStageId,
+} from './common'
 import type { EnemyState } from './enemy'
+import type { LinzhaoTrigger } from './effect'
 import type { TutorialResourceState } from './resource'
 import type { TutorialRegisterRuleId, TutorialVerdictRegisterEntry } from './verdict'
 
@@ -66,6 +75,9 @@ export type ActionLogType =
   | 'CARD_PLAY_REJECTED'
   | 'CARD_DISCARDED'
   | 'CARD_EXHAUSTED'
+  | 'LINZHAO_PLACED'
+  | 'LINZHAO_TRIGGERED'
+  | 'LINZHAO_CLEARED'
   | 'PILE_SHUFFLED'
   | 'INCENSE_GAINED'
   | 'INCENSE_SPENT'
@@ -113,6 +125,32 @@ export interface PendingRegisterBreakShapeBonus {
   readonly expiresTurn: number
 }
 
+export interface ActiveLinzhaoState {
+  readonly id: string
+  readonly linzhaoId: string
+  readonly nameKey: LocalizationKey
+  readonly rulesTextKey: LocalizationKey
+  readonly trigger: LinzhaoTrigger
+  readonly sourceCardInstanceId: CardInstanceId
+  readonly sourceCardDefinitionId: CardId
+  readonly placedTurn: number
+  readonly amount: number
+  readonly namedAmount?: number
+  readonly firstTriggerDraw: number
+  readonly firstTriggerIncense: number
+  readonly recurringIncense: number
+  readonly triggeredTurnIds: readonly number[]
+  readonly triggerCount: number
+}
+
+export interface PendingLinzhaoBreakShapeBonus {
+  readonly activeLinzhaoId: string
+  readonly linzhaoId: string
+  readonly nameKey: LocalizationKey
+  readonly amount: number
+  readonly expiresTurn: number
+}
+
 export interface CombatState {
   readonly turn: number
   readonly phase: BattlePhase
@@ -122,6 +160,7 @@ export interface CombatState {
   readonly hand: readonly CardInstance[]
   readonly discardPile: readonly CardInstance[]
   readonly exhaustPile: readonly CardInstance[]
+  readonly linzhaoPile: readonly CardInstance[]
   readonly nextTurnIncensePenalty: number
   readonly nextTurnIncenseBonus: number
   readonly nextAskNamePenalty: number
@@ -129,10 +168,12 @@ export interface CombatState {
   readonly temporaryResourceDelta: TutorialResourceState
   readonly temporaryPlayerFormDelta: number
   readonly altars: readonly AltarState[]
+  readonly linzhao: readonly ActiveLinzhaoState[]
   readonly artifacts: ArtifactCollectionState
   readonly registerEntries: readonly TutorialVerdictRegisterEntry[]
   readonly pendingArtifactBreakShapeBonus?: PendingArtifactBreakShapeBonus
   readonly pendingRegisterBreakShapeBonus?: PendingRegisterBreakShapeBonus
+  readonly pendingLinzhaoBreakShapeBonus?: PendingLinzhaoBreakShapeBonus
   readonly triggeredArtifactIds: readonly ArtifactId[]
   readonly actionLog: readonly ActionLogEntry[]
   readonly result: BattleResult

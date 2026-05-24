@@ -539,12 +539,12 @@ describe('initial game data', () => {
     }
 
     expect(cardsByDirection.breakForm).toHaveLength(18)
-    expect(cardsByDirection.askName).toHaveLength(9)
+    expect(cardsByDirection.askName).toHaveLength(8)
     expect(cardsByDirection.sealMomentum).toHaveLength(10)
     expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(38)
     expect(
       data.cards.filter((card) => card.effects.some((effect) => effect.type === 'ASK_NAME')),
-    ).toHaveLength(8)
+    ).toHaveLength(6)
     expect(
       data.cards.filter((card) =>
         card.effects.some(

@@ -448,6 +448,7 @@ describe('core type contracts', () => {
       hand: [],
       discardPile: [],
       exhaustPile: [],
+      linzhaoPile: [],
       nextTurnIncensePenalty: 0,
       nextTurnIncenseBonus: 0,
       nextAskNamePenalty: 0,
@@ -463,6 +464,7 @@ describe('core type contracts', () => {
       },
       temporaryPlayerFormDelta: 0,
       altars: [],
+      linzhao: [],
       artifacts: {
         artifacts: [],
       },

@@ -6,6 +6,7 @@ import {
   isIncomingForceConditionMet,
   resolveIncomingForceAmount,
 } from './incomingForceResolver'
+import { triggerLinzhaoAfterAbnormalMovePrevented } from './linzhaoResolver'
 import { triggerRegisterAfterAbnormalMoveCountered } from './registerBattleResolver'
 import type {
   AbnormalMoveDefinition,
@@ -344,10 +345,14 @@ function executeAbnormalMove(
       },
     })
 
-    return triggerRegisterAfterAbnormalMoveCountered(counteredState, {
+    const registerState = triggerRegisterAfterAbnormalMoveCountered(counteredState, {
       sourceId: enemy.instanceId,
       targetId: 'player',
       moveType: move.type,
+    })
+
+    return triggerLinzhaoAfterAbnormalMovePrevented(registerState, {
+      enemyInstanceId: enemy.instanceId,
     })
   }
 

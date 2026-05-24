@@ -1,4 +1,5 @@
 import type { AltarEffectDefinition, AltarSlot } from './altar'
+import type { LocalizationKey } from './common'
 import type { AbnormalMoveType } from './enemy'
 
 export type EffectTarget =
@@ -29,6 +30,11 @@ export type EffectCondition =
       readonly type: 'THIS_TURN_PLACED_ALTAR'
     }
 
+export type LinzhaoTrigger =
+  | 'ask_name_next_break'
+  | 'seal_or_counter_break'
+  | 'red_ink_engine'
+
 export type CardEffect =
   | BreakShapeEffect
   | ApplyFireMarkEffect
@@ -42,6 +48,7 @@ export type CardEffect =
   | GainInkEffect
   | GainDoomEffect
   | PlaceAltarEffect
+  | PlaceLinzhaoEffect
 
 export interface BreakShapeEffect {
   readonly type: 'BREAK_SHAPE'
@@ -125,5 +132,20 @@ export interface PlaceAltarEffect {
   readonly target: Extract<EffectTarget, 'selected_enemy' | 'self'>
   readonly altarSlot: AltarSlot
   readonly altarEffect: AltarEffectDefinition
+  readonly condition?: EffectCondition
+}
+
+export interface PlaceLinzhaoEffect {
+  readonly type: 'PLACE_LINZHAO'
+  readonly target: Extract<EffectTarget, 'self'>
+  readonly linzhaoId: string
+  readonly nameKey: LocalizationKey
+  readonly rulesTextKey: LocalizationKey
+  readonly trigger: LinzhaoTrigger
+  readonly amount?: number
+  readonly namedAmount?: number
+  readonly firstTriggerDraw?: number
+  readonly firstTriggerIncense?: number
+  readonly recurringIncense?: number
   readonly condition?: EffectCondition
 }

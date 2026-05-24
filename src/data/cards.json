@@ -181,17 +181,17 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_core",
-    "tags": ["reward", "catalogue_reward", "ask_name", "draw"],
+    "tags": ["reward", "catalogue_reward", "ask_name", "linzhao"],
     "effects": [
       {
-        "type": "ASK_NAME",
-        "target": "selected_enemy",
-        "amount": 1
-      },
-      {
-        "type": "DRAW",
+        "type": "PLACE_LINZHAO",
         "target": "self",
-        "count": 1
+        "linzhaoId": "linzhao_mingzhu",
+        "nameKey": "card.trace_name_slip.name",
+        "rulesTextKey": "card.trace_name_slip.rules",
+        "trigger": "ask_name_next_break",
+        "amount": 1,
+        "namedAmount": 2
       }
     ]
   },
@@ -380,20 +380,21 @@
     "nameKey": "card.red_ink_trial.name",
     "descriptionKey": "card.red_ink_trial.description",
     "rulesTextKey": "card.red_ink_trial.rules",
-    "cost": 0,
+    "cost": 1,
     "type": "ritual",
     "unlockStage": "stage_red_ink_preview",
-    "tags": ["reward", "red_ink_preview", "draw", "gain_incense", "exhaust"],
+    "tags": ["reward", "red_ink_preview", "linzhao"],
     "effects": [
       {
-        "type": "DRAW",
+        "type": "PLACE_LINZHAO",
         "target": "self",
-        "count": 1
-      },
-      {
-        "type": "GAIN_INCENSE",
-        "target": "self",
-        "amount": 1
+        "linzhaoId": "linzhao_zhuhen",
+        "nameKey": "card.red_ink_trial.name",
+        "rulesTextKey": "card.red_ink_trial.rules",
+        "trigger": "red_ink_engine",
+        "firstTriggerDraw": 1,
+        "firstTriggerIncense": 1,
+        "recurringIncense": 1
       }
     ]
   },
@@ -743,22 +744,17 @@
     "cost": 1,
     "type": "edict",
     "unlockStage": "stage_three_altars",
-    "tags": ["reward", "ask_name", "seal_momentum", "counter_abnormal_move"],
+    "tags": ["reward", "seal_momentum", "counter_abnormal_move", "linzhao"],
     "effects": [
       {
-        "type": "ASK_NAME",
-        "target": "selected_enemy",
-        "amount": 1
-      },
-      {
-        "type": "SEAL_MOMENTUM",
-        "target": "selected_enemy",
-        "amount": 2
-      },
-      {
-        "type": "COUNTER_ABNORMAL_MOVE",
-        "target": "selected_enemy",
-        "moveType": "cover_name"
+        "type": "PLACE_LINZHAO",
+        "target": "self",
+        "linzhaoId": "linzhao_yasha",
+        "nameKey": "card.name_net_talisman.name",
+        "rulesTextKey": "card.name_net_talisman.rules",
+        "trigger": "seal_or_counter_break",
+        "amount": 2,
+        "namedAmount": 3
       }
     ]
   },

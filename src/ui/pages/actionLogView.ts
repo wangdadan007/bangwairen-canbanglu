@@ -68,6 +68,7 @@ const termTooltips: Record<string, string> = {
   fracture: '榜裂：削籍或强行取利留下的世界恶化程度。',
   altar:
     '三坛：人坛在回合结束收束本回合动作，地坛在敌人行动前压住压力，天坛在下回合开始提前布置。',
+  linzhao: '临诏：由牌打出的本场持续规则。打出后挂入临诏区，不进本场抽弃牌循环。',
   artifact: '法宝：牌组外器物，不进入抽牌堆，可触发认主、过载与反噬。',
 }
 
@@ -260,12 +261,14 @@ export function createRitualFeedback(
   if (entry.type === 'FORM_BROKEN') {
     const amount = getPayloadNumber(entry.payload.amount) ?? 0
     const currentForm = getPayloadNumber(entry.payload.currentForm) ?? 0
+    const sourceName =
+      sourceCardName ?? getLinzhaoName(entry.sourceId, battle) ?? getSourceNameFromPayload(entry) ?? '符诏'
 
     return {
       id: entry.id,
       tone: 'break',
       label: '破形反馈',
-      title: `${sourceCardName ?? '符诏'}击破敌形 ${amount}`,
+      title: `${sourceName}击破敌形 ${amount}`,
       detail: `${targetEnemyName}余形 ${currentForm}，战斗结果不因表现层改变。`,
       audioCue: 'break',
     }
@@ -566,9 +569,21 @@ export function formatLogEntry(
   }
 
   if (entry.type === 'CARD_PLAY_REJECTED') {
-    return getPayloadString(entry.payload.reason) === 'not_enough_incense'
-      ? '香火不足，未能出牌。'
-      : '当前不能出牌。'
+    const reason = getPayloadString(entry.payload.reason)
+
+    if (reason === 'not_enough_incense') {
+      return '香火不足，未能出牌。'
+    }
+
+    if (reason === 'linzhao_limit_reached') {
+      return `临诏区已满，最多维持 ${getPayloadNumber(entry.payload.limit) ?? 2} 条临诏。`
+    }
+
+    if (reason === 'linzhao_duplicate') {
+      return '同名临诏已在场，本场不能重复落诏。'
+    }
+
+    return '当前不能出牌。'
   }
 
   if (entry.type === 'CARD_DISCARDED') {
@@ -577,6 +592,20 @@ export function formatLogEntry(
 
   if (entry.type === 'CARD_EXHAUSTED') {
     return `移入消耗区：${sourceCardName ?? getCardNameFromPayload(entry, cardDefinitionsById)}。`
+  }
+
+  if (entry.type === 'LINZHAO_PLACED') {
+    return `临诏落案：${t(getPayloadString(entry.payload.nameKey))}，临诏区 ${
+      getPayloadNumber(entry.payload.activeCount) ?? 0
+    } / ${getPayloadNumber(entry.payload.limit) ?? 2}。`
+  }
+
+  if (entry.type === 'LINZHAO_TRIGGERED') {
+    return formatLinzhaoLog(entry)
+  }
+
+  if (entry.type === 'LINZHAO_CLEARED') {
+    return `临诏归卷：本场 ${getPayloadNumber(entry.payload.count) ?? 0} 条临诏已随战斗收束。`
   }
 
   if (entry.type === 'PILE_SHUFFLED') {
@@ -791,7 +820,10 @@ export function formatLogEntry(
   }
 
   if (entry.type === 'FORM_BROKEN') {
-    return `${sourceCardName ?? '符诏'}破形 ${getPayloadNumber(entry.payload.amount) ?? 0}，${
+    const sourceName =
+      sourceCardName ?? getLinzhaoName(entry.sourceId, battle) ?? getSourceNameFromPayload(entry) ?? '符诏'
+
+    return `${sourceName}破形 ${getPayloadNumber(entry.payload.amount) ?? 0}，${
       targetEnemyName ?? '敌方'
     }余形 ${getPayloadNumber(entry.payload.currentForm) ?? 0}。`
   }
@@ -987,6 +1019,10 @@ export function getCardEffectLabels(definition: CardDefinition, card?: CardInsta
           return '雷引'
         }
 
+        if (effect.type === 'PLACE_LINZHAO') {
+          return '临诏'
+        }
+
         return '奉坛'
       }),
     ),
@@ -1053,12 +1089,54 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     entry.type === 'RISK_THRESHOLD_APPLIED' ||
     entry.type === 'ALTAR_PLACED' ||
     entry.type === 'ALTAR_TRIGGERED' ||
-    entry.type === 'ALTAR_EXPIRED'
+    entry.type === 'ALTAR_EXPIRED' ||
+    entry.type === 'LINZHAO_PLACED' ||
+    entry.type === 'LINZHAO_TRIGGERED' ||
+    entry.type === 'LINZHAO_CLEARED'
   ) {
     return 'log-entry name'
   }
 
   return 'log-entry'
+}
+
+function formatLinzhaoLog(entry: ActionLogEntry) {
+  const name = t(getPayloadString(entry.payload.nameKey))
+  const result = getPayloadString(entry.payload.result)
+
+  if (result === 'prepared_break_bonus') {
+    return `${name}触发：本回合下一次破形 +${
+      getPayloadNumber(entry.payload.amount) ?? 0
+    }。`
+  }
+
+  if (result === 'consumed_break_bonus') {
+    return `${name}落笔：追加破形 ${getPayloadNumber(entry.payload.amount) ?? 0}。`
+  }
+
+  if (result === 'break_after_full_seal') {
+    return `${name}触发：完全封住来势后破形 ${
+      getPayloadNumber(entry.payload.amount) ?? 0
+    }。`
+  }
+
+  if (result === 'break_after_counter') {
+    return `${name}触发：断异动后破形 ${getPayloadNumber(entry.payload.amount) ?? 0}。`
+  }
+
+  if (result === 'red_ink_first_trigger') {
+    return `${name}触发：朱批回响，抽 ${getPayloadNumber(entry.payload.drawCount) ?? 0} 张，香火 +${
+      getPayloadNumber(entry.payload.incenseAmount) ?? 0
+    }。`
+  }
+
+  if (result === 'red_ink_turn_trigger') {
+    return `${name}触发：本回合朱批回响，香火 +${
+      getPayloadNumber(entry.payload.incenseAmount) ?? 0
+    }。`
+  }
+
+  return `${name}触发。`
 }
 
 function formatRegisterRuleLog(entry: ActionLogEntry) {
@@ -1648,6 +1726,12 @@ function getCardNameFromPayload(
   return definition ? t(definition.nameKey) : '未知牌'
 }
 
+function getSourceNameFromPayload(entry: ActionLogEntry) {
+  const sourceNameKey = getPayloadString(entry.payload.sourceNameKey)
+
+  return sourceNameKey ? t(sourceNameKey) : undefined
+}
+
 function getEnemyName(targetId: string | undefined, battle: CombatState) {
   if (!targetId) {
     return undefined
@@ -1656,6 +1740,16 @@ function getEnemyName(targetId: string | undefined, battle: CombatState) {
   const enemy = battle.enemies.find((candidate) => candidate.instanceId === targetId)
 
   return enemy ? getEnemyDefinitionName(enemy.definitionId) : undefined
+}
+
+function getLinzhaoName(sourceId: string | undefined, battle: CombatState) {
+  if (!sourceId) {
+    return undefined
+  }
+
+  const active = battle.linzhao.find((candidate) => candidate.id === sourceId)
+
+  return active ? t(active.nameKey) : undefined
 }
 
 function sourceEnemyName(sourceId: string | undefined, battle: CombatState) {

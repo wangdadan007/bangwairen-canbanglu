@@ -13,6 +13,7 @@ export function settleVictoryIfNeeded(state: CombatState): CombatState {
   const decisiveEnemy = selectDecisiveEnemy(nextState.enemies)
   const settlement = getEnemySettlement(decisiveEnemy)
 
+  nextState = clearLinzhaoAfterBattle(nextState)
   nextState = {
     ...nextState,
     phase: 'victory',
@@ -32,6 +33,27 @@ export function settleVictoryIfNeeded(state: CombatState): CombatState {
       enemyCount: nextState.enemies.length,
     },
   })
+}
+
+function clearLinzhaoAfterBattle(state: CombatState): CombatState {
+  if (state.linzhao.length === 0 && !state.pendingLinzhaoBreakShapeBonus) {
+    return state
+  }
+
+  return appendLog(
+    {
+      ...state,
+      linzhao: [],
+      pendingLinzhaoBreakShapeBonus: undefined,
+    },
+    {
+      type: 'LINZHAO_CLEARED',
+      sourceId: 'system',
+      payload: {
+        count: state.linzhao.length,
+      },
+    },
+  )
 }
 
 function logNewEnemySettlements(state: CombatState): CombatState {
