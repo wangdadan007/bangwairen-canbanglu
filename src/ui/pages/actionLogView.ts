@@ -59,6 +59,7 @@ const termTooltips: Record<string, string> = {
   counter_abnormal_move: '断异动：专门处理某类异动的效果。',
   ask_name: '查明真名（问名）：揭示敌人的名格。',
   named: '真名已明（正名）：名格全揭示后触发名破，并打开归册裁定收益。',
+  named_phase: '现形反扑：真名已明后，敌人的伪计被剥掉或降级，后续压力改为更清楚的明牌来势。',
   catalogue: '归册：正名后打空敌形的结算，会进入裁定；卡牌奖励与伏诛同池。',
   vanquish: '伏诛：未正名时打空敌形的快速结算；卡牌奖励与归册同池。',
   verdict: '战后改榜（裁定）：只包含登簿、朱批、削籍三类。',
@@ -129,13 +130,22 @@ export function createPressureFeedback(
     return {
       id: entry.id,
       tone: 'countered',
-      label: result === 'prevented' ? '断异动成功' : '断异动已布置',
+      label:
+        result === 'prevented_by_named_phase'
+          ? '伪计退散'
+          : result === 'prevented'
+            ? '断异动成功'
+            : '断异动已布置',
       title:
-        result === 'prevented'
+        result === 'prevented_by_named_phase'
+          ? `${moveLabel}已被正名剥掉`
+          : result === 'prevented'
           ? `${moveLabel}已被专门效果处理`
           : `${sourceName}准备处理${moveLabel}`,
       detail:
-        result === 'prevented'
+        result === 'prevented_by_named_phase'
+          ? formatNamedPhaseDescription(entry)
+          : result === 'prevented'
           ? '本次异动没有生效。'
           : '敌人行动时若发动对应异动，会被这次布置阻止。',
       audioCue: 'pressure',
@@ -158,17 +168,26 @@ export function createPressureFeedback(
 
   if (entry.type === 'INCOMING_FORCE_AFTEREFFECT') {
     const result = getPayloadString(entry.payload.result)
+    const isPreventedByNamedPhase = result === 'prevented_by_named_phase'
 
     return {
       id: entry.id,
-      tone: result === 'suppressed' ? 'sealed' : 'incoming',
-      label: result === 'suppressed' ? '来势后果被压住' : '来势后果',
+      tone: result === 'suppressed' || isPreventedByNamedPhase ? 'sealed' : 'incoming',
+      label: isPreventedByNamedPhase
+        ? '终审伪计退散'
+        : result === 'suppressed'
+          ? '来势后果被压住'
+          : '来势后果',
       title:
-        result === 'suppressed'
+        isPreventedByNamedPhase
+          ? `${getIncomingForceAftereffectLabel(entry)}已被正名剥掉`
+          : result === 'suppressed'
           ? '附带后果未触发'
           : `${sourceName}触发${getIncomingForceAftereffectLabel(entry)}`,
       detail:
-        result === 'suppressed'
+        isPreventedByNamedPhase
+          ? formatNamedPhaseDescription(entry)
+          : result === 'suppressed'
           ? '本次来势已被完全封住，附带后果没有生效。'
           : getIncomingForceAftereffectDetail(entry),
       audioCue: 'pressure',
@@ -221,6 +240,7 @@ export function createRitualFeedback(
         'NAME_SLOT_REVEALED',
         'ENEMY_NAMED',
         'NAME_BREAK_TRIGGERED',
+        'NAMED_PHASE_TRIGGERED',
         'ENEMY_SETTLED',
         'VICTORY_SETTLED',
         'DEFEAT_SETTLED',
@@ -334,6 +354,17 @@ export function createRitualFeedback(
     }
   }
 
+  if (entry.type === 'NAMED_PHASE_TRIGGERED') {
+    return {
+      id: entry.id,
+      tone: 'named',
+      label: '现形反馈',
+      title: `${targetEnemyName}现形反扑`,
+      detail: formatNamedPhaseDescription(entry),
+      audioCue: 'named',
+    }
+  }
+
   if (entry.type === 'ENEMY_SETTLED' || entry.type === 'VICTORY_SETTLED') {
     const settlement = getPayloadString(entry.payload.settlement) as VictorySettlement | undefined
     const label = settlement ? getSettlementLabel(settlement) : '结算'
@@ -434,6 +465,7 @@ export function createBossPressureFeedback(battle: CombatState): RitualFeedback 
           'ABNORMAL_MOVE_EXECUTED',
           'ABNORMAL_MOVE_COUNTERED',
           'NAME_BREAK_TRIGGERED',
+          'NAMED_PHASE_TRIGGERED',
           'ENEMY_SETTLED',
         ].includes(entry.type),
     )
@@ -827,6 +859,10 @@ export function formatLogEntry(
     }。`
   }
 
+  if (entry.type === 'NAMED_PHASE_TRIGGERED') {
+    return `${targetEnemyName ?? '敌方'}现形：${formatNamedPhaseDescription(entry)}。`
+  }
+
   if (entry.type === 'ENEMY_SETTLED') {
     const settlement = getPayloadString(entry.payload.settlement) as VictorySettlement | undefined
     return `${targetEnemyName ?? '敌方'}已${settlement ? getSettlementLabel(settlement) : '收束'}。`
@@ -844,9 +880,11 @@ export function formatLogEntry(
     const result = getPayloadString(entry.payload.result)
     const label = getIncomingForceAftereffectLabel(entry)
 
-    return result === 'suppressed'
-      ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${label}被完全封势压住。`
-      : `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}触发${label}：${getIncomingForceAftereffectDetail(
+    return result === 'prevented_by_named_phase'
+      ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${label}被正名剥掉。`
+      : result === 'suppressed'
+        ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${label}被完全封势压住。`
+        : `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}触发${label}：${getIncomingForceAftereffectDetail(
           entry,
         )}`
   }
@@ -875,6 +913,10 @@ export function formatLogEntry(
       ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${getAbnormalMoveLogLabel(
           entry,
         )}被断异动阻止。`
+      : result === 'prevented_by_named_phase'
+        ? `${sourceEnemyName(entry.sourceId, battle) ?? '敌方'}的${getAbnormalMoveLogLabel(
+            entry,
+          )}被正名剥掉。`
       : result === 'prepared_by_ink'
         ? `留墨护名准备就绪：下一次${getMoveLabel(
             getPayloadString(entry.payload.moveType),
@@ -1001,6 +1043,7 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     entry.type === 'NAME_ASKED' ||
     entry.type === 'NAME_SLOT_REVEALED' ||
     entry.type === 'ENEMY_NAMED' ||
+    entry.type === 'NAMED_PHASE_TRIGGERED' ||
     entry.type === 'INTENT_DISCERNED' ||
     entry.type === 'CARD_ANNOTATION_TRIGGERED' ||
     entry.type === 'INK_GAINED' ||
@@ -1146,21 +1189,28 @@ function formatAbnormalMoveExecutionDetail(entry: ActionLogEntry) {
   const healedAmount = getPayloadNumber(entry.payload.healedAmount) ?? 0
   const disruptedAltarSlot = getPayloadString(entry.payload.disruptedAltarSlot)
   const summonResult = getPayloadString(entry.payload.summonResult)
+  const namedPhaseResult = getPayloadString(entry.payload.namedPhaseResult)
+
+  if (namedPhaseResult === 'downgraded' && moveType === 'steal_incense') {
+    return '正名后窃香失准，未扣下回合香火'
+  }
 
   if (moveType === 'steal_incense' && incensePenalty > 0) {
     return `本次扰香 -${amount}，下回合累计受扰 -${incensePenalty}`
   }
 
   if (moveType === 'add_fouled_scroll') {
+    const prefix = namedPhaseResult === 'downgraded' ? '正名后污卷降级，' : ''
+
     if (destination === 'draw_pile_top') {
-      return `污卷压到抽牌堆顶 ${amount} 张`
+      return `${prefix}污卷压到抽牌堆顶 ${amount} 张`
     }
 
     if (destination === 'draw_pile') {
-      return `污卷进入抽牌堆 ${amount} 张`
+      return `${prefix}污卷进入抽牌堆 ${amount} 张`
     }
 
-    return `污卷进入弃牌堆 ${amount} 张`
+    return `${prefix}污卷进入弃牌堆 ${amount} 张`
   }
 
   if (moveType === 'cover_name') {
@@ -1582,6 +1632,27 @@ function getPayloadNumber(value: JsonValue | undefined) {
 
 function getPayloadString(value: JsonValue | undefined) {
   return typeof value === 'string' ? value : undefined
+}
+
+function getPayloadStringArray(value: JsonValue | undefined): readonly string[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value.filter((item): item is string => typeof item === 'string')
+}
+
+function formatNamedPhaseDescription(entry: ActionLogEntry) {
+  const descriptions = getPayloadStringArray(entry.payload.namedPhaseDescriptionKeys)
+  const triggeredDescriptions = descriptions.length > 0
+    ? descriptions
+    : getPayloadStringArray(entry.payload.descriptionKeys)
+
+  if (triggeredDescriptions.length === 0) {
+    return '真名已定，伪计退散，敌人改用明牌来势反扑。'
+  }
+
+  return triggeredDescriptions.map((key) => t(key)).join('；')
 }
 
 export function getCurrentAbnormalMove(enemy: EnemyState): AbnormalMoveDefinition | undefined {

@@ -1,6 +1,6 @@
 # PRD-architecture：技术架构与数据驱动要求
 
-版本：v0.6  
+版本：v0.8
 日期：2026-05-17  
 建议路径：`docs/prd/PRD-architecture.md`
 
@@ -156,6 +156,8 @@ export interface EnemyDefinition {
   rewards?: RewardRule[]
 }
 ```
+
+`onNamed` 已在 T76/T77 接入数据化流程：`createEnemyState` 读取敌人数据生成 `namedPhase` 运行态，正名后激活，并由 battle resolver 在敌人异动、意图推进和来势后果结算时读取禁用、降级、条件式路线削弱和现形反扑意图。后续若要扩展更复杂阶段，仍应优先扩展该数据结构，不把逐敌人规则写散到 UI 或路线逻辑里。
 
 ### 6.3 ArtifactDefinition
 

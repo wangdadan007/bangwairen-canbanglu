@@ -206,6 +206,14 @@ function hasExecutedAbnormalMove(
       return false
     }
 
+    if (
+      options.moveType === 'steal_incense' &&
+      typeof entry.payload.amount === 'number' &&
+      entry.payload.amount <= 0
+    ) {
+      return false
+    }
+
     if (options.intentId && entry.payload.intentId !== options.intentId) {
       return false
     }

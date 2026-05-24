@@ -100,6 +100,7 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
       targetId: updatedTarget.instanceId,
     })
     nextState = triggerNameBreak(nextState, updatedTarget.instanceId, input.sourceId)
+    nextState = triggerNamedPhase(nextState, updatedTarget.instanceId, input.sourceId)
     nextState = triggerArtifactsAfterEnemyNamed(nextState, input.sourceId)
   }
 
@@ -134,6 +135,7 @@ export function restoreCoveredNameSlot(
       targetId: updatedTarget.instanceId,
     })
     nextState = triggerNameBreak(nextState, updatedTarget.instanceId, input.sourceId)
+    nextState = triggerNamedPhase(nextState, updatedTarget.instanceId, input.sourceId)
     nextState = triggerThunderLead(nextState, updatedTarget.instanceId, input.sourceId)
     nextState = triggerArtifactsAfterEnemyNamed(nextState, input.sourceId)
   }
@@ -252,6 +254,79 @@ function triggerNameBreak(
       ratio,
     },
   })
+}
+
+function triggerNamedPhase(
+  state: CombatState,
+  targetEnemyInstanceId: EnemyInstanceId,
+  sourceId: GameEntityId,
+): CombatState {
+  const target = findEnemy(state, targetEnemyInstanceId)
+  const namedPhase = target?.namedPhase
+
+  if (!target || !namedPhase || namedPhase.isActive) {
+    return state
+  }
+
+  const nextTraits = applyNamedPhaseTraits(
+    target.traits,
+    namedPhase.removeTraitIds,
+    namedPhase.addTraitIds,
+  )
+  const nextState: CombatState = {
+    ...state,
+    enemies: state.enemies.map((enemy) =>
+      enemy.instanceId === target.instanceId
+        ? {
+            ...enemy,
+            traits: nextTraits,
+            namedPhase: {
+              ...namedPhase,
+              isActive: true,
+            },
+          }
+        : enemy,
+    ),
+  }
+
+  return appendLog(nextState, {
+    type: 'NAMED_PHASE_TRIGGERED',
+    sourceId,
+    targetId: target.instanceId,
+    payload: {
+      changeIds: namedPhase.changeIds,
+      descriptionKeys: namedPhase.descriptionKeys,
+      disabledMoveTypes: namedPhase.disabledMoveTypes,
+      downgradedMoveTypes: namedPhase.downgradedMoveTypes,
+      conditionalDisabledMoveTypes: namedPhase.conditionalDisabledMoveTypes.map((change) => ({
+        condition: change.condition,
+        moveType: change.moveType,
+      })),
+      conditionalDowngradedMoveTypes: namedPhase.conditionalDowngradedMoveTypes.map((change) => ({
+        condition: change.condition,
+        moveType: change.moveType,
+      })),
+      disabledAftereffects: namedPhase.disabledAftereffects,
+      conditionalDisabledAftereffects: namedPhase.conditionalDisabledAftereffects.map((change) => ({
+        condition: change.condition,
+        aftereffectType: change.aftereffectType,
+      })),
+      counterIntentId: namedPhase.counterIntentId ?? null,
+      removedTraitIds: namedPhase.removeTraitIds,
+      addedTraitIds: namedPhase.addTraitIds,
+    },
+  })
+}
+
+function applyNamedPhaseTraits(
+  traits: readonly string[],
+  removeTraitIds: readonly string[],
+  addTraitIds: readonly string[],
+) {
+  const removed = new Set(removeTraitIds)
+  const nextTraits = traits.filter((trait) => !removed.has(trait))
+
+  return Array.from(new Set([...nextTraits, ...addTraitIds]))
 }
 
 function getNameBreakRatio(enemy: EnemyState) {

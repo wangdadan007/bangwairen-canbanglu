@@ -1764,6 +1764,11 @@ button:disabled {
   line-height: 1.4;
 }
 
+.named-phase-note {
+  border-color: rgba(240, 199, 116, 0.52);
+  background: rgba(75, 58, 32, 0.28);
+}
+
 .intent-rule-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -15,6 +15,8 @@ import type {
   CombatState,
   EnemyDefinition,
   EnemyIntentMaskMode,
+  EnemyMechanicChange,
+  EnemyNamedPhaseState,
   EnemyState,
   RunDeckCard,
   TutorialResourceState,
@@ -327,7 +329,45 @@ export function createEnemyState(
     incomingForce: getIncomingForceBaseAmount(currentIntent),
     blockedAbnormalMoveTypes: [],
     traits: definition.traits,
+    namedPhase: createNamedPhaseState(definition.onNamed),
   }
+}
+
+function createNamedPhaseState(
+  changes: readonly EnemyMechanicChange[] | undefined,
+): EnemyNamedPhaseState | undefined {
+  if (!changes || changes.length === 0) {
+    return undefined
+  }
+
+  return {
+    isActive: false,
+    changeIds: changes.map((change) => change.id),
+    descriptionKeys: changes.map((change) => change.descriptionKey),
+    removeTraitIds: uniqueStrings(changes.flatMap((change) => change.removeTraitIds ?? [])),
+    addTraitIds: uniqueStrings(changes.flatMap((change) => change.addTraitIds ?? [])),
+    disabledMoveTypes: uniqueStrings(changes.flatMap((change) => change.disabledMoveTypes ?? [])),
+    downgradedMoveTypes: uniqueStrings(
+      changes.flatMap((change) => change.downgradedMoveTypes ?? []),
+    ),
+    conditionalDisabledMoveTypes: changes.flatMap(
+      (change) => change.conditionalDisabledMoveTypes ?? [],
+    ),
+    conditionalDowngradedMoveTypes: changes.flatMap(
+      (change) => change.conditionalDowngradedMoveTypes ?? [],
+    ),
+    disabledAftereffects: uniqueStrings(
+      changes.flatMap((change) => change.disabledAftereffects ?? []),
+    ),
+    conditionalDisabledAftereffects: changes.flatMap(
+      (change) => change.conditionalDisabledAftereffects ?? [],
+    ),
+    counterIntentId: changes.find((change) => change.counterIntentId)?.counterIntentId,
+  }
+}
+
+function uniqueStrings<T extends string>(values: readonly T[]): readonly T[] {
+  return Array.from(new Set(values))
 }
 
 function createHiddenIntentEnemyIdSet(

@@ -105,12 +105,49 @@ export interface EnemyNameSlotDefinition {
   readonly nameKey: LocalizationKey
 }
 
+export type EnemyNamedPhaseCondition =
+  | 'default'
+  | 'boss_route_catalogue'
+  | 'boss_route_fracture'
+
+export interface EnemyNamedPhaseMoveChange {
+  readonly condition: EnemyNamedPhaseCondition
+  readonly moveType: AbnormalMoveType
+}
+
+export interface EnemyNamedPhaseAftereffectChange {
+  readonly condition: EnemyNamedPhaseCondition
+  readonly aftereffectType: IncomingForceAftereffectType
+}
+
 export interface EnemyMechanicChange {
   readonly id: string
   readonly descriptionKey: LocalizationKey
   readonly removeTraitIds?: readonly string[]
   readonly addTraitIds?: readonly string[]
+  readonly disabledMoveTypes?: readonly AbnormalMoveType[]
+  readonly downgradedMoveTypes?: readonly AbnormalMoveType[]
+  readonly conditionalDisabledMoveTypes?: readonly EnemyNamedPhaseMoveChange[]
+  readonly conditionalDowngradedMoveTypes?: readonly EnemyNamedPhaseMoveChange[]
+  readonly disabledAftereffects?: readonly IncomingForceAftereffectType[]
+  readonly conditionalDisabledAftereffects?: readonly EnemyNamedPhaseAftereffectChange[]
+  readonly counterIntentId?: string
   readonly effects?: readonly CardEffect[]
+}
+
+export interface EnemyNamedPhaseState {
+  readonly isActive: boolean
+  readonly changeIds: readonly string[]
+  readonly descriptionKeys: readonly LocalizationKey[]
+  readonly removeTraitIds: readonly string[]
+  readonly addTraitIds: readonly string[]
+  readonly disabledMoveTypes: readonly AbnormalMoveType[]
+  readonly downgradedMoveTypes: readonly AbnormalMoveType[]
+  readonly conditionalDisabledMoveTypes: readonly EnemyNamedPhaseMoveChange[]
+  readonly conditionalDowngradedMoveTypes: readonly EnemyNamedPhaseMoveChange[]
+  readonly disabledAftereffects: readonly IncomingForceAftereffectType[]
+  readonly conditionalDisabledAftereffects: readonly EnemyNamedPhaseAftereffectChange[]
+  readonly counterIntentId?: string
 }
 
 export interface RewardRule {
@@ -128,6 +165,7 @@ export interface EnemyDefinition {
   readonly tier: EnemyTier
   readonly intents: readonly EnemyIntentDefinition[]
   readonly traits: readonly string[]
+  // Per-enemy named-phase changes applied when all name slots are revealed.
   readonly onNamed?: readonly EnemyMechanicChange[]
   readonly rewards?: readonly RewardRule[]
 }
@@ -159,4 +197,5 @@ export interface EnemyState {
   readonly incomingForce: number
   readonly blockedAbnormalMoveTypes: readonly AbnormalMoveType[]
   readonly traits: readonly string[]
+  readonly namedPhase?: EnemyNamedPhaseState
 }

@@ -722,6 +722,7 @@ function EnemyPanel({
   const incomingForceAttachment = isIntentMasked
     ? undefined
     : getIncomingForceAttachmentText(enemy.currentIntent)
+  const activeNamedPhase = enemy.namedPhase?.isActive ? enemy.namedPhase : undefined
 
   return (
     <article
@@ -745,9 +746,9 @@ function EnemyPanel({
         <div className="enemy-panel-actions">
           <span
             className={enemy.isNamed ? 'status-pill named' : 'status-pill'}
-            title={getTermTooltip('named')}
+            title={activeNamedPhase ? getTermTooltip('named_phase') : getTermTooltip('named')}
           >
-            {enemy.isNamed ? '正名' : enemy.currentForm <= 0 ? '已收束' : '未正名'}
+            {activeNamedPhase ? '现形' : enemy.isNamed ? '正名' : enemy.currentForm <= 0 ? '已收束' : '未正名'}
           </span>
           <button
             className="ghost-button target-button"
@@ -838,6 +839,12 @@ function EnemyPanel({
         <div className="intent-attachment-note">
           <span title={getTermTooltip('incoming_force')}>来势附带</span>
           <strong>{incomingForceAttachment}</strong>
+        </div>
+      ) : null}
+      {activeNamedPhase ? (
+        <div className="intent-attachment-note named-phase-note">
+          <span title={getTermTooltip('named_phase')}>现形反扑</span>
+          <strong>{activeNamedPhase.descriptionKeys.map((key) => t(key)).join('；')}</strong>
         </div>
       ) : null}
       <div className="intent-rule-grid" aria-label="来势与异动处理状态">

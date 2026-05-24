@@ -16,6 +16,13 @@
     ],
     "tier": "normal",
     "traits": ["tutorial", "paper"],
+    "onNamed": [
+      {
+        "id": "named_phase_paper_wraith_revealed_paper",
+        "descriptionKey": "enemy.paper_wraith.on_named.revealed_paper",
+        "counterIntentId": "intent_paper_wraith_scrape"
+      }
+    ],
     "intents": [
       {
         "id": "intent_paper_wraith_scrape",
@@ -55,6 +62,14 @@
     ],
     "tier": "normal",
     "traits": ["tutorial", "abnormal_move", "steal_incense"],
+    "onNamed": [
+      {
+        "id": "named_phase_incense_thief_mouse_cut_theft",
+        "descriptionKey": "enemy.incense_thief_mouse.on_named.cut_theft",
+        "downgradedMoveTypes": ["steal_incense"],
+        "counterIntentId": "intent_incense_thief_mouse_bite"
+      }
+    ],
     "intents": [
       {
         "id": "intent_incense_thief_mouse_steal",
@@ -113,6 +128,13 @@
     ],
     "tier": "normal",
     "traits": ["tutorial", "incoming_force", "red_ink_preview"],
+    "onNamed": [
+      {
+        "id": "named_phase_bronze_bell_patrol_open_patrol",
+        "descriptionKey": "enemy.bronze_bell_patrol.on_named.open_patrol",
+        "counterIntentId": "intent_bronze_bell_patrol_toll"
+      }
+    ],
     "intents": [
       {
         "id": "intent_bronze_bell_patrol_sweep",
@@ -224,6 +246,14 @@
     ],
     "tier": "normal",
     "traits": ["chapter_one", "mid_chapter", "human_altar_preview", "incoming_force", "abnormal_move", "summon"],
+    "onNamed": [
+      {
+        "id": "named_phase_unlit_temple_warden_cut_summon",
+        "descriptionKey": "enemy.unlit_temple_warden.on_named.cut_summon",
+        "disabledMoveTypes": ["summon"],
+        "counterIntentId": "intent_unlit_temple_warden_ring_table"
+      }
+    ],
     "intents": [
       {
         "id": "intent_unlit_temple_warden_sweep_ashes",
@@ -306,6 +336,14 @@
     ],
     "tier": "normal",
     "traits": ["chapter_one", "mid_chapter", "doom", "incoming_force", "abnormal_move", "custom"],
+    "onNamed": [
+      {
+        "id": "named_phase_fortune_breaker_expose_debt",
+        "descriptionKey": "enemy.fortune_breaker.on_named.expose_debt",
+        "disabledMoveTypes": ["custom"],
+        "counterIntentId": "intent_fortune_breaker_crack_lot"
+      }
+    ],
     "intents": [
       {
         "id": "intent_fortune_breaker_reverse_lot_debt",
@@ -388,6 +426,14 @@
     ],
     "tier": "normal",
     "traits": ["chapter_one", "mid_chapter", "earth_altar", "abnormal_move", "steal_incense"],
+    "onNamed": [
+      {
+        "id": "named_phase_ash_altar_child_settle_ash",
+        "descriptionKey": "enemy.ash_altar_child.on_named.settle_ash",
+        "downgradedMoveTypes": ["steal_incense"],
+        "counterIntentId": "intent_ash_altar_child_press_bowl"
+      }
+    ],
     "intents": [
       {
         "id": "intent_ash_altar_child_scatter_ash",
@@ -456,6 +502,14 @@
     ],
     "tier": "normal",
     "traits": ["chapter_one", "late_chapter", "fouled_scroll", "backlash_preview"],
+    "onNamed": [
+      {
+        "id": "named_phase_plague_paper_figure_cut_stain",
+        "descriptionKey": "enemy.plague_paper_figure.on_named.cut_stain",
+        "disabledMoveTypes": ["add_fouled_scroll"],
+        "counterIntentId": "intent_plague_paper_figure_cough_ash"
+      }
+    ],
     "intents": [
       {
         "id": "intent_plague_paper_figure_stain_scroll",
@@ -515,6 +569,14 @@
     ],
     "tier": "normal",
     "traits": ["chapter_one", "late_chapter", "fouled_scroll", "abnormal_move"],
+    "onNamed": [
+      {
+        "id": "named_phase_scroll_stuffer_clerk_lower_stuff",
+        "descriptionKey": "enemy.scroll_stuffer_clerk.on_named.lower_stuff",
+        "downgradedMoveTypes": ["add_fouled_scroll"],
+        "counterIntentId": "intent_scroll_stuffer_clerk_slam_case"
+      }
+    ],
     "intents": [
       {
         "id": "intent_scroll_stuffer_clerk_stuff_scroll",
@@ -583,6 +645,14 @@
     ],
     "tier": "normal",
     "traits": ["chapter_one", "late_chapter", "cover_name", "escape_name"],
+    "onNamed": [
+      {
+        "id": "named_phase_fleeing_name_paper_horse_cut_escape",
+        "descriptionKey": "enemy.fleeing_name_paper_horse.on_named.cut_escape",
+        "disabledMoveTypes": ["cover_name"],
+        "counterIntentId": "intent_fleeing_name_paper_horse_kick_dust"
+      }
+    ],
     "intents": [
       {
         "id": "intent_fleeing_name_paper_horse_hide_trace",
@@ -692,6 +762,14 @@
     ],
     "tier": "elite",
     "traits": ["chapter_one", "elite", "fire", "cover_name", "doom", "fracture"],
+    "onNamed": [
+      {
+        "id": "named_phase_fire_fleeing_name_cut_burn",
+        "descriptionKey": "enemy.fire_fleeing_name.on_named.cut_burn",
+        "disabledMoveTypes": ["cover_name"],
+        "counterIntentId": "intent_fire_fleeing_name_break_tablet"
+      }
+    ],
     "intents": [
       {
         "id": "intent_fire_fleeing_name_flame_stamp",
@@ -782,6 +860,14 @@
     ],
     "tier": "elite",
     "traits": ["chapter_one", "elite", "dipper", "altar", "artifact", "cover_name"],
+    "onNamed": [
+      {
+        "id": "named_phase_dipper_empty_shell_cut_blank",
+        "descriptionKey": "enemy.dipper_empty_shell.on_named.cut_blank",
+        "disabledMoveTypes": ["cover_name"],
+        "counterIntentId": "intent_dipper_empty_shell_fall_star"
+      }
+    ],
     "intents": [
       {
         "id": "intent_dipper_empty_shell_shift_star",
@@ -871,6 +957,14 @@
     ],
     "tier": "elite",
     "traits": ["chapter_one", "elite", "abnormal_move", "steal_incense", "ask_name_reward"],
+    "onNamed": [
+      {
+        "id": "named_phase_incense_clerk_close_ledger",
+        "descriptionKey": "enemy.incense_clerk.on_named.close_ledger",
+        "downgradedMoveTypes": ["steal_incense"],
+        "counterIntentId": "intent_incense_clerk_stamp_case"
+      }
+    ],
     "intents": [
       {
         "id": "intent_incense_clerk_lift_censer",
@@ -961,6 +1055,36 @@
       "boss_variant_low_fracture",
       "boss_variant_high_fracture",
       "boss_variant_high_catalogue"
+    ],
+    "onNamed": [
+      {
+        "id": "named_phase_registry_thief_break_cloak",
+        "descriptionKey": "enemy.registry_thief.on_named.break_cloak",
+        "disabledMoveTypes": ["cover_name"],
+        "conditionalDisabledMoveTypes": [
+          {
+            "condition": "boss_route_fracture",
+            "moveType": "add_fouled_scroll"
+          }
+        ],
+        "conditionalDowngradedMoveTypes": [
+          {
+            "condition": "default",
+            "moveType": "steal_incense"
+          }
+        ],
+        "conditionalDisabledAftereffects": [
+          {
+            "condition": "boss_route_catalogue",
+            "aftereffectType": "mask_next_intent"
+          },
+          {
+            "condition": "boss_route_fracture",
+            "aftereffectType": "add_fouled_scroll"
+          }
+        ],
+        "counterIntentId": "intent_registry_thief_final_stamp"
+      }
     ],
     "intents": [
       {

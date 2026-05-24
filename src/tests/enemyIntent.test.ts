@@ -153,6 +153,132 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
     expect(nextTurn.player.currentForm).toBe(state.player.currentForm - 2)
   })
 
+  it('defines named-phase data for every currently nameable enemy', () => {
+    const nameableEnemies = gameData.enemies.filter((enemy) => enemy.nameSlots > 0)
+
+    expect(nameableEnemies).toHaveLength(13)
+    expect(nameableEnemies.every((enemy) => (enemy.onNamed?.length ?? 0) > 0)).toBe(true)
+  })
+
+  it('activates named phase and blocks fleeing-name cover after naming', () => {
+    const state = createBattleAtIntent(
+      'enemy_fleeing_name_paper_horse',
+      'intent_fleeing_name_paper_horse_hide_trace',
+      ['card_ask_name', 'card_ask_name'],
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const namedPhaseLog = lastLogOfType(afterNamed, 'NAMED_PHASE_TRIGGERED')
+
+    expect(afterNamed.enemies[0].isNamed).toBe(true)
+    expect(afterNamed.enemies[0].namedPhase?.isActive).toBe(true)
+    expect(namedPhaseLog?.payload).toEqual(
+      expect.objectContaining({
+        disabledMoveTypes: ['cover_name'],
+        counterIntentId: 'intent_fleeing_name_paper_horse_kick_dust',
+      }),
+    )
+
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_COUNTERED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'cover_name',
+        result: 'prevented_by_named_phase',
+      }),
+    )
+    expect(nextTurn.enemies[0].nameSlots.every((slot) => slot.isRevealed)).toBe(true)
+    expect(nextTurn.player.currentForm).toBe(afterNamed.player.currentForm)
+  })
+
+  it('downgrades tutorial mouse stealing after actual named phase', () => {
+    const state = createBattleAtIntent(
+      'enemy_incense_thief_mouse',
+      'intent_incense_thief_mouse_steal',
+      ['card_ask_name'],
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_EXECUTED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'steal_incense',
+        amount: 0,
+        namedPhaseResult: 'downgraded',
+      }),
+    )
+    expect(nextTurn.player.incense).toBe(3)
+    expect(nextTurn.enemies[0].currentIntent?.id).toBe('intent_incense_thief_mouse_bite')
+  })
+
+  it('keeps paper wraith and bronze patrol named phases as clear counter-intent handoffs', () => {
+    const paperState = nameFirstEnemy(
+      createBattleAtIntent('enemy_paper_wraith', 'intent_paper_wraith_scrape', [
+        'card_ask_name',
+        'card_ask_name',
+      ]),
+    )
+    const bronzeState = nameFirstEnemy(
+      createBattleAtIntent('enemy_bronze_bell_patrol', 'intent_bronze_bell_patrol_sweep', [
+        'card_ask_name',
+        'card_ask_name',
+      ]),
+    )
+
+    expect(lastLogOfType(paperState, 'NAMED_PHASE_TRIGGERED')?.payload).toEqual(
+      expect.objectContaining({
+        disabledMoveTypes: [],
+        downgradedMoveTypes: [],
+        counterIntentId: 'intent_paper_wraith_scrape',
+      }),
+    )
+    expect(lastLogOfType(bronzeState, 'NAMED_PHASE_TRIGGERED')?.payload).toEqual(
+      expect.objectContaining({
+        disabledMoveTypes: [],
+        downgradedMoveTypes: [],
+        counterIntentId: 'intent_bronze_bell_patrol_toll',
+      }),
+    )
+  })
+
+  it.each([
+    {
+      enemyDefinitionId: 'enemy_unlit_temple_warden',
+      intentId: 'intent_unlit_temple_warden_call_paper_imp',
+      deckDefinitionIds: ['card_ask_name', 'card_ask_name'],
+      moveType: 'summon',
+      counterIntentId: 'intent_unlit_temple_warden_ring_table',
+    },
+    {
+      enemyDefinitionId: 'enemy_fortune_breaker',
+      intentId: 'intent_fortune_breaker_reverse_lot_debt',
+      deckDefinitionIds: ['card_ask_name', 'card_ask_name'],
+      moveType: 'custom',
+      counterIntentId: 'intent_fortune_breaker_crack_lot',
+    },
+    {
+      enemyDefinitionId: 'enemy_plague_paper_figure',
+      intentId: 'intent_plague_paper_figure_stain_scroll',
+      deckDefinitionIds: ['card_ask_name', 'card_ask_name'],
+      moveType: 'add_fouled_scroll',
+      counterIntentId: 'intent_plague_paper_figure_cough_ash',
+    },
+  ])(
+    'blocks $moveType pressure after naming $enemyDefinitionId',
+    ({ enemyDefinitionId, intentId, deckDefinitionIds, moveType, counterIntentId }) => {
+      const state = createBattleAtIntent(enemyDefinitionId, intentId, deckDefinitionIds)
+      const afterNamed = nameFirstEnemy(state)
+      const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+      expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_COUNTERED')?.payload).toEqual(
+        expect.objectContaining({
+          moveType,
+          result: 'prevented_by_named_phase',
+        }),
+      )
+      expect(nextTurn.enemies[0].currentIntent?.id).toBe(counterIntentId)
+    },
+  )
+
   it('executes support recovery as a low-cost support pressure', () => {
     const state = withEnemyCurrentForm(
       createBattle('enemy_offering_table_afterimage', ['card_guard_desk_talisman']),
@@ -219,24 +345,23 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
     expect(stealLogs.map((entry) => entry.payload.amount)).toEqual([2, 1])
   })
 
-  it('keeps fire fleeing name from undoing a named enemy and converts it into form pressure', () => {
-    const state = withEnemyNamed(
-      createBattleAtIntent(
-        'enemy_fire_fleeing_name',
-        'intent_fire_fleeing_name_burn_name',
-      ),
+  it('blocks fire fleeing-name burn after actual named phase', () => {
+    const state = createBattleAtIntent(
+      'enemy_fire_fleeing_name',
+      'intent_fire_fleeing_name_burn_name',
+      ['card_ask_name', 'card_ask_name', 'card_ask_name'],
     )
-    const nextTurn = reduceBattleState(state, { type: 'END_TURN' }, context)
+    const afterNamed = nameFirstEnemy(state)
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
 
-    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_EXECUTED')?.payload).toEqual(
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_COUNTERED')?.payload).toEqual(
       expect.objectContaining({
         moveType: 'cover_name',
-        coverNameResult: 'enemy_named',
-        fallbackIncomingForceApplied: 2,
+        result: 'prevented_by_named_phase',
       }),
     )
     expect(nextTurn.enemies[0].isNamed).toBe(true)
-    expect(nextTurn.player.currentForm).toBe(state.player.currentForm - 2)
+    expect(nextTurn.player.currentForm).toBe(afterNamed.player.currentForm)
   })
 
   it('lets the dipper empty shell disrupt a prepared altar before falling back to cover name', () => {
@@ -270,6 +395,32 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
       }),
     )
     expect(nextTurn.altars).toHaveLength(0)
+  })
+
+  it('blocks dipper altar disruption after actual named phase', () => {
+    const state = createBattleAtIntent(
+      'enemy_dipper_empty_shell',
+      'intent_dipper_empty_shell_blank_name',
+      ['card_ask_name', 'card_ask_name', 'card_ask_name', 'card_heaven_altar_oracle'],
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const afterIncense = withPlayerIncense(afterNamed, 1)
+    const afterAltar = playFirstCard(afterIncense, 'card_heaven_altar_oracle')
+    const nextTurn = reduceBattleState(afterAltar, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_COUNTERED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'cover_name',
+        result: 'prevented_by_named_phase',
+      }),
+    )
+    expect(
+      nextTurn.actionLog.some(
+        (entry) =>
+          entry.type === 'ALTAR_EXPIRED' &&
+          entry.payload.reason === 'disrupted_by_abnormal_move',
+      ),
+    ).toBe(false)
   })
 
   it('lets the unlit temple warden summon a nameless paper imp into normal targeting', () => {
@@ -669,6 +820,198 @@ describe('T07 incoming force, sealing, and abnormal moves', () => {
     )
     expect(afterCatalogueStamp.enemies[0].currentIntentVisibility).toBe('masked')
   })
+
+  it('downgrades scroll-stuffer topdeck pollution after actual named phase', () => {
+    const state = createBattleAtIntent(
+      'enemy_scroll_stuffer_clerk',
+      'intent_scroll_stuffer_clerk_stuff_scroll',
+      ['card_ask_name', 'card_ask_name', 'card_zhu_fu', 'card_zhu_fu', 'card_zhu_fu'],
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_EXECUTED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'add_fouled_scroll',
+        namedPhaseResult: 'downgraded',
+        destination: 'discard_pile',
+      }),
+    )
+  })
+
+  it('downgrades ash-altar stealing after actual named phase', () => {
+    const state = createBattleAtIntent(
+      'enemy_ash_altar_child',
+      'intent_ash_altar_child_scatter_ash',
+      ['card_ask_name', 'card_ask_name'],
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_EXECUTED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'steal_incense',
+        amount: 0,
+        namedPhaseResult: 'downgraded',
+      }),
+    )
+    expect(nextTurn.player.incense).toBe(3)
+    expect(nextTurn.enemies[0].currentIntent?.id).toBe('intent_ash_altar_child_press_bowl')
+  })
+
+  it('downgrades incense-clerk stealing after actual named phase', () => {
+    const state = createBattleAtIntent(
+      'enemy_incense_clerk',
+      'intent_incense_clerk_audit_offering',
+      ['card_ask_name', 'card_ask_name', 'card_ask_name'],
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_EXECUTED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'steal_incense',
+        amount: 0,
+        namedPhaseResult: 'downgraded',
+      }),
+    )
+    expect(nextTurn.player.incense).toBe(3)
+    expect(nextTurn.enemies[0].currentIntent?.id).toBe('intent_incense_clerk_stamp_case')
+  })
+
+  it('prevents registry-thief cloak after actual named phase and shifts toward final stamp', () => {
+    const state = createBattleAtIntent(
+      'enemy_registry_thief',
+      'intent_registry_thief_cloak_stolen_name',
+      ['card_ask_name', 'card_ask_name', 'card_ask_name'],
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_COUNTERED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'cover_name',
+        result: 'prevented_by_named_phase',
+      }),
+    )
+    expect(nextTurn.player.currentForm).toBe(afterNamed.player.currentForm)
+    expect(nextTurn.enemies[0].currentIntent?.id).toBe('intent_registry_thief_final_stamp')
+  })
+
+  it('downgrades registry-thief stable-route stealing after actual named phase', () => {
+    const state = createBattleAtIntent(
+      'enemy_registry_thief',
+      'intent_registry_thief_pinch_offering',
+      ['card_ask_name', 'card_ask_name', 'card_ask_name'],
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_EXECUTED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'steal_incense',
+        amount: 0,
+        namedPhaseResult: 'downgraded',
+        namedPhaseCondition: 'default',
+      }),
+    )
+    expect(nextTurn.player.incense).toBe(3)
+    expect(nextTurn.enemies[0].currentIntent?.id).toBe('intent_registry_thief_final_stamp')
+  })
+
+  it('prevents registry-thief catalogue-route final stamp from masking the previewed next intent', () => {
+    const state = withEnemyNextIntentPreview(
+      createBattleAtIntentWithRisk(
+        'enemy_registry_thief',
+        'intent_registry_thief_final_stamp',
+        {
+          resource: 'fracture',
+          threshold: 3,
+          stateLabel: '归册压力',
+          result: 'record_only',
+          enemyDefinitionId: 'enemy_registry_thief',
+          intentId: 'intent_registry_thief_cloak_stolen_name',
+        },
+        ['card_ask_name', 'card_ask_name', 'card_ask_name'],
+      ),
+      'intent_registry_thief_press_registry',
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'INCOMING_FORCE_AFTEREFFECT')?.payload).toEqual(
+      expect.objectContaining({
+        aftereffectType: 'mask_next_intent',
+        result: 'prevented_by_named_phase',
+        namedPhaseResult: 'disabled',
+        namedPhaseCondition: 'boss_route_catalogue',
+      }),
+    )
+    expect(nextTurn.enemies[0].currentIntent?.id).toBe(
+      'intent_registry_thief_press_registry',
+    )
+    expect(nextTurn.enemies[0].currentIntentVisibility).toBe('revealed')
+  })
+
+  it('prevents registry-thief fracture-route scroll stuffing after actual named phase', () => {
+    const state = createBattleAtIntentWithRisk(
+      'enemy_registry_thief',
+      'intent_registry_thief_tear_registry',
+      {
+        resource: 'fracture',
+        threshold: 5,
+        stateLabel: '高榜裂',
+        result: 'boss_high_fracture',
+        enemyDefinitionId: 'enemy_registry_thief',
+        intentId: 'intent_registry_thief_tear_registry',
+      },
+      ['card_ask_name', 'card_ask_name', 'card_ask_name'],
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'ABNORMAL_MOVE_COUNTERED')?.payload).toEqual(
+      expect.objectContaining({
+        moveType: 'add_fouled_scroll',
+        result: 'prevented_by_named_phase',
+        namedPhaseResult: 'disabled',
+        namedPhaseCondition: 'boss_route_fracture',
+      }),
+    )
+    expect(nextTurn.discardPile.map((card) => card.definitionId)).not.toContain(
+      'card_fouled_scroll',
+    )
+  })
+
+  it('prevents registry-thief fracture-route final stamp from adding fouled scrolls', () => {
+    const state = createBattleAtIntentWithRisk(
+      'enemy_registry_thief',
+      'intent_registry_thief_final_stamp',
+      {
+        resource: 'fracture',
+        threshold: 5,
+        stateLabel: '高榜裂',
+        result: 'boss_high_fracture',
+        enemyDefinitionId: 'enemy_registry_thief',
+        intentId: 'intent_registry_thief_tear_registry',
+      },
+      ['card_ask_name', 'card_ask_name', 'card_ask_name'],
+    )
+    const afterNamed = nameFirstEnemy(state)
+    const nextTurn = reduceBattleState(afterNamed, { type: 'END_TURN' }, context)
+
+    expect(lastLogOfType(nextTurn, 'INCOMING_FORCE_AFTEREFFECT')?.payload).toEqual(
+      expect.objectContaining({
+        aftereffectType: 'add_fouled_scroll',
+        result: 'prevented_by_named_phase',
+        namedPhaseResult: 'disabled',
+        namedPhaseCondition: 'boss_route_fracture',
+      }),
+    )
+    expect(nextTurn.discardPile.map((card) => card.definitionId)).not.toContain(
+      'card_fouled_scroll',
+    )
+  })
 })
 
 function createBattle(enemyDefinitionId: EnemyId, deckDefinitionIds?: readonly CardId[]) {
@@ -732,6 +1075,17 @@ function withEnemyNextIntentPreview(state: CombatState, intentId: string): Comba
 
 function playFirstCard(state: CombatState, definitionId: CardId) {
   return playFirstCardOnTarget(state, definitionId, state.enemies[0].instanceId)
+}
+
+function nameFirstEnemy(state: CombatState) {
+  let nextState = state
+  const nameSlotCount = state.enemies[0].nameSlots.length
+
+  for (let index = 0; index < nameSlotCount; index += 1) {
+    nextState = playFirstCard(nextState, 'card_ask_name')
+  }
+
+  return nextState
 }
 
 function playFirstCardOnTarget(
@@ -805,21 +1159,12 @@ function withEnemyCurrentForms(
   }
 }
 
-function withEnemyNamed(state: CombatState): CombatState {
+function withPlayerIncense(state: CombatState, incense: number): CombatState {
   return {
     ...state,
-    enemies: state.enemies.map((enemy, index) =>
-      index === 0
-        ? {
-            ...enemy,
-            isNamed: true,
-            hasTriggeredNameBreak: true,
-            nameSlots: enemy.nameSlots.map((slot) => ({
-              ...slot,
-              isRevealed: true,
-            })),
-          }
-        : enemy,
-    ),
+    player: {
+      ...state.player,
+      incense,
+    },
   }
 }

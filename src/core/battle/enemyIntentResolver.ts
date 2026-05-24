@@ -12,17 +12,24 @@ import type {
   CardInstance,
   CombatState,
   EnemyDefinition,
+  EnemyNamedPhaseCondition,
   FouledScrollDestination,
   EnemyIntentDefinition,
   EnemyState,
   HealFormTarget,
   IncomingForceAftereffectDefinition,
+  IncomingForceAftereffectType,
   JsonValue,
 } from '../../types'
 
 const FOULED_SCROLL_CARD_ID = 'card_fouled_scroll'
 const DEFAULT_FOULED_SCROLL_DESTINATION: FouledScrollDestination = 'discard_pile'
 const DEFAULT_SUMMON_LIVING_ENEMY_LIMIT = 3
+
+interface NamedPhaseAdjustment {
+  readonly result: 'disabled' | 'downgraded'
+  readonly condition?: EnemyNamedPhaseCondition
+}
 
 export function executeEnemyTurn(
   state: CombatState,
@@ -198,6 +205,20 @@ function applyIncomingForceAftereffects(
       continue
     }
 
+    const namedPhaseAdjustment = getNamedPhaseAftereffectAdjustment(
+      nextState,
+      enemy,
+      aftereffect.type,
+    )
+
+    if (namedPhaseAdjustment?.result === 'disabled') {
+      nextState = appendIncomingForceAftereffectLog(nextState, enemy, aftereffect, {
+        result: 'prevented_by_named_phase',
+        ...getNamedPhaseLogPayload(enemy, namedPhaseAdjustment),
+      })
+      continue
+    }
+
     if (aftereffect.type === 'expire_latest_altar') {
       const result = expireLatestAltarByIncomingForce(nextState, enemy)
       nextState = result.state
@@ -330,9 +351,28 @@ function executeAbnormalMove(
     })
   }
 
+  const namedPhaseAdjustment = getNamedPhaseMoveAdjustment(state, enemy, move.type)
+
+  if (namedPhaseAdjustment?.result === 'disabled') {
+    return appendLog(state, {
+      type: 'ABNORMAL_MOVE_COUNTERED',
+      sourceId: enemy.instanceId,
+      targetId: 'player',
+      payload: {
+        intentId,
+        intentNameKey: intent.nameKey,
+        moveType: move.type,
+        result: 'prevented_by_named_phase',
+        ...getNamedPhaseLogPayload(enemy, namedPhaseAdjustment),
+      },
+    })
+  }
+
   let nextState = state
-  const { amount, isFirstUse } = getResolvedMoveAmount(nextState, enemy, intentId, move)
-  let resultPayload = {}
+  const { amount: baseAmount, isFirstUse } = getResolvedMoveAmount(nextState, enemy, intentId, move)
+  const isDowngradedByNamedPhase = namedPhaseAdjustment?.result === 'downgraded'
+  const amount = getNamedPhaseResolvedMoveAmount(move, baseAmount, isDowngradedByNamedPhase)
+  let resultPayload: Record<string, JsonValue> = {}
 
   if (move.type === 'steal_incense') {
     nextState = {
@@ -345,7 +385,9 @@ function executeAbnormalMove(
   }
 
   if (move.type === 'add_fouled_scroll') {
-    const destination = getResolvedFouledScrollDestination(move, isFirstUse)
+    const destination = isDowngradedByNamedPhase
+      ? DEFAULT_FOULED_SCROLL_DESTINATION
+      : getResolvedFouledScrollDestination(move, isFirstUse)
     const addedCards = createFouledScrollCards(nextState, amount)
     nextState = addFouledScrollCardsToDestination(nextState, addedCards, destination)
     resultPayload = {
@@ -358,7 +400,7 @@ function executeAbnormalMove(
   }
 
   if (move.type === 'cover_name') {
-    const disruptedResult = move.disruptAltar
+    const disruptedResult = move.disruptAltar && !isDowngradedByNamedPhase
       ? disruptMostRecentAltar(nextState, enemy)
       : {
           state: nextState,
@@ -442,9 +484,139 @@ function executeAbnormalMove(
       amount,
       configuredAmount: move.amount ?? null,
       isFirstUse,
+      ...getNamedPhaseLogPayload(enemy, namedPhaseAdjustment),
       ...resultPayload,
     },
   })
+}
+
+function getNamedPhaseMoveAdjustment(
+  state: CombatState,
+  enemy: EnemyState,
+  moveType: AbnormalMoveDefinition['type'],
+): NamedPhaseAdjustment | undefined {
+  const namedPhase = enemy.namedPhase
+
+  if (!namedPhase?.isActive) {
+    return undefined
+  }
+
+  if (namedPhase.disabledMoveTypes.includes(moveType)) {
+    return { result: 'disabled' }
+  }
+
+  const conditionalDisabledMove = namedPhase.conditionalDisabledMoveTypes.find(
+    (change) =>
+      change.moveType === moveType &&
+      isNamedPhaseConditionMet(state, enemy, change.condition),
+  )
+
+  if (conditionalDisabledMove) {
+    return {
+      result: 'disabled',
+      condition: conditionalDisabledMove.condition,
+    }
+  }
+
+  if (namedPhase.downgradedMoveTypes.includes(moveType)) {
+    return { result: 'downgraded' }
+  }
+
+  const conditionalDowngradedMove = namedPhase.conditionalDowngradedMoveTypes.find(
+    (change) =>
+      change.moveType === moveType &&
+      isNamedPhaseConditionMet(state, enemy, change.condition),
+  )
+
+  if (conditionalDowngradedMove) {
+    return {
+      result: 'downgraded',
+      condition: conditionalDowngradedMove.condition,
+    }
+  }
+
+  return undefined
+}
+
+function getNamedPhaseAftereffectAdjustment(
+  state: CombatState,
+  enemy: EnemyState,
+  aftereffectType: IncomingForceAftereffectType,
+): NamedPhaseAdjustment | undefined {
+  const namedPhase = enemy.namedPhase
+
+  if (!namedPhase?.isActive) {
+    return undefined
+  }
+
+  if (namedPhase.disabledAftereffects.includes(aftereffectType)) {
+    return { result: 'disabled' }
+  }
+
+  const conditionalDisabledAftereffect = namedPhase.conditionalDisabledAftereffects.find(
+    (change) =>
+      change.aftereffectType === aftereffectType &&
+      isNamedPhaseConditionMet(state, enemy, change.condition),
+  )
+
+  if (conditionalDisabledAftereffect) {
+    return {
+      result: 'disabled',
+      condition: conditionalDisabledAftereffect.condition,
+    }
+  }
+
+  return undefined
+}
+
+function isNamedPhaseConditionMet(
+  state: CombatState,
+  enemy: EnemyState,
+  condition: EnemyNamedPhaseCondition,
+) {
+  if (condition === 'default') {
+    return (
+      !isIncomingForceConditionMet(state, enemy, 'boss_route_catalogue') &&
+      !isIncomingForceConditionMet(state, enemy, 'boss_route_fracture')
+    )
+  }
+
+  return isIncomingForceConditionMet(state, enemy, condition)
+}
+
+function getNamedPhaseResolvedMoveAmount(
+  move: AbnormalMoveDefinition,
+  amount: number,
+  isDowngradedByNamedPhase: boolean,
+) {
+  if (!isDowngradedByNamedPhase) {
+    return amount
+  }
+
+  if (move.type === 'steal_incense') {
+    return 0
+  }
+
+  return amount
+}
+
+function getNamedPhaseLogPayload(
+  enemy: EnemyState,
+  adjustment: NamedPhaseAdjustment | undefined,
+): Record<string, JsonValue> {
+  const namedPhase = enemy.namedPhase
+
+  if (!adjustment || !namedPhase?.isActive) {
+    return {}
+  }
+
+  return {
+    namedPhaseResult: adjustment.result,
+    namedPhaseCondition: adjustment.condition ?? null,
+    namedPhaseChangeIds: namedPhase.changeIds,
+    namedPhaseDescriptionKeys: namedPhase.descriptionKeys,
+    namedPhaseCounterIntentId: namedPhase.counterIntentId ?? null,
+  }
 }
 
 function executeSummonMove(
@@ -835,12 +1007,15 @@ function advanceEnemyIntent(
   options: AdvanceEnemyIntentOptions = {},
 ): CombatState {
   const definition = enemyDefinitions.find((candidate) => candidate.id === enemy.definitionId)
+  const currentEnemy = getCurrentEnemyState(state, enemy)
 
   if (!definition || definition.intents.length === 0) {
     return state
   }
 
-  const nextIntentIndex = (enemy.intentIndex + 1) % definition.intents.length
+  const nextIntentIndex =
+    getNamedPhaseCounterIntentIndex(state, definition, currentEnemy) ??
+    ((currentEnemy.intentIndex + 1) % definition.intents.length)
   const nextIntent = definition.intents[nextIntentIndex]
   const followingIntent = definition.intents[(nextIntentIndex + 1) % definition.intents.length]
   const enemies = state.enemies.map((candidate) =>
@@ -860,6 +1035,51 @@ function advanceEnemyIntent(
     ...state,
     enemies,
   }
+}
+
+function getNamedPhaseCounterIntentIndex(
+  state: CombatState,
+  definition: EnemyDefinition,
+  enemy: EnemyState,
+): number | undefined {
+  const namedPhase = enemy.namedPhase
+  const counterIntentId = namedPhase?.isActive ? namedPhase.counterIntentId : undefined
+
+  if (!namedPhase?.isActive || !counterIntentId) {
+    return undefined
+  }
+
+  const counterIntentIndex = definition.intents.findIndex(
+    (intent) => intent.id === counterIntentId,
+  )
+
+  if (counterIntentIndex < 0) {
+    return undefined
+  }
+
+  if (enemy.currentIntent?.id !== counterIntentId) {
+    return counterIntentIndex
+  }
+
+  const sequentialIntent = definition.intents[(enemy.intentIndex + 1) % definition.intents.length]
+
+  return hasNamedPhaseAdjustedMove(state, sequentialIntent, enemy)
+    ? counterIntentIndex
+    : undefined
+}
+
+function hasNamedPhaseAdjustedMove(
+  state: CombatState,
+  intent: EnemyIntentDefinition | undefined,
+  enemy: EnemyState,
+) {
+  return Boolean(
+    intent?.effects.some(
+      (effect) =>
+        effect.type === 'ABNORMAL_MOVE' &&
+        Boolean(getNamedPhaseMoveAdjustment(state, enemy, effect.move.type)),
+    ),
+  )
 }
 
 function advanceSingleEnemyIntent(
