@@ -1,4 +1,5 @@
 import type {
+  ArtifactCollectionState,
   CardId,
   EncounterDefinition,
   EnemyId,
@@ -17,10 +18,13 @@ import type {
 } from '../../types'
 import {
   advanceArtifactProgress,
+  DOOM_BELL_ARTIFACT_ID,
+  FRACTURE_NEEDLE_ARTIFACT_ID,
   getEraseRewardBonusCount,
   markArtifactOverloads,
 } from './artifactResolver'
 import { appendRunDeckCard } from './deckResolver'
+import { RED_INK_INK_COST_REDUCTION_DELTA } from './redInkCostResolver'
 import { createTutorialRedInkOffer } from './redInkResolver'
 import { applyTutorialResourceDelta } from './resourceResolver'
 
@@ -31,7 +35,7 @@ export const VERDICT_ERASE_INK_DELTA = 2
 export const VERDICT_ERASE_HEAVY_DOOM_DELTA = 1
 export const COMMON_DOCKET_TRIGGER_LIMIT = 3
 export const VERDICT_ERASE_NEXT_BATTLE_INK_DELTA = 1
-export const VERDICT_ERASE_NEXT_BATTLE_INCENSE_DELTA = 2
+export const VERDICT_ERASE_NEXT_BATTLE_INCENSE_DELTA = 1
 
 interface RegisterRuleDefinition {
   readonly id: TutorialRegisterRuleId
@@ -111,6 +115,19 @@ export const TUTORIAL_VERDICT_OPTIONS: readonly TutorialVerdictOption[] = [
   },
 ]
 
+const BASE_TUTORIAL_VERDICT_OPTIONS = TUTORIAL_VERDICT_OPTIONS.filter(
+  (option) => option.id !== 'erase_heavy_split_form',
+)
+const HEAVY_SPLIT_FORM_OPTION = TUTORIAL_VERDICT_OPTIONS.find(
+  (option) => option.id === 'erase_heavy_split_form',
+)
+
+interface EnhancedEraseSource {
+  readonly sourceId: string
+  readonly sourceNameKey: LocalizationKey
+  readonly optionNameKey: LocalizationKey
+}
+
 export interface TutorialVerdictContext {
   readonly enemyDefinitionId: EnemyId
   readonly enemyNameKey: LocalizationKey
@@ -122,6 +139,7 @@ export interface CreateTutorialVerdictOfferInput extends TutorialVerdictContext 
   readonly settlement: VictorySettlement
   readonly hasNextEncounter?: boolean
   readonly existingRegisterEntries?: readonly TutorialVerdictRegisterEntry[]
+  readonly artifacts?: ArtifactCollectionState
 }
 
 export function createInitialTutorialVerdictState(): TutorialVerdictState {
@@ -149,7 +167,21 @@ export function createTutorialVerdictOffer(
       enemyDefinitionId: input.enemyDefinitionId,
       hasNextEncounter: Boolean(input.hasNextEncounter),
       existingRegisterEntries: input.existingRegisterEntries ?? [],
+      artifacts: input.artifacts,
     }),
+  }
+}
+
+export function normalizeTutorialVerdictOffer(
+  offer: TutorialVerdictOffer | undefined,
+): TutorialVerdictOffer | undefined {
+  if (!offer) {
+    return undefined
+  }
+
+  return {
+    ...offer,
+    options: offer.options.filter(isEnabledTutorialVerdictOption),
   }
 }
 
@@ -217,6 +249,8 @@ export function resolveTutorialVerdict(
       run.nextBattleStartBonus,
       eraseResult.nextBattleStartBonus,
     ),
+    redInkInkCostReduction:
+      (run.redInkInkCostReduction ?? 0) + (eraseResult.redInkInkCostReductionDelta ?? 0),
     pendingVerdict: undefined,
     verdict: {
       ...run.verdict,
@@ -239,6 +273,7 @@ function createTutorialVerdictOptions(input: {
   readonly enemyDefinitionId: EnemyId
   readonly hasNextEncounter: boolean
   readonly existingRegisterEntries: readonly TutorialVerdictRegisterEntry[]
+  readonly artifacts?: ArtifactCollectionState
 }): readonly TutorialVerdictOption[] {
   const registerRule = getRegisterRuleForEnemy(input.enemyDefinitionId)
   const shouldHideDuplicateCommonRegister =
@@ -247,11 +282,19 @@ function createTutorialVerdictOptions(input: {
       (entry) => entry.registerRuleId === COMMON_REGISTER_RULE.id,
     )
 
-  return TUTORIAL_VERDICT_OPTIONS.filter(
+  const baseOptions = BASE_TUTORIAL_VERDICT_OPTIONS.filter(
     (option) =>
       (option.id !== 'erase_next_battle_resources' || input.hasNextEncounter) &&
       !(option.id === 'register' && shouldHideDuplicateCommonRegister),
   )
+
+  return [
+    ...baseOptions,
+    ...createEnhancedEraseOptions({
+      artifacts: input.artifacts,
+      hasNextEncounter: input.hasNextEncounter,
+    }),
+  ]
 }
 
 function createRegisterEntry(
@@ -297,12 +340,17 @@ function createVerdictRecord(
     encounterId: offer.encounterId,
     enemyDefinitionId: offer.enemyDefinitionId,
     optionId: option.id,
+    optionNameKey: option.nameKey,
     choiceId,
     eraseVariantId: option.eraseVariantId,
+    sourceType: option.sourceType,
+    sourceId: option.sourceId,
+    sourceNameKey: option.sourceNameKey,
     registerRuleId: registerRule?.id,
     fractureDelta: eraseResult?.resourceDelta.fracture ?? 0,
     inkDelta: eraseResult?.resourceDelta.ink,
     doomDelta: eraseResult?.resourceDelta.doom,
+    redInkInkCostReductionDelta: eraseResult?.redInkInkCostReductionDelta,
     maxIncenseBonusDelta: 0,
     maxFormBonusDelta: 0,
     addedCardDefinitionIds,
@@ -317,6 +365,69 @@ function createVerdictRecord(
         ? getCurrentRegisterSegmentIndex(run)
         : undefined,
   }
+}
+
+function createEnhancedEraseOptions(input: {
+  readonly artifacts?: ArtifactCollectionState
+  readonly hasNextEncounter: boolean
+}): readonly TutorialVerdictOption[] {
+  if (!input.hasNextEncounter || !HEAVY_SPLIT_FORM_OPTION) {
+    return []
+  }
+
+  const source = getHeavySplitFormSource(input.artifacts)
+
+  if (!source) {
+    return []
+  }
+
+  return [
+    {
+      ...HEAVY_SPLIT_FORM_OPTION,
+      nameKey: source.optionNameKey,
+      sourceType: 'artifact',
+      sourceId: source.sourceId,
+      sourceNameKey: source.sourceNameKey,
+    },
+  ]
+}
+
+function getHeavySplitFormSource(
+  artifacts: ArtifactCollectionState | undefined,
+): EnhancedEraseSource | undefined {
+  const artifactStates = artifacts?.artifacts ?? []
+  const fractureNeedle = artifactStates.find(
+    (artifact) => artifact.definitionId === FRACTURE_NEEDLE_ARTIFACT_ID,
+  )
+
+  if (fractureNeedle?.bindingStatus === 'bound') {
+    return {
+      sourceId: FRACTURE_NEEDLE_ARTIFACT_ID,
+      sourceNameKey: 'artifact.fracture_needle.name',
+      optionNameKey: 'verdict.erase.heavy_split_form.fracture_needle.name',
+    }
+  }
+
+  const doomBell = artifactStates.find(
+    (artifact) => artifact.definitionId === DOOM_BELL_ARTIFACT_ID,
+  )
+
+  if (doomBell) {
+    return {
+      sourceId: DOOM_BELL_ARTIFACT_ID,
+      sourceNameKey: 'artifact.doom_bell.name',
+      optionNameKey: 'verdict.erase.heavy_split_form.doom_bell.name',
+    }
+  }
+
+  return undefined
+}
+
+function isEnabledTutorialVerdictOption(option: TutorialVerdictOption) {
+  return (
+    option.id !== 'erase_heavy_split_form' ||
+    Boolean(option.sourceType && option.sourceId && option.sourceNameKey)
+  )
 }
 
 function getCurrentRegisterSegmentIndex(run: TutorialRunState) {
@@ -338,6 +449,7 @@ interface EraseVariantResult {
   }
   readonly addedCardDefinitionIds: readonly CardId[]
   readonly nextBattleStartBonus?: TutorialNextBattleStartBonus
+  readonly redInkInkCostReductionDelta?: number
   readonly artifacts: TutorialRunState['artifacts']
 }
 
@@ -352,6 +464,7 @@ function resolveEraseVariant(
         ink: VERDICT_ERASE_INK_DELTA,
       },
       addedCardDefinitionIds: [],
+      redInkInkCostReductionDelta: RED_INK_INK_COST_REDUCTION_DELTA,
       artifacts: run.artifacts,
     }
   }

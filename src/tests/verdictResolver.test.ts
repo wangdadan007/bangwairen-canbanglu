@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import {
+  addArtifactToCollection,
   advanceTutorialRun,
   createInitialBattleState,
+  createInitialArtifactCollection,
   createInitialTutorialRunState,
   reduceBattleState,
   resolveTutorialVerdict,
 } from '../core'
 import { gameData } from '../data'
-import type { EnemyDefinition } from '../types'
+import type { ArtifactBindingStatus, ArtifactId, EnemyDefinition } from '../types'
 
 describe('T12 verdict MVP', () => {
   it('creates a verdict offer only after catalogue settlement with a named target', () => {
@@ -30,6 +32,8 @@ describe('T12 verdict MVP', () => {
       createVerdictContext(paperWraith),
     )
 
+    const catalogueOptionIds = catalogueRun.pendingVerdict?.options.map((option) => option.id)
+
     expect(catalogueRun.pendingVerdict).toEqual(
       expect.objectContaining({
         encounterId: 'encounter_tutorial_paper_wraith',
@@ -39,11 +43,11 @@ describe('T12 verdict MVP', () => {
           expect.objectContaining({ id: 'red_ink', choiceId: 'red_ink' }),
           expect.objectContaining({ id: 'erase', choiceId: 'erase' }),
           expect.objectContaining({ id: 'erase_gain_ink', choiceId: 'erase' }),
-          expect.objectContaining({ id: 'erase_heavy_split_form', choiceId: 'erase' }),
           expect.objectContaining({ id: 'erase_next_battle_resources', choiceId: 'erase' }),
         ]),
       }),
     )
+    expect(catalogueOptionIds).not.toContain('erase_heavy_split_form')
     expect(catalogueRun.pendingVerdict?.revealedNameKeys).toEqual([
       'enemy.paper_wraith.name_slot.0',
       'enemy.paper_wraith.name_slot.1',
@@ -52,9 +56,12 @@ describe('T12 verdict MVP', () => {
   })
 
   it('does not offer next-battle erase payoff after the final encounter', () => {
-    const run = createInitialTutorialRunState(gameData.tutorialUnlocks, [
-      'encounter_boss_registry_thief',
-    ])
+    const run = {
+      ...createInitialTutorialRunState(gameData.tutorialUnlocks, [
+        'encounter_boss_registry_thief',
+      ]),
+      artifacts: createRunArtifacts('artifact_doom_bell'),
+    }
     const boss = gameData.enemies.find((enemy) => enemy.id === 'enemy_registry_thief')!
     const catalogueRun = advanceTutorialRun(
       run,
@@ -67,6 +74,9 @@ describe('T12 verdict MVP', () => {
 
     expect(catalogueRun.pendingVerdict?.options.map((option) => option.id)).not.toContain(
       'erase_next_battle_resources',
+    )
+    expect(catalogueRun.pendingVerdict?.options.map((option) => option.id)).not.toContain(
+      'erase_heavy_split_form',
     )
   })
 
@@ -246,7 +256,6 @@ describe('T12 verdict MVP', () => {
 
   it('resolves the first chapter erase payoff variants', () => {
     const inkRun = resolveTutorialVerdict(createVerdictRun(), 'erase_gain_ink')
-    const heavyRun = resolveTutorialVerdict(createVerdictRun(), 'erase_heavy_split_form')
     const nextBattleRun = resolveTutorialVerdict(createVerdictRun(), 'erase_next_battle_resources')
 
     expect(inkRun.resources).toEqual({
@@ -260,8 +269,72 @@ describe('T12 verdict MVP', () => {
         choiceId: 'erase',
         eraseVariantId: 'erase_gain_ink',
         inkDelta: 2,
+        redInkInkCostReductionDelta: 1,
       }),
     )
+    expect(inkRun.redInkInkCostReduction).toBe(1)
+    expect(nextBattleRun.resources.fracture).toBe(1)
+    expect(nextBattleRun.nextBattleStartBonus).toEqual({
+      ink: 1,
+      incense: 1,
+      openingHandCardDefinitionIds: [],
+    })
+    expect(nextBattleRun.verdict.records[0]).toEqual(
+      expect.objectContaining({
+        eraseVariantId: 'erase_next_battle_resources',
+        nextBattleStartBonus: {
+          ink: 1,
+          incense: 1,
+        },
+      }),
+    )
+  })
+
+  it('gates heavy split form behind verdict-modifier artifacts', () => {
+    const paperWraith = gameData.enemies[0]
+    const baseRun = createVerdictRun(paperWraith)
+    const unboundNeedleRun = createVerdictRun(
+      paperWraith,
+      createRunArtifacts('artifact_fracture_needle', 'unbound'),
+    )
+    const boundNeedleRun = createVerdictRun(
+      paperWraith,
+      createRunArtifacts('artifact_fracture_needle', 'bound'),
+    )
+    const doomBellRun = createVerdictRun(
+      paperWraith,
+      createRunArtifacts('artifact_doom_bell', 'unbound'),
+    )
+
+    expect(baseRun.pendingVerdict?.options.map((option) => option.id)).not.toContain(
+      'erase_heavy_split_form',
+    )
+    expect(unboundNeedleRun.pendingVerdict?.options.map((option) => option.id)).not.toContain(
+      'erase_heavy_split_form',
+    )
+    expect(boundNeedleRun.pendingVerdict?.options).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'erase_heavy_split_form',
+          nameKey: 'verdict.erase.heavy_split_form.fracture_needle.name',
+          sourceType: 'artifact',
+          sourceId: 'artifact_fracture_needle',
+        }),
+      ]),
+    )
+    expect(doomBellRun.pendingVerdict?.options).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 'erase_heavy_split_form',
+          nameKey: 'verdict.erase.heavy_split_form.doom_bell.name',
+          sourceType: 'artifact',
+          sourceId: 'artifact_doom_bell',
+        }),
+      ]),
+    )
+
+    const heavyRun = resolveTutorialVerdict(doomBellRun, 'erase_heavy_split_form')
+
     expect(heavyRun.resources).toEqual({
       ink: 0,
       doom: 1,
@@ -270,27 +343,16 @@ describe('T12 verdict MVP', () => {
     expect(heavyRun.deckDefinitionIds.slice(-1)).toEqual(['card_heavy_split_form_talisman'])
     expect(heavyRun.verdict.records[0]).toEqual(
       expect.objectContaining({
+        optionNameKey: 'verdict.erase.heavy_split_form.doom_bell.name',
         eraseVariantId: 'erase_heavy_split_form',
+        sourceType: 'artifact',
+        sourceId: 'artifact_doom_bell',
+        sourceNameKey: 'artifact.doom_bell.name',
         doomDelta: 1,
         nextBattleStartBonus: {
           ink: 0,
           incense: 0,
           openingHandCardDefinitionIds: ['card_heavy_split_form_talisman'],
-        },
-      }),
-    )
-    expect(nextBattleRun.resources.fracture).toBe(1)
-    expect(nextBattleRun.nextBattleStartBonus).toEqual({
-      ink: 1,
-      incense: 2,
-      openingHandCardDefinitionIds: [],
-    })
-    expect(nextBattleRun.verdict.records[0]).toEqual(
-      expect.objectContaining({
-        eraseVariantId: 'erase_next_battle_resources',
-        nextBattleStartBonus: {
-          ink: 1,
-          incense: 2,
         },
       }),
     )
@@ -443,15 +505,49 @@ describe('T12 verdict MVP', () => {
   })
 })
 
-function createVerdictRun(enemy: EnemyDefinition = gameData.enemies[0]) {
+function createVerdictRun(
+  enemy: EnemyDefinition = gameData.enemies[0],
+  artifacts = createInitialArtifactCollection(),
+) {
   return advanceTutorialRun(
-    createInitialTutorialRunState(gameData.tutorialUnlocks),
+    {
+      ...createInitialTutorialRunState(gameData.tutorialUnlocks),
+      artifacts,
+    },
     gameData.encounters,
     gameData.tutorialUnlocks,
     'catalogue',
     gameData.cards,
     createVerdictContext(enemy),
   )
+}
+
+function createRunArtifacts(
+  artifactDefinitionId: ArtifactId,
+  bindingStatus: ArtifactBindingStatus = 'unbound',
+) {
+  const artifactDefinition = gameData.artifacts.find(
+    (definition) => definition.id === artifactDefinitionId,
+  )
+
+  if (!artifactDefinition) {
+    throw new Error(`Missing artifact definition: ${artifactDefinitionId}`)
+  }
+
+  const collection = addArtifactToCollection(createInitialArtifactCollection(), artifactDefinition)
+
+  return {
+    artifacts: collection.artifacts.map((artifact) =>
+      artifact.definitionId === artifactDefinitionId
+        ? {
+            ...artifact,
+            bindingStatus,
+            bindProgress:
+              bindingStatus === 'bound' ? artifact.bindCondition.requiredCount : artifact.bindProgress,
+          }
+        : artifact,
+    ),
+  }
 }
 
 function createVerdictContext(enemy: EnemyDefinition) {

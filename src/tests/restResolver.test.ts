@@ -159,6 +159,27 @@ describe('T21 rest resolver', () => {
         createdRedInkOffer: true,
       }),
     )
+
+    const discountedRun = {
+      ...redInkRun,
+      redInkInkCostReduction: 1,
+    }
+    const discountedNextRun = resolveTutorialRest(discountedRun, {
+      optionId: 'red_ink_service',
+      routeNodeId: restRouteNodeId,
+    })
+
+    expect(discountedNextRun.resources.ink).toBe(0)
+    expect(discountedNextRun.redInkInkCostReduction).toBe(0)
+    expect(discountedNextRun.pendingRedInk).toBeDefined()
+    expect(discountedNextRun.rests.records[0]).toEqual(
+      expect.objectContaining({
+        optionId: 'red_ink_service',
+        inkDelta: 0,
+        redInkInkCostReductionApplied: 1,
+        createdRedInkOffer: true,
+      }),
+    )
   })
 
   it('clears one pending artifact backlash through the rest maintenance option', () => {

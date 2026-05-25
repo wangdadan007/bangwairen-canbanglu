@@ -1,6 +1,7 @@
 import type { CardId, EncounterId, EnemyId, LocalizationKey } from './common'
 
 export type TutorialVerdictChoiceId = 'register' | 'red_ink' | 'erase'
+export type TutorialVerdictOptionSourceType = 'artifact' | 'event'
 export type TutorialRegisterRuleId =
   | 'register_common_docket'
   | 'register_incense_clerk'
@@ -26,6 +27,9 @@ export interface TutorialVerdictOption {
   readonly eraseVariantId?: TutorialEraseVariantId
   readonly nameKey: LocalizationKey
   readonly rulesTextKey: LocalizationKey
+  readonly sourceType?: TutorialVerdictOptionSourceType
+  readonly sourceId?: string
+  readonly sourceNameKey?: LocalizationKey
 }
 
 export interface TutorialVerdictOffer {
@@ -56,12 +60,17 @@ export interface TutorialVerdictRecord {
   readonly encounterId: EncounterId
   readonly enemyDefinitionId: EnemyId
   readonly optionId: TutorialVerdictOptionId
+  readonly optionNameKey?: LocalizationKey
   readonly choiceId: TutorialVerdictChoiceId
   readonly eraseVariantId?: TutorialEraseVariantId
+  readonly sourceType?: TutorialVerdictOptionSourceType
+  readonly sourceId?: string
+  readonly sourceNameKey?: LocalizationKey
   readonly registerRuleId?: TutorialRegisterRuleId
   readonly fractureDelta: number
   readonly inkDelta?: number
   readonly doomDelta?: number
+  readonly redInkInkCostReductionDelta?: number
   readonly maxIncenseBonusDelta: number
   readonly maxFormBonusDelta: number
   readonly addedCardDefinitionIds?: readonly CardId[]

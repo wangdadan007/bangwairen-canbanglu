@@ -6,6 +6,7 @@ import type {
   EventOptionDefinition,
   TutorialRunState,
 } from '../../types'
+import { getEventInkCost, getRedInkInkCostReduction } from '../../core'
 
 export interface EventPageProps {
   readonly event: EventDefinition
@@ -38,6 +39,9 @@ export function EventPage({
       <div className="event-state-row" aria-label="事件相关状态">
         <span>牌组 {run.deckCards.length} 张</span>
         <span>墨 {run.resources.ink}</span>
+        {run.redInkInkCostReduction ? (
+          <span>朱批墨减免 {run.redInkInkCostReduction}</span>
+        ) : null}
         <span>劫数 {run.resources.doom}</span>
         <span>榜裂 {run.resources.fracture}</span>
         <span>已历事件 {run.events.records.length} 次</span>
@@ -81,7 +85,7 @@ export function EventPage({
                 </span>
               </span>
               <span className="card-tags">
-                {getOptionEffectLabels(option, cardDefinitionsById, t).map((label) => (
+                {getOptionEffectLabels(option, cardDefinitionsById, run, t).map((label) => (
                   <span key={label}>{label}</span>
                 ))}
               </span>
@@ -120,6 +124,7 @@ function getOptionFlagLabel(flags: readonly EventFlag[]) {
 function getOptionEffectLabels(
   option: EventOptionDefinition,
   cardDefinitionsById: ReadonlyMap<CardId, CardDefinition>,
+  run: TutorialRunState,
   t: (key: string | undefined) => string,
 ) {
   return option.effects.map((effect) => {
@@ -144,7 +149,15 @@ function getOptionEffectLabels(
     }
 
     if (effect.type === 'SPEND_INK') {
-      return `墨 -${effect.amount}`
+      const createsRedInkOffer = option.effects.some(
+        (candidate) => candidate.type === 'CREATE_RED_INK_OFFER',
+      )
+      const reduction = createsRedInkOffer
+        ? Math.min(effect.amount, getRedInkInkCostReduction(run))
+        : 0
+      const inkCost = effect.amount - reduction
+
+      return reduction > 0 ? `墨 -${inkCost}（减免 ${reduction}）` : `墨 -${inkCost}`
     }
 
     if (effect.type === 'ADD_DOOM') {
@@ -165,9 +178,10 @@ function getUnavailableOptionReason(option: EventOptionDefinition, run: Tutorial
   }
 
   const spendInk = option.effects.find((effect) => effect.type === 'SPEND_INK')
+  const inkCost = getEventInkCost(option.effects, run)
 
-  if (spendInk && run.resources.ink < spendInk.amount) {
-    return `墨不足：需要 ${spendInk.amount}`
+  if (spendInk && run.resources.ink < inkCost) {
+    return `墨不足：需要 ${inkCost}`
   }
 
   const removeCard = option.effects.find((effect) => effect.type === 'REMOVE_CARD')

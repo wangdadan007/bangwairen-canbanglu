@@ -26,6 +26,7 @@ export interface TutorialRestRecord {
   readonly maintainedArtifactDefinitionId?: ArtifactId
   readonly clearedArtifactBacklash: boolean
   readonly inkDelta: number
+  readonly redInkInkCostReductionApplied?: number
   readonly formRestored: number
   readonly playerCurrentFormAfter: number
   readonly playerMaxFormAfter: number

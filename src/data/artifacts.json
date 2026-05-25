@@ -335,13 +335,13 @@
     "unlockStage": "stage_run_resources",
     "tags": ["chapter_one", "doom", "verdict"],
     "baseEffect": {
-      "type": "erase_reward_bonus",
+      "type": "erase_heavy_verdict_option",
       "amount": 1,
       "descriptionKey": "artifact.doom_bell.effect.base"
     },
     "boundEffect": {
-      "type": "erase_reward_bonus",
-      "amount": 2,
+      "type": "erase_heavy_verdict_option",
+      "amount": 1,
       "descriptionKey": "artifact.doom_bell.effect.bound"
     },
     "bindCondition": {

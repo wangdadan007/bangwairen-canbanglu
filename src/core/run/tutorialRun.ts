@@ -89,6 +89,7 @@ export function createInitialTutorialRunState(
     redInkRecords: [],
     artifactOfferRecords: [],
     incenseSealOfferRecords: [],
+    redInkInkCostReduction: 0,
   }
 }
 
@@ -188,6 +189,8 @@ export function advanceTutorialRun(
   )
   const nextEncounterIndex = run.currentEncounterIndex + 1
   const isComplete = nextEncounterIndex >= run.encounterIds.length
+  const nextArtifacts = advanceArtifactsAfterBattle(run.artifacts, artifactProgress)
+  const nextResources = resources ?? run.resources
 
   return {
     ...run,
@@ -198,8 +201,8 @@ export function advanceTutorialRun(
     currency: {
       incenseMoney: run.currency.incenseMoney + incenseMoneyReward,
     },
-    artifacts: advanceArtifactsAfterBattle(run.artifacts, artifactProgress),
-    resources: resources ?? run.resources,
+    artifacts: nextArtifacts,
+    resources: nextResources,
     incenseSeals: incenseSeals ?? run.incenseSeals,
     playerForm: playerForm ? normalizeTutorialPlayerFormState(playerForm) : run.playerForm,
     verdict: registerEntries
@@ -215,6 +218,7 @@ export function advanceTutorialRun(
           settlement,
           hasNextEncounter: !isComplete,
           existingRegisterEntries: registerEntries ?? run.verdict.registerEntries,
+          artifacts: nextArtifacts,
           ...verdictContext,
         })
       : undefined,

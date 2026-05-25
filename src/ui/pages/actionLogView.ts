@@ -1714,13 +1714,25 @@ function getVerdictRecordDetail(record: TutorialRunState['verdict']['records'][n
   }
 
   if (record.eraseVariantId === 'erase_gain_ink') {
-    return `榜裂 +${record.fractureDelta}，墨 +${record.inkDelta ?? 0}。`
+    const reductionText = record.redInkInkCostReductionDelta
+      ? `，下一次休整 / 事件朱批墨消耗 -${record.redInkInkCostReductionDelta}`
+      : ''
+
+    return `榜裂 +${record.fractureDelta}，墨 +${
+      record.inkDelta ?? 0
+    }${reductionText}。`
   }
 
   if (record.eraseVariantId === 'erase_next_battle_resources') {
     return `榜裂 +${record.fractureDelta}，下一战开局墨 +${
       record.nextBattleStartBonus?.ink ?? 0
     }、首回合香火 +${record.nextBattleStartBonus?.incense ?? 0}。`
+  }
+
+  if (record.eraseVariantId === 'erase_heavy_split_form') {
+    return `${getVerdictSourceLabel(record) ?? '法宝强化'}：榜裂 +${
+      record.fractureDelta
+    }，劫数 +${record.doomDelta ?? 0}，重裂形符已入牌组，下一战开局上手。`
   }
 
   const openingCards = record.nextBattleStartBonus?.openingHandCardDefinitionIds
@@ -1732,6 +1744,18 @@ function getVerdictRecordDetail(record: TutorialRunState['verdict']['records'][n
   }
 
   return `榜裂 +${record.fractureDelta}，强收益已经写入牌组。`
+}
+
+function getVerdictSourceLabel(record: TutorialRunState['verdict']['records'][number]) {
+  if (record.sourceId === 'artifact_fracture_needle') {
+    return '裂榜针强化'
+  }
+
+  if (record.sourceId === 'artifact_doom_bell') {
+    return '终劫铃强化'
+  }
+
+  return undefined
 }
 
 function getCardName(

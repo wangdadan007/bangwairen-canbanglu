@@ -3,6 +3,7 @@ import { normalizeRunDeckCards } from './deckResolver'
 import { createInitialIncenseSealState } from './incenseSealResolver'
 import { normalizeTutorialPlayerFormState } from './playerFormResolver'
 import { isPlayableRoleId } from './playerRoleResolver'
+import { normalizeTutorialVerdictOffer } from './verdictResolver'
 import {
   type KeyValueStorage,
   removeStorageItem,
@@ -124,6 +125,7 @@ function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
     roleId: isPlayableRoleId(value.roleId) ? value.roleId : undefined,
     playerForm: normalizeTutorialPlayerFormState(value.playerForm),
     incenseSeals: value.incenseSeals ?? createInitialIncenseSealState(),
+    pendingVerdict: normalizeTutorialVerdictOffer(value.pendingVerdict),
     pendingArtifactOffer: value.pendingArtifactOffer,
     pendingIncenseSealOffer: value.pendingIncenseSealOffer,
     rewards: value.rewards ?? [],
@@ -131,6 +133,10 @@ function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
     artifactOfferRecords: value.artifactOfferRecords ?? [],
     incenseSealOfferRecords: value.incenseSealOfferRecords ?? [],
     nextBattleStartBonus: value.nextBattleStartBonus,
+    redInkInkCostReduction:
+      typeof value.redInkInkCostReduction === 'number'
+        ? Math.max(0, value.redInkInkCostReduction)
+        : 0,
   }
 }
 

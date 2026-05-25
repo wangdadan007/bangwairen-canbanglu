@@ -14,6 +14,11 @@ import {
   RESTORE_PLAYER_FORM_AMOUNT,
   restoreTutorialPlayerForm,
 } from './playerFormResolver'
+import {
+  getAppliedRedInkInkCostReduction,
+  getDiscountedRedInkInkCost,
+  getRemainingRedInkInkCostReduction,
+} from './redInkCostResolver'
 import { createTutorialRedInkOffer } from './redInkResolver'
 import {
   applyTutorialResourceDelta,
@@ -24,6 +29,7 @@ export const REST_OPTION_RESTORE_FORM: TutorialRestOptionId = 'restore_form'
 export const REST_OPTION_REMOVE_CARD: TutorialRestOptionId = 'remove_card'
 export const REST_OPTION_RED_INK_SERVICE: TutorialRestOptionId = 'red_ink_service'
 export const REST_OPTION_MAINTAIN_ARTIFACT: TutorialRestOptionId = 'maintain_artifact'
+export const REST_RED_INK_SERVICE_BASE_INK_COST = 1
 
 export const TUTORIAL_REST_OPTIONS: readonly TutorialRestOption[] = [
   {
@@ -165,8 +171,15 @@ export function resolveTutorialRest(
     }
   }
 
-  if (!canSpendTutorialResources(run.resources, { ink: -1 })) {
-    throw new Error('Rest red ink service requires 1 ink')
+  const redInkInkCost = getRestRedInkServiceInkCost(run)
+  const redInkInkDelta = redInkInkCost === 0 ? 0 : -redInkInkCost
+  const redInkInkCostReductionApplied = getAppliedRedInkInkCostReduction(
+    run,
+    REST_RED_INK_SERVICE_BASE_INK_COST,
+  )
+
+  if (!canSpendTutorialResources(run.resources, { ink: -redInkInkCost })) {
+    throw new Error(`Rest red ink service requires ${redInkInkCost} ink`)
   }
 
   const record = createRestRecord(run, input, {
@@ -175,14 +188,19 @@ export function resolveTutorialRest(
     playerMaxFormAfter: run.playerForm.max,
     createdRedInkOffer: true,
     clearedArtifactBacklash: false,
-    inkDelta: -1,
+    inkDelta: redInkInkDelta,
+    redInkInkCostReductionApplied,
   })
 
   return {
     ...run,
     resources: applyTutorialResourceDelta(run.resources, {
-      ink: -1,
+      ink: redInkInkDelta,
     }),
+    redInkInkCostReduction: getRemainingRedInkInkCostReduction(
+      run,
+      REST_RED_INK_SERVICE_BASE_INK_COST,
+    ),
     pendingRedInk: createTutorialRedInkOffer(run),
     rests: {
       records: [...run.rests.records, record],
@@ -212,6 +230,10 @@ function isRestOptionAvailable(optionId: TutorialRestOptionId, run: TutorialRunS
   return true
 }
 
+export function getRestRedInkServiceInkCost(run: TutorialRunState) {
+  return getDiscountedRedInkInkCost(run, REST_RED_INK_SERVICE_BASE_INK_COST)
+}
+
 function createRestRecord(
   run: TutorialRunState,
   input: ResolveTutorialRestInput,
@@ -222,6 +244,7 @@ function createRestRecord(
     readonly maintainedArtifactDefinitionId?: string
     readonly clearedArtifactBacklash: boolean
     readonly inkDelta: number
+    readonly redInkInkCostReductionApplied?: number
     readonly formRestored: number
     readonly playerCurrentFormAfter: number
     readonly playerMaxFormAfter: number
@@ -238,6 +261,9 @@ function createRestRecord(
     maintainedArtifactDefinitionId: result.maintainedArtifactDefinitionId,
     clearedArtifactBacklash: result.clearedArtifactBacklash,
     inkDelta: result.inkDelta,
+    ...(result.redInkInkCostReductionApplied
+      ? { redInkInkCostReductionApplied: result.redInkInkCostReductionApplied }
+      : {}),
     formRestored: result.formRestored,
     playerCurrentFormAfter: result.playerCurrentFormAfter,
     playerMaxFormAfter: result.playerMaxFormAfter,

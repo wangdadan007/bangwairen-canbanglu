@@ -167,6 +167,7 @@ export interface TutorialEventRecord {
   readonly removedDeckCardIds: readonly RunDeckCardId[]
   readonly removedCardDefinitionIds: readonly CardId[]
   readonly inkDelta: number
+  readonly redInkInkCostReductionApplied?: number
   readonly doomDelta: number
   readonly fractureDelta: number
   readonly createdRedInkOffer: boolean
@@ -207,6 +208,7 @@ export interface TutorialRunState {
   readonly artifactOfferRecords: readonly TutorialArtifactRecord[]
   readonly incenseSealOfferRecords: readonly TutorialIncenseSealOfferRecord[]
   readonly nextBattleStartBonus?: TutorialNextBattleStartBonus
+  readonly redInkInkCostReduction?: number
 }
 
 export interface TutorialRunSummary {

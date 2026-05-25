@@ -118,6 +118,47 @@ describe('T29 settings and local save MVP', () => {
     expect(lastRestoredDeckCard?.id).not.toBe(duplicatedCard.id)
   })
 
+  it('removes legacy ungated heavy split form from saved pending verdicts', () => {
+    const storage = createMemoryStorage()
+    const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const legacyRun = {
+      ...run,
+      pendingVerdict: {
+        id: 'verdict_offer_legacy',
+        encounterId: 'encounter_tutorial_paper_wraith',
+        enemyDefinitionId: 'enemy_paper_wraith',
+        enemyNameKey: 'enemy.paper_wraith.name',
+        revealedNameKeys: [],
+        options: [
+          {
+            id: 'erase',
+            choiceId: 'erase',
+            eraseVariantId: 'erase',
+            nameKey: 'verdict.erase.name',
+            rulesTextKey: 'verdict.erase.rules',
+          },
+          {
+            id: 'erase_heavy_split_form',
+            choiceId: 'erase',
+            eraseVariantId: 'erase_heavy_split_form',
+            nameKey: 'verdict.erase.heavy_split_form.name',
+            rulesTextKey: 'verdict.erase.heavy_split_form.rules',
+          },
+        ],
+      } as const,
+    }
+    const save = createTutorialSaveData({
+      run: legacyRun,
+      route: createInitialRouteState(gameData.routes[0]),
+    })
+
+    writeTutorialSaveData(storage, save)
+
+    expect(readTutorialSaveData(storage)?.run.pendingVerdict?.options.map((option) => option.id)).toEqual([
+      'erase',
+    ])
+  })
+
   it('falls back safely for incompatible or malformed saves', () => {
     const storage = createMemoryStorage()
 

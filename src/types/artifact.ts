@@ -28,6 +28,7 @@ export type ArtifactEffectType =
   | 'gain_ink_after_ask_name'
   | 'red_ink_annotation_bonus'
   | 'erase_reward_bonus'
+  | 'erase_heavy_verdict_option'
 
 export type ArtifactBacklashEffectType =
   | 'add_temporary_card'

@@ -198,9 +198,11 @@ describe('T17 artifact foundation', () => {
       },
     )
 
-    expect(lianjinMidOfferRun.pendingArtifactOffer?.options[0].artifactDefinitionId).toBe(
+    expect(lianjinMidOfferRun.pendingArtifactOffer?.options.map((option) => option.artifactDefinitionId)).toEqual([
+      'artifact_fracture_needle',
+      'artifact_doom_bell',
       'artifact_seal_door_tablet',
-    )
+    ])
     expect(lianjinBossOfferRun.pendingArtifactOffer?.options.map((option) => option.artifactDefinitionId)).toEqual([
       'artifact_fracture_needle',
       'artifact_doom_bell',

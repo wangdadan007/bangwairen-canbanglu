@@ -283,7 +283,9 @@ function getVerdictRecordSubjectId(record: TutorialVerdictRecord) {
   }
 
   if (record.choiceId === 'erase') {
-    return `${record.enemyDefinitionId}:${record.eraseVariantId ?? record.optionId}`
+    const sourceSuffix = record.sourceId ? `:${record.sourceId}` : ''
+
+    return `${record.enemyDefinitionId}:${record.eraseVariantId ?? record.optionId}${sourceSuffix}`
   }
 
   return record.enemyDefinitionId
@@ -293,8 +295,12 @@ function getVerdictRecordNameKey(
   record: TutorialVerdictRecord,
   run: TutorialRunState,
 ): LocalizationKey | undefined {
+  if (record.choiceId === 'erase') {
+    return record.optionNameKey ?? getEraseVerdictNameKey(record)
+  }
+
   if (record.choiceId !== 'register') {
-    return undefined
+    return record.optionNameKey
   }
 
   return run.verdict.registerEntries.find(
@@ -302,6 +308,30 @@ function getVerdictRecordNameKey(
       entry.registerRuleId === record.registerRuleId ||
       entry.enemyDefinitionId === record.enemyDefinitionId,
   )?.ruleNameKey
+}
+
+function getEraseVerdictNameKey(record: TutorialVerdictRecord): LocalizationKey | undefined {
+  if (record.eraseVariantId === 'erase_heavy_split_form') {
+    if (record.sourceId === 'artifact_fracture_needle') {
+      return 'verdict.erase.heavy_split_form.fracture_needle.name'
+    }
+
+    if (record.sourceId === 'artifact_doom_bell') {
+      return 'verdict.erase.heavy_split_form.doom_bell.name'
+    }
+
+    return 'verdict.erase.heavy_split_form.name'
+  }
+
+  if (record.eraseVariantId === 'erase_gain_ink') {
+    return 'verdict.erase.gain_ink.name'
+  }
+
+  if (record.eraseVariantId === 'erase_next_battle_resources') {
+    return 'verdict.erase.next_battle_resources.name'
+  }
+
+  return 'verdict.erase.name'
 }
 
 function getRouteEndingSubjectIds(run: TutorialRunState) {

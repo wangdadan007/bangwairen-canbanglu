@@ -14,6 +14,7 @@ import type {
   TutorialRestOptionId,
   TutorialRunState,
 } from '../../types'
+import { getRestRedInkServiceInkCost } from '../../core'
 import { RunReadinessPanel } from './RunReadinessPanel'
 
 export interface RestPageProps {
@@ -62,6 +63,9 @@ export function RestPage({
           己形 {run.playerForm.current} / {run.playerForm.max}
         </span>
         <span>墨 {run.resources.ink}</span>
+        {run.redInkInkCostReduction ? (
+          <span>朱批墨减免 {run.redInkInkCostReduction}</span>
+        ) : null}
         <span>劫数 {run.resources.doom}</span>
         <span>榜裂 {run.resources.fracture}</span>
         <span>法宝 {visibleArtifacts.length} 件</span>
@@ -138,7 +142,9 @@ export function RestPage({
       <div className="rest-options">
         {options.map((option) => {
           const isRemoveCard = option.id === 'remove_card'
-          const hasEnoughInk = option.id !== 'red_ink_service' || run.resources.ink >= 1
+          const redInkInkCost = getRestRedInkServiceInkCost(run)
+          const hasEnoughInk =
+            option.id !== 'red_ink_service' || run.resources.ink >= redInkInkCost
           const canChoose = (!isRemoveCard || Boolean(selectedCard)) && hasEnoughInk
           const disabledReason = canChoose
             ? undefined
@@ -190,8 +196,12 @@ function getRestDisabledReason(
     return '请先在当前牌组里选一张牌'
   }
 
-  if (optionId === 'red_ink_service' && run.resources.ink < 1) {
-    return '墨不足，需 1 墨'
+  if (optionId === 'red_ink_service') {
+    const inkCost = getRestRedInkServiceInkCost(run)
+
+    if (run.resources.ink < inkCost) {
+      return `墨不足，需 ${inkCost} 墨`
+    }
   }
 
   return '当前不能休整'
@@ -264,6 +274,13 @@ function getRestOptionLabel(
     ).length
 
     return `反噬预警 ${pendingBacklashCount}`
+  }
+
+  if (optionId === 'red_ink_service') {
+    const inkCost = getRestRedInkServiceInkCost(run)
+    const costLabel = inkCost === 0 ? '本次免墨' : `需 ${inkCost} 墨`
+
+    return `进入朱批，${costLabel}`
   }
 
   return '进入朱批'

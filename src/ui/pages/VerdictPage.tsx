@@ -5,6 +5,7 @@ import type {
   TutorialVerdictOptionId,
   TutorialVerdictState,
 } from '../../types'
+import { normalizeTutorialVerdictOffer } from '../../core'
 import { useEffect, useState } from 'react'
 
 export interface VerdictPageProps {
@@ -17,8 +18,11 @@ export interface VerdictPageProps {
 
 export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictPageProps) {
   const [isEraseOpen, setIsEraseOpen] = useState(false)
-  const eraseOptions = offer.options.filter((option) => option.choiceId === 'erase')
-  const directOptions = offer.options.filter((option) => option.choiceId !== 'erase')
+  const visibleOffer = normalizeTutorialVerdictOffer(offer) ?? offer
+  const eraseOptions = visibleOffer.options.filter((option) => option.choiceId === 'erase')
+  const baseEraseOptions = eraseOptions.filter((option) => !option.sourceType)
+  const enhancedEraseOptions = eraseOptions.filter((option) => option.sourceType)
+  const directOptions = visibleOffer.options.filter((option) => option.choiceId !== 'erase')
   const shouldGroupErase = eraseOptions.length > 1
   const primaryOptionCount = directOptions.length + (shouldGroupErase ? 1 : eraseOptions.length)
 
@@ -60,7 +64,7 @@ export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictP
           >
             <strong>{t(option.nameKey)}</strong>
             <span>{t(option.rulesTextKey)}</span>
-            <small>{getVerdictImpact(option, offer, t)}</small>
+            <small>{getVerdictImpact(option, visibleOffer, resources, t)}</small>
           </button>
         ))}
         {shouldGroupErase ? (
@@ -77,17 +81,31 @@ export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictP
             </button>
             {isEraseOpen ? (
               <div className="verdict-erase-options" aria-label="削籍判词">
-                {eraseOptions.map((option) => (
-                  <button
-                    className={`verdict-option erase ${option.id} verdict-erase-choice`}
+                {baseEraseOptions.length ? (
+                  <div className="verdict-erase-section-label">基础判词</div>
+                ) : null}
+                {baseEraseOptions.map((option) => (
+                  <EraseOptionButton
                     key={option.id}
-                    type="button"
-                    onClick={() => onChoose(option.id)}
-                  >
-                    <strong>{t(option.nameKey)}</strong>
-                    <span>{t(option.rulesTextKey)}</span>
-                    <small>{getVerdictImpact(option, offer, t)}</small>
-                  </button>
+                    offer={visibleOffer}
+                    option={option}
+                    resources={resources}
+                    t={t}
+                    onChoose={onChoose}
+                  />
+                ))}
+                {enhancedEraseOptions.length ? (
+                  <div className="verdict-erase-section-label">法宝强化</div>
+                ) : null}
+                {enhancedEraseOptions.map((option) => (
+                  <EraseOptionButton
+                    key={`${option.id}:${option.sourceId ?? 'source'}`}
+                    offer={visibleOffer}
+                    option={option}
+                    resources={resources}
+                    t={t}
+                    onChoose={onChoose}
+                  />
                 ))}
               </div>
             ) : null}
@@ -102,12 +120,38 @@ export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictP
             >
               <strong>{t(option.nameKey)}</strong>
               <span>{t(option.rulesTextKey)}</span>
-              <small>{getVerdictImpact(option, offer, t)}</small>
+              <small>{getVerdictImpact(option, visibleOffer, resources, t)}</small>
             </button>
           ))
         )}
       </div>
     </section>
+  )
+}
+
+function EraseOptionButton({
+  offer,
+  option,
+  resources,
+  t,
+  onChoose,
+}: {
+  readonly offer: TutorialVerdictOffer
+  readonly option: TutorialVerdictOption
+  readonly resources: TutorialResourceState
+  readonly t: VerdictPageProps['t']
+  readonly onChoose: VerdictPageProps['onChoose']
+}) {
+  return (
+    <button
+      className={`verdict-option erase ${option.id} verdict-erase-choice`}
+      type="button"
+      onClick={() => onChoose(option.id)}
+    >
+      <strong>{t(option.nameKey)}</strong>
+      <span>{t(option.rulesTextKey)}</span>
+      <small>{getVerdictImpact(option, offer, resources, t)}</small>
+    </button>
   )
 }
 
@@ -123,6 +167,7 @@ function formatRevealedNames(
 function getVerdictImpact(
   option: TutorialVerdictOption,
   offer: TutorialVerdictOffer,
+  resources: TutorialResourceState,
   t: VerdictPageProps['t'],
 ) {
   if (option.choiceId === 'register') {
@@ -138,7 +183,10 @@ function getVerdictImpact(
   }
 
   if (option.id === 'erase_heavy_split_form') {
-    return '削籍判词：榜裂 +1，劫数 +1，加入重裂形符；下一战开局上手'
+    const sourceLabel = option.sourceNameKey ? `法宝强化：${t(option.sourceNameKey)}。` : '法宝强化。'
+    return `${sourceLabel}榜裂 +1，劫数 +1，加入重裂形符；下一战开局上手${getDoomRiskHint(
+      resources.doom,
+    )}`
   }
 
   if (option.id === 'erase_next_battle_resources') {
@@ -146,6 +194,20 @@ function getVerdictImpact(
   }
 
   return '削籍判词：榜裂 +1，加入裂形符；下一战开局上手'
+}
+
+function getDoomRiskHint(currentDoom: number) {
+  const nextDoom = currentDoom + 1
+
+  if (nextDoom >= 4) {
+    return '；劫数将进入高压阈值'
+  }
+
+  if (nextDoom >= 3) {
+    return '；劫数接近高压阈值'
+  }
+
+  return ''
 }
 
 function getRegisterImpact(offer: TutorialVerdictOffer, t: VerdictPageProps['t']) {

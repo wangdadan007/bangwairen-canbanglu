@@ -199,6 +199,30 @@ describe('T20 event resolver', () => {
         createdRedInkOffer: true,
       }),
     )
+
+    const discountedRun = {
+      ...resourceRun,
+      redInkInkCostReduction: 1,
+    }
+    const discountedRedInkRun = resolveTutorialEvent(
+      discountedRun,
+      inkEvent,
+      'event_mid_ink_pool_spend_ink_red_ink',
+    )
+
+    expect(getAvailableEventOptions(inkEvent, discountedRun).map((option) => option.id)).toContain(
+      'event_mid_ink_pool_spend_ink_red_ink',
+    )
+    expect(discountedRedInkRun.resources.ink).toBe(0)
+    expect(discountedRedInkRun.redInkInkCostReduction).toBe(0)
+    expect(discountedRedInkRun.pendingRedInk).toBeDefined()
+    expect(discountedRedInkRun.events.records[0]).toEqual(
+      expect.objectContaining({
+        inkDelta: 0,
+        redInkInkCostReductionApplied: 1,
+        createdRedInkOffer: true,
+      }),
+    )
   })
 
   it('offers T36 mid and late event pools with readable resource feedback records', () => {

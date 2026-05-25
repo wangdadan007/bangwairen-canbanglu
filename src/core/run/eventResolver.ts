@@ -13,6 +13,11 @@ import type {
 } from '../../types'
 import { appendRunDeckCard, removeFirstMatchingRunDeckCard } from './deckResolver'
 import { addIncenseSealToRun } from './incenseSealResolver'
+import {
+  getAppliedRedInkInkCostReduction,
+  getDiscountedRedInkInkCost,
+  getRemainingRedInkInkCostReduction,
+} from './redInkCostResolver'
 import { createTutorialRedInkOffer } from './redInkResolver'
 import {
   applyTutorialResourceDelta,
@@ -76,7 +81,7 @@ export function getAvailableEventOptions(
   return event.options.filter(
     (option) =>
       everyRequiredStageUnlocked(option, run) &&
-      option.effects.every((effect) => isEventEffectAvailable(effect, run)),
+      isEventOptionAvailable(option, run),
   )
 }
 
@@ -126,6 +131,9 @@ export function resolveTutorialEvent(
     removedDeckCardIds: result.removedDeckCardIds,
     removedCardDefinitionIds: result.removedCardDefinitionIds,
     inkDelta: result.inkDelta,
+    ...(result.redInkInkCostReductionApplied
+      ? { redInkInkCostReductionApplied: result.redInkInkCostReductionApplied }
+      : {}),
     doomDelta: result.doomDelta,
     fractureDelta: result.fractureDelta,
     createdRedInkOffer: result.createdRedInkOffer,
@@ -146,6 +154,10 @@ export function resolveTutorialEvent(
       doom: result.doomDelta,
       fracture: result.fractureDelta,
     }),
+    redInkInkCostReduction:
+      result.redInkInkCostReductionApplied > 0
+        ? getRemainingRedInkInkCostReduction(run, result.redInkInkBaseCost)
+        : run.redInkInkCostReduction,
     pendingRedInk: result.createdRedInkOffer
       ? createTutorialRedInkOffer(run)
       : undefined,
@@ -162,19 +174,19 @@ function everyRequiredStageUnlocked(option: EventOptionDefinition, run: Tutorial
   )
 }
 
-function isEventEffectAvailable(effect: EventEffect, run: TutorialRunState) {
-  if (effect.type === 'SPEND_INK') {
-    return canSpendTutorialResources(run.resources, {
-      ink: -effect.amount,
-    })
+function isEventOptionAvailable(option: EventOptionDefinition, run: TutorialRunState) {
+  if (!canSpendTutorialResources(run.resources, { ink: -getEventInkCost(option.effects, run) })) {
+    return false
   }
 
-  if (effect.type !== 'REMOVE_CARD') {
+  const removeCard = option.effects.find((effect) => effect.type === 'REMOVE_CARD')
+
+  if (!removeCard) {
     return true
   }
 
   return run.deckCards.some(
-    (card) => !effect.cardDefinitionId || card.definitionId === effect.cardDefinitionId,
+    (card) => !removeCard.cardDefinitionId || card.definitionId === removeCard.cardDefinitionId,
   )
 }
 
@@ -186,6 +198,8 @@ interface EventEffectResult {
   readonly removedDeckCardIds: readonly RunDeckCardId[]
   readonly removedCardDefinitionIds: readonly CardId[]
   readonly inkDelta: number
+  readonly redInkInkBaseCost: number
+  readonly redInkInkCostReductionApplied: number
   readonly doomDelta: number
   readonly fractureDelta: number
   readonly createdRedInkOffer: boolean
@@ -205,6 +219,13 @@ function applyEventEffects(
   let doomDelta = 0
   let fractureDelta = 0
   let createdRedInkOffer = false
+  const createsRedInkOffer = effects.some((effect) => effect.type === 'CREATE_RED_INK_OFFER')
+  const redInkInkBaseCost = createsRedInkOffer ? getEventBaseInkCost(effects) : 0
+  const redInkInkCostReductionApplied = getAppliedRedInkInkCostReduction(
+    run,
+    redInkInkBaseCost,
+  )
+  let remainingRedInkInkCostReduction = redInkInkCostReductionApplied
 
   for (const effect of effects) {
     if (effect.type === 'ADD_CARD') {
@@ -235,7 +256,12 @@ function applyEventEffects(
     }
 
     if (effect.type === 'SPEND_INK') {
-      inkDelta -= effect.amount
+      const inkCostReduction = createsRedInkOffer
+        ? Math.min(effect.amount, remainingRedInkInkCostReduction)
+        : 0
+
+      inkDelta -= effect.amount - inkCostReduction
+      remainingRedInkInkCostReduction -= inkCostReduction
     }
 
     if (effect.type === 'ADD_DOOM') {
@@ -258,11 +284,33 @@ function applyEventEffects(
     addedIncenseSealDefinitionIds,
     removedDeckCardIds,
     removedCardDefinitionIds,
-    inkDelta,
+    inkDelta: inkDelta || 0,
+    redInkInkBaseCost,
+    redInkInkCostReductionApplied,
     doomDelta,
     fractureDelta,
     createdRedInkOffer,
   }
+}
+
+export function getEventInkCost(
+  effects: readonly EventEffect[],
+  run: TutorialRunState,
+): number {
+  const baseInkCost = getEventBaseInkCost(effects)
+
+  if (!effects.some((effect) => effect.type === 'CREATE_RED_INK_OFFER')) {
+    return baseInkCost
+  }
+
+  return getDiscountedRedInkInkCost(run, baseInkCost)
+}
+
+function getEventBaseInkCost(effects: readonly EventEffect[]) {
+  return effects.reduce(
+    (total, effect) => total + (effect.type === 'SPEND_INK' ? effect.amount : 0),
+    0,
+  )
 }
 
 function addUniqueEventId(eventIds: readonly string[], eventId: string) {
