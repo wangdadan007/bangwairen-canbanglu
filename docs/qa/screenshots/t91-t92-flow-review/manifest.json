@@ -1,0 +1,240 @@
+{
+  "baseURL": "http://127.0.0.1:5173/",
+  "capturedAt": "2026-05-25T07:52:09.930Z",
+  "screenshots": [
+    {
+      "label": "01-title",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "scrollHeight": 2815,
+        "scrollWidth": 1280,
+        "scrollY": 0
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1280x720-01-title.png"
+    },
+    {
+      "label": "02-first-battle-lianjin",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "scrollHeight": 2815,
+        "scrollWidth": 1280,
+        "scrollY": 632
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1280x720-02-first-battle-lianjin.png"
+    },
+    {
+      "label": "03-route-branching-after-tutorial",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "scrollHeight": 2747,
+        "scrollWidth": 1280,
+        "scrollY": 633
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1280x720-03-route-branching-after-tutorial.png"
+    },
+    {
+      "label": "04-steady-shop-readiness",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "scrollHeight": 2707,
+        "scrollWidth": 1280,
+        "scrollY": 633
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1280x720-04-steady-shop-readiness.png"
+    },
+    {
+      "label": "05-steady-rest-readiness",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "scrollHeight": 2695,
+        "scrollWidth": 1280,
+        "scrollY": 634
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1280x720-05-steady-rest-readiness.png"
+    },
+    {
+      "label": "06-boss-battle-opening",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "scrollHeight": 2590,
+        "scrollWidth": 1280,
+        "scrollY": 632
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1280x720-06-boss-battle-opening.png"
+    },
+    {
+      "label": "01-title",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "scrollHeight": 2809,
+        "scrollWidth": 1366,
+        "scrollY": 0
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1366x768-01-title.png"
+    },
+    {
+      "label": "02-first-battle-lianjin",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "scrollHeight": 2809,
+        "scrollWidth": 1366,
+        "scrollY": 624
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1366x768-02-first-battle-lianjin.png"
+    },
+    {
+      "label": "03-route-branching-after-tutorial",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "scrollHeight": 2755,
+        "scrollWidth": 1366,
+        "scrollY": 626
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1366x768-03-route-branching-after-tutorial.png"
+    },
+    {
+      "label": "04-steady-shop-readiness",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "scrollHeight": 2722,
+        "scrollWidth": 1366,
+        "scrollY": 625
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1366x768-04-steady-shop-readiness.png"
+    },
+    {
+      "label": "05-steady-rest-readiness",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "scrollHeight": 2704,
+        "scrollWidth": 1366,
+        "scrollY": 626
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1366x768-05-steady-rest-readiness.png"
+    },
+    {
+      "label": "06-boss-battle-opening",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "scrollHeight": 2602,
+        "scrollWidth": 1366,
+        "scrollY": 624
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1366x768-06-boss-battle-opening.png"
+    },
+    {
+      "label": "01-title",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "scrollHeight": 2809,
+        "scrollWidth": 1920,
+        "scrollY": 0
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1920x1080-01-title.png"
+    },
+    {
+      "label": "02-first-battle-lianjin",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "scrollHeight": 2806,
+        "scrollWidth": 1920,
+        "scrollY": 624
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1920x1080-02-first-battle-lianjin.png"
+    },
+    {
+      "label": "03-route-branching-after-tutorial",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "scrollHeight": 2758,
+        "scrollWidth": 1920,
+        "scrollY": 626
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1920x1080-03-route-branching-after-tutorial.png"
+    },
+    {
+      "label": "04-steady-shop-readiness",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "scrollHeight": 2725,
+        "scrollWidth": 1920,
+        "scrollY": 625
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1920x1080-04-steady-shop-readiness.png"
+    },
+    {
+      "label": "05-steady-rest-readiness",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "scrollHeight": 2710,
+        "scrollWidth": 1920,
+        "scrollY": 626
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1920x1080-05-steady-rest-readiness.png"
+    },
+    {
+      "label": "06-boss-battle-opening",
+      "metrics": {
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "scrollHeight": 2584,
+        "scrollWidth": 1920,
+        "scrollY": 624
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t91-t92-flow-review/1920x1080-06-boss-battle-opening.png"
+    }
+  ]
+}

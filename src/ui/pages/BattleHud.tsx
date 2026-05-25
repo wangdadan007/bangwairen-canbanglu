@@ -133,6 +133,18 @@ export function BattleHud({
       !hasPendingChoice &&
       battle.result.status === 'ongoing',
   )
+  const showRoutePage =
+    currentRouteFlowKind === 'route_selection' ||
+    currentRouteFlowKind === 'event_placeholder' ||
+    currentRouteFlowKind === 'rest_placeholder' ||
+    currentRouteFlowKind === 'shop_placeholder'
+  const showTopRunOverview = Boolean(
+    !showActiveBattlePanels &&
+      !hasPendingChoice &&
+      currentRouteFlowKind !== 'event' &&
+      currentRouteFlowKind !== 'shop' &&
+      currentRouteFlowKind !== 'rest',
+  )
   const cardDefinitionsById = useMemo(() => createCardDefinitionMap(gameData.cards), [])
   const incenseSealDefinitionsById = useMemo(
     () => new Map(gameData.incenseSeals.map((seal) => [seal.id, seal])),
@@ -223,23 +235,29 @@ export function BattleHud({
         </div>
       </header>
 
-      <TutorialRunPanel run={run} currentEncounter={currentEncounter} />
+      {showTopRunOverview ? (
+        <TutorialRunPanel run={run} currentEncounter={currentEncounter} />
+      ) : null}
       {firstRunGuidance ? <FirstRunGuidancePanel guidance={firstRunGuidance} /> : null}
-      <RoutePage
-        artifactDefinitionsById={artifactDefinitionsById}
-        cardDefinitionsById={cardDefinitionsById}
-        incenseSealDefinitionsById={incenseSealDefinitionsById}
-        route={tutorialRoute}
-        routeState={viewState.route}
-        run={run}
-        t={t}
-        onChooseRouteNode={chooseRouteNode}
-      />
-      <ArtifactBar
-        artifacts={run.artifacts}
-        artifactDefinitionsById={artifactDefinitionsById}
-        t={t}
-      />
+      {showRoutePage ? (
+        <RoutePage
+          artifactDefinitionsById={artifactDefinitionsById}
+          cardDefinitionsById={cardDefinitionsById}
+          incenseSealDefinitionsById={incenseSealDefinitionsById}
+          route={tutorialRoute}
+          routeState={viewState.route}
+          run={run}
+          t={t}
+          onChooseRouteNode={chooseRouteNode}
+        />
+      ) : null}
+      {showTopRunOverview ? (
+        <ArtifactBar
+          artifacts={run.artifacts}
+          artifactDefinitionsById={artifactDefinitionsById}
+          t={t}
+        />
+      ) : null}
       {runRitualFeedback ? <RitualFeedbackPanel feedback={runRitualFeedback} /> : null}
 
       {currentEncounter &&

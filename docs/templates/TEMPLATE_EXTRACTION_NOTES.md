@@ -493,3 +493,16 @@
 - 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时保留无外部素材的程序化占位策略，避免把题材色彩和中文文案带入通用模板。
 - 是否值得抽到模板：值得，适合作为 starter kit 的 pre-art vertical slice，帮助 AI 项目在正式美术前避免“系统可跑但不像游戏”的问题。
 - 后续动作：若 T93 继续表现二期，可补截图基线、更多反馈事件和正式资产登记流程，再考虑抽象为完整 visual slice checklist。
+
+### 2026-05-25 · T92A · 真实流程截图采集与试玩取样包
+
+- 候选类型：visual QA automation / real-flow screenshot review / playtest sampling packet。
+- 主归属模板：`AI Game Development Planning and QA Kit`。
+- 也支持：`React Card Game UI Kit`、`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 涉及文件：`scripts/capture-t91-t92-flow-screenshots.mjs`、`docs/qa/CHAPTER_ONE_T91_T92_REAL_FLOW_SCREENSHOT_REVIEW.md`、`docs/qa/screenshots/t91-t92-flow-review/manifest.json`、`src/ui/pages/BattleHud.tsx`。
+- 可复用价值：用真实页面点击流程采集多视口截图，把“UI 是否真的首屏可读、canvas 是否非空、关键页面是否被旧面板压住”沉淀成可复跑证据，并把自动化截图和真人试玩取样表拆开记录，避免把脚本结果误写成玩家反馈。
+- 与本作强绑定部分：截图流程里的角色名、路线节点、Boss、临战整册、商店 / 休整文案和第一章节奏属于本作。
+- 去题材化思路：抽象为 target page steps、viewport matrix、screenshot manifest、horizontal overflow metrics、current-panel visibility checks、post-slice playtest questionnaire 和 sample tracker。
+- 依赖与授权注意：本轮只使用既有 devDependency `@playwright/test`，未新增生产依赖、第三方素材或正式美术；截图若用于模板示例需替换为中性 demo 内容。
+- 是否值得抽到模板：值得，适合作为 QA kit 的 visual regression / post-vertical-slice review pack。
+- 后续动作：若后续 T93 继续表现二期，可把脚本参数化为通用 page-flow capture，并把截图判断从人工复核升级为关键面板可见性断言。

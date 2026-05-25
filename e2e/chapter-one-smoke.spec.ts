@@ -37,11 +37,10 @@ test('title, settings, and fresh role run are reachable', async ({ page }) => {
   await page.getByRole('button', { name: '莲烬 己形 78' }).click()
   await page.getByRole('button', { name: '以莲烬开局' }).click()
   await expect(page.getByRole('region', { name: '法宝三选一' })).toBeHidden()
-  await expect(page.getByText('执簿者 莲烬', { exact: true })).toBeVisible()
-  await expect(page.getByText('法宝 1 件')).toBeVisible()
-  await expect(page.getByText('赤绫火轮', { exact: true })).toBeVisible()
+  await page.getByRole('region', { name: '第一章试玩区域' }).scrollIntoViewIfNeeded()
+  await expect(page.getByRole('heading', { name: '第一战：纸面鬼' })).toBeVisible()
   await expect(page.getByRole('region', { name: '敌方目标' })).toBeVisible()
-  await expect(page.getByRole('button', { name: '结束回合' })).toBeVisible()
+  await expect(page.getByRole('region', { name: '敌方目标' }).getByText('纸面鬼')).toBeVisible()
   await expect(page.getByLabel('战斗演出台：残榜案面').locator('canvas')).toBeVisible()
 
   const stageSize = await page
@@ -59,6 +58,10 @@ test('title, settings, and fresh role run are reachable', async ({ page }) => {
   expect(stageSize.height).toBeGreaterThan(300)
   expect(stageScreenshot.byteLength).toBeGreaterThan(1_000)
   expect(new Set(stageScreenshot).size).toBeGreaterThan(32)
+
+  const endTurnButton = page.getByRole('button', { name: '结束回合' })
+  await endTurnButton.scrollIntoViewIfNeeded()
+  await expect(endTurnButton).toBeVisible()
 
   const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
 
