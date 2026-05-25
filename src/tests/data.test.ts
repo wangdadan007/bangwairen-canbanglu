@@ -551,6 +551,22 @@ describe('initial game data', () => {
     expect(
       route.nodes.filter((node) => node.type === 'event').map((node) => node.eventPoolIds?.length),
     ).toEqual([4, 5, 5, 4])
+    expect(nodesById.get('route_node_steady_mid_altar_check')?.nodeVariantPool?.map((variant) => variant.id)).toEqual([
+      'variant_steady_mid_altar_gray',
+      'variant_steady_mid_altar_bell',
+    ])
+    expect(nodesById.get('route_node_fracture_shop')?.nodeVariantPool?.map((variant) => variant.id)).toEqual([
+      'variant_fracture_shop_incense_seal',
+      'variant_fracture_shop_cleanse',
+    ])
+    expect(nodesById.get('route_node_late_event_after_shop')?.nodeVariantPool?.map((variant) => variant.id)).toEqual([
+      'variant_late_event_after_shop_guard_name',
+      'variant_late_event_after_shop_artifact',
+    ])
+    expect(nodesById.get('route_node_fracture_shop_boss_ante_rest')?.nodeVariantPool?.map((variant) => variant.id)).toEqual([
+      'variant_fracture_rest_repair_form',
+      'variant_fracture_rest_guard_name',
+    ])
     expect(nodesById.get('route_node_boss_registry_thief')?.nextNodeIds).toEqual([])
     expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
       'encounter_tutorial_paper_wraith',
@@ -717,6 +733,7 @@ describe('initial game data', () => {
         option.descriptionKey,
         option.rewardKey,
         option.costKey,
+        ...(option.artifactSignalKey ? [option.artifactSignalKey] : []),
       ]),
     ])
 
@@ -749,7 +766,14 @@ describe('initial game data', () => {
     const routeLocalizationKeys = data.routes.flatMap((route) => [
       route.nameKey,
       route.descriptionKey,
-      ...route.nodes.flatMap((node) => [node.nameKey, node.descriptionKey]),
+      ...route.nodes.flatMap((node) => [
+        node.nameKey,
+        node.descriptionKey,
+        ...(node.nodeVariantPool?.flatMap((variant) => [
+          variant.labelKey,
+          variant.descriptionKey,
+        ]) ?? []),
+      ]),
     ])
 
     expect(routeLocalizationKeys.every((key) => data.localization[key])).toBe(true)

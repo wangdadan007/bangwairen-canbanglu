@@ -137,7 +137,10 @@ function normalizeTutorialRunState(value: TutorialRunState): TutorialRunState {
 function normalizeRouteState(value: RouteState): RouteState {
   return {
     ...value,
+    routeSeed: typeof value.routeSeed === 'number' ? value.routeSeed : undefined,
     routeTendencyIds: value.routeTendencyIds ?? [],
     encounterSelections: value.encounterSelections ?? {},
+    eventSelections: value.eventSelections ?? {},
+    nodeVariantSelections: value.nodeVariantSelections ?? {},
   }
 }

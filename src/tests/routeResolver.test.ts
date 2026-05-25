@@ -7,7 +7,10 @@ import {
   getCurrentRouteNode,
   getReachableRouteNodes,
   getRouteBattleEncounterIds,
+  getRouteNodeDisplayTendencyIds,
   getRouteNodeStatus,
+  getRouteSeedKey,
+  getSelectedRouteNodeVariant,
   isRouteBattleNode,
   selectReachableRouteNode,
 } from '../core'
@@ -23,6 +26,7 @@ describe('T64 chapter one branched route closure', () => {
     const currentNode = getCurrentRouteNode(route, state)
 
     expect(state.routeId).toBe('route_chapter_one_skeleton')
+    expect(state.routeSeed).toBe(routeSeed)
     expect(state.currentNodeId).toBe('route_node_tutorial_paper_wraith')
     expect(state.completedNodeIds).toEqual([])
     expect(state.reachableNodeIds).toEqual(['route_node_tutorial_paper_wraith'])
@@ -30,6 +34,34 @@ describe('T64 chapter one branched route closure', () => {
     expect(currentNode?.encounterId).toBe('encounter_tutorial_paper_wraith')
     expect(getRouteNodeStatus(state, 'route_node_tutorial_paper_wraith')).toBe('current')
     expect(getRouteNodeStatus(state, 'route_node_tutorial_incense_thief_mouse')).toBe('locked')
+  })
+
+  it('keeps seeded node variants stable while allowing visible variation across seeds', () => {
+    const seedSevenState = createInitialRouteState(route, 7)
+    const seedSevenAgain = createInitialRouteState(route, 7)
+    const seedEightState = createInitialRouteState(route, 8)
+    const steadyNode = route.nodes.find((node) => node.id === 'route_node_steady_mid_altar_check')
+    const fractureShopNode = route.nodes.find((node) => node.id === 'route_node_fracture_shop')
+
+    if (!steadyNode || !fractureShopNode) {
+      throw new Error('Missing T88 seeded variant route nodes')
+    }
+
+    expect(seedSevenState.nodeVariantSelections).toEqual(seedSevenAgain.nodeVariantSelections)
+    expect(seedSevenState.nodeVariantSelections?.route_node_steady_mid_altar_check).not.toBe(
+      seedEightState.nodeVariantSelections?.route_node_steady_mid_altar_check,
+    )
+    expect(seedSevenState.nodeVariantSelections?.route_node_fracture_shop).not.toBe(
+      seedEightState.nodeVariantSelections?.route_node_fracture_shop,
+    )
+    expect(getSelectedRouteNodeVariant(steadyNode, seedSevenState)?.id).toBe(
+      seedSevenState.nodeVariantSelections?.route_node_steady_mid_altar_check,
+    )
+    expect(getRouteNodeDisplayTendencyIds(fractureShopNode, seedSevenState)).toEqual([
+      'fracture',
+      'supply',
+    ])
+    expect(getRouteSeedKey(seedSevenState)).toBe('7')
   })
 
   it('keeps the first three battles fixed before opening three main route choices', () => {

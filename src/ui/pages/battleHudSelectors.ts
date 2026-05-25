@@ -7,6 +7,8 @@ import {
   getCurrentRouteEvent,
   getCurrentRouteFlowKind,
   getCurrentRouteNode,
+  getRouteNodeDisplayTendencyIds,
+  getRouteSeedKey,
 } from '../../core'
 import { gameData } from '../../data'
 import { getRunHeadline, t } from './actionLogView'
@@ -34,8 +36,10 @@ export function selectBattleHudState(viewState: TutorialBattleViewState) {
     currentRouteFlowKind === 'shop'
       ? getAvailableShopItems(run, gameData.shopItems, gameData.cards, gameData.artifacts, {
           routeNodeId: currentRouteNode?.id,
-          routeSeed: viewState.route.routeId,
-          routeTendencyIds: currentRouteNode?.routeTendencyIds ?? viewState.route.routeTendencyIds,
+          routeSeed: getRouteSeedKey(viewState.route),
+          routeTendencyIds: currentRouteNode
+            ? getRouteNodeDisplayTendencyIds(currentRouteNode, viewState.route)
+            : viewState.route.routeTendencyIds,
           incenseSealDefinitions: gameData.incenseSeals,
         })
       : []

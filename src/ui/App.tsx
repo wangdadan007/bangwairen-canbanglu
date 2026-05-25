@@ -1,20 +1,26 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PhaserGame } from '../game/PhaserGame'
 import { gameData } from '../data'
 import {
   clearTutorialSaveData,
   createDefaultSettingsState,
+  createCodexRecordStateUpdate,
+  createInitialCodexRecordState,
   createTutorialSaveData,
   DEFAULT_PLAYABLE_ROLE_ID,
   getPlayableRoleDefinition,
+  readCodexRecordState,
   readSettingsState,
   readTutorialSaveData,
+  writeCodexRecordState,
   writeSettingsState,
   writeTutorialSaveData,
   type KeyValueStorage,
 } from '../core'
 import type {
   PlayableRoleId,
+  CodexRecordEntry,
+  CodexRecordState,
   RouteState,
   SettingsState,
   TutorialRunState,
@@ -34,6 +40,17 @@ export function App() {
   const [availableSave, setAvailableSave] = useState(() =>
     storage ? readTutorialSaveData(storage) : undefined,
   )
+  const [codexRecordState, setCodexRecordState] = useState<CodexRecordState>(() =>
+    storage ? readCodexRecordState(storage) : createInitialCodexRecordState(),
+  )
+  const [latestCodexRunRecords, setLatestCodexRunRecords] = useState<
+    readonly CodexRecordEntry[]
+  >([])
+  const [latestNewCodexRecords, setLatestNewCodexRecords] = useState<
+    readonly CodexRecordEntry[]
+  >([])
+  const codexRecordStateRef = useRef(codexRecordState)
+  const lastCodexRunSignatureRef = useRef<string | undefined>(undefined)
   const [initialSave, setInitialSave] = useState<TutorialSaveData | undefined>(availableSave)
   const [selectedRoleId, setSelectedRoleId] = useState<PlayableRoleId>(DEFAULT_PLAYABLE_ROLE_ID)
   const [battleKey, setBattleKey] = useState(0)
@@ -47,6 +64,10 @@ export function App() {
     }
   }, [storage])
 
+  useEffect(() => {
+    codexRecordStateRef.current = codexRecordState
+  }, [codexRecordState])
+
   function startNewRun(roleId: PlayableRoleId) {
     if (storage) {
       clearTutorialSaveData(storage)
@@ -55,6 +76,9 @@ export function App() {
     setSelectedRoleId(roleId)
     setAvailableSave(undefined)
     setInitialSave(undefined)
+    setLatestCodexRunRecords([])
+    setLatestNewCodexRecords([])
+    lastCodexRunSignatureRef.current = undefined
     setBattleKey((current) => current + 1)
     setIsSettingsOpen(false)
   }
@@ -68,6 +92,9 @@ export function App() {
 
     setAvailableSave(save)
     setInitialSave(save)
+    setLatestCodexRunRecords([])
+    setLatestNewCodexRecords([])
+    lastCodexRunSignatureRef.current = undefined
     setBattleKey((current) => current + 1)
     setIsSettingsOpen(false)
   }
@@ -80,6 +107,28 @@ export function App() {
     if (run.status !== 'active') {
       clearTutorialSaveData(storage)
       setAvailableSave(undefined)
+      const runSignature = createTerminalRunSignature(run)
+
+      if (lastCodexRunSignatureRef.current === runSignature) {
+        return
+      }
+
+      const update = createCodexRecordStateUpdate(
+        codexRecordStateRef.current,
+        run,
+        {
+          encounters: gameData.encounters,
+          enemies: gameData.enemies,
+          artifacts: gameData.artifacts,
+        },
+      )
+
+      codexRecordStateRef.current = update.state
+      writeCodexRecordState(storage, update.state)
+      setCodexRecordState(update.state)
+      setLatestCodexRunRecords(update.runEntries)
+      setLatestNewCodexRecords(update.newEntries)
+      lastCodexRunSignatureRef.current = runSignature
       return
     }
 
@@ -126,6 +175,7 @@ export function App() {
     <AppErrorBoundary storage={storage}>
       <main className="app-shell">
         <TitlePage
+          codexRecordState={codexRecordState}
           hasSave={Boolean(availableSave)}
           saveLabel={getSaveLabel(availableSave)}
           onContinue={continueSavedRun}
@@ -144,6 +194,9 @@ export function App() {
           <BattleHud
             key={battleKey}
             initialSave={initialSave}
+            codexRecordState={codexRecordState}
+            codexRunRecords={latestCodexRunRecords}
+            newCodexRecords={latestNewCodexRecords}
             selectedRoleId={selectedRoleId}
             settings={settings}
             onSaveChange={handleSaveChange}
@@ -186,4 +239,17 @@ function formatRuntimeErrorDetail(event: ErrorEvent) {
   const location = [event.filename, event.lineno, event.colno].filter(Boolean).join(':')
 
   return location || undefined
+}
+
+function createTerminalRunSignature(run: TutorialRunState) {
+  return [
+    run.status,
+    run.failureReason ?? '',
+    run.completedEncounterIds.join(','),
+    run.settlements.map((record) => `${record.encounterId}:${record.settlement}`).join(','),
+    run.verdict.records.map((record) => `${record.id}:${record.choiceId}`).join(','),
+    run.artifacts.artifacts
+      .map((artifact) => `${artifact.definitionId}:${artifact.bindingStatus}`)
+      .join(','),
+  ].join('|')
 }

@@ -122,6 +122,12 @@ function assertUniqueIds(items: readonly { readonly id: string }[], label: strin
 function assertRouteNodeIds(routes: readonly RouteDefinition[]) {
   for (const route of routes) {
     assertUniqueIds(route.nodes, `${route.id} route node`)
+
+    for (const node of route.nodes) {
+      if (node.nodeVariantPool?.length) {
+        assertUniqueIds(node.nodeVariantPool, `${node.id} route node variant`)
+      }
+    }
   }
 }
 

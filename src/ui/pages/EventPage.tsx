@@ -47,37 +47,45 @@ export function EventPage({
         {event.options.map((option) => {
           const isAvailable = options.some((availableOption) => availableOption.id === option.id)
           const unavailableReason = isAvailable ? undefined : getUnavailableOptionReason(option, run)
+          const className = [
+            'event-option',
+            option.flags.includes('fracture') ? 'fracture' : '',
+            option.flags.includes('artifact') ? 'artifact' : '',
+          ].filter(Boolean).join(' ')
 
           return (
-          <button
-            className={option.flags.includes('fracture') ? 'event-option fracture' : 'event-option'}
-            disabled={!isAvailable}
-            key={option.id}
-            title={unavailableReason}
-            type="button"
-            onClick={() => onChoose(option.id)}
-          >
-            <span className="card-topline">
-              <strong>{t(option.nameKey)}</strong>
-              <span>{isAvailable ? getOptionFlagLabel(option.flags) : unavailableReason}</span>
-            </span>
-            <span className="event-option-copy">{t(option.descriptionKey)}</span>
-            <span className="event-result-grid">
-              <span>
-                <em>收益</em>
-                {t(option.rewardKey)}
+            <button
+              className={className}
+              disabled={!isAvailable}
+              key={option.id}
+              title={unavailableReason}
+              type="button"
+              onClick={() => onChoose(option.id)}
+            >
+              <span className="card-topline">
+                <strong>{t(option.nameKey)}</strong>
+                <span>{isAvailable ? getOptionFlagLabel(option.flags) : unavailableReason}</span>
               </span>
-              <span>
-                <em>代价</em>
-                {t(option.costKey)}
+              <span className="event-option-copy">{t(option.descriptionKey)}</span>
+              {option.artifactSignalKey ? (
+                <span className="event-artifact-signal">{t(option.artifactSignalKey)}</span>
+              ) : null}
+              <span className="event-result-grid">
+                <span>
+                  <em>收益</em>
+                  {t(option.rewardKey)}
+                </span>
+                <span>
+                  <em>代价</em>
+                  {t(option.costKey)}
+                </span>
               </span>
-            </span>
-            <span className="card-tags">
-              {getOptionEffectLabels(option, cardDefinitionsById, t).map((label) => (
-                <span key={label}>{label}</span>
-              ))}
-            </span>
-          </button>
+              <span className="card-tags">
+                {getOptionEffectLabels(option, cardDefinitionsById, t).map((label) => (
+                  <span key={label}>{label}</span>
+                ))}
+              </span>
+            </button>
           )
         })}
       </div>
@@ -86,6 +94,10 @@ export function EventPage({
 }
 
 function getOptionFlagLabel(flags: readonly EventFlag[]) {
+  if (flags.includes('artifact')) {
+    return '法宝线索'
+  }
+
   if (flags.includes('ink')) {
     return '涉及墨'
   }

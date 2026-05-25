@@ -2,6 +2,7 @@ import type {
   ArtifactCollectionState,
   ArtifactDefinition,
   ArtifactId,
+  ArtifactOfferAnchorId,
   ArtifactOverloadKind,
   ArtifactProgressKind,
   ArtifactState,
@@ -101,6 +102,70 @@ export interface ArtifactBacklashResolution {
 
 export interface ArtifactOfferContext {
   readonly routeTendencyIds?: readonly RouteTendencyId[]
+  readonly routeSeed?: string
+  readonly buildAnchorIds?: readonly ArtifactOfferAnchorId[]
+}
+
+export function createArtifactOfferAnchorIds(
+  run: TutorialRunState,
+  routeTendencyIds: readonly RouteTendencyId[] = [],
+): readonly ArtifactOfferAnchorId[] {
+  const anchorIds: ArtifactOfferAnchorId[] = []
+
+  if (
+    run.settlements.some((record) => record.settlement === 'catalogue') ||
+    run.verdict.records.some((record) => record.choiceId === 'register')
+  ) {
+    anchorIds.push('ask_name')
+  }
+
+  if (run.settlements.some((record) => record.settlement === 'vanquish')) {
+    anchorIds.push('break_form')
+  }
+
+  if (run.redInkRecords.some((record) => !record.skipped) || run.pendingRedInk) {
+    anchorIds.push('red_ink')
+  }
+
+  if (run.resources.ink > 0) {
+    anchorIds.push('ink')
+  }
+
+  if (run.resources.fracture > 0) {
+    anchorIds.push('fracture')
+  }
+
+  if (run.verdict.records.length > 0) {
+    anchorIds.push('verdict')
+  }
+
+  if (run.artifacts.artifacts.some((artifact) => artifact.pendingBacklash)) {
+    anchorIds.push('artifact_maintenance')
+  }
+
+  for (const tendencyId of routeTendencyIds) {
+    if (tendencyId === 'steady') {
+      anchorIds.push('route_steady')
+    }
+
+    if (tendencyId === 'catalogue') {
+      anchorIds.push('route_catalogue')
+    }
+
+    if (tendencyId === 'fracture') {
+      anchorIds.push('route_fracture')
+    }
+
+    if (tendencyId === 'supply') {
+      anchorIds.push('route_supply')
+    }
+
+    if (tendencyId === 'high_pressure') {
+      anchorIds.push('route_high_pressure')
+    }
+  }
+
+  return uniqueArtifactOfferAnchorIds(anchorIds).slice(0, 5)
 }
 
 export function createInitialArtifactCollection(
@@ -206,6 +271,8 @@ export function resolveTutorialArtifactOffer(
           (candidate) => candidate.artifactDefinitionId,
         ),
         selectedArtifactDefinitionId: artifactDefinitionId,
+        contextAnchorIds: offer.contextAnchorIds,
+        selectedAnchorIds: option.anchorIds,
       },
     ],
   }
@@ -511,15 +578,18 @@ function createTutorialArtifactOffer(
 ): TutorialArtifactOffer | undefined {
   const ownedArtifactIds = new Set(run.artifacts.artifacts.map((artifact) => artifact.definitionId))
   const artifactOfferRecords = run.artifactOfferRecords ?? []
+  const contextAnchorIds = getContextArtifactOfferAnchorIds(context)
   const options = orderArtifactOfferIds(getArtifactOfferIds(stage), run.roleId, context)
     .filter((artifactDefinitionId) => !ownedArtifactIds.has(artifactDefinitionId))
     .map((artifactDefinitionId, index) => {
       const definition = artifactDefinitions.find((candidate) => candidate.id === artifactDefinitionId)
+      const anchorIds = definition ? getArtifactOptionAnchorIds(definition, context) : undefined
 
       return definition
         ? {
             id: `${stage}_${index + 1}_${artifactDefinitionId}`,
             artifactDefinitionId,
+            ...(anchorIds ? { anchorIds } : {}),
           }
         : undefined
     })
@@ -533,6 +603,7 @@ function createTutorialArtifactOffer(
   return {
     id: `artifact_offer_${stage}_${artifactOfferRecords.length + 1}`,
     stage,
+    contextAnchorIds,
     options,
   }
 }
@@ -598,6 +669,59 @@ const ROUTE_ARTIFACT_WEIGHTS: Record<RouteTendencyId, Readonly<Partial<Record<Ar
   },
 }
 
+const ANCHOR_ARTIFACT_WEIGHTS: Record<
+  ArtifactOfferAnchorId,
+  Readonly<Partial<Record<ArtifactId, number>>>
+> = {
+  ask_name: {
+    [BONE_MIRROR_ARTIFACT_ID]: 3,
+    [REGISTRY_INKSTONE_ARTIFACT_ID]: 3,
+    [NAME_TETHER_SPINDLE_ARTIFACT_ID]: 3,
+    [COURT_CHIME_ARTIFACT_ID]: 2,
+  },
+  break_form: {
+    [SEAL_DOOR_TABLET_ARTIFACT_ID]: 3,
+    [ASH_LAMP_ARTIFACT_ID]: 2,
+    [DOOM_BELL_ARTIFACT_ID]: 2,
+  },
+  red_ink: {
+    [CINNABAR_DOU_ARTIFACT_ID]: 4,
+    [ASH_LAMP_ARTIFACT_ID]: 3,
+  },
+  altar: {
+    [ASH_LAMP_ARTIFACT_ID]: 3,
+    [NAME_TETHER_SPINDLE_ARTIFACT_ID]: 2,
+  },
+  fracture: {
+    [FRACTURE_NEEDLE_ARTIFACT_ID]: 4,
+    [DOOM_BELL_ARTIFACT_ID]: 3,
+    [SEAL_DOOR_TABLET_ARTIFACT_ID]: 2,
+  },
+  verdict: {
+    [FRACTURE_NEEDLE_ARTIFACT_ID]: 3,
+    [DOOM_BELL_ARTIFACT_ID]: 3,
+    [CINNABAR_DOU_ARTIFACT_ID]: 2,
+  },
+  ink: {
+    [REGISTRY_INKSTONE_ARTIFACT_ID]: 3,
+    [ASH_LAMP_ARTIFACT_ID]: 2,
+    [CINNABAR_DOU_ARTIFACT_ID]: 2,
+  },
+  seal_momentum: {
+    [COURT_CHIME_ARTIFACT_ID]: 3,
+    [SEAL_DOOR_TABLET_ARTIFACT_ID]: 3,
+  },
+  artifact_maintenance: {
+    [ASH_LAMP_ARTIFACT_ID]: 4,
+    [CINNABAR_DOU_ARTIFACT_ID]: 2,
+  },
+  route_steady: {},
+  route_catalogue: {},
+  route_fracture: {},
+  route_supply: {},
+  route_high_pressure: {},
+}
+
 function orderArtifactOfferIds(
   artifactIds: readonly ArtifactId[],
   roleId: PlayableRoleId | undefined,
@@ -605,8 +729,9 @@ function orderArtifactOfferIds(
 ): readonly ArtifactId[] {
   const roleWeights = roleId ? ROLE_ARTIFACT_WEIGHTS[roleId] : undefined
   const routeTendencyIds = context.routeTendencyIds ?? []
+  const buildAnchorIds = context.buildAnchorIds ?? []
 
-  if (!roleWeights && routeTendencyIds.length === 0) {
+  if (!roleWeights && routeTendencyIds.length === 0 && buildAnchorIds.length === 0 && !context.routeSeed) {
     return artifactIds
   }
 
@@ -619,10 +744,115 @@ function orderArtifactOfferIds(
         routeTendencyIds.reduce(
           (total, tendencyId) => total + (ROUTE_ARTIFACT_WEIGHTS[tendencyId]?.[artifactId] ?? 0),
           0,
+        ) +
+        buildAnchorIds.reduce(
+          (total, anchorId) => total + (ANCHOR_ARTIFACT_WEIGHTS[anchorId]?.[artifactId] ?? 0),
+          0,
         ),
+      seedRank: context.routeSeed
+        ? getSeededArtifactRank(`${context.routeSeed}:${artifactId}`)
+        : index,
     }))
-    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .sort((left, right) => right.score - left.score || left.seedRank - right.seedRank || left.index - right.index)
     .map(({ artifactId }) => artifactId)
+}
+
+function getContextArtifactOfferAnchorIds(
+  context: ArtifactOfferContext,
+): readonly ArtifactOfferAnchorId[] | undefined {
+  const routeAnchorIds = (context.routeTendencyIds ?? []).flatMap((tendencyId) => {
+    if (tendencyId === 'steady') {
+      return ['route_steady' as const]
+    }
+
+    if (tendencyId === 'catalogue') {
+      return ['route_catalogue' as const]
+    }
+
+    if (tendencyId === 'fracture') {
+      return ['route_fracture' as const]
+    }
+
+    if (tendencyId === 'supply') {
+      return ['route_supply' as const]
+    }
+
+    if (tendencyId === 'high_pressure') {
+      return ['route_high_pressure' as const]
+    }
+
+    return []
+  })
+  const anchorIds = uniqueArtifactOfferAnchorIds([
+    ...(context.buildAnchorIds ?? []),
+    ...routeAnchorIds,
+  ])
+
+  return anchorIds.length ? anchorIds.slice(0, 5) : undefined
+}
+
+function getArtifactOptionAnchorIds(
+  definition: ArtifactDefinition,
+  context: ArtifactOfferContext,
+): readonly ArtifactOfferAnchorId[] | undefined {
+  const anchorIds: ArtifactOfferAnchorId[] = []
+
+  if (definition.tags.includes('ask_name') || definition.tags.includes('catalogue')) {
+    anchorIds.push('ask_name')
+  }
+
+  if (definition.tags.includes('break_form')) {
+    anchorIds.push('break_form')
+  }
+
+  if (definition.tags.includes('red_ink')) {
+    anchorIds.push('red_ink')
+  }
+
+  if (definition.tags.includes('altar')) {
+    anchorIds.push('altar')
+  }
+
+  if (definition.tags.includes('fracture')) {
+    anchorIds.push('fracture')
+  }
+
+  if (definition.tags.includes('verdict') || definition.triggerType === 'verdict_modifier') {
+    anchorIds.push('verdict')
+  }
+
+  if (definition.tags.includes('ink')) {
+    anchorIds.push('ink')
+  }
+
+  if (definition.tags.includes('seal_momentum')) {
+    anchorIds.push('seal_momentum')
+  }
+
+  const contextAnchorIds = new Set(context.buildAnchorIds ?? [])
+  const matchedContextAnchors = anchorIds.filter((anchorId) => contextAnchorIds.has(anchorId))
+  const displayAnchorIds = uniqueArtifactOfferAnchorIds([
+    ...matchedContextAnchors,
+    ...anchorIds,
+  ]).slice(0, 3)
+
+  return displayAnchorIds.length ? displayAnchorIds : undefined
+}
+
+function uniqueArtifactOfferAnchorIds(
+  anchorIds: readonly ArtifactOfferAnchorId[],
+): readonly ArtifactOfferAnchorId[] {
+  return [...new Set(anchorIds)]
+}
+
+function getSeededArtifactRank(seedKey: string) {
+  let hash = 0
+
+  for (let index = 0; index < seedKey.length; index += 1) {
+    hash = (hash * 31 + seedKey.charCodeAt(index)) >>> 0
+  }
+
+  return hash
 }
 
 function hasReachedMidChapterArtifactCheckpoint(run: TutorialRunState) {

@@ -48,6 +48,7 @@ export function createTutorialRunSummary(run: TutorialRunState): TutorialRunSumm
     pendingArtifactBacklashCount: run.artifacts.artifacts.filter(
       (artifact) => artifact.pendingBacklash,
     ).length,
+    artifactSignalCount: run.events.records.filter((record) => record.artifactSignalKey).length,
     bossCleared: Boolean(bossRecord),
     bossEncounterId: bossRecord?.encounterId,
     bossSettlement: bossRecord?.settlement,

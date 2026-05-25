@@ -79,6 +79,9 @@ import type {
 
 export function BattleHud({
   initialSave,
+  codexRecordState,
+  codexRunRecords,
+  newCodexRecords,
   selectedRoleId = DEFAULT_PLAYABLE_ROLE_ID,
   settings,
   onSaveChange,
@@ -386,7 +389,14 @@ export function BattleHud({
       ) : null}
 
       {run.status !== 'active' && !hasPendingChoice ? (
-        <RunSummaryPage summary={runSummary} t={t} onRestart={restartTutorialRun} />
+        <RunSummaryPage
+          codexRecordState={codexRecordState}
+          codexRunRecords={codexRunRecords}
+          newCodexRecords={newCodexRecords}
+          summary={runSummary}
+          t={t}
+          onRestart={restartTutorialRun}
+        />
       ) : null}
 
       {showActiveBattlePanels ? (

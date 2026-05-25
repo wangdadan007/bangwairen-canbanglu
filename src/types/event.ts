@@ -1,7 +1,7 @@
 import type { CardId, EventId, LocalizationKey, UnlockStageId } from './common'
 import type { IncenseSealId } from './incenseSeal'
 
-export type EventFlag = 'ink' | 'fracture' | 'doom' | 'red_ink'
+export type EventFlag = 'ink' | 'fracture' | 'doom' | 'red_ink' | 'artifact'
 
 export type EventEffect =
   | {
@@ -44,6 +44,7 @@ export interface EventOptionDefinition {
   readonly costKey: LocalizationKey
   readonly requiredUnlockStages?: readonly UnlockStageId[]
   readonly flags: readonly EventFlag[]
+  readonly artifactSignalKey?: LocalizationKey
   readonly effects: readonly EventEffect[]
 }
 

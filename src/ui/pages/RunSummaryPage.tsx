@@ -1,13 +1,24 @@
-import type { TutorialRunSummary } from '../../types'
+import type { CodexRecordEntry, CodexRecordState, TutorialRunSummary } from '../../types'
 
 export interface RunSummaryPageProps {
   readonly summary: TutorialRunSummary
+  readonly codexRecordState?: CodexRecordState
+  readonly codexRunRecords?: readonly CodexRecordEntry[]
+  readonly newCodexRecords?: readonly CodexRecordEntry[]
   readonly t: (key: string | undefined) => string
   readonly onRestart: () => void
 }
 
-export function RunSummaryPage({ summary, t, onRestart }: RunSummaryPageProps) {
+export function RunSummaryPage({
+  summary,
+  codexRecordState,
+  codexRunRecords = [],
+  newCodexRecords = [],
+  t,
+  onRestart,
+}: RunSummaryPageProps) {
   const isComplete = summary.status === 'complete'
+  const newRecordIds = new Set(newCodexRecords.map((record) => record.id))
 
   return (
     <section className={isComplete ? 'run-summary-page complete' : 'run-summary-page failed'} aria-label="第一章结算">
@@ -48,6 +59,34 @@ export function RunSummaryPage({ summary, t, onRestart }: RunSummaryPageProps) {
         </div>
       ) : null}
 
+      <section className="codex-record-panel" aria-label="终册记录">
+        <div className="section-title-row">
+          <div>
+            <p className="panel-kicker">残榜图鉴 / 终册</p>
+            <h3>本局留痕</h3>
+          </div>
+          <span>{newCodexRecords.length} 条新增</span>
+        </div>
+        <p>
+          {newCodexRecords.length > 0
+            ? '本局首次写入以下残榜留痕；这些记录只读，不改变下一局数值。'
+            : '本局没有新的首次留痕，已有终册记录保持只读。'}
+        </p>
+        {codexRunRecords.length > 0 ? (
+          <div className="codex-record-list">
+            {codexRunRecords.slice(0, 8).map((record) => (
+              <CodexRecordRow
+                isNew={newRecordIds.has(record.id)}
+                key={record.id}
+                record={record}
+                t={t}
+              />
+            ))}
+          </div>
+        ) : null}
+        <small>历史残榜留痕：{codexRecordState?.entries.length ?? 0} 条。</small>
+      </section>
+
       <div className="run-summary-grid" aria-label="本局记录">
         <SummaryMetric label="伏诛" value={summary.vanquishCount} />
         <SummaryMetric label="归册" value={summary.catalogueCount} />
@@ -73,6 +112,7 @@ export function RunSummaryPage({ summary, t, onRestart }: RunSummaryPageProps) {
         <SummaryMetric label="法宝" value={summary.artifactCount} />
         <SummaryMetric label="法宝认主" value={summary.boundArtifactCount} />
         <SummaryMetric label="反噬预警" value={summary.pendingArtifactBacklashCount} />
+        <SummaryMetric label="法宝线索" value={summary.artifactSignalCount} />
       </div>
 
       <div className="result-actions">
@@ -91,6 +131,44 @@ function SummaryMetric({ label, value }: { readonly label: string; readonly valu
       <strong>{value}</strong>
     </div>
   )
+}
+
+function CodexRecordRow({
+  record,
+  isNew,
+  t,
+}: {
+  readonly record: CodexRecordEntry
+  readonly isNew: boolean
+  readonly t: (key: string | undefined) => string
+}) {
+  return (
+    <div className={isNew ? 'codex-record-row new' : 'codex-record-row'}>
+      <span>{getCodexRecordKindLabel(record.kind)}</span>
+      <strong>{record.nameKey ? t(record.nameKey) : record.subjectId}</strong>
+      <small>
+        {record.detailKey ? t(record.detailKey) : '终册留痕'}
+        {isNew ? ' / 首次写入' : ''}
+      </small>
+    </div>
+  )
+}
+
+function getCodexRecordKindLabel(kind: CodexRecordEntry['kind']) {
+  const labels: Record<CodexRecordEntry['kind'], string> = {
+    enemy_vanquished: '伏诛',
+    enemy_catalogued: '归册',
+    boss_vanquished: 'Boss 伏诛',
+    boss_sealed: '窃榜归封',
+    artifact_claimed: '法宝留痕',
+    artifact_bound: '法宝认主',
+    verdict_register: '登簿判词',
+    verdict_red_ink: '朱批判词',
+    verdict_erase: '削籍判词',
+    route_ending: '路线结局',
+  }
+
+  return labels[kind]
 }
 
 function getFailureText(reason: TutorialRunSummary['failureReason']) {

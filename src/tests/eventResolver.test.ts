@@ -271,6 +271,15 @@ describe('T20 event resolver', () => {
 
     expect(event.id).toBe('event_bound_artifact_case')
     expect(addedCardIds).toContain('card_artifact_polish_slip')
+    expect(event.options[0].flags).toContain('artifact')
+
+    const signalRun = resolveTutorialEvent(run, event, 'event_bound_artifact_case_polish')
+
+    expect(signalRun.events.records[0]).toEqual(
+      expect.objectContaining({
+        artifactSignalKey: 'event.bound_artifact_case.signal.polish',
+      }),
+    )
   })
 })
 

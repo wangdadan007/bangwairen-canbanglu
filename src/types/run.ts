@@ -20,6 +20,21 @@ export type RewardQuality = 'ordinary' | 'high'
 export type RunDeckCardId = string
 export type RedInkAnnotationId = string
 export type TutorialArtifactOfferStage = 'starter' | 'mid_chapter' | 'boss_clear'
+export type ArtifactOfferAnchorId =
+  | 'ask_name'
+  | 'break_form'
+  | 'red_ink'
+  | 'altar'
+  | 'fracture'
+  | 'verdict'
+  | 'ink'
+  | 'seal_momentum'
+  | 'artifact_maintenance'
+  | 'route_steady'
+  | 'route_catalogue'
+  | 'route_fracture'
+  | 'route_supply'
+  | 'route_high_pressure'
 
 export interface TutorialRunSettlementRecord {
   readonly encounterId: EncounterId
@@ -123,11 +138,13 @@ export interface TutorialRedInkRecord {
 export interface TutorialArtifactOption {
   readonly id: string
   readonly artifactDefinitionId: ArtifactId
+  readonly anchorIds?: readonly ArtifactOfferAnchorId[]
 }
 
 export interface TutorialArtifactOffer {
   readonly id: string
   readonly stage: TutorialArtifactOfferStage
+  readonly contextAnchorIds?: readonly ArtifactOfferAnchorId[]
   readonly options: readonly TutorialArtifactOption[]
 }
 
@@ -136,12 +153,15 @@ export interface TutorialArtifactRecord {
   readonly stage: TutorialArtifactOfferStage
   readonly offeredArtifactDefinitionIds: readonly ArtifactId[]
   readonly selectedArtifactDefinitionId: ArtifactId
+  readonly contextAnchorIds?: readonly ArtifactOfferAnchorId[]
+  readonly selectedAnchorIds?: readonly ArtifactOfferAnchorId[]
 }
 
 export interface TutorialEventRecord {
   readonly id: string
   readonly eventId: EventId
   readonly optionId: string
+  readonly artifactSignalKey?: LocalizationKey
   readonly addedCardDefinitionIds: readonly CardId[]
   readonly addedIncenseSealDefinitionIds: readonly IncenseSealId[]
   readonly removedDeckCardIds: readonly RunDeckCardId[]
@@ -219,6 +239,7 @@ export interface TutorialRunSummary {
   readonly artifactCount: number
   readonly boundArtifactCount: number
   readonly pendingArtifactBacklashCount: number
+  readonly artifactSignalCount: number
   readonly bossCleared: boolean
   readonly bossEncounterId?: EncounterId
   readonly bossSettlement?: VictorySettlement

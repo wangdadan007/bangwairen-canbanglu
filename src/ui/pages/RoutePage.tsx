@@ -1,4 +1,9 @@
-import { getCurrentRouteNode, getRouteNodeStatus } from '../../core'
+import {
+  getCurrentRouteNode,
+  getRouteNodeDisplayTendencyIds,
+  getRouteNodeStatus,
+  getSelectedRouteNodeVariant,
+} from '../../core'
 import type {
   LocalizationKey,
   RouteDefinition,
@@ -71,6 +76,8 @@ export function RoutePage({ route, routeState, t, onChooseRouteNode }: RoutePage
       <ol className="route-node-list">
         {route.nodes.map((node) => {
           const status = getRouteNodeStatus(routeState, node.id)
+          const nodeVariant = getSelectedRouteNodeVariant(node, routeState)
+          const displayTendencyIds = getRouteNodeDisplayTendencyIds(node, routeState)
 
           return (
             <li className={`${status} ${node.type}`} key={node.id}>
@@ -81,15 +88,20 @@ export function RoutePage({ route, routeState, t, onChooseRouteNode }: RoutePage
                 <span>{nodeTypeLabels[node.type]}</span>
                 <strong>{t(node.nameKey)}</strong>
                 <small>{t(node.descriptionKey)}</small>
-                {node.routeTendencyIds?.length ? (
+                {nodeVariant ? (
+                  <small className="route-node-variant">
+                    {t(nodeVariant.labelKey)}：{t(nodeVariant.descriptionKey)}
+                  </small>
+                ) : null}
+                {displayTendencyIds.length ? (
                   <span className="route-tendency-row" aria-label="路线倾向">
-                    {node.routeTendencyIds.map((tendencyId) => (
+                    {displayTendencyIds.map((tendencyId) => (
                       <span key={tendencyId}>{routeTendencyCopy[tendencyId].label}</span>
                     ))}
                   </span>
                 ) : null}
                 {status === 'reachable' ? (
-                  <small className="route-choice-hint">{getRouteChoiceHint(node)}</small>
+                  <small className="route-choice-hint">{getRouteChoiceHint(node, routeState)}</small>
                 ) : null}
               </div>
               {status === 'reachable' && onChooseRouteNode ? (
@@ -135,8 +147,8 @@ function getNodeMark(nodeType: RouteNodeDefinition['type']) {
   return '战'
 }
 
-function getRouteChoiceHint(node: RouteNodeDefinition) {
-  const primaryTendencyId = node.routeTendencyIds?.[0]
+function getRouteChoiceHint(node: RouteNodeDefinition, routeState: RouteState) {
+  const primaryTendencyId = getRouteNodeDisplayTendencyIds(node, routeState)[0]
 
   if (!primaryTendencyId) {
     return '普通节点，适合维持当前构筑节奏。'

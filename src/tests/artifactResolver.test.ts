@@ -5,6 +5,7 @@ import {
   createInitialBattleState,
   createInitialArtifactCollection,
   createInitialTutorialRunState,
+  createArtifactOfferAnchorIds,
   createTutorialArtifactOfferIfNeeded,
   reduceBattleState,
   RED_INK_OPTIONS,
@@ -52,16 +53,18 @@ describe('T17 artifact foundation', () => {
     expect(artifactIds).toEqual(['artifact_whip_fragment'])
     expect(artifactIds.every((artifactId) => !deckIds.has(artifactId))).toBe(true)
     expect(chosenRun.artifacts.artifacts[0]?.bindingStatus).toBe('unbound')
-    expect(chosenRun.artifactOfferRecords[0]).toEqual({
-      id: 'artifact_offer_record_1',
-      stage: 'starter',
-      offeredArtifactDefinitionIds: [
-        'artifact_whip_fragment',
-        'artifact_bone_mirror',
-        'artifact_court_chime',
-      ],
-      selectedArtifactDefinitionId: 'artifact_whip_fragment',
-    })
+    expect(chosenRun.artifactOfferRecords[0]).toEqual(
+      expect.objectContaining({
+        id: 'artifact_offer_record_1',
+        stage: 'starter',
+        offeredArtifactDefinitionIds: [
+          'artifact_whip_fragment',
+          'artifact_bone_mirror',
+          'artifact_court_chime',
+        ],
+        selectedArtifactDefinitionId: 'artifact_whip_fragment',
+      }),
+    )
   })
 
   it('creates mid-chapter and boss-clear artifact offers at fixed chapter checkpoints', () => {
@@ -203,6 +206,81 @@ describe('T17 artifact foundation', () => {
       'artifact_doom_bell',
       'artifact_ash_lamp',
     ])
+  })
+
+  it('adds T89 build-anchor context and seed-stable artifact offer variants', () => {
+    let run = createInitialTutorialRunState(gameData.tutorialUnlocks, [
+      'encounter_tutorial_paper_wraith',
+      'encounter_elite_incense_clerk',
+      'encounter_boss_registry_thief',
+    ])
+
+    run = resolveTutorialArtifactOffer(
+      createTutorialArtifactOfferIfNeeded(run, gameData.artifacts),
+      'artifact_bone_mirror',
+      gameData.artifacts,
+    )
+    run = advanceTutorialRun(run, gameData.encounters, gameData.tutorialUnlocks, 'catalogue')
+    run = advanceTutorialRun(run, gameData.encounters, gameData.tutorialUnlocks, 'vanquish')
+
+    const anchorRun = {
+      ...run,
+      resources: {
+        ...run.resources,
+        ink: 1,
+        fracture: 1,
+      },
+    }
+    const buildAnchorIds = createArtifactOfferAnchorIds(anchorRun, ['catalogue', 'supply'])
+    const seededOfferRun = createTutorialArtifactOfferIfNeeded(anchorRun, gameData.artifacts, {
+      routeTendencyIds: ['catalogue', 'supply'],
+      routeSeed: 'route-7',
+      buildAnchorIds,
+    })
+    const repeatedSeedOfferRun = createTutorialArtifactOfferIfNeeded(anchorRun, gameData.artifacts, {
+      routeSeed: 'route-7',
+    })
+    const differentSeedOfferRun = createTutorialArtifactOfferIfNeeded(anchorRun, gameData.artifacts, {
+      routeSeed: 'route-19',
+    })
+    const chosenArtifactId = seededOfferRun.pendingArtifactOffer?.options[0].artifactDefinitionId
+
+    expect(buildAnchorIds).toEqual([
+      'ask_name',
+      'break_form',
+      'ink',
+      'fracture',
+      'route_catalogue',
+    ])
+    expect(seededOfferRun.pendingArtifactOffer?.contextAnchorIds).toEqual(buildAnchorIds)
+    expect(seededOfferRun.pendingArtifactOffer?.options.some((option) => option.anchorIds?.length)).toBe(
+      true,
+    )
+    expect(repeatedSeedOfferRun.pendingArtifactOffer?.options.map((option) => option.artifactDefinitionId)).toEqual(
+      createTutorialArtifactOfferIfNeeded(anchorRun, gameData.artifacts, {
+        routeSeed: 'route-7',
+      }).pendingArtifactOffer?.options.map((option) => option.artifactDefinitionId),
+    )
+    expect(differentSeedOfferRun.pendingArtifactOffer?.options.map((option) => option.artifactDefinitionId)).not.toEqual(
+      repeatedSeedOfferRun.pendingArtifactOffer?.options.map((option) => option.artifactDefinitionId),
+    )
+
+    if (!chosenArtifactId) {
+      throw new Error('Missing seeded artifact offer option')
+    }
+
+    const resolvedRun = resolveTutorialArtifactOffer(
+      seededOfferRun,
+      chosenArtifactId,
+      gameData.artifacts,
+    )
+
+    expect(resolvedRun.artifactOfferRecords[1]).toEqual(
+      expect.objectContaining({
+        contextAnchorIds: buildAnchorIds,
+        selectedAnchorIds: seededOfferRun.pendingArtifactOffer?.options[0].anchorIds,
+      }),
+    )
   })
 
   it('binds artifacts when their progress condition is met', () => {

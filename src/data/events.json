@@ -281,7 +281,8 @@
         "rewardKey": "event.bound_artifact_case.option.polish.reward",
         "costKey": "event.bound_artifact_case.option.polish.cost",
         "requiredUnlockStages": ["stage_three_altars"],
-        "flags": ["ink"],
+        "flags": ["ink", "artifact"],
+        "artifactSignalKey": "event.bound_artifact_case.signal.polish",
         "effects": [
           {
             "type": "ADD_CARD",
@@ -300,7 +301,8 @@
         "rewardKey": "event.bound_artifact_case.option.spend_ink_red_ink.reward",
         "costKey": "event.bound_artifact_case.option.spend_ink_red_ink.cost",
         "requiredUnlockStages": ["stage_three_altars", "stage_red_ink_preview"],
-        "flags": ["ink", "red_ink"],
+        "flags": ["ink", "red_ink", "artifact"],
+        "artifactSignalKey": "event.bound_artifact_case.signal.red_ink",
         "effects": [
           {
             "type": "SPEND_INK",

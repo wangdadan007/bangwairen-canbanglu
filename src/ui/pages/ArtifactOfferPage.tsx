@@ -43,6 +43,12 @@ export function ArtifactOfferPage({
         <span>{offer.options.length} 选 1</span>
       </div>
       <p className="artifact-offer-copy">{copy.body}</p>
+      {offer.contextAnchorIds?.length ? (
+        <div className="artifact-offer-context" aria-label="本局法宝线索">
+          <span>本局线索</span>
+          <strong>{offer.contextAnchorIds.map(getOfferAnchorLabel).join(' / ')}</strong>
+        </div>
+      ) : null}
 
       <div className="artifact-offer-list">
         {offer.options.map((option) => {
@@ -70,6 +76,9 @@ export function ArtifactOfferPage({
                 <span className="card-tags" aria-label="法宝标签">
                   <span>{getBuildAnchorLabel(definition)}</span>
                   <span>{getTriggerLabel(definition)}</span>
+                  {option.anchorIds?.map((anchorId) => (
+                    <span key={anchorId}>{getOfferAnchorLabel(anchorId)}</span>
+                  ))}
                   <span>未认主</span>
                   {definition.overloadCondition ? <span>有过载</span> : null}
                 </span>
@@ -80,6 +89,27 @@ export function ArtifactOfferPage({
       </div>
     </section>
   )
+}
+
+function getOfferAnchorLabel(anchorId: NonNullable<TutorialArtifactOffer['contextAnchorIds']>[number]) {
+  const labels: Record<typeof anchorId, string> = {
+    ask_name: '问名线',
+    break_form: '破形线',
+    red_ink: '朱批线',
+    altar: '三坛线',
+    fracture: '榜裂线',
+    verdict: '裁定线',
+    ink: '墨线索',
+    seal_momentum: '封势线',
+    artifact_maintenance: '维护线索',
+    route_steady: '稳行路线',
+    route_catalogue: '归册路线',
+    route_fracture: '裂榜路线',
+    route_supply: '补给路线',
+    route_high_pressure: '高压路线',
+  }
+
+  return labels[anchorId]
 }
 
 function getBuildAnchorLabel(definition: ArtifactDefinition) {

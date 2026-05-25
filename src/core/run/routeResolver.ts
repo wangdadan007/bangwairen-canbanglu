@@ -4,6 +4,7 @@ import type {
   EventId,
   RouteDefinition,
   RouteNodeDefinition,
+  RouteNodeVariantDefinition,
   RouteNodeId,
   RouteNodeStatus,
   RouteState,
@@ -26,12 +27,14 @@ export function createInitialRouteState(route: RouteDefinition, seed = createRou
 
   return {
     routeId: route.id,
+    routeSeed: seed,
     currentNodeId: route.startNodeId,
     completedNodeIds: [],
     reachableNodeIds: [route.startNodeId],
     routeTendencyIds: [],
     encounterSelections: createEncounterSelections(route, seed),
     eventSelections: createEventSelections(route, seed),
+    nodeVariantSelections: createNodeVariantSelections(route, seed),
   }
 }
 
@@ -145,6 +148,37 @@ export function getRouteNodeStatus(state: RouteState, nodeId: RouteNodeId): Rout
   return 'locked'
 }
 
+export function getSelectedRouteNodeVariant(
+  node: RouteNodeDefinition,
+  state?: RouteState,
+): RouteNodeVariantDefinition | undefined {
+  const pool = node.nodeVariantPool
+
+  if (!pool?.length) {
+    return undefined
+  }
+
+  const selectedVariantId = state?.nodeVariantSelections?.[node.id]
+
+  return pool.find((variant) => variant.id === selectedVariantId) ?? pool[0]
+}
+
+export function getRouteNodeDisplayTendencyIds(
+  node: RouteNodeDefinition,
+  state?: RouteState,
+): readonly RouteTendencyId[] {
+  const variant = getSelectedRouteNodeVariant(node, state)
+
+  return uniqueRouteTendencyIds([
+    ...(node.routeTendencyIds ?? []),
+    ...(variant?.routeTendencyIds ?? []),
+  ])
+}
+
+export function getRouteSeedKey(state: RouteState): string {
+  return String(state.routeSeed ?? state.routeId)
+}
+
 export function completeCurrentRouteNode(route: RouteDefinition, state: RouteState): RouteState {
   assertRouteStateMatchesDefinition(route, state)
 
@@ -232,6 +266,10 @@ function addUnique(nodeIds: readonly RouteNodeId[], nodeId: RouteNodeId) {
 
 function uniqueRouteNodeIds(nodeIds: readonly RouteNodeId[]) {
   return Array.from(new Set(nodeIds))
+}
+
+function uniqueRouteTendencyIds(tendencyIds: readonly RouteTendencyId[]) {
+  return Array.from(new Set(tendencyIds))
 }
 
 function appendRouteTendencies(
@@ -338,6 +376,24 @@ function createEventSelections(route: RouteDefinition, seed: number) {
   return selections
 }
 
+function createNodeVariantSelections(route: RouteDefinition, seed: number) {
+  const selections: Record<RouteNodeId, string> = {}
+  let variantNodeIndex = 0
+
+  for (const node of route.nodes) {
+    const pool = node.nodeVariantPool
+
+    if (!pool?.length) {
+      continue
+    }
+
+    selections[node.id] = pool[getSeededVariantIndex(seed, variantNodeIndex, pool.length)].id
+    variantNodeIndex += 1
+  }
+
+  return selections
+}
+
 function getSelectedEncounterId(
   node: RouteNodeDefinition,
   state?: RouteState,
@@ -352,6 +408,10 @@ function getSelectedEncounterId(
 function getSeededIndex(seed: number, offset: number, length: number) {
   const mixedSeed = Math.sin(seed + offset * 97.13) * 10000
   return Math.abs(Math.floor(mixedSeed)) % length
+}
+
+function getSeededVariantIndex(seed: number, offset: number, length: number) {
+  return Math.abs(Math.floor(seed * 17 + offset * 11)) % length
 }
 
 function createRouteSeed() {

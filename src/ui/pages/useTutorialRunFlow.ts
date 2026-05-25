@@ -8,6 +8,7 @@ import {
   createInitialEnemyIntentIdsForRoute,
   createInitialRouteState,
   createInitialTutorialRunState,
+  createArtifactOfferAnchorIds,
   createTutorialArtifactOfferIfNeeded,
   DEFAULT_PLAYABLE_ROLE_ID,
   DEFAULT_PLAYER_MAX_FORM,
@@ -17,6 +18,8 @@ import {
   getCurrentRouteEvent,
   getCurrentRouteNode,
   getRouteBattleEncounterIds,
+  getRouteNodeDisplayTendencyIds,
+  getRouteSeedKey,
   reduceBattleState,
   reorderPendingTutorialRedInkOffer,
   resolveArtifactBacklashesAtBattleStart,
@@ -38,6 +41,8 @@ import type {
   CardDefinition,
   CardId,
   CardInstance,
+  CodexRecordEntry,
+  CodexRecordState,
   CombatState,
   EncounterDefinition,
   EnemyDefinition,
@@ -68,6 +73,9 @@ export interface TutorialBattleViewState {
 
 export interface BattleHudProps {
   readonly initialSave?: TutorialSaveData
+  readonly codexRecordState?: CodexRecordState
+  readonly codexRunRecords?: readonly CodexRecordEntry[]
+  readonly newCodexRecords?: readonly CodexRecordEntry[]
   readonly selectedRoleId?: TutorialRunState['roleId']
   readonly settings?: SettingsState
   readonly onSaveChange?: (run: TutorialRunState, route: RouteState) => void
@@ -551,8 +559,8 @@ export function useTutorialRunFlow({
             deckCardId,
             replaceIncenseSealInstanceId,
             routeNodeId: node.id,
-            routeSeed: current.route.routeId,
-            routeTendencyIds: node.routeTendencyIds ?? current.route.routeTendencyIds,
+            routeSeed: getRouteSeedKey(current.route),
+            routeTendencyIds: getRouteNodeDisplayTendencyIds(node, current.route),
           },
           gameData.shopItems,
           gameData.cards,
@@ -781,9 +789,12 @@ function createRouteAwareArtifactOffer(run: TutorialRunState, route: RouteState)
   const runWithRouteAwareRedInk = reorderPendingTutorialRedInkOffer(run, {
     routeTendencyIds: route.routeTendencyIds ?? [],
   })
+  const routeTendencyIds = route.routeTendencyIds ?? []
 
   return createTutorialArtifactOfferIfNeeded(runWithRouteAwareRedInk, gameData.artifacts, {
-    routeTendencyIds: route.routeTendencyIds ?? [],
+    routeTendencyIds,
+    routeSeed: getRouteSeedKey(route),
+    buildAnchorIds: createArtifactOfferAnchorIds(runWithRouteAwareRedInk, routeTendencyIds),
   })
 }
 

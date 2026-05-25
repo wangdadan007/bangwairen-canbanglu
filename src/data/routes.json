@@ -47,6 +47,20 @@
         "type": "shop",
         "nameKey": "route.node.first_shop.name",
         "descriptionKey": "route.node.first_shop.description",
+        "nodeVariantPool": [
+          {
+            "id": "variant_first_shop_red_ink",
+            "labelKey": "route.variant.first_shop.red_ink.label",
+            "descriptionKey": "route.variant.first_shop.red_ink.description",
+            "routeTendencyIds": ["supply"]
+          },
+          {
+            "id": "variant_first_shop_incense_seal",
+            "labelKey": "route.variant.first_shop.incense_seal.label",
+            "descriptionKey": "route.variant.first_shop.incense_seal.description",
+            "routeTendencyIds": ["supply", "steady"]
+          }
+        ],
         "routeTendencyIds": ["steady", "supply"],
         "nextNodeIds": ["route_node_steady_mid_altar_check"]
       },
@@ -55,6 +69,20 @@
         "type": "rest",
         "nameKey": "route.node.rest_site.name",
         "descriptionKey": "route.node.rest_site.description",
+        "nodeVariantPool": [
+          {
+            "id": "variant_rest_site_repair_form",
+            "labelKey": "route.variant.rest_site.repair_form.label",
+            "descriptionKey": "route.variant.rest_site.repair_form.description",
+            "routeTendencyIds": ["supply"]
+          },
+          {
+            "id": "variant_rest_site_trim_deck",
+            "labelKey": "route.variant.rest_site.trim_deck.label",
+            "descriptionKey": "route.variant.rest_site.trim_deck.description",
+            "routeTendencyIds": ["steady", "supply"]
+          }
+        ],
         "routeTendencyIds": ["steady", "supply"],
         "nextNodeIds": ["route_node_steady_mid_altar_check"]
       },
@@ -63,6 +91,20 @@
         "type": "normal_battle",
         "nameKey": "route.node.steady_mid_altar_check.name",
         "descriptionKey": "route.node.steady_mid_altar_check.description",
+        "nodeVariantPool": [
+          {
+            "id": "variant_steady_mid_altar_gray",
+            "labelKey": "route.variant.steady_mid_altar.gray.label",
+            "descriptionKey": "route.variant.steady_mid_altar.gray.description",
+            "routeTendencyIds": ["steady"]
+          },
+          {
+            "id": "variant_steady_mid_altar_bell",
+            "labelKey": "route.variant.steady_mid_altar.bell.label",
+            "descriptionKey": "route.variant.steady_mid_altar.bell.description",
+            "routeTendencyIds": ["steady", "supply"]
+          }
+        ],
         "encounterId": "encounter_mid_ash_altar_child",
         "encounterPoolIds": [
           "encounter_mid_ash_altar_child",
@@ -156,6 +198,20 @@
         "type": "shop",
         "nameKey": "route.node.catalogue_shop.name",
         "descriptionKey": "route.node.catalogue_shop.description",
+        "nodeVariantPool": [
+          {
+            "id": "variant_catalogue_shop_guard_name",
+            "labelKey": "route.variant.catalogue_shop.guard_name.label",
+            "descriptionKey": "route.variant.catalogue_shop.guard_name.description",
+            "routeTendencyIds": ["catalogue", "supply"]
+          },
+          {
+            "id": "variant_catalogue_shop_red_ink",
+            "labelKey": "route.variant.catalogue_shop.red_ink.label",
+            "descriptionKey": "route.variant.catalogue_shop.red_ink.description",
+            "routeTendencyIds": ["catalogue", "supply"]
+          }
+        ],
         "routeTendencyIds": ["catalogue", "supply"],
         "nextNodeIds": ["route_node_late_fleeing_name_paper_horse"]
       },
@@ -317,6 +373,20 @@
         "type": "shop",
         "nameKey": "route.node.fracture_shop.name",
         "descriptionKey": "route.node.fracture_shop.description",
+        "nodeVariantPool": [
+          {
+            "id": "variant_fracture_shop_incense_seal",
+            "labelKey": "route.variant.fracture_shop.incense_seal.label",
+            "descriptionKey": "route.variant.fracture_shop.incense_seal.description",
+            "routeTendencyIds": ["fracture", "supply"]
+          },
+          {
+            "id": "variant_fracture_shop_cleanse",
+            "labelKey": "route.variant.fracture_shop.cleanse.label",
+            "descriptionKey": "route.variant.fracture_shop.cleanse.description",
+            "routeTendencyIds": ["fracture", "supply"]
+          }
+        ],
         "routeTendencyIds": ["fracture", "supply"],
         "nextNodeIds": ["route_node_fracture_shop_fouled_pressure"]
       },
@@ -399,6 +469,20 @@
         "type": "event",
         "nameKey": "route.node.late_event_after_shop.name",
         "descriptionKey": "route.node.late_event_after_shop.description",
+        "nodeVariantPool": [
+          {
+            "id": "variant_late_event_after_shop_guard_name",
+            "labelKey": "route.variant.late_event_after_shop.guard_name.label",
+            "descriptionKey": "route.variant.late_event_after_shop.guard_name.description",
+            "routeTendencyIds": ["fracture", "supply"]
+          },
+          {
+            "id": "variant_late_event_after_shop_artifact",
+            "labelKey": "route.variant.late_event_after_shop.artifact.label",
+            "descriptionKey": "route.variant.late_event_after_shop.artifact.description",
+            "routeTendencyIds": ["fracture", "supply"]
+          }
+        ],
         "eventPoolIds": [
           "event_covered_name_stable",
           "event_bound_artifact_case",
@@ -413,6 +497,20 @@
         "type": "rest",
         "nameKey": "route.node.fracture_shop_boss_ante_rest.name",
         "descriptionKey": "route.node.fracture_shop_boss_ante_rest.description",
+        "nodeVariantPool": [
+          {
+            "id": "variant_fracture_rest_repair_form",
+            "labelKey": "route.variant.fracture_rest.repair_form.label",
+            "descriptionKey": "route.variant.fracture_rest.repair_form.description",
+            "routeTendencyIds": ["fracture", "supply"]
+          },
+          {
+            "id": "variant_fracture_rest_guard_name",
+            "labelKey": "route.variant.fracture_rest.guard_name.label",
+            "descriptionKey": "route.variant.fracture_rest.guard_name.description",
+            "routeTendencyIds": ["fracture", "supply"]
+          }
+        ],
         "routeTendencyIds": ["fracture", "supply"],
         "nextNodeIds": ["route_node_fracture_shop_name_pressure"]
       },

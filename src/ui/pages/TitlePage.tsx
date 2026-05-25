@@ -5,9 +5,10 @@ import {
   PLAYABLE_ROLE_DEFINITIONS,
 } from '../../core'
 import { gameData } from '../../data'
-import type { PlayableRoleDefinition, PlayableRoleId } from '../../types'
+import type { CodexRecordEntry, CodexRecordState, PlayableRoleDefinition, PlayableRoleId } from '../../types'
 
 interface TitlePageProps {
+  readonly codexRecordState?: CodexRecordState
   readonly hasSave: boolean
   readonly saveLabel: string
   readonly onNewGame: (roleId: PlayableRoleId) => void
@@ -16,6 +17,7 @@ interface TitlePageProps {
 }
 
 export function TitlePage({
+  codexRecordState,
   hasSave,
   saveLabel,
   onNewGame,
@@ -52,7 +54,35 @@ export function TitlePage({
         </button>
       </div>
       <p className="save-status">{saveLabel}</p>
+      <CodexPreview codexRecordState={codexRecordState} />
     </header>
+  )
+}
+
+function CodexPreview({
+  codexRecordState,
+}: {
+  readonly codexRecordState?: CodexRecordState
+}) {
+  const entries = codexRecordState?.entries ?? []
+  const latestEntries = entries.slice(-4).reverse()
+
+  return (
+    <section className="title-codex-preview" aria-label="残榜图鉴">
+      <span>残榜图鉴</span>
+      <strong>{entries.length} 条留痕</strong>
+      {latestEntries.length > 0 ? (
+        <div>
+          {latestEntries.map((entry) => (
+            <small key={entry.id}>
+              {getCodexKindLabel(entry.kind)}：{entry.nameKey ? t(entry.nameKey) : entry.subjectId}
+            </small>
+          ))}
+        </div>
+      ) : (
+        <small>尚无历史 run 终册记录。</small>
+      )}
+    </section>
   )
 }
 
@@ -86,4 +116,21 @@ function RoleSelectCard({
 
 function t(key: string) {
   return gameData.localization[key] ?? key
+}
+
+function getCodexKindLabel(kind: CodexRecordEntry['kind']) {
+  const labels: Record<CodexRecordEntry['kind'], string> = {
+    enemy_vanquished: '伏诛',
+    enemy_catalogued: '归册',
+    boss_vanquished: 'Boss 伏诛',
+    boss_sealed: '窃榜归封',
+    artifact_claimed: '法宝',
+    artifact_bound: '认主',
+    verdict_register: '登簿',
+    verdict_red_ink: '朱批',
+    verdict_erase: '削籍',
+    route_ending: '结局',
+  }
+
+  return labels[kind]
 }

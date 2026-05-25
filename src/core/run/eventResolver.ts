@@ -120,6 +120,7 @@ export function resolveTutorialEvent(
     id: `event_record_${run.events.records.length + 1}`,
     eventId: event.id,
     optionId: option.id,
+    artifactSignalKey: option.artifactSignalKey,
     addedCardDefinitionIds: result.addedCardDefinitionIds,
     addedIncenseSealDefinitionIds: result.addedIncenseSealDefinitionIds,
     removedDeckCardIds: result.removedDeckCardIds,

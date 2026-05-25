@@ -332,6 +332,64 @@ describe('T22 shop resolver', () => {
     expect(new Set(fractureShopSealItems.map((item) => item.incenseSealDefinitionId)).size).toBe(2)
   })
 
+  it('keeps T88 route-seeded shop shelves stable while allowing node variant pressure to rotate them', () => {
+    const run = advanceTutorialRun(
+      advanceTutorialRun(
+        advanceTutorialRun(
+          createInitialTutorialRunState(gameData.tutorialUnlocks, tutorialPlusEncounterIds),
+          gameData.encounters,
+          gameData.tutorialUnlocks,
+          'vanquish',
+        ),
+        gameData.encounters,
+        gameData.tutorialUnlocks,
+        'vanquish',
+      ),
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+    const seedSevenItemIds = getAvailableShopItems(
+      run,
+      gameData.shopItems,
+      gameData.cards,
+      gameData.artifacts,
+      {
+        routeNodeId: shopRouteNodeId,
+        routeSeed: '7',
+        routeTendencyIds: ['steady', 'supply'],
+        incenseSealDefinitions: gameData.incenseSeals,
+      },
+    ).map((item) => item.id)
+    const seedSevenAgainItemIds = getAvailableShopItems(
+      run,
+      gameData.shopItems,
+      gameData.cards,
+      gameData.artifacts,
+      {
+        routeNodeId: shopRouteNodeId,
+        routeSeed: '7',
+        routeTendencyIds: ['steady', 'supply'],
+        incenseSealDefinitions: gameData.incenseSeals,
+      },
+    ).map((item) => item.id)
+    const seedEightItemIds = getAvailableShopItems(
+      run,
+      gameData.shopItems,
+      gameData.cards,
+      gameData.artifacts,
+      {
+        routeNodeId: shopRouteNodeId,
+        routeSeed: '8',
+        routeTendencyIds: ['supply'],
+        incenseSealDefinitions: gameData.incenseSeals,
+      },
+    ).map((item) => item.id)
+
+    expect(seedSevenItemIds).toEqual(seedSevenAgainItemIds)
+    expect(seedSevenItemIds).not.toEqual(seedEightItemIds)
+  })
+
   it('does not expose direct artifact purchases in the current shop data', () => {
     const coreRun = createInitialTutorialRunState(
       gameData.tutorialUnlocks,
