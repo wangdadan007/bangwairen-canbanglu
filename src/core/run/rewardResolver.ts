@@ -268,9 +268,20 @@ function getSurpriseRewardCandidates(
   const allowedRarities: readonly CardRarity[] = isEliteOrLate
     ? ['rare', 'uncommon']
     : ['uncommon']
-  const candidates = cards.filter((card) => allowedRarities.includes(card.rarity))
+  const candidates = cards.filter(
+    (card) => allowedRarities.includes(card.rarity) || isLateArtifactSupportCard(card, isEliteOrLate),
+  )
 
   return candidates.length > 0 ? candidates : cards
+}
+
+function isLateArtifactSupportCard(card: CardDefinition, isEliteOrLate: boolean): boolean {
+  return (
+    isEliteOrLate &&
+    card.rarity === 'common' &&
+    card.tags.includes('artifact') &&
+    (card.tags.includes('ink') || card.tags.includes('draw'))
+  )
 }
 
 function pickFromSlot(

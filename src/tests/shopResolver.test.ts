@@ -296,6 +296,42 @@ describe('T22 shop resolver', () => {
     )
   })
 
+  it('keeps a two-seal floor on the T87 fracture shop branch only', () => {
+    const run = advanceTutorialRun(
+      advanceTutorialRun(
+        advanceTutorialRun(
+          createInitialTutorialRunState(gameData.tutorialUnlocks, tutorialPlusEncounterIds),
+          gameData.encounters,
+          gameData.tutorialUnlocks,
+          'vanquish',
+        ),
+        gameData.encounters,
+        gameData.tutorialUnlocks,
+        'vanquish',
+      ),
+      gameData.encounters,
+      gameData.tutorialUnlocks,
+      'vanquish',
+    )
+    const normalShopSealItems = getShopItems(run).filter((item) => item.kind === 'incense_seal')
+    const fractureShopSealItems = getAvailableShopItems(
+      run,
+      gameData.shopItems,
+      gameData.cards,
+      gameData.artifacts,
+      {
+        routeNodeId: 'route_node_fracture_shop',
+        routeSeed: gameData.routes[0]?.id,
+        routeTendencyIds: ['fracture', 'supply'],
+        incenseSealDefinitions: gameData.incenseSeals,
+      },
+    ).filter((item) => item.kind === 'incense_seal')
+
+    expect(normalShopSealItems).toHaveLength(1)
+    expect(fractureShopSealItems).toHaveLength(2)
+    expect(new Set(fractureShopSealItems.map((item) => item.incenseSealDefinitionId)).size).toBe(2)
+  })
+
   it('does not expose direct artifact purchases in the current shop data', () => {
     const coreRun = createInitialTutorialRunState(
       gameData.tutorialUnlocks,

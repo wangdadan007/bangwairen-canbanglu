@@ -117,6 +117,67 @@ describe('T64 chapter one branched route closure', () => {
     ])
   })
 
+  it('gives the T87 fracture shop branch a short rest before the final name pressure', () => {
+    const firstChoice = advanceToFirstChoice()
+    const fracture = selectReachableRouteNode(
+      route,
+      firstChoice,
+      'route_node_fracture_fortune_breaker',
+    )
+    const fractureBranch = completeCurrentRouteNode(route, fracture)
+    const scrollStuffing = selectReachableRouteNode(
+      route,
+      fractureBranch,
+      'route_node_late_scroll_stuffer_clerk',
+    )
+    let state = completeCurrentRouteNode(route, scrollStuffing)
+
+    expect(state.currentNodeId).toBe('route_node_fracture_shop')
+    state = completeCurrentRouteNode(route, state)
+    expect(state.currentNodeId).toBe('route_node_fracture_shop_fouled_pressure')
+    state = completeCurrentRouteNode(route, state)
+    expect(state.currentNodeId).toBe('route_node_late_event_after_shop')
+
+    const afterShopEvent = getCurrentRouteNode(route, state)
+    expect(afterShopEvent?.eventPoolIds).not.toContain('event_fouled_page_bundle')
+    expect(afterShopEvent?.eventPoolIds).toContain('event_covered_name_stable')
+
+    state = completeCurrentRouteNode(route, state)
+    expect(state.currentNodeId).toBe('route_node_fracture_shop_boss_ante_rest')
+    expect(getCurrentRouteFlowKind(route, state)).toBe('rest')
+
+    state = completeCurrentRouteNode(route, state)
+    expect(state.currentNodeId).toBe('route_node_fracture_shop_name_pressure')
+    expect(getCurrentRouteNode(route, state)?.encounterPoolIds).toEqual([
+      'encounter_late_fleeing_name_paper_horse',
+      'encounter_pool_fleeing_name_paper_horse_return',
+      'encounter_multi_offering_table_mouse',
+      'encounter_pool_incense_ash_louse',
+    ])
+    expect(getCurrentRouteNode(route, state)?.encounterPoolIds).not.toContain(
+      'encounter_multi_fleeing_horse_louse',
+    )
+  })
+
+  it('keeps the T87 catalogue event shop line from stacking scroll stuffing after the fire elite', () => {
+    const finalPollutionNode = route.nodes.find(
+      (node) => node.id === 'route_node_catalogue_event_final_pollution',
+    )
+
+    expect(finalPollutionNode?.encounterPoolIds).toEqual([
+      'encounter_late_plague_paper_figure',
+      'encounter_pool_plague_paper_figure_return',
+      'encounter_pool_offering_table_afterimage_return',
+      'encounter_multi_offering_table_mouse',
+    ])
+    expect(finalPollutionNode?.encounterPoolIds).not.toContain(
+      'encounter_late_scroll_stuffer_clerk',
+    )
+    expect(finalPollutionNode?.encounterPoolIds).not.toContain(
+      'encounter_multi_plague_offering_table',
+    )
+  })
+
   it('builds battle encounter order from the selected route path instead of every node', () => {
     const defaultRouteState = createInitialRouteState(route, 11)
     const firstChoice = advanceToFirstChoice(defaultRouteState)

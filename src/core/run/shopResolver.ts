@@ -27,6 +27,8 @@ export const DEFAULT_TUTORIAL_INCENSE_MONEY = 100
 
 const REMOVE_CARD_BASE_PRICES = [45, 70, 95] as const
 const SHOP_CARD_COUNT = 3
+const FRACTURE_SHOP_ROUTE_NODE_ID = 'route_node_fracture_shop'
+const FRACTURE_SHOP_INCENSE_SEAL_COUNT = 2
 const FOULED_SCROLL_CARD_ID = 'card_fouled_scroll'
 
 export interface ResolveTutorialShopPurchaseInput {
@@ -263,7 +265,7 @@ function createSeededShopShelf(
     routeNodeId,
   )
   const maintenanceItem = chooseMaintenanceServiceItem(run, shopItems, routeNodeId)
-  const incenseSealItem = createSeededIncenseSealShopItem(
+  const incenseSealItems = createSeededIncenseSealShopItems(
     run,
     options.incenseSealDefinitions ?? [],
     routeNodeId,
@@ -272,7 +274,8 @@ function createSeededShopShelf(
 
   return [
     ...cardItems,
-    ...compactItems([removeItem, redInkItem, maintenanceItem, incenseSealItem]),
+    ...compactItems([removeItem, redInkItem, maintenanceItem]),
+    ...incenseSealItems,
   ].filter(
     (item) =>
       !run.shops.records.some(
@@ -362,32 +365,33 @@ function chooseMaintenanceServiceItem(
   return cleanseItem ? createRouteScopedServiceItem(cleanseItem, routeNodeId) : undefined
 }
 
-function createSeededIncenseSealShopItem(
+function createSeededIncenseSealShopItems(
   run: TutorialRunState,
   incenseSealDefinitions: readonly IncenseSealDefinition[],
   routeNodeId: RouteNodeId,
   seed: string,
-): TutorialShopItemDefinition | undefined {
+): readonly TutorialShopItemDefinition[] {
   if (incenseSealDefinitions.length === 0 || !run.unlocks.stages.includes('stage_human_altar')) {
-    return undefined
+    return []
   }
 
-  const seal = rotateIncenseSeals(incenseSealDefinitions, `${seed}:incense_seal`)[0]
+  const count =
+    routeNodeId === FRACTURE_SHOP_ROUTE_NODE_ID
+      ? Math.min(FRACTURE_SHOP_INCENSE_SEAL_COUNT, incenseSealDefinitions.length)
+      : 1
 
-  if (!seal) {
-    return undefined
-  }
-
-  return {
-    id: `shop_incense_seal_${routeNodeId}_${seal.id}`,
-    kind: 'incense_seal',
-    nameKey: seal.nameKey,
-    descriptionKey: seal.rulesTextKey,
-    cost: seal.price,
-    currency: 'incense_money',
-    incenseSealDefinitionId: seal.id,
-    shelfSlot: 'incense_seal',
-  }
+  return rotateIncenseSeals(incenseSealDefinitions, `${seed}:incense_seal`)
+    .slice(0, count)
+    .map((seal) => ({
+      id: `shop_incense_seal_${routeNodeId}_${seal.id}`,
+      kind: 'incense_seal',
+      nameKey: seal.nameKey,
+      descriptionKey: seal.rulesTextKey,
+      cost: seal.price,
+      currency: 'incense_money',
+      incenseSealDefinitionId: seal.id,
+      shelfSlot: 'incense_seal',
+    }))
 }
 
 function spendIncenseMoney(currency: TutorialCurrencyState, cost: number): TutorialCurrencyState {

@@ -480,7 +480,6 @@ describe('initial game data', () => {
       'event_cracked_registry_needle',
     ])
     expect(nodesById.get('route_node_late_event_after_shop')?.eventPoolIds).toEqual([
-      'event_fouled_page_bundle',
       'event_covered_name_stable',
       'event_bound_artifact_case',
       'event_lost_altar_bell',
@@ -511,6 +510,22 @@ describe('initial game data', () => {
       'encounter_pool_offering_table_afterimage_return',
       'encounter_multi_offering_table_mouse',
     ])
+    expect(nodesById.get('route_node_late_event_after_shop')?.nextNodeIds).toEqual([
+      'route_node_fracture_shop_boss_ante_rest',
+    ])
+    expect(nodesById.get('route_node_fracture_shop_boss_ante_rest')?.routeTendencyIds).toEqual([
+      'fracture',
+      'supply',
+    ])
+    expect(nodesById.get('route_node_fracture_shop_boss_ante_rest')?.nextNodeIds).toEqual([
+      'route_node_fracture_shop_name_pressure',
+    ])
+    expect(nodesById.get('route_node_fracture_shop_name_pressure')?.encounterPoolIds).toEqual([
+      'encounter_late_fleeing_name_paper_horse',
+      'encounter_pool_fleeing_name_paper_horse_return',
+      'encounter_multi_offering_table_mouse',
+      'encounter_pool_incense_ash_louse',
+    ])
     expect(
       nodesById.get('route_node_unlit_temple_warden')?.encounterPoolIds,
     ).toBeUndefined()
@@ -535,7 +550,7 @@ describe('initial game data', () => {
     ])
     expect(
       route.nodes.filter((node) => node.type === 'event').map((node) => node.eventPoolIds?.length),
-    ).toEqual([4, 5, 5, 5])
+    ).toEqual([4, 5, 5, 4])
     expect(nodesById.get('route_node_boss_registry_thief')?.nextNodeIds).toEqual([])
     expect(route.nodes.flatMap((node) => node.encounterId ?? [])).toEqual([
       'encounter_tutorial_paper_wraith',
