@@ -791,13 +791,19 @@ export function formatLogEntry(
     }
 
     if (result === 'prepared') {
-      return `${artifactName}触发：下一次破形额外 +${
+      const targetLabel =
+        entry.payload.requiresBreakShapeCard === true ? '下一张破形牌' : '下一次破形'
+
+      return `${artifactName}触发：${targetLabel}额外 +${
         getPayloadNumber(entry.payload.amount) ?? 0
       }。`
     }
 
     if (result === 'consumed') {
-      return `${artifactName}借势：本次破形额外 +${
+      const targetLabel =
+        entry.payload.requiresBreakShapeCard === true ? '本张破形牌' : '本次破形'
+
+      return `${artifactName}借势：${targetLabel}额外 +${
         getPayloadNumber(entry.payload.amount) ?? 0
       }。`
     }
@@ -1001,6 +1007,10 @@ export function getCardEffectLabels(definition: CardDefinition, card?: CardInsta
     new Set(
       effects.map((effect) => {
         if (effect.type === 'BREAK_SHAPE') {
+          if (effect.condition?.type === 'TARGET_HAS_NO_NAME_SLOT') {
+            return '无名破形'
+          }
+
           return '破形'
         }
 

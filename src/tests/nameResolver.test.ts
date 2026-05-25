@@ -41,7 +41,7 @@ describe('name resolver', () => {
     )
   })
 
-  it('names enemy after all name slots are revealed and triggers name break once', () => {
+  it('names enemy after all name slots are revealed and uses discern fallback on later ask-name', () => {
     const state = createInitialBattleState({
       cardDefinitions: gameData.cards,
       enemyDefinition: paperWraith,
@@ -80,11 +80,77 @@ describe('name resolver', () => {
     expect(afterSecondAsk.enemies[0].isNamed).toBe(true)
     expect(afterSecondAsk.enemies[0].hasTriggeredNameBreak).toBe(true)
     expect(afterSecondAsk.enemies[0].currentForm).toBe(12)
-    expect(afterThirdAsk.enemies[0].currentForm).toBe(12)
+    expect(afterSecondAsk.enemies[0].nextIntentPreview).toBeUndefined()
+    expect(afterThirdAsk.enemies[0].currentForm).toBe(11)
+    expect(afterThirdAsk.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
     expect(afterThirdAsk.actionLog.filter((entry) => entry.type === 'NAME_BREAK_TRIGGERED')).toHaveLength(1)
+    expect(
+      afterThirdAsk.actionLog.filter(
+        (entry) => entry.type === 'NAME_ASKED' && entry.payload.result === 'discern_intent',
+      ),
+    ).toHaveLength(1)
+    expect(
+      afterThirdAsk.actionLog.filter(
+        (entry) => entry.type === 'INTENT_DISCERNED' && entry.payload.result === 'next_previewed',
+      ),
+    ).toHaveLength(1)
+    expect(
+      afterThirdAsk.actionLog.filter(
+        (entry) => entry.type === 'FORM_BROKEN' && entry.payload.amount === 1,
+      ),
+    ).toHaveLength(1)
     expect(afterThirdAsk.actionLog.map((entry) => entry.type)).toEqual(
       expect.arrayContaining(['ENEMY_NAMED', 'NAME_BREAK_TRIGGERED']),
     )
+  })
+
+  it('does not consume pending break-shape bonuses on named ask-name fallback', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: paperWraith,
+      deckDefinitionIds: ['card_ask_name', 'card_ask_name', 'card_ask_name'],
+      artifacts: createInitialArtifactCollection(gameData.artifacts),
+    })
+    const [firstAsk, secondAsk, thirdAsk] = state.hand
+    const afterFirstAsk = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: firstAsk.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      context,
+    )
+    const afterSecondAsk = reduceBattleState(
+      afterFirstAsk,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: secondAsk.instanceId,
+        targetEnemyInstanceId: afterFirstAsk.enemies[0].instanceId,
+      },
+      context,
+    )
+    const afterThirdAsk = reduceBattleState(
+      afterSecondAsk,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: thirdAsk.instanceId,
+        targetEnemyInstanceId: afterSecondAsk.enemies[0].instanceId,
+      },
+      context,
+    )
+
+    expect(afterSecondAsk.pendingArtifactBreakShapeBonus).toEqual({
+      artifactId: 'artifact_whip_fragment',
+      amount: 2,
+      requiresBreakShapeCard: true,
+    })
+    expect(afterThirdAsk.enemies[0].currentForm).toBe(11)
+    expect(afterThirdAsk.pendingArtifactBreakShapeBonus).toEqual({
+      artifactId: 'artifact_whip_fragment',
+      amount: 2,
+      requiresBreakShapeCard: true,
+    })
   })
 
   it('uses discern-intent fallback against nameless enemies and still gives weak form break', () => {
@@ -123,6 +189,54 @@ describe('name resolver', () => {
     expect(nextState.enemies[0].currentForm).toBe(17)
     expect(nextState.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
     expect(nextState.enemies[0].isNamed).toBe(false)
+  })
+
+  it('keeps discerned repeated next intent visible after enemy action advances', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: paperWraith,
+      deckDefinitionIds: [
+        'card_ask_name',
+        'card_ask_name',
+        'card_ask_name',
+      ],
+    })
+    const [firstAsk, secondAsk, thirdAsk] = state.hand
+    const afterFirstAsk = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: firstAsk.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      context,
+    )
+    const afterSecondAsk = reduceBattleState(
+      afterFirstAsk,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: secondAsk.instanceId,
+        targetEnemyInstanceId: afterFirstAsk.enemies[0].instanceId,
+      },
+      context,
+    )
+    const afterThirdAsk = reduceBattleState(
+      afterSecondAsk,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: thirdAsk.instanceId,
+        targetEnemyInstanceId: afterSecondAsk.enemies[0].instanceId,
+      },
+      context,
+    )
+    const nextTurn = reduceBattleState(afterThirdAsk, { type: 'END_TURN' }, context)
+
+    expect(afterSecondAsk.enemies[0].nextIntentPreview).toBeUndefined()
+    expect(afterThirdAsk.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
+    expect(nextTurn.turn).toBe(2)
+    expect(nextTurn.enemies[0].currentIntent?.id).toBe('intent_paper_wraith_scrape')
+    expect(nextTurn.enemies[0].currentIntentVisibility).toBe('revealed')
+    expect(nextTurn.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
   })
 
   it('lets bone mirror reveal a masked elite intent before previewing later moves', () => {

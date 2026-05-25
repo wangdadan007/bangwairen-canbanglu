@@ -4,7 +4,7 @@
   "card.zhu_fu.rules": "破形 4。若目标已有名被揭示，额外破形 1。",
   "card.ask_name.name": "问名",
   "card.ask_name.description": "查明敌人的一格真名。",
-  "card.ask_name.rules": "问名 1。若目标无名可问，改为辨势并破形 1。辨势：揭开遮蔽行动；若本次行动已明，查看后一动。",
+  "card.ask_name.rules": "问名 1。若目标无名格或已正名，改为辨势并破形 1。辨势：揭开遮蔽行动；若本次行动已明，查看后一动。",
   "card.guard_desk_talisman.name": "护案符",
   "card.guard_desk_talisman.description": "符纸镇案，压住来势。",
   "card.guard_desk_talisman.rules": "封势 3。只能降低直接来势。",

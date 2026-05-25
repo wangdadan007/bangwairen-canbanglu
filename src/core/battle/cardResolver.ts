@@ -137,11 +137,11 @@ function resolveCardEffects(
       continue
     }
 
-    nextState = resolveCardEffect(nextState, card, effect, targetEnemyInstanceId)
+    nextState = resolveCardEffect(nextState, card, cardDefinition, effect, targetEnemyInstanceId)
   }
 
   for (const annotation of card.annotations) {
-    nextState = resolveCardAnnotation(nextState, card, annotation, targetEnemyInstanceId)
+    nextState = resolveCardAnnotation(nextState, card, cardDefinition, annotation, targetEnemyInstanceId)
   }
 
   return nextState
@@ -150,6 +150,7 @@ function resolveCardEffects(
 function resolveCardAnnotation(
   state: CombatState,
   card: CardInstance,
+  cardDefinition: CardDefinition,
   annotation: CardAnnotation,
   targetEnemyInstanceId?: EnemyInstanceId,
 ): CombatState {
@@ -168,7 +169,7 @@ function resolveCardAnnotation(
       continue
     }
 
-    nextState = resolveCardEffect(nextState, card, effect, targetEnemyInstanceId)
+    nextState = resolveCardEffect(nextState, card, cardDefinition, effect, targetEnemyInstanceId)
   }
 
   return triggerLinzhaoAfterCardAnnotationTriggered(nextState, {
@@ -179,6 +180,7 @@ function resolveCardAnnotation(
 function resolveCardEffect(
   state: CombatState,
   card: CardInstance,
+  cardDefinition: CardDefinition,
   effect: CardEffect,
   targetEnemyInstanceId?: EnemyInstanceId,
 ): CombatState {
@@ -191,6 +193,7 @@ function resolveCardEffect(
         amount: effect.amount,
         targetType: effect.target,
         targetFilter: effect.targetFilter,
+        sourceIsBreakShapeCard: isBreakShapeCardDefinition(cardDefinition),
       },
     )
   }
@@ -310,10 +313,15 @@ function resolveCardEffect(
       sourceId: card.instanceId,
       targetEnemyInstanceId,
       amount: effect.amount,
+      sourceIsBreakShapeCard: isBreakShapeCardDefinition(cardDefinition),
     })
   }
 
   return state
+}
+
+function isBreakShapeCardDefinition(cardDefinition: CardDefinition) {
+  return cardDefinition.tags.includes('break_form')
 }
 
 function sealIncomingForce(

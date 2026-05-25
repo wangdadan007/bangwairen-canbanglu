@@ -276,6 +276,7 @@ describe('battle core loop', () => {
     expect(afterAskName.pendingArtifactBreakShapeBonus).toEqual({
       artifactId: 'artifact_whip_fragment',
       amount: 2,
+      requiresBreakShapeCard: true,
     })
     expect(afterAskName.actionLog.map((entry) => entry.type)).toEqual(
       expect.arrayContaining(['THUNDER_LEAD_APPLIED', 'NAME_ASKED', 'THUNDER_LEAD_TRIGGERED']),
@@ -316,6 +317,7 @@ describe('battle core loop', () => {
     expect(nextTurn.pendingArtifactBreakShapeBonus).toEqual({
       artifactId: 'artifact_whip_fragment',
       amount: 2,
+      requiresBreakShapeCard: true,
     })
     expect(nextTurn.actionLog.map((entry) => entry.type)).toEqual(
       expect.arrayContaining(['FIRE_MARK_APPLIED', 'FIRE_MARK_TRIGGERED']),
@@ -363,6 +365,7 @@ function withPendingArtifactBreakShapeBonus(state: CombatState): CombatState {
     pendingArtifactBreakShapeBonus: {
       artifactId: 'artifact_whip_fragment',
       amount: 2,
+      requiresBreakShapeCard: true,
     },
   }
 }

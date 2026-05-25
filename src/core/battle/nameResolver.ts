@@ -6,6 +6,7 @@ import {
 import { discernEnemyIntent } from './intentInsightResolver'
 import { triggerLinzhaoAfterAskName } from './linzhaoResolver'
 import { triggerRegisterAfterEnemyNamed } from './registerBattleResolver'
+import { breakEnemyForm } from './shapeResolver'
 import { triggerThunderLead } from './shapeStatusResolver'
 import type { CombatState, EnemyInstanceId, EnemyState, EnemyTier, GameEntityId } from '../../types'
 
@@ -21,6 +22,7 @@ export interface AskNameInput {
   readonly sourceId: GameEntityId
   readonly targetEnemyInstanceId?: EnemyInstanceId
   readonly amount: number
+  readonly sourceIsBreakShapeCard?: boolean
 }
 
 export function resolveAskName(state: CombatState, input: AskNameInput): CombatState {
@@ -56,7 +58,7 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
       amount: input.amount,
       effectiveAmount,
       askNamePenalty,
-      result: target.nameSlots.length === 0 ? 'discern_intent' : 'reveal_name_slot',
+      result: hasAskableNameSlot(target) ? 'reveal_name_slot' : 'discern_intent',
     },
   })
 
@@ -64,12 +66,20 @@ export function resolveAskName(state: CombatState, input: AskNameInput): CombatS
     return nextState
   }
 
-  if (target.nameSlots.length === 0) {
+  if (!hasAskableNameSlot(target)) {
     nextState = discernEnemyIntent(nextState, {
+      sourceId: input.sourceId,
+      targetEnemyInstanceId: target.instanceId,
+      reason: 'ask_name_fallback',
+    })
+    if (target.isNamed) {
+      nextState = breakEnemyForm(nextState, {
         sourceId: input.sourceId,
         targetEnemyInstanceId: target.instanceId,
-        reason: 'ask_name_fallback',
+        amount: 1,
+        sourceIsBreakShapeCard: input.sourceIsBreakShapeCard,
       })
+    }
 
     nextState = triggerArtifactsAfterAskName(nextState, input.sourceId)
     nextState = triggerThunderLead(nextState, target.instanceId, input.sourceId)
@@ -352,6 +362,10 @@ function shouldTriggerNaming(enemy: EnemyState): boolean {
     enemy.nameSlots.length > 0 &&
     enemy.nameSlots.every((slot) => slot.isRevealed)
   )
+}
+
+function hasAskableNameSlot(enemy: EnemyState): boolean {
+  return !enemy.isNamed && enemy.nameSlots.some((slot) => !slot.isRevealed)
 }
 
 function selectNameTarget(

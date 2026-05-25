@@ -121,6 +121,7 @@ export type ActionLogType =
 export interface PendingArtifactBreakShapeBonus {
   readonly artifactId: ArtifactId
   readonly amount: number
+  readonly requiresBreakShapeCard?: boolean
 }
 
 export interface PendingRegisterBreakShapeBonus {

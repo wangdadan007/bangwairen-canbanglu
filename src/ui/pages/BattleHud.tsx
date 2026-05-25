@@ -1275,7 +1275,7 @@ function getEnemyVisualKind(definitionId: string) {
 }
 
 function getEffectTooltip(label: string) {
-  if (label === '破形') {
+  if (label.includes('破形')) {
     return getTermTooltip('break_form')
   }
 

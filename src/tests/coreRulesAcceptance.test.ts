@@ -49,7 +49,7 @@ describe('T06 core rule acceptance', () => {
     const afterThirdAsk = playFirstCard(afterSecondAsk, 'card_ask_name')
 
     expect(afterSecondAsk.enemies[0].currentForm).toBe(12)
-    expect(afterThirdAsk.enemies[0].currentForm).toBe(12)
+    expect(afterThirdAsk.enemies[0].currentForm).toBe(11)
     expect(afterThirdAsk.enemies[0].hasTriggeredNameBreak).toBe(true)
     expect(
       afterThirdAsk.actionLog.filter((entry) => entry.type === 'NAME_BREAK_TRIGGERED'),

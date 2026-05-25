@@ -8,6 +8,7 @@ import type {
   EnemyInstanceId,
   EnemyState,
   GameEntityId,
+  PendingArtifactBreakShapeBonus,
 } from '../../types'
 
 export interface BreakEnemyFormInput {
@@ -17,6 +18,7 @@ export interface BreakEnemyFormInput {
   readonly targetType?: 'selected_enemy' | 'all_enemies' | 'random_enemy'
   readonly targetFilter?: EffectTargetFilter
   readonly consumeBreakShapeBonuses?: boolean
+  readonly sourceIsBreakShapeCard?: boolean
   readonly logFormBroken?: boolean
 }
 
@@ -38,7 +40,13 @@ export function breakEnemyForm(state: CombatState, input: BreakEnemyFormInput): 
 
     let breakAmount = input.amount
 
-    if (input.consumeBreakShapeBonuses !== false && nextState.pendingArtifactBreakShapeBonus) {
+    if (
+      input.consumeBreakShapeBonuses !== false &&
+      shouldConsumeArtifactBreakShapeBonus(
+        nextState.pendingArtifactBreakShapeBonus,
+        input.sourceIsBreakShapeCard === true,
+      )
+    ) {
       const consumedBonus = consumePendingBreakShapeBonus(nextState, target.instanceId)
       nextState = consumedBonus.state
       breakAmount += consumedBonus.bonusAmount
@@ -116,6 +124,17 @@ export function selectEnemyTargets(
 
 function findEnemy(state: CombatState, enemyInstanceId: EnemyInstanceId) {
   return state.enemies.find((enemy) => enemy.instanceId === enemyInstanceId)
+}
+
+function shouldConsumeArtifactBreakShapeBonus(
+  pendingBonus: PendingArtifactBreakShapeBonus | undefined,
+  sourceIsBreakShapeCard: boolean,
+) {
+  if (!pendingBonus) {
+    return false
+  }
+
+  return !pendingBonus.requiresBreakShapeCard || sourceIsBreakShapeCard
 }
 
 function isEnemyTargetFilterMatched(enemy: EnemyState, targetFilter: EffectTargetFilter): boolean {

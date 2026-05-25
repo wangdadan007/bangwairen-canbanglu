@@ -47,7 +47,7 @@ function resolveNamedEnemy(enemyDefinitionId: string) {
   let state = createInitialBattleState({
     cardDefinitions: gameData.cards,
     enemyDefinition,
-    deckDefinitionIds: ['card_ask_name', 'card_ask_name', 'card_ask_name'],
+    deckDefinitionIds: Array.from({ length: enemyDefinition.nameSlots }, () => 'card_ask_name'),
   })
 
   for (const card of [...state.hand]) {

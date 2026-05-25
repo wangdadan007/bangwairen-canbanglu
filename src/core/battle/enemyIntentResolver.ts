@@ -1112,6 +1112,8 @@ function advanceSingleEnemyIntent(
     Boolean(nextIntent) && enemy.nextIntentPreview?.id === nextIntent?.id
   const isNextIntentRevealed =
     !options.forceMaskCurrentIntent && (hasPreviewedNextIntent || nextMaskMode === 'none')
+  const carriedPreview =
+    hasPreviewedNextIntent && followingIntent?.id === nextIntent?.id ? followingIntent : undefined
 
   return {
     ...enemy,
@@ -1120,7 +1122,7 @@ function advanceSingleEnemyIntent(
     currentIntentVisibility: isNextIntentRevealed ? 'revealed' : 'masked',
     intentMaskMode: nextMaskMode,
     nextIntent: followingIntent,
-    nextIntentPreview: undefined,
+    nextIntentPreview: carriedPreview,
     incomingForce: resolveIncomingForceAmount(state, enemy, nextIntent).amount,
     blockedAbnormalMoveTypes: [],
   }

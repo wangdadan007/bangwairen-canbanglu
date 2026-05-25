@@ -257,6 +257,7 @@ export function triggerArtifactsAfterEnemyNamed(
     pendingArtifactBreakShapeBonus: {
       artifactId: whipFragment.id,
       amount: bonusAmount,
+      requiresBreakShapeCard: true,
     },
     triggeredArtifactIds: [...state.triggeredArtifactIds, whipFragment.id],
   }
@@ -269,6 +270,7 @@ export function triggerArtifactsAfterEnemyNamed(
       effectType: 'next_break_shape_bonus',
       result: 'prepared',
       amount: bonusAmount,
+      requiresBreakShapeCard: true,
     },
   })
 }
@@ -368,6 +370,7 @@ export function consumePendingBreakShapeBonus(
         effectType: 'next_break_shape_bonus',
         result: 'consumed',
         amount: pendingBonus.amount,
+        requiresBreakShapeCard: pendingBonus.requiresBreakShapeCard ?? false,
       },
     }),
     bonusAmount: pendingBonus.amount,
@@ -394,10 +397,7 @@ function isBreakShapeCardDefinitionId(
     ? cardDefinitions.find((candidate) => candidate.id === cardDefinitionId)
     : undefined
 
-  return Boolean(
-    cardDefinition?.effects.some((effect) => effect.type === 'BREAK_SHAPE') ||
-      cardDefinition?.tags.includes('break_form'),
-  )
+  return Boolean(cardDefinition?.tags.includes('break_form'))
 }
 
 function getLatestCardPlayTargetId(state: CombatState) {

@@ -392,6 +392,7 @@ describe('T17 artifact foundation', () => {
     expect(afterSecondAsk.pendingArtifactBreakShapeBonus).toEqual({
       artifactId: 'artifact_whip_fragment',
       amount: 2,
+      requiresBreakShapeCard: true,
     })
     expect(afterBreak.pendingArtifactBreakShapeBonus).toBeUndefined()
     expect(afterBreak.enemies[0].currentForm).toBe(5)

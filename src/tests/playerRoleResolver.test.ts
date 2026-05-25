@@ -137,6 +137,51 @@ describe('T62 playable roles', () => {
     expect(afterSecondBreak.enemies[0].currentForm).toBe(9)
     expect(afterSecondBreak.pendingArtifactBreakShapeBonus).toBeUndefined()
   })
+
+  it('does not count ask-name cards as break-form cards for red sash fire wheel', () => {
+    const artifactDefinition = gameData.artifacts.find(
+      (artifact) => artifact.id === RED_SASH_FIRE_WHEEL_ARTIFACT_ID,
+    )
+
+    if (!artifactDefinition) {
+      throw new Error(`Missing artifact definition: ${RED_SASH_FIRE_WHEEL_ARTIFACT_ID}`)
+    }
+
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[0],
+      deckDefinitionIds: ['card_ask_name', 'card_zhu_fu'],
+      artifacts: createInitialArtifactCollection([artifactDefinition]),
+    })
+    const askName = getHandCard(state.hand, 'card_ask_name')
+    const afterAskName = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: askName.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const zhuFu = getHandCard(afterAskName.hand, 'card_zhu_fu')
+    const afterZhuFu = reduceBattleState(
+      afterAskName,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: zhuFu.instanceId,
+        targetEnemyInstanceId: afterAskName.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const redSashLogs = afterZhuFu.actionLog.filter(
+      (entry) =>
+        entry.type === 'ARTIFACT_TRIGGERED' &&
+        entry.sourceId === RED_SASH_FIRE_WHEEL_ARTIFACT_ID,
+    )
+
+    expect(redSashLogs).toEqual([])
+    expect(afterZhuFu.pendingArtifactBreakShapeBonus).toBeUndefined()
+  })
 })
 
 function countCards(deckDefinitionIds: readonly string[], cardDefinitionId: string) {
