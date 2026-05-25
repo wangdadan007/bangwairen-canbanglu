@@ -467,3 +467,29 @@
 - 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时只保留数据结构、resolver 策略和中性测试样例。
 - 是否值得抽到模板：值得，适合作为 `Roguelike Run Flow Kit` 中防止永久奖励和升级系统失控的平衡护栏章节。
 - 后续动作：后续人工试玩重点观察普通 fallback 在 3 次额度内是否仍有存在感、精英 / Boss 专属规则是否足够可识别、削籍首战爆发是否值得承担榜裂，以及升级过滤是否导致某些牌长期无可用朱批。
+
+### 2026-05-25 · T91 · Boss 前准备摘要与首局短提示复核
+
+- 候选类型：run readiness dashboard / pre-boss preparation checklist / first-run short guidance。
+- 主归属模板：`React Card Game UI Kit`。
+- 也支持：`Roguelike Run Flow Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/ui/pages/RunReadinessPanel.tsx`、`src/ui/pages/RoutePage.tsx`、`src/ui/pages/ShopPage.tsx`、`src/ui/pages/RestPage.tsx`、`src/ui/pages/firstRunGuidance.ts`、`docs/qa/CHAPTER_ONE_T91_T92_EXPERIENCE_PRESENTATION.md`。
+- 可复用价值：把 run 状态、资源、牌组信号、一次性资源、永久奖励和风险标签压缩成 Boss 前可读摘要，适合卡牌肉鸽在不新增教程墙的情况下帮助玩家判断补给、休整和路线压力。
+- 与本作强绑定部分：临战整册、香火钱、墨、香封、法宝、朱批、榜裂、劫数、问名、破形等命名属于本作表达。
+- 去题材化思路：抽象为 health, premium resource, shop currency, deck action coverage, consumable slots, relic status, upgrades, risk meters 和 concise route / shop / rest context notes。
+- 依赖与授权注意：本轮未新增依赖、第三方素材或正式美术；模板化时只保留组件输入、信号计算和风险标签结构。
+- 是否值得抽到模板：值得，适合作为 `React Card Game UI Kit` 的 pre-boss readiness panel，也可放入 QA kit 的 first-run comprehension checklist。
+- 后续动作：真实外部试玩后观察摘要是否帮助玩家做 Boss 前判断，若玩家误读为强制推荐，再抽象出更中性的风险文案规则。
+
+### 2026-05-25 · T92 · 低成本战斗表现纵切与多视口 canvas smoke
+
+- 候选类型：procedural combat table / placeholder enemy silhouettes / reduced-motion feedback / canvas smoke test。
+- 主归属模板：`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 也支持：`React Card Game UI Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/game/scenes/BattleScene.ts`、`src/ui/pages/BattleHud.tsx`、`src/ui/styles.css`、`e2e/chapter-one-smoke.spec.ts`、`playwright.config.ts`、`docs/qa/CHAPTER_ONE_T91_T92_EXPERIENCE_PRESENTATION.md`。
+- 可复用价值：用程序化 Phaser 桌案、CSS 敌人剪影、卡牌稀有度框线和轻动效建立“能被玩家感知”的战斗表现基准，并用 Playwright 三视口 smoke 验证 canvas 可见、尺寸正常、截图数据非空和页面无水平溢出。
+- 与本作强绑定部分：残榜、朱砂、三坛、法宝、临诏、形、来势、异动等视觉关键词和术语属于本作表达。
+- 去题材化思路：抽象为 canvas stage baseline, procedural board props, enemy silhouette classes, card rarity frames, feedback sweep animation, reduced motion guard 和 multi-viewport smoke project matrix。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时保留无外部素材的程序化占位策略，避免把题材色彩和中文文案带入通用模板。
+- 是否值得抽到模板：值得，适合作为 starter kit 的 pre-art vertical slice，帮助 AI 项目在正式美术前避免“系统可跑但不像游戏”的问题。
+- 后续动作：若 T93 继续表现二期，可补截图基线、更多反馈事件和正式资产登记流程，再考虑抽象为完整 visual slice checklist。

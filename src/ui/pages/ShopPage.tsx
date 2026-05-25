@@ -6,11 +6,14 @@ import type {
   IncenseSealDefinition,
   IncenseSealId,
   IncenseSealInstanceId,
+  RouteDefinition,
+  RouteState,
   RunDeckCard,
   RunDeckCardId,
   TutorialRunState,
   TutorialShopItemDefinition,
 } from '../../types'
+import { RunReadinessPanel } from './RunReadinessPanel'
 
 export interface ShopPageProps {
   readonly items: readonly TutorialShopItemDefinition[]
@@ -18,6 +21,8 @@ export interface ShopPageProps {
   readonly artifactDefinitionsById: ReadonlyMap<string, ArtifactDefinition>
   readonly cardDefinitionsById: ReadonlyMap<CardId, CardDefinition>
   readonly incenseSealDefinitionsById: ReadonlyMap<IncenseSealId, IncenseSealDefinition>
+  readonly route: RouteDefinition
+  readonly routeState: RouteState
   readonly run: TutorialRunState
   readonly t: (key: string | undefined) => string
   readonly onBuy: (
@@ -34,6 +39,8 @@ export function ShopPage({
   artifactDefinitionsById,
   cardDefinitionsById,
   incenseSealDefinitionsById,
+  route,
+  routeState,
   run,
   t,
   onBuy,
@@ -71,6 +78,17 @@ export function ShopPage({
         <span>榜裂 {run.resources.fracture}</span>
         <span>朱批 {run.redInkRecords.filter((record) => !record.skipped).length} 次</span>
       </div>
+
+      <RunReadinessPanel
+        artifactDefinitionsById={artifactDefinitionsById}
+        cardDefinitionsById={cardDefinitionsById}
+        context="shop"
+        incenseSealDefinitionsById={incenseSealDefinitionsById}
+        route={route}
+        routeState={routeState}
+        run={run}
+        t={t}
+      />
 
       <div className="shop-layout">
         <div className="shop-column">

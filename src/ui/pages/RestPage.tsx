@@ -4,18 +4,26 @@ import type {
   ArtifactState,
   CardDefinition,
   CardId,
+  IncenseSealDefinition,
+  IncenseSealId,
+  RouteDefinition,
+  RouteState,
   RunDeckCard,
   RunDeckCardId,
   TutorialRestOption,
   TutorialRestOptionId,
   TutorialRunState,
 } from '../../types'
+import { RunReadinessPanel } from './RunReadinessPanel'
 
 export interface RestPageProps {
   readonly options: readonly TutorialRestOption[]
   readonly deckCards: readonly RunDeckCard[]
   readonly cardDefinitionsById: ReadonlyMap<CardId, CardDefinition>
   readonly artifactDefinitionsById: ReadonlyMap<string, ArtifactDefinition>
+  readonly incenseSealDefinitionsById: ReadonlyMap<IncenseSealId, IncenseSealDefinition>
+  readonly route: RouteDefinition
+  readonly routeState: RouteState
   readonly run: TutorialRunState
   readonly t: (key: string | undefined) => string
   readonly onChoose: (optionId: TutorialRestOptionId, deckCardId?: RunDeckCardId) => void
@@ -26,6 +34,9 @@ export function RestPage({
   deckCards,
   cardDefinitionsById,
   artifactDefinitionsById,
+  incenseSealDefinitionsById,
+  route,
+  routeState,
   run,
   t,
   onChoose,
@@ -60,6 +71,17 @@ export function RestPage({
         <span>已朱批 {run.redInkRecords.filter((record) => !record.skipped).length} 次</span>
         <span>已休整 {run.rests.records.length} 次</span>
       </div>
+
+      <RunReadinessPanel
+        artifactDefinitionsById={artifactDefinitionsById}
+        cardDefinitionsById={cardDefinitionsById}
+        context="rest"
+        incenseSealDefinitionsById={incenseSealDefinitionsById}
+        route={route}
+        routeState={routeState}
+        run={run}
+        t={t}
+      />
 
       <div className="rest-layout">
         <div className="rest-column">

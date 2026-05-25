@@ -5,17 +5,28 @@ import {
   getSelectedRouteNodeVariant,
 } from '../../core'
 import type {
+  ArtifactDefinition,
+  CardDefinition,
+  CardId,
+  IncenseSealDefinition,
+  IncenseSealId,
   LocalizationKey,
   RouteDefinition,
   RouteNodeDefinition,
   RouteNodeId,
   RouteState,
   RouteTendencyId,
+  TutorialRunState,
 } from '../../types'
+import { RunReadinessPanel } from './RunReadinessPanel'
 
 interface RoutePageProps {
+  readonly artifactDefinitionsById: ReadonlyMap<string, ArtifactDefinition>
+  readonly cardDefinitionsById: ReadonlyMap<CardId, CardDefinition>
+  readonly incenseSealDefinitionsById: ReadonlyMap<IncenseSealId, IncenseSealDefinition>
   readonly route: RouteDefinition
   readonly routeState: RouteState
+  readonly run: TutorialRunState
   readonly t: (key: LocalizationKey) => string
   readonly onChooseRouteNode?: (nodeId: RouteNodeId) => void
 }
@@ -59,7 +70,16 @@ const routeTendencyCopy: Record<RouteTendencyId, { readonly label: string; reado
   },
 }
 
-export function RoutePage({ route, routeState, t, onChooseRouteNode }: RoutePageProps) {
+export function RoutePage({
+  artifactDefinitionsById,
+  cardDefinitionsById,
+  incenseSealDefinitionsById,
+  route,
+  routeState,
+  run,
+  t,
+  onChooseRouteNode,
+}: RoutePageProps) {
   const currentNode = getCurrentRouteNode(route, routeState)
   const hasRouteChoices = !currentNode && routeState.reachableNodeIds.length > 0
 
@@ -73,6 +93,16 @@ export function RoutePage({ route, routeState, t, onChooseRouteNode }: RoutePage
         <span>{currentNode ? nodeTypeLabels[currentNode.type] : hasRouteChoices ? '择路' : '收束'}</span>
       </header>
       <p>{t(route.descriptionKey)}</p>
+      <RunReadinessPanel
+        artifactDefinitionsById={artifactDefinitionsById}
+        cardDefinitionsById={cardDefinitionsById}
+        context="route"
+        incenseSealDefinitionsById={incenseSealDefinitionsById}
+        route={route}
+        routeState={routeState}
+        run={run}
+        t={t}
+      />
       <ol className="route-node-list">
         {route.nodes.map((node) => {
           const status = getRouteNodeStatus(routeState, node.id)

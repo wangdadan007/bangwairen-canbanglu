@@ -42,6 +42,23 @@ test('title, settings, and fresh role run are reachable', async ({ page }) => {
   await expect(page.getByText('赤绫火轮', { exact: true })).toBeVisible()
   await expect(page.getByRole('region', { name: '敌方目标' })).toBeVisible()
   await expect(page.getByRole('button', { name: '结束回合' })).toBeVisible()
+  await expect(page.getByLabel('战斗演出台：残榜案面').locator('canvas')).toBeVisible()
+
+  const stageSize = await page
+    .getByLabel('战斗演出台：残榜案面')
+    .locator('canvas')
+    .evaluate((canvas: HTMLCanvasElement) => {
+      return {
+        height: canvas.clientHeight,
+        width: canvas.clientWidth,
+      }
+    })
+  const stageScreenshot = await page.getByLabel('战斗演出台：残榜案面').screenshot()
+
+  expect(stageSize.width).toBeGreaterThan(300)
+  expect(stageSize.height).toBeGreaterThan(300)
+  expect(stageScreenshot.byteLength).toBeGreaterThan(1_000)
+  expect(new Set(stageScreenshot).size).toBeGreaterThan(32)
 
   const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
 

@@ -226,8 +226,12 @@ export function BattleHud({
       <TutorialRunPanel run={run} currentEncounter={currentEncounter} />
       {firstRunGuidance ? <FirstRunGuidancePanel guidance={firstRunGuidance} /> : null}
       <RoutePage
+        artifactDefinitionsById={artifactDefinitionsById}
+        cardDefinitionsById={cardDefinitionsById}
+        incenseSealDefinitionsById={incenseSealDefinitionsById}
         route={tutorialRoute}
         routeState={viewState.route}
+        run={run}
         t={t}
         onChooseRouteNode={chooseRouteNode}
       />
@@ -350,6 +354,8 @@ export function BattleHud({
           deckCards={run.deckCards}
           incenseSealDefinitionsById={incenseSealDefinitionsById}
           items={currentShopItems}
+          route={tutorialRoute}
+          routeState={viewState.route}
           run={run}
           t={t}
           onBuy={buyShopItem}
@@ -365,7 +371,10 @@ export function BattleHud({
           artifactDefinitionsById={artifactDefinitionsById}
           cardDefinitionsById={cardDefinitionsById}
           deckCards={run.deckCards}
+          incenseSealDefinitionsById={incenseSealDefinitionsById}
           options={currentRestOptions}
+          route={tutorialRoute}
+          routeState={viewState.route}
           run={run}
           t={t}
           onChoose={chooseRest}
@@ -482,7 +491,7 @@ export function BattleHud({
 
                 return (
                   <button
-                    className="card-button"
+                    className={getCardButtonClassName(definition, card.annotations.length)}
                     disabled={isDisabled}
                     key={card.instanceId}
                     title={disabledReason}
@@ -865,6 +874,11 @@ function EnemyPanel({
         </div>
       </div>
 
+      <div className={getEnemyPortraitClassName(enemy, intentTone)} aria-hidden="true">
+        <span className="enemy-portrait-core" />
+        <span className="enemy-portrait-mark" />
+      </div>
+
       <div className="form-meter" aria-label={`形 ${enemy.currentForm} / ${enemy.maxForm}`}>
         <span style={{ width: `${formPercent}%` }} />
       </div>
@@ -1125,6 +1139,22 @@ function Metric({
   )
 }
 
+function getCardButtonClassName(definition: CardDefinition | undefined, annotationCount: number) {
+  if (!definition) {
+    return 'card-button'
+  }
+
+  return [
+    'card-button',
+    `rarity-${definition.rarity}`,
+    `card-type-${definition.type}`,
+    definition.effects.some((effect) => effect.type === 'PLACE_LINZHAO') ? 'linzhao-card' : '',
+    annotationCount > 0 ? 'annotated' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
 function getCardDisabledReason({
   battle,
   canAct,
@@ -1179,6 +1209,51 @@ function getCardDisabledReason({
   }
 
   return canAct ? undefined : '当前不能出牌'
+}
+
+function getEnemyPortraitClassName(enemy: EnemyState, intentTone: string) {
+  return [
+    'enemy-portrait',
+    `tier-${enemy.tier}`,
+    `visual-${getEnemyVisualKind(enemy.definitionId)}`,
+    `intent-${intentTone}`,
+    enemy.isNamed ? 'named' : '',
+    enemy.currentForm <= 0 ? 'settled' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+}
+
+function getEnemyVisualKind(definitionId: string) {
+  if (definitionId.includes('registry_thief')) {
+    return 'registry-thief'
+  }
+
+  if (definitionId.includes('mouse') || definitionId.includes('louse')) {
+    return 'small-thief'
+  }
+
+  if (definitionId.includes('temple') || definitionId.includes('clerk')) {
+    return 'official'
+  }
+
+  if (definitionId.includes('bell') || definitionId.includes('dipper')) {
+    return 'bronze'
+  }
+
+  if (definitionId.includes('horse')) {
+    return 'horse'
+  }
+
+  if (definitionId.includes('altar') || definitionId.includes('offering')) {
+    return 'altar'
+  }
+
+  if (definitionId.includes('fire') || definitionId.includes('plague')) {
+    return 'fire-paper'
+  }
+
+  return 'paper'
 }
 
 function getEffectTooltip(label: string) {

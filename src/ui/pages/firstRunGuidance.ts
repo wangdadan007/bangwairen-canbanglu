@@ -100,23 +100,34 @@ export function createFirstRunGuidance({
   }
 
   if (currentRouteFlowKind === 'shop') {
+    const bossIsNext = isBossNext(currentRouteNode)
+
     return {
       tone: 'artifact',
       eyebrow: '商店',
-      title: '商店只处理牌册与服务',
-      body: '买卡会扩大牌组，朱批服务会改已有牌；法宝改由开局、途中和 Boss 后的三选一发放，不进牌堆。',
+      title: bossIsNext ? 'Boss 前先补答案' : '商店只处理牌册与服务',
+      body: bossIsNext
+        ? '进 Boss 前优先看缺口：香封留作一次性战术资源，删牌压缩牌册，朱批补核心，净卷处理污卷。'
+        : '买卡会扩大牌组，朱批服务会改已有牌；香封占槽且战斗内一次性使用，法宝不进牌堆，也不在商店出售。',
       terms: ['买卡', '法宝', '朱批'],
     }
   }
 
   if (currentRouteFlowKind === 'rest') {
     const hasBacklash = run.artifacts.artifacts.some((artifact) => artifact.pendingBacklash)
+    const bossIsNext = isBossNext(currentRouteNode)
 
     return {
       tone: hasBacklash ? 'artifact' : 'route',
       eyebrow: '休整',
-      title: hasBacklash ? '反噬预警可以在休整中处理' : '休整是在修整下一战',
-      body: hasBacklash
+      title: bossIsNext
+        ? 'Boss 前休整只能择重'
+        : hasBacklash
+          ? '反噬预警可以在休整中处理'
+          : '休整是在修整下一战',
+      body: bossIsNext
+        ? '最后休整先看己形、法宝反噬、删牌和朱批哪一个会影响 Boss；不要只按默认修形处理。'
+        : hasBacklash
         ? '拭净法宝会清掉一次反噬预警；若己形吃紧，也可以优先修形，避免下一战过早失败。'
         : '这里可以修形、删去拖累牌，或用朱批补强核心牌；没有反噬预警时不必急着维护法宝。',
       terms: ['己形', '删牌', '反噬'],
@@ -287,4 +298,11 @@ function isBossEncounter(
   currentRouteNode: RouteNodeDefinition | undefined,
 ) {
   return currentRouteNode?.type === 'boss' || encounter.id.includes('boss')
+}
+
+function isBossNext(currentRouteNode: RouteNodeDefinition | undefined) {
+  return (
+    currentRouteNode?.type === 'boss' ||
+    Boolean(currentRouteNode?.nextNodeIds.some((nodeId) => nodeId.includes('boss')))
+  )
 }
