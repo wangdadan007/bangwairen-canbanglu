@@ -1239,6 +1239,18 @@ button:disabled {
   gap: 8px;
 }
 
+.verdict-erase-group,
+.verdict-erase-options {
+  display: grid;
+  gap: 8px;
+}
+
+.verdict-erase-options {
+  border-left: 2px solid rgba(201, 79, 61, 0.45);
+  margin-left: 10px;
+  padding-left: 10px;
+}
+
 .verdict-option {
   display: grid;
   gap: 6px;
@@ -1260,6 +1272,20 @@ button:disabled {
 
 .verdict-option.erase:hover {
   background: rgba(73, 55, 35, 0.9);
+}
+
+.verdict-option-group {
+  min-height: 76px;
+}
+
+.verdict-option-group[aria-expanded='true'] {
+  border-color: rgba(201, 79, 61, 0.74);
+  background: rgba(73, 55, 35, 0.9);
+}
+
+.verdict-erase-choice {
+  min-height: 78px;
+  background: rgba(38, 30, 27, 0.9);
 }
 
 .verdict-option strong {

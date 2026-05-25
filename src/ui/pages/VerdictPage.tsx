@@ -5,6 +5,7 @@ import type {
   TutorialVerdictOptionId,
   TutorialVerdictState,
 } from '../../types'
+import { useEffect, useState } from 'react'
 
 export interface VerdictPageProps {
   readonly offer: TutorialVerdictOffer
@@ -15,6 +16,16 @@ export interface VerdictPageProps {
 }
 
 export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictPageProps) {
+  const [isEraseOpen, setIsEraseOpen] = useState(false)
+  const eraseOptions = offer.options.filter((option) => option.choiceId === 'erase')
+  const directOptions = offer.options.filter((option) => option.choiceId !== 'erase')
+  const shouldGroupErase = eraseOptions.length > 1
+  const primaryOptionCount = directOptions.length + (shouldGroupErase ? 1 : eraseOptions.length)
+
+  useEffect(() => {
+    setIsEraseOpen(false)
+  }, [offer.id])
+
   return (
     <section className="verdict-page" aria-label="裁定页">
       <div className="section-title-row">
@@ -22,7 +33,7 @@ export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictP
           <p className="panel-kicker">裁定</p>
           <h3>归册后的裁定</h3>
         </div>
-        <span>{offer.options.length} 选 1</span>
+        <span>{primaryOptionCount} 类裁定</span>
       </div>
 
       <div className="verdict-target">
@@ -40,9 +51,9 @@ export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictP
       </div>
 
       <div className="verdict-options">
-        {offer.options.map((option) => (
+        {directOptions.map((option) => (
           <button
-            className={`verdict-option ${option.id}`}
+            className={`verdict-option ${option.choiceId} ${option.id}`}
             key={option.id}
             type="button"
             onClick={() => onChoose(option.id)}
@@ -52,6 +63,49 @@ export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictP
             <small>{getVerdictImpact(option, offer, t)}</small>
           </button>
         ))}
+        {shouldGroupErase ? (
+          <div className="verdict-erase-group">
+            <button
+              aria-expanded={isEraseOpen}
+              className="verdict-option erase verdict-option-group"
+              type="button"
+              onClick={() => setIsEraseOpen((current) => !current)}
+            >
+              <strong>削籍</strong>
+              <span>抹去名籍换取强收益，并推高榜裂风险。</span>
+              <small>{isEraseOpen ? '收起判词' : `${eraseOptions.length} 个判词可展开比较`}</small>
+            </button>
+            {isEraseOpen ? (
+              <div className="verdict-erase-options" aria-label="削籍判词">
+                {eraseOptions.map((option) => (
+                  <button
+                    className={`verdict-option erase ${option.id} verdict-erase-choice`}
+                    key={option.id}
+                    type="button"
+                    onClick={() => onChoose(option.id)}
+                  >
+                    <strong>{t(option.nameKey)}</strong>
+                    <span>{t(option.rulesTextKey)}</span>
+                    <small>{getVerdictImpact(option, offer, t)}</small>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          eraseOptions.map((option) => (
+            <button
+              className={`verdict-option ${option.choiceId} ${option.id}`}
+              key={option.id}
+              type="button"
+              onClick={() => onChoose(option.id)}
+            >
+              <strong>{t(option.nameKey)}</strong>
+              <span>{t(option.rulesTextKey)}</span>
+              <small>{getVerdictImpact(option, offer, t)}</small>
+            </button>
+          ))
+        )}
       </div>
     </section>
   )
