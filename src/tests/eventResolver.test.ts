@@ -135,10 +135,10 @@ describe('T20 event resolver', () => {
     expect(getAvailableEventOptions(cinnabarEvent, coreRun)).toHaveLength(0)
     expect(redInkServiceRun.pendingRedInk?.options.map((option) => option.id)).toEqual(
       expect.arrayContaining([
-        'red_ink_return_incense',
-        'red_ink_trace_name',
-        'red_ink_named_draw',
-        'red_ink_press_momentum',
+        'red_ink_main_zhu_fu',
+        'red_ink_main_ask_name',
+        'red_ink_main_guard_desk_talisman',
+        'red_ink_main_cut_supply_talisman',
       ]),
     )
     expect(redInkServiceRun.events.records[0].createdRedInkOffer).toBe(true)

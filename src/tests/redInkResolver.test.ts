@@ -19,8 +19,8 @@ const context: BattleReducerContext = {
   enemyDefinitions: gameData.enemies,
 }
 
-describe('T11 red ink MVP', () => {
-  it('creates a red ink offer only after the red ink preview stage is unlocked', () => {
+describe('T98 directed red ink', () => {
+  it('creates a one-main-option red ink offer only after the preview stage is unlocked', () => {
     const coreRun = createInitialTutorialRunState(gameData.tutorialUnlocks)
     const abnormalRun = {
       ...coreRun,
@@ -40,45 +40,32 @@ describe('T11 red ink MVP', () => {
     expect(createTutorialRedInkOfferIfNeeded(abnormalRun).pendingRedInk).toBeUndefined()
     const offer = createTutorialRedInkOfferIfNeeded(redInkRun).pendingRedInk
 
-    expect(offer?.displayCount).toBe(4)
+    expect(offer?.displayCount).toBe(1)
     expect(offer?.options.map((option) => option.id)).toEqual(
       expect.arrayContaining([
-        'red_ink_return_incense',
-        'red_ink_trace_name',
-        'red_ink_named_draw',
-        'red_ink_press_momentum',
+        mainRedInkId('card_zhu_fu'),
+        mainRedInkId('card_ask_name'),
+        mainRedInkId('card_guard_desk_talisman'),
+        mainRedInkId('card_cut_supply_talisman'),
       ]),
     )
   })
 
-  it('unlocks a 12-option red ink pool over chapter one systems', () => {
-    const run = createTutorialRedInkOfferIfNeeded(
-      withRedInkUnlocked(
-        createInitialTutorialRunState(gameData.tutorialUnlocks),
-        ['stage_run_resources', 'stage_human_altar', 'stage_three_altars'],
-      ),
-    )
+  it('maps each permanent card to exactly one main red ink option', () => {
+    const permanentCardIds = gameData.cards
+      .filter((card) => card.type !== 'temporary' && !card.tags.includes('temporary'))
+      .map((card) => card.id)
+    const optionCardIds = RED_INK_OPTIONS.map((option) => option.cardDefinitionId)
 
-    expect(RED_INK_OPTIONS).toHaveLength(12)
-    expect(run.pendingRedInk?.options.map((option) => option.id)).toEqual(
-      expect.arrayContaining([
-        'red_ink_return_incense',
-        'red_ink_ink_drop',
-        'red_ink_trace_name',
-        'red_ink_named_draw',
-        'red_ink_named_echo',
-        'red_ink_revealed_break',
-        'red_ink_named_break',
-        'red_ink_press_momentum',
-        'red_ink_counter_draw',
-        'red_ink_altar_ink',
-        'red_ink_altar_return',
-        'red_ink_doom_burst',
-      ]),
-    )
+    expect(RED_INK_OPTIONS).toHaveLength(permanentCardIds.length)
+    expect(new Set(optionCardIds).size).toBe(permanentCardIds.length)
+    expect(optionCardIds).toEqual(expect.arrayContaining(permanentCardIds))
+    expect(optionCardIds).not.toContain('card_fouled_scroll')
+    expect(optionCardIds).not.toContain('card_doom_ash')
+    expect(optionCardIds).not.toContain('card_cracked_whip_echo')
   })
 
-  it('filters visible red ink options by selected target card compatibility', () => {
+  it('shows only the selected card main red ink option', () => {
     const run = createTutorialRedInkOfferIfNeeded(
       withRedInkUnlocked(
         createInitialTutorialRunState(
@@ -86,98 +73,54 @@ describe('T11 red ink MVP', () => {
           ['encounter_tutorial_paper_wraith'],
           ['card_guard_desk_talisman'],
         ),
-        ['stage_run_resources', 'stage_human_altar', 'stage_three_altars'],
+        ['stage_abnormal_boundary'],
       ),
     )
     const targetCard = run.deckCards[0]
-    const definition = gameData.cards.find((card) => card.id === targetCard.definitionId)
-    const pressMomentum = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_press_momentum')
-    const counterDraw = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_counter_draw')
+    const definition = getCard('card_guard_desk_talisman')
+    const guardMain = RED_INK_OPTIONS.find(
+      (option) => option.id === mainRedInkId('card_guard_desk_talisman'),
+    )
+    const zhuMain = RED_INK_OPTIONS.find((option) => option.id === mainRedInkId('card_zhu_fu'))
 
-    expect(pressMomentum && definition && isRedInkOptionCompatibleWithCard(pressMomentum, definition)).toBe(true)
-    expect(counterDraw && definition && isRedInkOptionCompatibleWithCard(counterDraw, definition)).toBe(false)
+    expect(guardMain && isRedInkOptionCompatibleWithCard(guardMain, definition)).toBe(true)
+    expect(zhuMain && isRedInkOptionCompatibleWithCard(zhuMain, definition)).toBe(false)
     expect(
       getVisibleRedInkOptionsForDeckCard(run.pendingRedInk!, targetCard, definition).map(
         (option) => option.id,
       ),
-    ).toContain('red_ink_press_momentum')
+    ).toEqual([mainRedInkId('card_guard_desk_talisman')])
   })
 
-  it('keeps strong red ink annotations away from low-cost loop pieces', () => {
+  it('keeps loop-prone zero-cost cards on conditional main effects', () => {
     const run = createTutorialRedInkOfferIfNeeded(
       withRedInkUnlocked(
         createInitialTutorialRunState(
           gameData.tutorialUnlocks,
           ['encounter_tutorial_paper_wraith'],
-          ['card_order_scroll', 'card_quiet_incense', 'card_red_ink_trial', 'card_zhu_fu'],
+          ['card_order_scroll', 'card_quiet_incense', 'card_mirror_slip'],
         ),
         ['stage_run_resources'],
       ),
     )
-    const loopCard = run.deckCards.find((card) => card.definitionId === 'card_order_scroll')
-    const loopDefinition = gameData.cards.find((card) => card.id === 'card_order_scroll')
-    const strikeCard = run.deckCards.find((card) => card.definitionId === 'card_zhu_fu')
-    const strikeDefinition = gameData.cards.find((card) => card.id === 'card_zhu_fu')
-    const returnIncense = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_return_incense')
-    const traceName = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_trace_name')
-    const doomBurst = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_doom_burst')
 
-    expect(
-      returnIncense &&
-        loopDefinition &&
-        isRedInkOptionCompatibleWithCard(returnIncense, loopDefinition),
-    ).toBe(false)
-    expect(
-      traceName &&
-        loopDefinition &&
-        isRedInkOptionCompatibleWithCard(traceName, loopDefinition),
-    ).toBe(false)
-    expect(
-      doomBurst &&
-        loopDefinition &&
-        isRedInkOptionCompatibleWithCard(doomBurst, loopDefinition),
-    ).toBe(false)
-    expect(
-      returnIncense &&
-        strikeDefinition &&
-        isRedInkOptionCompatibleWithCard(returnIncense, strikeDefinition),
-    ).toBe(true)
-    expect(
-      traceName &&
-        strikeDefinition &&
-        isRedInkOptionCompatibleWithCard(traceName, strikeDefinition),
-    ).toBe(true)
-    expect(
-      doomBurst &&
-        strikeDefinition &&
-        isRedInkOptionCompatibleWithCard(doomBurst, strikeDefinition),
-    ).toBe(true)
+    for (const cardId of ['card_order_scroll', 'card_quiet_incense', 'card_mirror_slip']) {
+      const targetCard = run.deckCards.find((card) => card.definitionId === cardId)
+      const definition = getCard(cardId)
+      const visibleOptions = getVisibleRedInkOptionsForDeckCard(
+        run.pendingRedInk!,
+        targetCard,
+        definition,
+      )
 
-    const loopVisibleOptionIds = getVisibleRedInkOptionsForDeckCard(
-      run.pendingRedInk!,
-      loopCard,
-      loopDefinition,
-    ).map((option) => option.id)
-    const strikeVisibleOptionIds = getVisibleRedInkOptionsForDeckCard(
-      run.pendingRedInk!,
-      strikeCard,
-      strikeDefinition,
-    ).map((option) => option.id)
-
-    expect(loopVisibleOptionIds).not.toContain('red_ink_return_incense')
-    expect(loopVisibleOptionIds).not.toContain('red_ink_trace_name')
-    expect(loopVisibleOptionIds).not.toContain('red_ink_doom_burst')
-    expect(
-      strikeVisibleOptionIds,
-    ).toEqual(
-      expect.arrayContaining([
-        'red_ink_trace_name',
-        'red_ink_doom_burst',
-      ]),
-    )
+      expect(visibleOptions.map((option) => option.id)).toEqual([mainRedInkId(cardId)])
+      expect(
+        visibleOptions[0].annotation.effects.every((effect) => Boolean(effect.condition)),
+      ).toBe(true)
+    }
   })
 
-  it('applies a permanent red ink annotation to one run deck card', () => {
+  it('applies a permanent main red ink annotation to one run deck card', () => {
     const run = createTutorialRedInkOfferIfNeeded(
       withRedInkUnlocked(createInitialTutorialRunState(gameData.tutorialUnlocks)),
     )
@@ -189,26 +132,26 @@ describe('T11 red ink MVP', () => {
 
     const nextRun = resolveTutorialRedInk(run, {
       deckCardId: targetCard.id,
-      annotationId: 'red_ink_return_incense',
+      annotationId: mainRedInkId('card_zhu_fu'),
       cardDefinitions: gameData.cards,
     })
     const updatedCard = nextRun.deckCards.find((card) => card.id === targetCard.id)
 
     expect(nextRun.pendingRedInk).toBeUndefined()
     expect(updatedCard?.annotations.map((annotation) => annotation.id)).toEqual([
-      'red_ink_return_incense',
+      mainRedInkId('card_zhu_fu'),
     ])
     expect(nextRun.redInkRecords).toEqual([
       expect.objectContaining({
         deckCardId: targetCard.id,
         cardDefinitionId: 'card_zhu_fu',
-        annotationId: 'red_ink_return_incense',
+        annotationId: mainRedInkId('card_zhu_fu'),
         skipped: false,
       }),
     ])
   })
 
-  it('keeps red ink effects when the annotated card enters a later battle', () => {
+  it('keeps main red ink effects when the annotated card enters a later battle', () => {
     const run = createTutorialRedInkOfferIfNeeded(
       withRedInkUnlocked(
         createInitialTutorialRunState(
@@ -220,51 +163,56 @@ describe('T11 red ink MVP', () => {
     )
     const nextRun = resolveTutorialRedInk(run, {
       deckCardId: run.deckCards[0].id,
-      annotationId: 'red_ink_return_incense',
+      annotationId: mainRedInkId('card_zhu_fu'),
       cardDefinitions: gameData.cards,
     })
-    const state = createBattle(nextRun.deckCards.map((card) => card.definitionId), nextRun.deckCards)
+    const state = revealFirstNameSlot(
+      createBattle(nextRun.deckCards.map((card) => card.definitionId), nextRun.deckCards),
+    )
     const nextState = playFirstCard(state, 'card_zhu_fu')
 
-    expect(nextState.player.incense).toBe(3)
-    expect(nextState.enemies[0].currentForm).toBe(14)
+    expect(nextState.enemies[0].currentForm).toBe(10)
     expect(nextState.actionLog.map((entry) => entry.type)).toEqual(
-      expect.arrayContaining(['CARD_ANNOTATION_TRIGGERED', 'INCENSE_GAINED']),
+      expect.arrayContaining(['CARD_ANNOTATION_TRIGGERED', 'FORM_BROKEN']),
     )
   })
 
-  it('can add an extra ask-name annotation instead of a pure number bump', () => {
+  it('can turn a linzhao card into a one-shot ask-name setup', () => {
     const run = createTutorialRedInkOfferIfNeeded(
       withRedInkUnlocked(
         createInitialTutorialRunState(
           gameData.tutorialUnlocks,
           ['encounter_tutorial_paper_wraith'],
-          ['card_zhu_fu'],
+          ['card_trace_name_slip'],
         ),
+        ['stage_human_altar'],
       ),
     )
     const nextRun = resolveTutorialRedInk(run, {
       deckCardId: run.deckCards[0].id,
-      annotationId: 'red_ink_trace_name',
+      annotationId: mainRedInkId('card_trace_name_slip'),
       cardDefinitions: gameData.cards,
     })
-    const state = createBattle(nextRun.deckCards.map((card) => card.definitionId), nextRun.deckCards)
-    const nextState = playFirstCard(state, 'card_zhu_fu')
+    const nextState = playFirstCard(
+      createBattle(nextRun.deckCards.map((card) => card.definitionId), nextRun.deckCards),
+      'card_trace_name_slip',
+    )
 
+    expect(nextState.linzhao).toHaveLength(1)
     expect(nextState.enemies[0].nameSlots[0].isRevealed).toBe(true)
     expect(nextState.actionLog.map((entry) => entry.type)).toEqual(
-      expect.arrayContaining(['CARD_ANNOTATION_TRIGGERED', 'NAME_ASKED', 'NAME_SLOT_REVEALED']),
+      expect.arrayContaining(['LINZHAO_PLACED', 'CARD_ANNOTATION_TRIGGERED', 'NAME_ASKED']),
     )
   })
 
-  it('adds T54 red ink annotations for named-turn draw and pressure control', () => {
+  it('supports source-scoped naming and full-seal red ink conditions', () => {
     const namedDrawOfferRun = createTutorialRedInkOfferIfNeeded(
       withRedInkUnlocked(
         createInitialTutorialRunState(
           gameData.tutorialUnlocks,
           ['encounter_tutorial_paper_wraith'],
           [
-            'card_mark_forehead',
+            'card_ask_name',
             'card_zhu_fu',
             'card_zhu_fu',
             'card_zhu_fu',
@@ -276,7 +224,7 @@ describe('T11 red ink MVP', () => {
     )
     const namedDrawRun = resolveTutorialRedInk(namedDrawOfferRun, {
       deckCardId: namedDrawOfferRun.deckCards[0].id,
-      annotationId: 'red_ink_named_draw',
+      annotationId: mainRedInkId('card_ask_name'),
       cardDefinitions: gameData.cards,
     })
     const drawBattle = createInitialBattleState({
@@ -285,7 +233,7 @@ describe('T11 red ink MVP', () => {
       deckDefinitionIds: namedDrawRun.deckCards.map((card) => card.definitionId),
       deckCards: namedDrawRun.deckCards,
     })
-    const afterNamedDraw = playFirstCard(drawBattle, 'card_mark_forehead')
+    const afterNamedDraw = playFirstCard(drawBattle, 'card_ask_name')
 
     expect(
       afterNamedDraw.actionLog
@@ -304,43 +252,66 @@ describe('T11 red ink MVP', () => {
     )
     const controlRun = resolveTutorialRedInk(controlOfferRun, {
       deckCardId: controlOfferRun.deckCards[0].id,
-      annotationId: 'red_ink_press_momentum',
+      annotationId: mainRedInkId('card_guard_desk_talisman'),
       cardDefinitions: gameData.cards,
     })
     const controlBattle = createBattle(
       controlRun.deckCards.map((card) => card.definitionId),
       controlRun.deckCards,
     )
-    const afterControl = playFirstCard(controlBattle, 'card_guard_desk_talisman')
+    const afterControl = playFirstCard(
+      {
+        ...controlBattle,
+        enemies: controlBattle.enemies.map((enemy, index) =>
+          index === 0
+            ? {
+                ...enemy,
+                incomingForce: 3,
+              }
+            : enemy,
+        ),
+      },
+      'card_guard_desk_talisman',
+    )
 
     expect(afterControl.enemies[0].incomingForce).toBe(0)
+    expect(afterControl.enemies[0].currentForm).toBe(16)
     expect(afterControl.actionLog.map((entry) => entry.type)).toEqual(
       expect.arrayContaining(['CARD_ANNOTATION_TRIGGERED', 'INCOMING_FORCE_SEALED']),
     )
   })
 
-  it('applies resource and risk red ink annotations after their unlock stages', () => {
+  it('applies conditional resource and risk red ink annotations after their unlock stages', () => {
     const resourceRun = createTutorialRedInkOfferIfNeeded(
       withRedInkUnlocked(
         createInitialTutorialRunState(
           gameData.tutorialUnlocks,
           ['encounter_tutorial_paper_wraith'],
-          ['card_zhu_fu'],
+          ['card_mirror_slip', 'card_ask_name'],
         ),
         ['stage_run_resources'],
       ),
     )
+    const mirrorCard = resourceRun.deckCards.find((card) => card.definitionId === 'card_mirror_slip')
     const inkRun = resolveTutorialRedInk(resourceRun, {
-      deckCardId: resourceRun.deckCards[0].id,
-      annotationId: 'red_ink_ink_drop',
+      deckCardId: mirrorCard?.id ?? '',
+      annotationId: mainRedInkId('card_mirror_slip'),
       cardDefinitions: gameData.cards,
     })
     const afterInk = playFirstCard(
-      createBattle(inkRun.deckCards.map((card) => card.definitionId), inkRun.deckCards),
-      'card_zhu_fu',
+      playFirstCard(
+        createInitialBattleState({
+          cardDefinitions: gameData.cards,
+          enemyDefinition: gameData.enemies[1],
+          deckDefinitionIds: inkRun.deckCards.map((card) => card.definitionId),
+          deckCards: inkRun.deckCards,
+        }),
+        'card_ask_name',
+      ),
+      'card_mirror_slip',
     )
 
-    expect(afterInk.resources.ink).toBe(1)
+    expect(afterInk.resources.ink).toBe(2)
     expect(afterInk.actionLog.map((entry) => entry.type)).toContain('INK_GAINED')
 
     const riskRun = createTutorialRedInkOfferIfNeeded(
@@ -348,22 +319,23 @@ describe('T11 red ink MVP', () => {
         createInitialTutorialRunState(
           gameData.tutorialUnlocks,
           ['encounter_tutorial_paper_wraith'],
-          ['card_zhu_fu'],
+          ['card_borrowed_doom_talisman'],
         ),
         ['stage_run_resources'],
       ),
     )
     const doomRun = resolveTutorialRedInk(riskRun, {
       deckCardId: riskRun.deckCards[0].id,
-      annotationId: 'red_ink_doom_burst',
+      annotationId: mainRedInkId('card_borrowed_doom_talisman'),
       cardDefinitions: gameData.cards,
     })
-    const afterDoom = playFirstCard(
+    const namedState = nameFirstEnemy(
       createBattle(doomRun.deckCards.map((card) => card.definitionId), doomRun.deckCards),
-      'card_zhu_fu',
     )
+    const afterDoom = playFirstCard(namedState, 'card_borrowed_doom_talisman')
 
     expect(afterDoom.resources.doom).toBe(1)
+    expect(afterDoom.enemies[0].currentForm).toBe(16)
     expect(afterDoom.actionLog.map((entry) => entry.type)).toContain('DOOM_GAINED')
   })
 })
@@ -375,7 +347,12 @@ function withRedInkUnlocked<T extends { readonly unlocks: unknown }>(
   return {
     ...run,
     unlocks: createUnlockState(
-      ['stage_core', 'stage_abnormal_boundary', 'stage_red_ink_preview', ...extraStages],
+      [
+        'stage_core',
+        'stage_abnormal_boundary',
+        'stage_red_ink_preview',
+        ...extraStages,
+      ],
       gameData.tutorialUnlocks,
     ),
   }
@@ -406,4 +383,57 @@ function playFirstCard(state: CombatState, definitionId: CardId) {
     },
     context,
   )
+}
+
+function revealFirstNameSlot(state: CombatState): CombatState {
+  return {
+    ...state,
+    enemies: state.enemies.map((enemy, enemyIndex) =>
+      enemyIndex === 0
+        ? {
+            ...enemy,
+            nameSlots: enemy.nameSlots.map((slot, slotIndex) =>
+              slotIndex === 0
+                ? {
+                    ...slot,
+                    isRevealed: true,
+                  }
+                : slot,
+            ),
+          }
+        : enemy,
+    ),
+  }
+}
+
+function nameFirstEnemy(state: CombatState): CombatState {
+  return {
+    ...state,
+    enemies: state.enemies.map((enemy, enemyIndex) =>
+      enemyIndex === 0
+        ? {
+            ...enemy,
+            isNamed: true,
+            nameSlots: enemy.nameSlots.map((slot) => ({
+              ...slot,
+              isRevealed: true,
+            })),
+          }
+        : enemy,
+    ),
+  }
+}
+
+function getCard(cardId: CardId) {
+  const card = gameData.cards.find((candidate) => candidate.id === cardId)
+
+  if (!card) {
+    throw new Error(`Missing card definition: ${cardId}`)
+  }
+
+  return card
+}
+
+function mainRedInkId(cardId: CardId) {
+  return `red_ink_main_${cardId.replace(/^card_/, '')}`
 }

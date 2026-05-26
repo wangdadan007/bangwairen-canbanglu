@@ -62,6 +62,7 @@ export function placeAltar(state: CombatState, input: PlaceAltarInput): CombatSt
     payload: {
       slot: altar.slot,
       sourceCardDefinitionId: altar.sourceCardDefinitionId,
+      sourceCardInstanceId: altar.sourceCardInstanceId,
       effectType: altar.effect.type,
     },
   })

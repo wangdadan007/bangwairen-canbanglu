@@ -133,7 +133,7 @@ function resolveCardEffects(
   let nextState = state
 
   for (const effect of cardDefinition.effects) {
-    if (!isEffectConditionMet(nextState, effect, targetEnemyInstanceId)) {
+    if (!isEffectConditionMet(nextState, effect, targetEnemyInstanceId, card)) {
       continue
     }
 
@@ -165,7 +165,7 @@ function resolveCardAnnotation(
   })
 
   for (const effect of annotation.effects) {
-    if (!isEffectConditionMet(nextState, effect, targetEnemyInstanceId)) {
+    if (!isEffectConditionMet(nextState, effect, targetEnemyInstanceId, card)) {
       continue
     }
 
@@ -414,6 +414,7 @@ function isEffectConditionMet(
   state: CombatState,
   effect: CardEffect,
   targetEnemyInstanceId?: EnemyInstanceId,
+  card?: CardInstance,
 ) {
   if (!effect.condition) {
     return true
@@ -439,15 +440,65 @@ function isEffectConditionMet(
     )
   }
 
+  if (effect.condition.type === 'THIS_CARD_NAMED_ENEMY') {
+    return Boolean(
+      card &&
+        state.actionLog.some(
+          (entry) =>
+            entry.turn === state.turn &&
+            entry.type === 'ENEMY_NAMED' &&
+            entry.sourceId === card.instanceId,
+        ),
+    )
+  }
+
   if (effect.condition.type === 'THIS_TURN_COUNTERED_ABNORMAL_MOVE') {
     return state.actionLog.some(
       (entry) => entry.turn === state.turn && entry.type === 'ABNORMAL_MOVE_COUNTERED',
     )
   }
 
+  if (effect.condition.type === 'THIS_CARD_COUNTERED_ABNORMAL_MOVE') {
+    return Boolean(
+      card &&
+        state.actionLog.some(
+          (entry) =>
+            entry.turn === state.turn &&
+            entry.type === 'ABNORMAL_MOVE_COUNTERED' &&
+            entry.sourceId === card.instanceId,
+        ),
+    )
+  }
+
+  if (effect.condition.type === 'THIS_CARD_FULLY_SEALED_INCOMING_FORCE') {
+    return Boolean(
+      card &&
+        state.actionLog.some(
+          (entry) =>
+            entry.turn === state.turn &&
+            entry.type === 'INCOMING_FORCE_SEALED' &&
+            entry.sourceId === card.instanceId &&
+            entry.payload.remainingIncomingForce === 0 &&
+            Number(entry.payload.amount ?? 0) > 0,
+        ),
+    )
+  }
+
   if (effect.condition.type === 'THIS_TURN_PLACED_ALTAR') {
     return state.actionLog.some(
       (entry) => entry.turn === state.turn && entry.type === 'ALTAR_PLACED',
+    )
+  }
+
+  if (effect.condition.type === 'THIS_CARD_PLACED_ALTAR') {
+    return Boolean(
+      card &&
+        state.actionLog.some(
+          (entry) =>
+            entry.turn === state.turn &&
+            entry.type === 'ALTAR_PLACED' &&
+            entry.payload.sourceCardInstanceId === card.instanceId,
+        ),
     )
   }
 

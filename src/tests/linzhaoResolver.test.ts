@@ -140,15 +140,15 @@ describe('T80 linzhao battle rules', () => {
           ['card_trace_name_slip'],
         ),
         unlocks: createUnlockState(
-          ['stage_core', 'stage_abnormal_boundary', 'stage_red_ink_preview'],
+          ['stage_core', 'stage_abnormal_boundary', 'stage_red_ink_preview', 'stage_human_altar'],
           gameData.tutorialUnlocks,
         ),
       },
     )
     const targetCard = run.deckCards[0]
     const definition = gameData.cards.find((card) => card.id === targetCard.definitionId)
-    const traceName = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_trace_name')
-    const returnIncense = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_return_incense')
+    const traceName = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_main_trace_name_slip')
+    const zhuMain = RED_INK_OPTIONS.find((option) => option.id === 'red_ink_main_zhu_fu')
     const visibleIds = getVisibleRedInkOptionsForDeckCard(
       run.pendingRedInk!,
       targetCard,
@@ -157,16 +157,16 @@ describe('T80 linzhao battle rules', () => {
 
     expect(traceName && definition && isRedInkOptionCompatibleWithCard(traceName, definition)).toBe(true)
     expect(
-      returnIncense &&
+      zhuMain &&
         definition &&
-        isRedInkOptionCompatibleWithCard(returnIncense, definition),
+        isRedInkOptionCompatibleWithCard(zhuMain, definition),
     ).toBe(false)
-    expect(visibleIds).toContain('red_ink_trace_name')
-    expect(visibleIds).not.toContain('red_ink_return_incense')
+    expect(visibleIds).toEqual(['red_ink_main_trace_name_slip'])
+    expect(visibleIds).not.toContain('red_ink_main_zhu_fu')
 
     const annotatedRun = resolveTutorialRedInk(run, {
       deckCardId: targetCard.id,
-      annotationId: 'red_ink_trace_name',
+      annotationId: 'red_ink_main_trace_name_slip',
       cardDefinitions: gameData.cards,
     })
     const nextState = playCard(

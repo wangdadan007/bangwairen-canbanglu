@@ -207,10 +207,10 @@ describe('T12 verdict MVP', () => {
     expect(nextRun.pendingVerdict).toBeUndefined()
     expect(nextRun.pendingRedInk?.options.map((option) => option.id)).toEqual(
       expect.arrayContaining([
-        'red_ink_return_incense',
-        'red_ink_trace_name',
-        'red_ink_named_draw',
-        'red_ink_press_momentum',
+        'red_ink_main_zhu_fu',
+        'red_ink_main_ask_name',
+        'red_ink_main_guard_desk_talisman',
+        'red_ink_main_cut_supply_talisman',
       ]),
     )
     expect(nextRun.pendingReward).toBeDefined()

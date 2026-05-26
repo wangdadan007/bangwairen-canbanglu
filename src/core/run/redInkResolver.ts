@@ -3,6 +3,8 @@ import { advanceArtifactProgress, CINNABAR_DOU_ARTIFACT_ID } from './artifactRes
 import type {
   CardAnnotation,
   CardDefinition,
+  CardEffect,
+  CardId,
   PlayableRoleId,
   RedInkAnnotationId,
   RouteTendencyId,
@@ -12,371 +14,801 @@ import type {
   TutorialRedInkOption,
   TutorialRedInkRecord,
   TutorialRunState,
+  UnlockStageId,
 } from '../../types'
 
-export const RED_INK_OFFER_DISPLAY_COUNT = 4
+export const RED_INK_OFFER_DISPLAY_COUNT = 1
 
 export interface RedInkOfferContext {
   readonly routeTendencyIds?: readonly RouteTendencyId[]
 }
 
-export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] = [
+interface MainRedInkOptionDefinition {
+  readonly cardDefinitionId: CardId
+  readonly unlockStage?: UnlockStageId
+  readonly category: NonNullable<TutorialRedInkOption['category']>
+  readonly effects: readonly CardEffect[]
+  readonly preferredRoleIds?: readonly PlayableRoleId[]
+  readonly preferredRouteTendencyIds?: readonly RouteTendencyId[]
+}
+
+const RED_INK_MAIN_OPTION_DEFINITIONS: readonly MainRedInkOptionDefinition[] = [
   {
-    id: 'red_ink_return_incense',
-    nameKey: 'red_ink.return_incense.name',
-    rulesTextKey: 'red_ink.return_incense.rules',
-    category: 'economy',
-    compatibleCardTags: ['break_form', 'ask_name', 'seal_momentum', 'counter_abnormal_move', 'altar'],
-    compatibleEffectTypes: [
-      'BREAK_SHAPE',
-      'ASK_NAME',
-      'SEAL_MOMENTUM',
-      'COUNTER_ABNORMAL_MOVE',
-      'PLACE_ALTAR',
-    ],
-    incompatibleCardTags: ['draw', 'gain_incense'],
-    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE'],
-    minimumCardCost: 1,
-    preferredRoleIds: ['role_hengjian', 'role_lianjin'],
-    preferredRouteTendencyIds: ['steady', 'supply'],
-    annotation: {
-      id: 'red_ink_return_incense',
-      nameKey: 'red_ink.return_incense.name',
-      rulesTextKey: 'red_ink.return_incense.rules',
-      effects: [
-        {
-          type: 'GAIN_INCENSE',
-          target: 'self',
-          amount: 1,
-        },
-      ],
-    },
-  },
-  {
-    id: 'red_ink_ink_drop',
-    nameKey: 'red_ink.ink_drop.name',
-    rulesTextKey: 'red_ink.ink_drop.rules',
-    category: 'economy',
-    requiredUnlockStages: ['stage_run_resources'],
-    compatibleCardTags: ['break_form', 'ask_name', 'seal_momentum', 'counter_abnormal_move', 'altar'],
-    compatibleEffectTypes: [
-      'BREAK_SHAPE',
-      'ASK_NAME',
-      'SEAL_MOMENTUM',
-      'COUNTER_ABNORMAL_MOVE',
-      'PLACE_ALTAR',
-    ],
-    incompatibleCardTags: ['draw', 'gain_incense', 'ink'],
-    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE', 'GAIN_INK'],
-    minimumCardCost: 1,
-    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
-    preferredRouteTendencyIds: ['catalogue', 'supply'],
-    annotation: {
-      id: 'red_ink_ink_drop',
-      nameKey: 'red_ink.ink_drop.name',
-      rulesTextKey: 'red_ink.ink_drop.rules',
-      effects: [
-        {
-          type: 'GAIN_INK',
-          target: 'self',
-          amount: 1,
-        },
-      ],
-    },
-  },
-  {
-    id: 'red_ink_trace_name',
-    nameKey: 'red_ink.trace_name.name',
-    rulesTextKey: 'red_ink.trace_name.rules',
-    category: 'ask_name',
-    compatibleCardTags: ['break_form', 'seal_momentum', 'counter_abnormal_move', 'altar', 'linzhao'],
-    compatibleEffectTypes: [
-      'BREAK_SHAPE',
-      'SEAL_MOMENTUM',
-      'COUNTER_ABNORMAL_MOVE',
-      'PLACE_ALTAR',
-    ],
-    incompatibleCardTags: ['draw', 'gain_incense'],
-    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE'],
-    minimumCardCost: 1,
-    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
-    preferredRouteTendencyIds: ['catalogue'],
-    annotation: {
-      id: 'red_ink_trace_name',
-      nameKey: 'red_ink.trace_name.name',
-      rulesTextKey: 'red_ink.trace_name.rules',
-      effects: [
-        {
-          type: 'ASK_NAME',
-          target: 'selected_enemy',
-          amount: 1,
-        },
-      ],
-    },
-  },
-  {
-    id: 'red_ink_named_draw',
-    nameKey: 'red_ink.named_draw.name',
-    rulesTextKey: 'red_ink.named_draw.rules',
-    category: 'ask_name',
-    compatibleEffectTypes: ['ASK_NAME'],
-    compatibleCardTags: ['ask_name'],
-    incompatibleCardTags: ['draw', 'gain_incense'],
-    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE'],
-    minimumCardCost: 1,
-    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
-    preferredRouteTendencyIds: ['catalogue', 'steady'],
-    annotation: {
-      id: 'red_ink_named_draw',
-      nameKey: 'red_ink.named_draw.name',
-      rulesTextKey: 'red_ink.named_draw.rules',
-      effects: [
-        {
-          type: 'DRAW',
-          target: 'self',
-          count: 1,
-          condition: {
-            type: 'THIS_TURN_NAMED_ENEMY',
-          },
-        },
-      ],
-    },
-  },
-  {
-    id: 'red_ink_named_echo',
-    nameKey: 'red_ink.named_echo.name',
-    rulesTextKey: 'red_ink.named_echo.rules',
-    category: 'ask_name',
-    compatibleCardTags: ['ask_name', 'catalogue_reward'],
-    compatibleEffectTypes: ['ASK_NAME'],
-    incompatibleCardTags: ['draw', 'gain_incense'],
-    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE'],
-    minimumCardCost: 1,
-    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
-    preferredRouteTendencyIds: ['catalogue'],
-    annotation: {
-      id: 'red_ink_named_echo',
-      nameKey: 'red_ink.named_echo.name',
-      rulesTextKey: 'red_ink.named_echo.rules',
-      effects: [
-        {
-          type: 'GAIN_INCENSE',
-          target: 'self',
-          amount: 1,
-          condition: {
-            type: 'TARGET_IS_NAMED',
-          },
-        },
-        {
-          type: 'DRAW',
-          target: 'self',
-          count: 1,
-          condition: {
-            type: 'TARGET_IS_NAMED',
-          },
-        },
-      ],
-    },
-  },
-  {
-    id: 'red_ink_revealed_break',
-    nameKey: 'red_ink.revealed_break.name',
-    rulesTextKey: 'red_ink.revealed_break.rules',
+    cardDefinitionId: 'card_zhu_fu',
     category: 'break_form',
-    compatibleCardTags: ['break_form', 'ask_name', 'linzhao'],
-    compatibleEffectTypes: ['BREAK_SHAPE', 'ASK_NAME'],
-    minimumCardCost: 1,
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 3,
+        condition: {
+          type: 'TARGET_HAS_REVEALED_NAME_SLOT',
+        },
+      },
+    ],
     preferredRoleIds: ['role_lianjin'],
     preferredRouteTendencyIds: ['fracture', 'catalogue'],
-    annotation: {
-      id: 'red_ink_revealed_break',
-      nameKey: 'red_ink.revealed_break.name',
-      rulesTextKey: 'red_ink.revealed_break.rules',
-      effects: [
-        {
-          type: 'BREAK_SHAPE',
-          target: 'selected_enemy',
-          amount: 2,
-          condition: {
-            type: 'TARGET_HAS_REVEALED_NAME_SLOT',
-          },
-        },
-      ],
-    },
   },
   {
-    id: 'red_ink_named_break',
-    nameKey: 'red_ink.named_break.name',
-    rulesTextKey: 'red_ink.named_break.rules',
-    category: 'break_form',
-    compatibleCardTags: ['break_form', 'linzhao'],
-    compatibleEffectTypes: ['BREAK_SHAPE'],
-    minimumCardCost: 1,
-    preferredRoleIds: ['role_lianjin'],
-    preferredRouteTendencyIds: ['fracture', 'high_pressure'],
-    annotation: {
-      id: 'red_ink_named_break',
-      nameKey: 'red_ink.named_break.name',
-      rulesTextKey: 'red_ink.named_break.rules',
-      effects: [
-        {
-          type: 'BREAK_SHAPE',
-          target: 'selected_enemy',
-          amount: 3,
-          condition: {
-            type: 'TARGET_IS_NAMED',
-          },
+    cardDefinitionId: 'card_ask_name',
+    category: 'ask_name',
+    effects: [
+      {
+        type: 'DRAW',
+        target: 'self',
+        count: 1,
+        condition: {
+          type: 'THIS_CARD_NAMED_ENEMY',
         },
-      ],
-    },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
+    preferredRouteTendencyIds: ['catalogue', 'steady'],
   },
   {
-    id: 'red_ink_press_momentum',
-    nameKey: 'red_ink.press_momentum.name',
-    rulesTextKey: 'red_ink.press_momentum.rules',
+    cardDefinitionId: 'card_guard_desk_talisman',
     category: 'defense',
-    compatibleCardTags: ['seal_momentum', 'linzhao'],
-    compatibleEffectTypes: ['SEAL_MOMENTUM'],
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_FULLY_SEALED_INCOMING_FORCE',
+        },
+      },
+    ],
     preferredRoleIds: ['role_hengjian'],
     preferredRouteTendencyIds: ['steady', 'high_pressure'],
-    annotation: {
-      id: 'red_ink_press_momentum',
-      nameKey: 'red_ink.press_momentum.name',
-      rulesTextKey: 'red_ink.press_momentum.rules',
-      effects: [
-        {
-          type: 'SEAL_MOMENTUM',
-          target: 'selected_enemy',
-          amount: 2,
-        },
-        {
-          type: 'BREAK_SHAPE',
-          target: 'selected_enemy',
-          amount: 1,
-          condition: {
-            type: 'TARGET_HAS_REVEALED_NAME_SLOT',
-          },
-        },
-      ],
-    },
   },
   {
-    id: 'red_ink_counter_draw',
-    nameKey: 'red_ink.counter_draw.name',
-    rulesTextKey: 'red_ink.counter_draw.rules',
+    cardDefinitionId: 'card_cut_supply_talisman',
     category: 'defense',
-    compatibleCardTags: ['counter_abnormal_move'],
-    compatibleEffectTypes: ['COUNTER_ABNORMAL_MOVE'],
+    effects: [
+      {
+        type: 'DRAW',
+        target: 'self',
+        count: 1,
+        condition: {
+          type: 'THIS_CARD_COUNTERED_ABNORMAL_MOVE',
+        },
+      },
+    ],
     preferredRoleIds: ['role_zhaowei', 'role_hengjian'],
     preferredRouteTendencyIds: ['steady', 'high_pressure'],
-    annotation: {
-      id: 'red_ink_counter_draw',
-      nameKey: 'red_ink.counter_draw.name',
-      rulesTextKey: 'red_ink.counter_draw.rules',
-      effects: [
-        {
-          type: 'DRAW',
-          target: 'self',
-          count: 1,
-          condition: {
-            type: 'THIS_TURN_COUNTERED_ABNORMAL_MOVE',
-          },
-        },
-      ],
-    },
   },
   {
-    id: 'red_ink_altar_ink',
-    nameKey: 'red_ink.altar_ink.name',
-    rulesTextKey: 'red_ink.altar_ink.rules',
-    category: 'altar',
-    requiredUnlockStages: ['stage_human_altar'],
-    compatibleCardTags: ['altar'],
-    compatibleEffectTypes: ['PLACE_ALTAR'],
-    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
-    preferredRouteTendencyIds: ['catalogue', 'supply'],
-    annotation: {
-      id: 'red_ink_altar_ink',
-      nameKey: 'red_ink.altar_ink.name',
-      rulesTextKey: 'red_ink.altar_ink.rules',
-      effects: [
-        {
-          type: 'GAIN_INK',
-          target: 'self',
-          amount: 1,
-          condition: {
-            type: 'THIS_TURN_PLACED_ALTAR',
-          },
+    cardDefinitionId: 'card_mark_forehead',
+    category: 'ask_name',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_NAMED_ENEMY',
         },
-      ],
-    },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_lianjin'],
+    preferredRouteTendencyIds: ['catalogue', 'fracture'],
   },
   {
-    id: 'red_ink_altar_return',
-    nameKey: 'red_ink.altar_return.name',
-    rulesTextKey: 'red_ink.altar_return.rules',
-    category: 'altar',
-    requiredUnlockStages: ['stage_three_altars'],
-    compatibleCardTags: ['altar'],
-    compatibleEffectTypes: ['PLACE_ALTAR'],
+    cardDefinitionId: 'card_order_scroll',
+    category: 'ask_name',
+    effects: [
+      {
+        type: 'DRAW',
+        target: 'self',
+        count: 1,
+        condition: {
+          type: 'THIS_TURN_NAMED_ENEMY',
+        },
+      },
+    ],
     preferredRoleIds: ['role_hengjian'],
-    preferredRouteTendencyIds: ['steady', 'supply'],
-    annotation: {
-      id: 'red_ink_altar_return',
-      nameKey: 'red_ink.altar_return.name',
-      rulesTextKey: 'red_ink.altar_return.rules',
-      effects: [
-        {
-          type: 'GAIN_INCENSE',
-          target: 'self',
-          amount: 1,
-          condition: {
-            type: 'THIS_TURN_PLACED_ALTAR',
-          },
-        },
-        {
-          type: 'DRAW',
-          target: 'self',
-          count: 1,
-          condition: {
-            type: 'THIS_TURN_PLACED_ALTAR',
-          },
-        },
-      ],
-    },
+    preferredRouteTendencyIds: ['catalogue', 'steady'],
   },
   {
-    id: 'red_ink_doom_burst',
-    nameKey: 'red_ink.doom_burst.name',
-    rulesTextKey: 'red_ink.doom_burst.rules',
+    cardDefinitionId: 'card_quiet_incense',
+    category: 'economy',
+    effects: [
+      {
+        type: 'GAIN_INCENSE',
+        target: 'self',
+        amount: 1,
+        condition: {
+          type: 'THIS_TURN_NAMED_ENEMY',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian'],
+    preferredRouteTendencyIds: ['catalogue', 'supply'],
+  },
+  {
+    cardDefinitionId: 'card_split_form_talisman',
+    category: 'break_form',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'TARGET_HAS_REVEALED_NAME_SLOT',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_lianjin'],
+    preferredRouteTendencyIds: ['fracture'],
+  },
+  {
+    cardDefinitionId: 'card_heavy_split_form_talisman',
+    unlockStage: 'stage_run_resources',
     category: 'risk',
-    requiredUnlockStages: ['stage_run_resources'],
-    compatibleCardTags: ['break_form'],
-    compatibleEffectTypes: ['BREAK_SHAPE'],
-    incompatibleCardTags: ['draw', 'gain_incense'],
-    incompatibleEffectTypes: ['DRAW', 'GAIN_INCENSE'],
-    minimumCardCost: 1,
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'TARGET_IS_NAMED',
+        },
+      },
+    ],
     preferredRoleIds: ['role_lianjin'],
     preferredRouteTendencyIds: ['fracture', 'high_pressure'],
-    annotation: {
-      id: 'red_ink_doom_burst',
-      nameKey: 'red_ink.doom_burst.name',
-      rulesTextKey: 'red_ink.doom_burst.rules',
-      effects: [
-        {
-          type: 'BREAK_SHAPE',
-          target: 'selected_enemy',
-          amount: 4,
+  },
+  {
+    cardDefinitionId: 'card_trace_name_slip',
+    unlockStage: 'stage_human_altar',
+    category: 'ask_name',
+    effects: [
+      {
+        type: 'ASK_NAME',
+        target: 'selected_enemy',
+        amount: 1,
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
+    preferredRouteTendencyIds: ['catalogue'],
+  },
+  {
+    cardDefinitionId: 'card_thunder_splinter',
+    unlockStage: 'stage_human_altar',
+    category: 'break_form',
+    effects: [
+      {
+        type: 'APPLY_THUNDER_LEAD',
+        target: 'selected_enemy',
+        amount: 1,
+      },
+    ],
+    preferredRoleIds: ['role_lianjin'],
+    preferredRouteTendencyIds: ['fracture'],
+  },
+  {
+    cardDefinitionId: 'card_name_hook_charm',
+    unlockStage: 'stage_human_altar',
+    category: 'ask_name',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_NAMED_ENEMY',
         },
-        {
-          type: 'GAIN_DOOM',
-          target: 'self',
-          amount: 1,
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
+    preferredRouteTendencyIds: ['catalogue', 'fracture'],
+  },
+  {
+    cardDefinitionId: 'card_heavy_edict',
+    unlockStage: 'stage_run_resources',
+    category: 'break_form',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'TARGET_IS_NAMED',
         },
-      ],
-    },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_lianjin'],
+    preferredRouteTendencyIds: ['fracture', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_mirror_slip',
+    unlockStage: 'stage_run_resources',
+    category: 'economy',
+    effects: [
+      {
+        type: 'GAIN_INK',
+        target: 'self',
+        amount: 1,
+        condition: {
+          type: 'THIS_TURN_NAMED_ENEMY',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
+    preferredRouteTendencyIds: ['catalogue', 'supply'],
+  },
+  {
+    cardDefinitionId: 'card_press_door_charm',
+    unlockStage: 'stage_abnormal_boundary',
+    category: 'defense',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_FULLY_SEALED_INCOMING_FORCE',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian'],
+    preferredRouteTendencyIds: ['steady', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_counterforce_talisman',
+    unlockStage: 'stage_run_resources',
+    category: 'defense',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_FULLY_SEALED_INCOMING_FORCE',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_lianjin'],
+    preferredRouteTendencyIds: ['steady', 'fracture'],
+  },
+  {
+    cardDefinitionId: 'card_joint_seal_tablet',
+    unlockStage: 'stage_abnormal_boundary',
+    category: 'defense',
+    effects: [
+      {
+        type: 'DRAW',
+        target: 'self',
+        count: 1,
+        condition: {
+          type: 'THIS_CARD_FULLY_SEALED_INCOMING_FORCE',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian'],
+    preferredRouteTendencyIds: ['steady', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_watch_incense_line',
+    unlockStage: 'stage_abnormal_boundary',
+    category: 'defense',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_COUNTERED_ABNORMAL_MOVE',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_zhaowei', 'role_hengjian'],
+    preferredRouteTendencyIds: ['steady', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_red_ink_trial',
+    unlockStage: 'stage_human_altar',
+    category: 'economy',
+    effects: [
+      {
+        type: 'GAIN_INK',
+        target: 'self',
+        amount: 1,
+      },
+    ],
+    preferredRoleIds: ['role_hengjian'],
+    preferredRouteTendencyIds: ['supply'],
+  },
+  {
+    cardDefinitionId: 'card_sweep_ash_talisman',
+    unlockStage: 'stage_human_altar',
+    category: 'break_form',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'all_enemies',
+        amount: 1,
+      },
+    ],
+    preferredRoleIds: ['role_lianjin'],
+    preferredRouteTendencyIds: ['fracture', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_chase_imp_talisman',
+    unlockStage: 'stage_human_altar',
+    category: 'break_form',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'all_enemies',
+        targetFilter: 'nameless',
+        amount: 2,
+      },
+    ],
+    preferredRoleIds: ['role_lianjin'],
+    preferredRouteTendencyIds: ['fracture', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_ink_rubbing_slip',
+    unlockStage: 'stage_run_resources',
+    category: 'ask_name',
+    effects: [
+      {
+        type: 'DRAW',
+        target: 'self',
+        count: 1,
+        condition: {
+          type: 'THIS_CARD_NAMED_ENEMY',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
+    preferredRouteTendencyIds: ['catalogue', 'supply'],
+  },
+  {
+    cardDefinitionId: 'card_borrowed_doom_talisman',
+    unlockStage: 'stage_run_resources',
+    category: 'risk',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'TARGET_IS_NAMED',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_lianjin'],
+    preferredRouteTendencyIds: ['fracture', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_human_altar_name_sigil',
+    unlockStage: 'stage_human_altar',
+    category: 'altar',
+    effects: [
+      {
+        type: 'DRAW',
+        target: 'self',
+        count: 1,
+        condition: {
+          type: 'THIS_CARD_PLACED_ALTAR',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian'],
+    preferredRouteTendencyIds: ['catalogue', 'supply'],
+  },
+  {
+    cardDefinitionId: 'card_earth_altar_watch',
+    unlockStage: 'stage_three_altars',
+    category: 'altar',
+    effects: [
+      {
+        type: 'SEAL_MOMENTUM',
+        target: 'selected_enemy',
+        amount: 1,
+        condition: {
+          type: 'THIS_CARD_PLACED_ALTAR',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_zhaowei', 'role_hengjian'],
+    preferredRouteTendencyIds: ['steady', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_heaven_altar_oracle',
+    unlockStage: 'stage_three_altars',
+    category: 'altar',
+    effects: [
+      {
+        type: 'ASK_NAME',
+        target: 'selected_enemy',
+        amount: 1,
+        condition: {
+          type: 'THIS_CARD_PLACED_ALTAR',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
+    preferredRouteTendencyIds: ['catalogue'],
+  },
+  {
+    cardDefinitionId: 'card_ink_seal_edict',
+    unlockStage: 'stage_run_resources',
+    category: 'economy',
+    effects: [
+      {
+        type: 'GAIN_INK',
+        target: 'self',
+        amount: 1,
+        condition: {
+          type: 'THIS_TURN_NAMED_ENEMY',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian'],
+    preferredRouteTendencyIds: ['catalogue', 'supply'],
+  },
+  {
+    cardDefinitionId: 'card_doom_flash_talisman',
+    unlockStage: 'stage_run_resources',
+    category: 'risk',
+    effects: [
+      {
+        type: 'APPLY_FIRE_MARK',
+        target: 'selected_enemy',
+        amount: 1,
+      },
+    ],
+    preferredRoleIds: ['role_lianjin'],
+    preferredRouteTendencyIds: ['fracture', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_altar_echo_slip',
+    unlockStage: 'stage_human_altar',
+    category: 'altar',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_PLACED_ALTAR',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_lianjin', 'role_hengjian'],
+    preferredRouteTendencyIds: ['fracture', 'catalogue'],
+  },
+  {
+    cardDefinitionId: 'card_earth_counter_charm',
+    unlockStage: 'stage_three_altars',
+    category: 'defense',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_COUNTERED_ABNORMAL_MOVE',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_zhaowei', 'role_hengjian'],
+    preferredRouteTendencyIds: ['steady', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_heaven_trace_edict',
+    unlockStage: 'stage_three_altars',
+    category: 'ask_name',
+    effects: [
+      {
+        type: 'ASK_NAME',
+        target: 'selected_enemy',
+        amount: 1,
+        condition: {
+          type: 'THIS_TURN_NAMED_ENEMY',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
+    preferredRouteTendencyIds: ['catalogue'],
+  },
+  {
+    cardDefinitionId: 'card_artifact_polish_slip',
+    unlockStage: 'stage_run_resources',
+    category: 'economy',
+    effects: [
+      {
+        type: 'GAIN_INK',
+        target: 'self',
+        amount: 1,
+        condition: {
+          type: 'THIS_TURN_NAMED_ENEMY',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian'],
+    preferredRouteTendencyIds: ['catalogue', 'supply'],
+  },
+  {
+    cardDefinitionId: 'card_registry_splinter',
+    unlockStage: 'stage_run_resources',
+    category: 'risk',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'TARGET_IS_NAMED',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_lianjin'],
+    preferredRouteTendencyIds: ['fracture', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_clean_scroll_charm',
+    unlockStage: 'stage_run_resources',
+    category: 'defense',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_COUNTERED_ABNORMAL_MOVE',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_zhaowei'],
+    preferredRouteTendencyIds: ['steady', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_name_net_talisman',
+    unlockStage: 'stage_three_altars',
+    category: 'defense',
+    effects: [
+      {
+        type: 'SEAL_MOMENTUM',
+        target: 'selected_enemy',
+        amount: 1,
+      },
+    ],
+    preferredRoleIds: ['role_zhaowei', 'role_hengjian'],
+    preferredRouteTendencyIds: ['steady', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_mirror_bind_edict',
+    unlockStage: 'stage_three_altars',
+    category: 'economy',
+    effects: [
+      {
+        type: 'GAIN_INK',
+        target: 'self',
+        amount: 1,
+        condition: {
+          type: 'THIS_TURN_NAMED_ENEMY',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
+    preferredRouteTendencyIds: ['catalogue', 'supply'],
+  },
+  {
+    cardDefinitionId: 'card_sealback_talisman',
+    unlockStage: 'stage_abnormal_boundary',
+    category: 'defense',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_FULLY_SEALED_INCOMING_FORCE',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian'],
+    preferredRouteTendencyIds: ['steady', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_cinnabar_return_slip',
+    unlockStage: 'stage_human_altar',
+    category: 'break_form',
+    effects: [
+      {
+        type: 'TRIGGER_FIRE_MARK',
+        target: 'selected_enemy',
+      },
+    ],
+    preferredRoleIds: ['role_lianjin'],
+    preferredRouteTendencyIds: ['fracture'],
+  },
+  {
+    cardDefinitionId: 'card_doom_account_tally',
+    unlockStage: 'stage_run_resources',
+    category: 'risk',
+    effects: [
+      {
+        type: 'GAIN_INK',
+        target: 'self',
+        amount: 1,
+        condition: {
+          type: 'THIS_CARD_NAMED_ENEMY',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_lianjin', 'role_hengjian'],
+    preferredRouteTendencyIds: ['fracture', 'catalogue'],
+  },
+  {
+    cardDefinitionId: 'card_whip_follow_charm',
+    unlockStage: 'stage_three_altars',
+    category: 'break_form',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'TARGET_IS_NAMED',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_lianjin', 'role_hengjian'],
+    preferredRouteTendencyIds: ['fracture', 'catalogue'],
+  },
+  {
+    cardDefinitionId: 'card_ash_lamp_counterseal',
+    unlockStage: 'stage_three_altars',
+    category: 'defense',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_COUNTERED_ABNORMAL_MOVE',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_zhaowei'],
+    preferredRouteTendencyIds: ['steady', 'high_pressure'],
+  },
+  {
+    cardDefinitionId: 'card_registry_rewrite_edict',
+    unlockStage: 'stage_run_resources',
+    category: 'break_form',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'TARGET_IS_NAMED',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_lianjin'],
+    preferredRouteTendencyIds: ['catalogue', 'fracture'],
+  },
+  {
+    cardDefinitionId: 'card_heaven_ink_decree',
+    unlockStage: 'stage_three_altars',
+    category: 'ask_name',
+    effects: [
+      {
+        type: 'GAIN_INCENSE',
+        target: 'self',
+        amount: 1,
+        condition: {
+          type: 'THIS_CARD_NAMED_ENEMY',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_zhaowei'],
+    preferredRouteTendencyIds: ['catalogue', 'supply'],
+  },
+  {
+    cardDefinitionId: 'card_altar_threefold_sigil',
+    unlockStage: 'stage_three_altars',
+    category: 'altar',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_PLACED_ALTAR',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_lianjin'],
+    preferredRouteTendencyIds: ['catalogue', 'fracture'],
+  },
+  {
+    cardDefinitionId: 'card_fracture_guard_talisman',
+    unlockStage: 'stage_run_resources',
+    category: 'defense',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'THIS_CARD_FULLY_SEALED_INCOMING_FORCE',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_hengjian', 'role_lianjin'],
+    preferredRouteTendencyIds: ['steady', 'fracture'],
   },
 ]
+
+export const RED_INK_OPTIONS: readonly TutorialRedInkOption[] =
+  RED_INK_MAIN_OPTION_DEFINITIONS.map(createMainRedInkOption)
+
+const RED_INK_OPTIONS_BY_CARD_ID: ReadonlyMap<CardId, TutorialRedInkOption> = new Map(
+  RED_INK_OPTIONS.flatMap((option) =>
+    option.cardDefinitionId ? [[option.cardDefinitionId, option] as const] : [],
+  ),
+)
+
+function createMainRedInkOption(
+  definition: MainRedInkOptionDefinition,
+): TutorialRedInkOption {
+  const id = getMainRedInkAnnotationId(definition.cardDefinitionId)
+  const nameKey = getMainRedInkLocalizationKey(definition.cardDefinitionId, 'name')
+  const rulesTextKey = getMainRedInkLocalizationKey(definition.cardDefinitionId, 'rules')
+
+  return {
+    id,
+    cardDefinitionId: definition.cardDefinitionId,
+    nameKey,
+    rulesTextKey,
+    category: definition.category,
+    requiredUnlockStages: [definition.unlockStage ?? 'stage_core'],
+    preferredRoleIds: definition.preferredRoleIds,
+    preferredRouteTendencyIds: definition.preferredRouteTendencyIds,
+    annotation: {
+      id,
+      nameKey,
+      rulesTextKey,
+      effects: definition.effects,
+    },
+  }
+}
+
+function getMainRedInkAnnotationId(cardDefinitionId: CardId): RedInkAnnotationId {
+  return `red_ink_main_${cardDefinitionId.replace(/^card_/, '')}`
+}
+
+function getMainRedInkLocalizationKey(cardDefinitionId: CardId, suffix: 'name' | 'rules') {
+  return `red_ink.main.${cardDefinitionId.replace(/^card_/, '')}.${suffix}`
+}
 
 export interface ResolveTutorialRedInkInput {
   readonly deckCardId: RunDeckCardId
@@ -432,61 +864,28 @@ export function getVisibleRedInkOptionsForDeckCard(
   deckCard: RunDeckCard | undefined,
   cardDefinition: CardDefinition | undefined,
 ): readonly TutorialRedInkOption[] {
-  const displayCount = offer.displayCount ?? RED_INK_OFFER_DISPLAY_COUNT
-
-  if (!deckCard || !cardDefinition) {
-    return offer.options.slice(0, displayCount)
+  if (!deckCard || !cardDefinition || hasMainRedInkAnnotation(deckCard)) {
+    return []
   }
 
-  const compatibleOptions = offer.options.filter((option) =>
-    isRedInkOptionCompatibleWithCard(option, cardDefinition),
-  )
+  const option = getMainRedInkOptionForCard(cardDefinition)
 
-  return compatibleOptions.slice(0, displayCount)
+  if (!option || !offer.options.some((candidate) => candidate.id === option.id)) {
+    return []
+  }
+
+  return [option]
 }
 
 export function isRedInkOptionCompatibleWithCard(
   option: TutorialRedInkOption,
   cardDefinition: CardDefinition,
 ) {
-  const requiredTags = option.compatibleCardTags ?? []
-  const requiredEffectTypes = option.compatibleEffectTypes ?? []
-  const incompatibleTags = option.incompatibleCardTags ?? []
-  const incompatibleEffectTypes = option.incompatibleEffectTypes ?? []
-
-  if (
-    option.minimumCardCost !== undefined &&
-    cardDefinition.cost < option.minimumCardCost
-  ) {
+  if (!isCardDefinitionEligibleForMainRedInk(cardDefinition)) {
     return false
   }
 
-  if (incompatibleTags.some((tag) => cardDefinition.tags.includes(tag))) {
-    return false
-  }
-
-  if (
-    incompatibleEffectTypes.some((effectType) =>
-      cardDefinition.effects.some((effect) => effect.type === effectType),
-    )
-  ) {
-    return false
-  }
-
-  if (requiredTags.length === 0 && requiredEffectTypes.length === 0) {
-    return true
-  }
-
-  if (cardDefinition.tags.includes('linzhao')) {
-    return requiredTags.includes('linzhao')
-  }
-
-  return (
-    requiredTags.some((tag) => cardDefinition.tags.includes(tag)) ||
-    requiredEffectTypes.some((effectType) =>
-      cardDefinition.effects.some((effect) => effect.type === effectType),
-    )
-  )
+  return getMainRedInkOptionForCard(cardDefinition)?.id === option.id
 }
 
 export function resolveTutorialRedInk(
@@ -508,25 +907,32 @@ export function resolveTutorialRedInk(
   }
 
   const targetCard = run.deckCards.find((card) => card.id === input.deckCardId)
-  const option = offer.options.find((candidate) => candidate.id === input.annotationId)
 
   if (!targetCard) {
     throw new Error(`Missing run deck card for red ink: ${input.deckCardId}`)
   }
 
-  if (!option) {
-    throw new Error(`Missing red ink option: ${input.annotationId}`)
-  }
-
   const targetCardDefinition = input.cardDefinitions?.find(
     (definition) => definition.id === targetCard.definitionId,
   )
+  const option = targetCardDefinition
+    ? getMainRedInkOptionForCard(targetCardDefinition)
+    : offer.options.find((candidate) => candidate.id === input.annotationId)
 
-  if (
-    targetCardDefinition &&
-    !isRedInkOptionCompatibleWithCard(option, targetCardDefinition)
-  ) {
+  if (!option || option.id !== input.annotationId) {
+    throw new Error(`Missing red ink option: ${input.annotationId}`)
+  }
+
+  if (!offer.options.some((candidate) => candidate.id === option.id)) {
+    throw new Error(`Red ink option is not available in current offer: ${input.annotationId}`)
+  }
+
+  if (targetCardDefinition && !isRedInkOptionCompatibleWithCard(option, targetCardDefinition)) {
     throw new Error(`Red ink option is not compatible with card: ${input.annotationId}`)
+  }
+
+  if (hasMainRedInkAnnotation(targetCard)) {
+    throw new Error(`Run deck card already has a main red ink annotation: ${targetCard.id}`)
   }
 
   const cinnabarBonus = createCinnabarBonusAnnotation(run)
@@ -567,6 +973,41 @@ function getUnlockedRedInkOptions(run: TutorialRunState) {
     ),
   )
 }
+
+function getMainRedInkOptionForCard(
+  cardDefinition: CardDefinition,
+): TutorialRedInkOption | undefined {
+  if (!isCardDefinitionEligibleForMainRedInk(cardDefinition)) {
+    return undefined
+  }
+
+  return RED_INK_OPTIONS_BY_CARD_ID.get(cardDefinition.id)
+}
+
+function isCardDefinitionEligibleForMainRedInk(cardDefinition: CardDefinition) {
+  return cardDefinition.type !== 'temporary' && !cardDefinition.tags.includes('temporary')
+}
+
+function hasMainRedInkAnnotation(deckCard: RunDeckCard) {
+  return deckCard.annotations.some((annotation) =>
+    annotation.id.startsWith('red_ink_main_') || LEGACY_MAIN_RED_INK_IDS.has(annotation.id),
+  )
+}
+
+const LEGACY_MAIN_RED_INK_IDS = new Set([
+  'red_ink_return_incense',
+  'red_ink_ink_drop',
+  'red_ink_trace_name',
+  'red_ink_named_draw',
+  'red_ink_named_echo',
+  'red_ink_revealed_break',
+  'red_ink_named_break',
+  'red_ink_press_momentum',
+  'red_ink_counter_draw',
+  'red_ink_altar_ink',
+  'red_ink_altar_return',
+  'red_ink_doom_burst',
+])
 
 function orderRedInkOptions(
   options: readonly TutorialRedInkOption[],

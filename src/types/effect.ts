@@ -24,10 +24,22 @@ export type EffectCondition =
       readonly type: 'THIS_TURN_NAMED_ENEMY'
     }
   | {
+      readonly type: 'THIS_CARD_NAMED_ENEMY'
+    }
+  | {
       readonly type: 'THIS_TURN_COUNTERED_ABNORMAL_MOVE'
     }
   | {
+      readonly type: 'THIS_CARD_COUNTERED_ABNORMAL_MOVE'
+    }
+  | {
+      readonly type: 'THIS_CARD_FULLY_SEALED_INCOMING_FORCE'
+    }
+  | {
       readonly type: 'THIS_TURN_PLACED_ALTAR'
+    }
+  | {
+      readonly type: 'THIS_CARD_PLACED_ALTAR'
     }
 
 export type LinzhaoTrigger =

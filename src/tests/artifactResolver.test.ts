@@ -642,9 +642,11 @@ describe('T17 artifact foundation', () => {
       },
     )
     const afterVerdict = resolveTutorialVerdict(afterBattle, 'red_ink')
+    const redInkTarget = afterVerdict.deckCards[0]
     const afterRedInk = resolveTutorialRedInk(afterVerdict, {
-      deckCardId: afterVerdict.deckCards[0].id,
-      annotationId: 'red_ink_return_incense',
+      deckCardId: redInkTarget.id,
+      annotationId: mainRedInkId(redInkTarget.definitionId),
+      cardDefinitions: gameData.cards,
     })
     const afterSecondCatalogue = advanceTutorialRun(
       {
@@ -678,15 +680,17 @@ describe('T17 artifact foundation', () => {
         options: RED_INK_OPTIONS,
       },
     }
+    const redInkTarget = runWithRedInkOffer.deckCards[0]
     const afterRedInk = resolveTutorialRedInk(runWithRedInkOffer, {
-      deckCardId: runWithRedInkOffer.deckCards[0].id,
-      annotationId: 'red_ink_return_incense',
+      deckCardId: redInkTarget.id,
+      annotationId: mainRedInkId(redInkTarget.definitionId),
+      cardDefinitions: gameData.cards,
     })
     const targetCard = afterRedInk.deckCards[0]
     const deckIds = new Set(afterRedInk.deckDefinitionIds)
 
     expect(targetCard.annotations.map((annotation) => annotation.id)).toEqual([
-      'red_ink_return_incense',
+      mainRedInkId(redInkTarget.definitionId),
       'red_ink_cinnabar_base_bonus',
     ])
     expect(deckIds.has('artifact_cinnabar_dou')).toBe(false)
@@ -712,6 +716,10 @@ function getArtifactProgress(run: ReturnType<typeof createInitialTutorialRunStat
   }
 
   return artifact.bindProgress
+}
+
+function mainRedInkId(cardId: string) {
+  return `red_ink_main_${cardId.replace(/^card_/, '')}`
 }
 
 function createRunWithAllArtifacts() {

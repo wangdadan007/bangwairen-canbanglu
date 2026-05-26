@@ -101,6 +101,7 @@ export interface TutorialPlayerFormState {
 
 export interface TutorialRedInkOption {
   readonly id: RedInkAnnotationId
+  readonly cardDefinitionId?: CardId
   readonly nameKey: LocalizationKey
   readonly rulesTextKey: LocalizationKey
   readonly annotation: CardAnnotation

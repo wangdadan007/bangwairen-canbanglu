@@ -26,7 +26,15 @@ export function RedInkPage({
   onApply,
   onSkip,
 }: RedInkPageProps) {
-  const [selectedDeckCardId, setSelectedDeckCardId] = useState(deckCards[0]?.id ?? '')
+  const [selectedDeckCardId, setSelectedDeckCardId] = useState(
+    () =>
+      deckCards.find((deckCard) => {
+        const definition = cardDefinitionsById.get(deckCard.definitionId)
+        return getVisibleRedInkOptionsForDeckCard(offer, deckCard, definition).length > 0
+      })?.id ??
+      deckCards[0]?.id ??
+      '',
+  )
   const selectedCard = deckCards.find((card) => card.id === selectedDeckCardId)
   const selectedCardDefinition = selectedCard
     ? cardDefinitionsById.get(selectedCard.definitionId)
@@ -45,11 +53,11 @@ export function RedInkPage({
           <h3>给一张牌写入永久词条</h3>
         </div>
         <span>
-          当前牌组 {deckCards.length} 张 / 候选 {visibleOptions.length} / 总池 {offer.options.length}
+          当前牌组 {deckCards.length} 张 / 主朱批 {visibleOptions.length}
         </span>
       </div>
       <p className="reward-copy">
-        从当前牌组选择一张已有牌，再选择一条朱批。未获得的卡牌不会出现在这里，被批改的牌会在后续战斗保留这个词条。
+        从当前牌组选择一张已有牌，确认它的定向主朱批。未获得的卡牌不会出现在这里，被批改的牌会在后续战斗保留这个词条。
       </p>
 
       <div className="red-ink-grid">
@@ -59,6 +67,11 @@ export function RedInkPage({
             {deckCards.map((deckCard, index) => {
               const definition = cardDefinitionsById.get(deckCard.definitionId)
               const isSelected = deckCard.id === selectedDeckCardId
+              const cardVisibleOptions = getVisibleRedInkOptionsForDeckCard(
+                offer,
+                deckCard,
+                definition,
+              )
 
               return (
                 <button
@@ -71,9 +84,7 @@ export function RedInkPage({
                     {index + 1}. {definition ? t(definition.nameKey) : deckCard.definitionId}
                   </span>
                   <small>
-                    {deckCard.annotations.length > 0
-                      ? deckCard.annotations.map((annotation) => t(annotation.nameKey)).join(' / ')
-                      : '未朱批'}
+                    {getDeckCardRedInkLabel(deckCard, cardVisibleOptions, t)}
                   </small>
                 </button>
               )
@@ -82,7 +93,7 @@ export function RedInkPage({
         </div>
 
         <div className="red-ink-column">
-          <h4>朱批词条</h4>
+          <h4>主朱批</h4>
           <div className="red-ink-option-list">
             {visibleOptions.map((option) => (
               <button
@@ -95,10 +106,11 @@ export function RedInkPage({
                 <strong>{t(option.nameKey)}</strong>
                 <span>{t(option.rulesTextKey)}</span>
                 <small>{getEffectSummary(option.annotation)}</small>
+                <em>写入此朱批</em>
               </button>
             ))}
             {visibleOptions.length === 0 ? (
-              <p className="empty-list-copy">这张牌暂时没有可触发的朱批，换一张牌试试。</p>
+              <p className="empty-list-copy">这张牌暂时不能写入新的主朱批，换一张牌试试。</p>
             ) : null}
           </div>
         </div>
@@ -111,6 +123,22 @@ export function RedInkPage({
       </div>
     </section>
   )
+}
+
+function getDeckCardRedInkLabel(
+  deckCard: RunDeckCard,
+  visibleOptions: TutorialRedInkOffer['options'],
+  t: (key: string | undefined) => string,
+) {
+  if (visibleOptions.length > 0) {
+    return t(visibleOptions[0].nameKey)
+  }
+
+  if (deckCard.annotations.length > 0) {
+    return deckCard.annotations.map((annotation) => t(annotation.nameKey)).join(' / ')
+  }
+
+  return '不可朱批'
 }
 
 function getEffectSummary(annotation: TutorialRedInkOffer['options'][number]['annotation']) {
@@ -142,6 +170,18 @@ function getEffectSummary(annotation: TutorialRedInkOffer['options'][number]['an
 
       if (effect.type === 'GAIN_DOOM') {
         return `劫数 +${effect.amount}`
+      }
+
+      if (effect.type === 'APPLY_FIRE_MARK') {
+        return `火印 +${effect.amount}`
+      }
+
+      if (effect.type === 'APPLY_THUNDER_LEAD') {
+        return `雷引 +${effect.amount}`
+      }
+
+      if (effect.type === 'TRIGGER_FIRE_MARK') {
+        return '触发火印'
       }
 
       return '断异动'
