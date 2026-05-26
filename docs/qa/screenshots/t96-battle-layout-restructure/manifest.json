@@ -1,0 +1,534 @@
+{
+  "baseURL": "http://127.0.0.1:5173/",
+  "capturedAt": "2026-05-26T05:12:16.643Z",
+  "screenshots": [
+    {
+      "label": "01-title",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1226,
+          "height": 520,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1360,
+        "scrollWidth": 1280,
+        "scrollY": 0,
+        "verdictPageVisible": false
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1280x720-01-title.png"
+    },
+    {
+      "label": "02-first-battle-t96-layout",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1226,
+          "height": 520,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1360,
+        "scrollWidth": 1280,
+        "scrollY": 632,
+        "verdictPageVisible": false
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1280x720-02-first-battle-t96-layout.png"
+    },
+    {
+      "label": "03-second-battle-action-near-enemy",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1226,
+          "height": 520,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1360,
+        "scrollWidth": 1280,
+        "scrollY": 632,
+        "verdictPageVisible": false
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1280x720-03-second-battle-action-near-enemy.png"
+    },
+    {
+      "label": "04-multi-enemy-layout",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1226,
+          "height": 520,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 2,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1360,
+        "scrollWidth": 1280,
+        "scrollY": 632,
+        "verdictPageVisible": false
+      },
+      "note": "multi-enemy battle reached",
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1280x720-04-multi-enemy-layout.png"
+    },
+    {
+      "label": "05-boss-battle-opening-t96-layout",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1226,
+          "height": 520,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1360,
+        "scrollWidth": 1280,
+        "scrollY": 632,
+        "verdictPageVisible": false
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1280x720-05-boss-battle-opening-t96-layout.png"
+    },
+    {
+      "label": "06-verdict-page",
+      "metrics": {
+        "battleCaseAxisVisible": false,
+        "battleCommandZoneVisible": false,
+        "battlePlayerAnchorVisible": false,
+        "battleScreenShellVisible": false,
+        "canvas": {
+          "present": false,
+          "width": 0,
+          "height": 0,
+          "centerPixelNonBlank": null
+        },
+        "enemyPanelCount": 0,
+        "enemyVisualCuesVisible": false,
+        "handListVisible": false,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": false,
+        "logDrawerVisible": false,
+        "scrollHeight": 1540,
+        "scrollWidth": 1280,
+        "scrollY": 820,
+        "verdictPageVisible": true
+      },
+      "note": "catalogue verdict page reached with ask-name priority",
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1280x720-06-verdict-page.png"
+    },
+    {
+      "label": "01-title",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1298,
+          "height": 568,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1400,
+        "scrollWidth": 1366,
+        "scrollY": 0,
+        "verdictPageVisible": false
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1366x768-01-title.png"
+    },
+    {
+      "label": "02-first-battle-t96-layout",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1298,
+          "height": 568,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1400,
+        "scrollWidth": 1366,
+        "scrollY": 624,
+        "verdictPageVisible": false
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1366x768-02-first-battle-t96-layout.png"
+    },
+    {
+      "label": "03-second-battle-action-near-enemy",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1298,
+          "height": 568,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1400,
+        "scrollWidth": 1366,
+        "scrollY": 624,
+        "verdictPageVisible": false
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1366x768-03-second-battle-action-near-enemy.png"
+    },
+    {
+      "label": "04-multi-enemy-layout",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1298,
+          "height": 568,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 2,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1400,
+        "scrollWidth": 1366,
+        "scrollY": 624,
+        "verdictPageVisible": false
+      },
+      "note": "multi-enemy battle reached",
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1366x768-04-multi-enemy-layout.png"
+    },
+    {
+      "label": "05-boss-battle-opening-t96-layout",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1298,
+          "height": 568,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1400,
+        "scrollWidth": 1366,
+        "scrollY": 624,
+        "verdictPageVisible": false
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1366x768-05-boss-battle-opening-t96-layout.png"
+    },
+    {
+      "label": "06-verdict-page",
+      "metrics": {
+        "battleCaseAxisVisible": false,
+        "battleCommandZoneVisible": false,
+        "battlePlayerAnchorVisible": false,
+        "battleScreenShellVisible": false,
+        "canvas": {
+          "present": false,
+          "width": 0,
+          "height": 0,
+          "centerPixelNonBlank": null
+        },
+        "enemyPanelCount": 0,
+        "enemyVisualCuesVisible": false,
+        "handListVisible": false,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": false,
+        "logDrawerVisible": false,
+        "scrollHeight": 1532,
+        "scrollWidth": 1366,
+        "scrollY": 764,
+        "verdictPageVisible": true
+      },
+      "note": "catalogue verdict page reached with ask-name priority",
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1366x768-06-verdict-page.png"
+    },
+    {
+      "label": "01-title",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1298,
+          "height": 644,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1476,
+        "scrollWidth": 1920,
+        "scrollY": 0,
+        "verdictPageVisible": false
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1920x1080-01-title.png"
+    },
+    {
+      "label": "02-first-battle-t96-layout",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1298,
+          "height": 644,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1476,
+        "scrollWidth": 1920,
+        "scrollY": 396,
+        "verdictPageVisible": false
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1920x1080-02-first-battle-t96-layout.png"
+    },
+    {
+      "label": "03-second-battle-action-near-enemy",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1298,
+          "height": 644,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1476,
+        "scrollWidth": 1920,
+        "scrollY": 396,
+        "verdictPageVisible": false
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1920x1080-03-second-battle-action-near-enemy.png"
+    },
+    {
+      "label": "04-multi-enemy-layout",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1298,
+          "height": 644,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 2,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1476,
+        "scrollWidth": 1920,
+        "scrollY": 396,
+        "verdictPageVisible": false
+      },
+      "note": "multi-enemy battle reached",
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1920x1080-04-multi-enemy-layout.png"
+    },
+    {
+      "label": "05-boss-battle-opening-t96-layout",
+      "metrics": {
+        "battleCaseAxisVisible": true,
+        "battleCommandZoneVisible": true,
+        "battlePlayerAnchorVisible": true,
+        "battleScreenShellVisible": true,
+        "canvas": {
+          "present": true,
+          "width": 1298,
+          "height": 644,
+          "centerPixelNonBlank": true
+        },
+        "enemyPanelCount": 1,
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": true,
+        "logDrawerVisible": true,
+        "scrollHeight": 1476,
+        "scrollWidth": 1920,
+        "scrollY": 396,
+        "verdictPageVisible": false
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1920x1080-05-boss-battle-opening-t96-layout.png"
+    },
+    {
+      "label": "06-verdict-page",
+      "metrics": {
+        "battleCaseAxisVisible": false,
+        "battleCommandZoneVisible": false,
+        "battlePlayerAnchorVisible": false,
+        "battleScreenShellVisible": false,
+        "canvas": {
+          "present": false,
+          "width": 0,
+          "height": 0,
+          "centerPixelNonBlank": null
+        },
+        "enemyPanelCount": 0,
+        "enemyVisualCuesVisible": false,
+        "handListVisible": false,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": false,
+        "logDrawerVisible": false,
+        "scrollHeight": 1532,
+        "scrollWidth": 1920,
+        "scrollY": 452,
+        "verdictPageVisible": true
+      },
+      "note": "catalogue verdict page reached with ask-name priority",
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t96-battle-layout-restructure/1920x1080-06-verdict-page.png"
+    }
+  ]
+}

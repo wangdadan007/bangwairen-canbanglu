@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { PhaserGame } from '../game/PhaserGame'
 import { gameData } from '../data'
 import {
   clearTutorialSaveData,
@@ -190,7 +189,6 @@ export function App() {
           />
         ) : null}
         <section className="battle-layout" aria-label="第一章试玩区域">
-          <PhaserGame />
           <BattleHud
             key={battleKey}
             initialSave={initialSave}

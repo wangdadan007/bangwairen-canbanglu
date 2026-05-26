@@ -47,6 +47,7 @@ import {
   type PressureFeedback,
   type RitualFeedback,
 } from './actionLogView'
+import { PhaserGame } from '../../game/PhaserGame'
 import { selectBattleHudState } from './battleHudSelectors'
 import {
   createFirstRunGuidance,
@@ -67,6 +68,7 @@ import type {
   AltarState,
   ActiveLinzhaoState,
   CardDefinition,
+  CardInstance,
   CombatState,
   EncounterDefinition,
   EnemyIntentDefinition,
@@ -204,6 +206,39 @@ export function BattleHud({
     .join(' ')
 
   useAudioCue(audioCue, settings)
+
+  if (showActiveBattlePanels) {
+    return (
+      <aside className={`${hudClassName} battle-screen-mode`} aria-label="第一章路线纵切">
+        <ActiveBattleScreen
+          allCardsByInstanceId={allCardsByInstanceId}
+          battle={battle}
+          bossPressureFeedback={bossPressureFeedback}
+          canAct={canAct}
+          cardDefinitionsById={cardDefinitionsById}
+          currentHeading={currentHeading}
+          enemies={battle.enemies}
+          enemy={enemy}
+          firstRunGuidance={firstRunGuidance}
+          incenseSealDefinitionsById={incenseSealDefinitionsById}
+          inkCleanseStatus={inkCleanseStatus}
+          inkGuardStatus={inkGuardStatus}
+          latestLog={latestLog}
+          pressureFeedback={pressureFeedback}
+          ritualFeedback={ritualFeedback}
+          run={run}
+          onActivateIncenseSeal={activateIncenseSeal}
+          onEndTurn={endTurn}
+          onPlayCard={playCard}
+          onRestartCurrentBattle={restartCurrentBattle}
+          onRestartTutorialRun={restartTutorialRun}
+          onSelectEnemyTarget={selectEnemyTarget}
+          onSpendInkCleanse={spendInkCleanse}
+          onSpendInkGuardName={spendInkGuardName}
+        />
+      </aside>
+    )
+  }
 
   return (
     <aside className={hudClassName} aria-label="第一章路线纵切">
@@ -607,6 +642,374 @@ export function BattleHud({
   )
 }
 
+function ActiveBattleScreen({
+  allCardsByInstanceId,
+  battle,
+  bossPressureFeedback,
+  canAct,
+  cardDefinitionsById,
+  currentHeading,
+  enemies,
+  enemy,
+  firstRunGuidance,
+  incenseSealDefinitionsById,
+  inkCleanseStatus,
+  inkGuardStatus,
+  latestLog,
+  pressureFeedback,
+  ritualFeedback,
+  run,
+  onActivateIncenseSeal,
+  onEndTurn,
+  onPlayCard,
+  onRestartCurrentBattle,
+  onRestartTutorialRun,
+  onSelectEnemyTarget,
+  onSpendInkCleanse,
+  onSpendInkGuardName,
+}: {
+  readonly allCardsByInstanceId: ReadonlyMap<string, CardInstance>
+  readonly battle: CombatState
+  readonly bossPressureFeedback?: RitualFeedback
+  readonly canAct: boolean
+  readonly cardDefinitionsById: ReadonlyMap<string, CardDefinition>
+  readonly currentHeading: string
+  readonly enemies: readonly EnemyState[]
+  readonly enemy?: EnemyState
+  readonly firstRunGuidance?: FirstRunGuidance
+  readonly incenseSealDefinitionsById: ReadonlyMap<string, IncenseSealDefinition>
+  readonly inkCleanseStatus: ReturnType<typeof getSpendInkCleanseStatus>
+  readonly inkGuardStatus: ReturnType<typeof getSpendInkGuardNameStatus>
+  readonly latestLog: readonly CombatState['actionLog'][number][]
+  readonly pressureFeedback?: PressureFeedback
+  readonly ritualFeedback?: RitualFeedback
+  readonly run: TutorialRunState
+  readonly onActivateIncenseSeal: (incenseSealInstanceId: string) => void
+  readonly onEndTurn: () => void
+  readonly onPlayCard: (card: CombatState['hand'][number]) => void
+  readonly onRestartCurrentBattle: () => void
+  readonly onRestartTutorialRun: () => void
+  readonly onSelectEnemyTarget: (enemyInstanceId: string) => void
+  readonly onSpendInkCleanse: () => void
+  readonly onSpendInkGuardName: () => void
+}) {
+  const role = run.roleId ? getPlayableRoleDefinition(run.roleId) : undefined
+  const visibleLog = latestLog.slice(0, 2)
+  const playerFormPercent = Math.max(
+    0,
+    Math.min(100, (battle.player.currentForm / battle.player.maxForm) * 100),
+  )
+
+  return (
+    <section className="battle-screen-shell" aria-label="战斗首屏：残榜审案案面">
+      <div className="battle-stage-backdrop" aria-hidden="true">
+        <PhaserGame />
+      </div>
+
+      <header className="battle-top-bar">
+        <div className="battle-heading">
+          <p className="panel-kicker">T96 战斗界面结构重构</p>
+          <h2>{currentHeading}</h2>
+          <span>第 {battle.turn} 回合 · {role ? `执簿者 ${t(role.nameKey)}` : '执簿者'}</span>
+        </div>
+        <div className="battle-top-metrics" aria-label="全局风险资源">
+          <Metric label="墨" tooltip={getTermTooltip('ink')} value={battle.resources.ink.toString()} />
+          <Metric label="劫数" tooltip={getTermTooltip('doom')} value={battle.resources.doom.toString()} />
+          <Metric label="榜裂" tooltip={getTermTooltip('fracture')} value={battle.resources.fracture.toString()} />
+        </div>
+        <div className="dev-controls battle-dev-controls">
+          <button
+            className="ghost-button"
+            disabled={battle.result.status !== 'ongoing'}
+            type="button"
+            onClick={onRestartCurrentBattle}
+          >
+            重开当前战斗
+          </button>
+          <button className="ghost-button" type="button" onClick={onRestartTutorialRun}>
+            重开第一章路线
+          </button>
+        </div>
+      </header>
+
+      {firstRunGuidance || pressureFeedback || ritualFeedback || bossPressureFeedback ? (
+        <div className="battle-feedback-strip" aria-label="战斗反馈">
+          {firstRunGuidance ? <FirstRunGuidancePanel guidance={firstRunGuidance} /> : null}
+          {pressureFeedback ? <PressureFeedbackPanel feedback={pressureFeedback} /> : null}
+          {ritualFeedback ? <RitualFeedbackPanel feedback={ritualFeedback} /> : null}
+          {bossPressureFeedback ? <RitualFeedbackPanel feedback={bossPressureFeedback} /> : null}
+        </div>
+      ) : null}
+
+      <section className="battle-arena" aria-label="残榜案面">
+        <StageEnemyListPanel
+          enemies={enemies}
+          selectedEnemyInstanceId={enemy?.instanceId}
+          canSelect={canAct}
+          onSelect={onSelectEnemyTarget}
+        />
+
+        <div className="battle-case-row">
+          <aside className="battle-corner-state left" aria-label="执簿短况">
+            <div className="section-title-row compact">
+              <h3>执簿短况</h3>
+              <span>轻案角</span>
+            </div>
+            <div className="battle-corner-metrics">
+              <Metric label="抽牌堆" value={battle.drawPile.length.toString()} />
+              <Metric label="弃牌堆" value={battle.discardPile.length.toString()} />
+              <Metric label="消耗区" value={battle.exhaustPile.length.toString()} />
+              <Metric label="临诏" tooltip={getTermTooltip('linzhao')} value={`${battle.linzhao.length} / 2`} />
+            </div>
+            <LinzhaoPanel activeLinzhao={battle.linzhao} cardDefinitionsById={cardDefinitionsById} />
+          </aside>
+
+          <CaseAxisPanel
+            altars={battle.altars}
+            cardDefinitionsById={cardDefinitionsById}
+            enemy={enemy}
+          />
+
+          <aside className="battle-corner-state right" aria-label="器物挂位">
+            <ArtifactBar
+              artifacts={run.artifacts}
+              artifactDefinitionsById={artifactDefinitionsById}
+              t={t}
+            />
+            <IncenseSealPanel
+              canAct={canAct}
+              incenseSealDefinitionsById={incenseSealDefinitionsById}
+              seals={battle.incenseSeals.seals}
+              selectedEnemy={enemy}
+              onUse={onActivateIncenseSeal}
+            />
+          </aside>
+        </div>
+      </section>
+
+      <section className="battle-command-zone" aria-label="出牌操作区">
+        <aside className="battle-player-anchor" aria-label="执簿者状态">
+          <div className="battle-player-heading">
+            <span>执簿者</span>
+            <strong>{role ? t(role.nameKey) : '未定'}</strong>
+          </div>
+          <div className="player-form-meter" aria-label={`己形 ${battle.player.currentForm} / ${battle.player.maxForm}`}>
+            <span style={{ width: `${playerFormPercent}%` }} />
+          </div>
+          <div className="battle-player-vitals">
+            <span title={getTermTooltip('player_shape')}>
+              己形 <strong>{battle.player.currentForm} / {battle.player.maxForm}</strong>
+            </span>
+            <span title={getTermTooltip('incense')}>
+              香火 <strong>{battle.player.incense} / {battle.player.maxIncense}</strong>
+            </span>
+          </div>
+          <div className="battle-player-piles" aria-label="牌堆状态">
+            <span>手 {battle.hand.length}</span>
+            <span>抽 {battle.drawPile.length}</span>
+            <span>弃 {battle.discardPile.length}</span>
+            <span>耗 {battle.exhaustPile.length}</span>
+          </div>
+          <p>目标：{enemy ? getEnemyDefinitionName(enemy.definitionId) : '无'}</p>
+        </aside>
+
+        <div className="battle-command-main">
+          <div className="battle-command-row">
+            <div className="battle-command-metrics" aria-label="操作资源">
+              <span>当前香火 {battle.player.incense} / {battle.player.maxIncense}</span>
+              <span>目标：{enemy ? getEnemyDefinitionName(enemy.definitionId) : '无'}</span>
+            </div>
+            <div className="battle-command-buttons">
+              <button
+                type="button"
+                disabled={!canAct || !inkGuardStatus.canUse}
+                title={inkGuardStatus.reason}
+                onClick={onSpendInkGuardName}
+              >
+                留墨护名
+              </button>
+              <button
+                type="button"
+                disabled={!canAct || !inkCleanseStatus.canUse}
+                title={inkCleanseStatus.reason}
+                onClick={onSpendInkCleanse}
+              >
+                墨净污卷
+              </button>
+              <button type="button" disabled={!canAct} onClick={onEndTurn}>
+                结束回合
+              </button>
+            </div>
+            <span className="hud-action-hint">
+              {inkGuardStatus.canUse
+                ? getInkGuardReadyText(inkGuardStatus.mode)
+                : inkGuardStatus.reason}
+              {'；'}
+              {inkCleanseStatus.canUse
+                ? getInkCleanseReadyText(inkCleanseStatus.cardDefinitionId, cardDefinitionsById)
+                : inkCleanseStatus.reason}
+            </span>
+          </div>
+
+          <section className="battle-hand-panel" aria-label="玩家手牌">
+            <div className="section-title-row">
+              <h3>手牌</h3>
+              <span className="target-note">目标：{enemy ? getEnemyDefinitionName(enemy.definitionId) : '无'}</span>
+            </div>
+            <HandList
+              battle={battle}
+              canAct={canAct}
+              cardDefinitionsById={cardDefinitionsById}
+              enemy={enemy}
+              run={run}
+              onPlayCard={onPlayCard}
+            />
+          </section>
+
+          <section className="battle-log-drawer log-section" aria-label="最近战斗日志">
+            <div className="section-title-row">
+              <h3>最近记录</h3>
+              <span>{battle.actionLog.length} 条，可展开日志位</span>
+            </div>
+            <ol className="log-list" aria-label="最近战斗日志">
+              {visibleLog.map((entry) => (
+                <li className={getLogEntryClassName(entry)} key={entry.id}>
+                  {formatLogEntry(entry, battle, cardDefinitionsById, allCardsByInstanceId)}
+                </li>
+              ))}
+            </ol>
+          </section>
+        </div>
+      </section>
+    </section>
+  )
+}
+
+function CaseAxisPanel({
+  altars,
+  cardDefinitionsById,
+  enemy,
+}: {
+  readonly altars: readonly AltarState[]
+  readonly cardDefinitionsById: ReadonlyMap<string, CardDefinition>
+  readonly enemy?: EnemyState
+}) {
+  const activeNamedPhase = enemy?.namedPhase?.isActive ? enemy.namedPhase : undefined
+  const nameCue = enemy ? getNameCue(enemy, activeNamedPhase) : '未选敌形'
+
+  return (
+    <section className="battle-case-axis" aria-label="残榜审案中轴">
+      <div className="case-axis-header">
+        <span>残榜审案中轴</span>
+        <strong>{enemy ? getEnemyDefinitionName(enemy.definitionId) : '未定目标'}</strong>
+        <small>{nameCue}</small>
+      </div>
+      <div className="case-name-slots" aria-label="当前目标名格">
+        {enemy && enemy.nameSlots.length > 0 ? (
+          enemy.nameSlots.map((slot) => (
+            <span className={slot.isRevealed ? 'name-slot revealed' : 'name-slot'} key={slot.index}>
+              {slot.isRevealed ? t(slot.nameKey) : '未揭示'}
+            </span>
+          ))
+        ) : (
+          <span className="name-slot revealed">{enemy ? '无名' : '待选目标'}</span>
+        )}
+      </div>
+      <div className={enemy?.isNamed ? 'case-verdict-seal active' : 'case-verdict-seal'}>
+        <span>{enemy?.isNamed ? '正名印已落' : '问名未全'}</span>
+        <strong>
+          {activeNamedPhase
+            ? activeNamedPhase.descriptionKeys.map((key) => t(key)).join('；')
+            : enemy?.isNamed
+              ? '现形反扑可预警'
+              : '揭明名格后触发正名'}
+        </strong>
+      </div>
+      <AltarPanel altars={altars} cardDefinitionsById={cardDefinitionsById} />
+    </section>
+  )
+}
+
+function HandList({
+  battle,
+  canAct,
+  cardDefinitionsById,
+  enemy,
+  run,
+  onPlayCard,
+}: {
+  readonly battle: CombatState
+  readonly canAct: boolean
+  readonly cardDefinitionsById: ReadonlyMap<string, CardDefinition>
+  readonly enemy?: EnemyState
+  readonly run: TutorialRunState
+  readonly onPlayCard: (card: CombatState['hand'][number]) => void
+}) {
+  return (
+    <div className="hand-list" aria-label="玩家手牌">
+      {battle.hand.length > 0 ? (
+        battle.hand.map((card) => {
+          const definition = cardDefinitionsById.get(card.definitionId)
+          const isAffordable = definition ? definition.cost <= battle.player.incense : false
+          const linzhaoBlockReason = definition
+            ? getLinzhaoPlayBlockReason(battle, definition)
+            : undefined
+          const isDisabled = !canAct || !definition || !isAffordable || Boolean(linzhaoBlockReason)
+          const disabledReason = getCardDisabledReason({
+            battle,
+            canAct,
+            definition,
+            enemy,
+            isAffordable,
+            run,
+          })
+
+          return (
+            <button
+              className={getCardButtonClassName(definition, card.annotations.length)}
+              disabled={isDisabled}
+              key={card.instanceId}
+              title={disabledReason}
+              type="button"
+              onClick={() => onPlayCard(card)}
+            >
+              <span className="card-topline">
+                <strong>{definition ? t(definition.nameKey) : card.definitionId}</strong>
+                <span>{definition?.cost ?? '?'} 香火</span>
+              </span>
+              <span className="card-rules">
+                {definition ? t(definition.rulesTextKey) : '缺少卡牌定义'}
+              </span>
+              {definition ? (
+                <span className="card-tags" aria-label="卡牌效果">
+                  {getCardEffectLabels(definition, card).map((label) => (
+                    <span key={label} title={getEffectTooltip(label)}>
+                      {label}
+                    </span>
+                  ))}
+                </span>
+              ) : null}
+              {card.annotations.length > 0 ? (
+                <span className="annotation-row" aria-label="朱批词条">
+                  {card.annotations.map((annotation) => (
+                    <span key={annotation.id}>朱批：{t(annotation.nameKey)}</span>
+                  ))}
+                </span>
+              ) : null}
+              {!isAffordable && definition ? <span className="card-state">香火不足</span> : null}
+              {isDisabled && disabledReason && isAffordable ? (
+                <span className="card-state">{disabledReason}</span>
+              ) : null}
+            </button>
+          )
+        })
+      ) : (
+        <p className="empty-state">案上暂无手牌。</p>
+      )}
+    </div>
+  )
+}
+
 function RoutePlaceholderPanel({
   node,
   flowKind,
@@ -629,6 +1032,190 @@ function RoutePlaceholderPanel({
         </button>
       </div>
     </section>
+  )
+}
+
+function StageEnemyListPanel({
+  enemies,
+  selectedEnemyInstanceId,
+  canSelect,
+  onSelect,
+}: {
+  readonly enemies: readonly EnemyState[]
+  readonly selectedEnemyInstanceId?: string
+  readonly canSelect: boolean
+  readonly onSelect: (enemyInstanceId: string) => void
+}) {
+  return (
+    <section className="stage-enemy-list-panel" aria-label="敌方目标">
+      <div className="section-title-row">
+        <h3>敌方</h3>
+        <span>{enemies.length > 1 ? `多敌遭遇 ${enemies.length} 名` : '单敌遭遇'}</span>
+      </div>
+      <div className="stage-enemy-list">
+        {enemies.map((enemy) => (
+          <StageEnemyPanel
+            canSelect={canSelect && enemy.currentForm > 0}
+            enemy={enemy}
+            isSelected={enemy.instanceId === selectedEnemyInstanceId}
+            key={enemy.instanceId}
+            onSelect={() => onSelect(enemy.instanceId)}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function StageEnemyPanel({
+  enemy,
+  isSelected,
+  canSelect,
+  onSelect,
+}: {
+  readonly enemy: EnemyState
+  readonly isSelected: boolean
+  readonly canSelect: boolean
+  readonly onSelect: () => void
+}) {
+  const formPercent = Math.max(0, Math.min(100, (enemy.currentForm / enemy.maxForm) * 100))
+  const isIntentMasked = enemy.currentIntentVisibility === 'masked'
+  const intentLabel = getCurrentIntentLabel(enemy.currentIntent, isIntentMasked, enemy.tier)
+  const abnormalMove = getCurrentAbnormalMove(enemy)
+  const visibleAbnormalMove = isIntentMasked ? undefined : abnormalMove
+  const hasPreparedCounter = visibleAbnormalMove
+    ? enemy.blockedAbnormalMoveTypes.includes(visibleAbnormalMove.type)
+    : false
+  const intentKind =
+    enemy.currentIntent?.kind === 'abnormal_move'
+      ? '异动'
+      : enemy.currentIntent?.kind === 'incoming_force'
+        ? '来势'
+        : '待定'
+  const intentTone =
+    isIntentMasked
+      ? 'hidden'
+      : enemy.currentIntent?.kind === 'abnormal_move'
+      ? 'abnormal'
+      : enemy.incomingForce > 0
+        ? 'incoming'
+        : 'quiet'
+  const nextIntentTone =
+    enemy.nextIntentPreview?.kind === 'abnormal_move'
+      ? 'abnormal'
+      : enemy.nextIntentPreview?.kind === 'incoming_force'
+        ? 'incoming'
+        : 'hidden'
+  const nextIntentLabel = enemy.nextIntentPreview
+    ? getPreviewIntentLabel(enemy.nextIntentPreview)
+    : '未辨'
+  const activeNamedPhase = enemy.namedPhase?.isActive ? enemy.namedPhase : undefined
+  const visibleIncomingForce = isIntentMasked ? null : enemy.incomingForce
+
+  return (
+    <article
+      className={[
+        'enemy-panel',
+        'stage-enemy-panel',
+        isSelected ? 'selected' : '',
+        isBossEnemyDefinition(enemy.definitionId) ? 'boss-pressure' : '',
+        enemy.currentForm <= 0 ? 'settled' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      aria-label="敌人状态"
+    >
+      <div className="stage-enemy-main">
+        <div className="section-title-row">
+          <div>
+            <p className="panel-kicker" title={getTermTooltip('shape')}>
+              敌形（形）
+            </p>
+            <h3>{getEnemyDefinitionName(enemy.definitionId)}</h3>
+          </div>
+          <div className="enemy-panel-actions">
+            <span
+              className={enemy.isNamed ? 'status-pill named' : 'status-pill'}
+              title={activeNamedPhase ? getTermTooltip('named_phase') : getTermTooltip('named')}
+            >
+              {activeNamedPhase ? '现形' : enemy.isNamed ? '正名' : enemy.currentForm <= 0 ? '已收束' : '未正名'}
+            </span>
+            <button
+              className="ghost-button target-button"
+              disabled={!canSelect || isSelected}
+              type="button"
+              onClick={onSelect}
+            >
+              {isSelected ? '当前目标' : '设为目标'}
+            </button>
+          </div>
+        </div>
+        <div className="enemy-visual-cues" aria-label="敌方表现锚点">
+          <span>{getEnemyAnchorCue(enemy.tier)}</span>
+          <span>{getIntentCue(intentKind, isIntentMasked)}</span>
+          <span>{getNameCue(enemy, activeNamedPhase)}</span>
+        </div>
+        <div className={getEnemyPortraitClassName(enemy, intentTone)} aria-hidden="true">
+          <span className="enemy-portrait-core" />
+          <span className="enemy-portrait-mark" />
+        </div>
+      </div>
+
+      <div className="stage-enemy-status">
+        <div className="form-meter" aria-label={`形 ${enemy.currentForm} / ${enemy.maxForm}`}>
+          <span style={{ width: `${formPercent}%` }} />
+        </div>
+        <div className="form-row">
+          <span title={getTermTooltip('shape')}>形</span>
+          <strong>
+            {enemy.currentForm} / {enemy.maxForm}
+          </strong>
+        </div>
+        <div className="name-slots" aria-label="名格">
+          {enemy.nameSlots.length > 0 ? (
+            enemy.nameSlots.map((slot) => (
+              <span className={slot.isRevealed ? 'name-slot revealed' : 'name-slot'} key={slot.index}>
+                {slot.isRevealed ? t(slot.nameKey) : '未揭示'}
+              </span>
+            ))
+          ) : (
+            <span className="name-slot revealed">无名</span>
+          )}
+        </div>
+        <div className={`intent-banner ${intentTone}`} aria-label="敌人下一次行动">
+          <span
+            title={
+              intentKind === '来势'
+                ? getTermTooltip('incoming_force')
+                : intentKind === '异动'
+                  ? getTermTooltip('abnormal_move')
+                  : undefined
+            }
+          >
+            {intentKind === '来势' ? '来势' : intentKind === '异动' ? '异动' : '行动'}
+          </span>
+          <strong>{intentLabel}</strong>
+          <small>
+            {isIntentMasked
+              ? '辨势后显示'
+              : visibleAbnormalMove
+              ? hasPreparedCounter
+                ? '已布置专门处理'
+                : `${getMoveLabel(visibleAbnormalMove.type)}未处理`
+              : enemy.incomingForce > 0
+                ? `可封 ${enemy.incomingForce} 点`
+                : '暂无直接来势'}
+          </small>
+        </div>
+        <div className={`intent-next-preview ${nextIntentTone}`} aria-label="后一动预告">
+          <span>后一动</span>
+          <strong>{nextIntentLabel}</strong>
+          <small>
+            当前来势 {visibleIncomingForce ?? '未辨'}；{activeNamedPhase ? '现形反扑' : getNameCue(enemy, activeNamedPhase)}
+          </small>
+        </div>
+      </div>
+    </article>
   )
 }
 
@@ -890,6 +1477,12 @@ function EnemyPanel({
             {isSelected ? '当前目标' : '设为目标'}
           </button>
         </div>
+      </div>
+
+      <div className="enemy-visual-cues" aria-label="敌方表现锚点">
+        <span>{getEnemyAnchorCue(enemy.tier)}</span>
+        <span>{getIntentCue(intentKind, isIntentMasked)}</span>
+        <span>{getNameCue(enemy, activeNamedPhase)}</span>
       </div>
 
       <div className={getEnemyPortraitClassName(enemy, intentTone)} aria-hidden="true">
@@ -1272,6 +1865,50 @@ function getEnemyVisualKind(definitionId: string) {
   }
 
   return 'paper'
+}
+
+function getEnemyAnchorCue(tier: EnemyState['tier']) {
+  if (tier === 'boss') {
+    return '终审压案'
+  }
+
+  if (tier === 'elite') {
+    return '精英压案'
+  }
+
+  return '案前敌形'
+}
+
+function getIntentCue(intentKind: '来势' | '异动' | '待定', isIntentMasked: boolean) {
+  if (isIntentMasked) {
+    return '势影遮蔽'
+  }
+
+  if (intentKind === '来势') {
+    return '来势可封'
+  }
+
+  if (intentKind === '异动') {
+    return '异动需断'
+  }
+
+  return '行动待辨'
+}
+
+function getNameCue(enemy: EnemyState, activeNamedPhase: EnemyState['namedPhase'] | undefined) {
+  if (enemy.currentForm <= 0) {
+    return '已收束'
+  }
+
+  if (activeNamedPhase?.isActive) {
+    return '现形反扑'
+  }
+
+  if (enemy.isNamed) {
+    return '已正名'
+  }
+
+  return '名未全明'
 }
 
 function getEffectTooltip(label: string) {

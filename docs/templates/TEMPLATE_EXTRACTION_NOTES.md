@@ -78,6 +78,45 @@
 
 ## 7. 当前记录
 
+### 2026-05-25 · T94 · 游戏画面表现规格与截图验收包
+
+- 候选类型：表现规格 / UI QA / 自动截图验收流程。
+- 主归属模板：`React Card Game UI Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`docs/qa/CHAPTER_ONE_T94_PRESENTATION_PHASE_TWO.md`、`scripts/capture-t94-presentation-screenshots.mjs`、`docs/assets/ASSET_MANIFEST.md`、`src/ui/pages/BattleHud.tsx`、`src/ui/styles.css`、`src/game/scenes/BattleScene.ts`、`docs/tasks/PROJECT_PLAN.md`。
+- 可复用价值：把“画面表现优化”拆成首屏层级、敌方锚点、关键行动可读性、正式素材前置清单、三档视口截图和静态 / 动画关闭可读性检查，适合复用到其他卡牌战斗或肉鸽项目的表现验收。
+- 与本作强绑定部分：残榜、裁定、破形、问名、正名、来势、异动、法宝等术语和题材视觉属于本作。
+- 去题材化思路：抽象为 battle stage hierarchy、enemy visual anchor、action readability cue、asset production backlog、screenshot manifest、reduced motion guardrail；示例使用中性 health / intent / status / relic / reward 命名。
+- 依赖与授权注意：本轮未新增生产依赖或第三方素材；模板化时必须移除本作题材文案，并单独声明不包含正式美术、字体或音频资产。
+- 是否值得抽到模板：值得记录，暂不单独抽仓库。
+- 后续动作：若后续 T94A/T95 继续补截图稳定性、视觉 token 或素材 contact sheet，可合并成通用 presentation QA kit。
+
+### 2026-05-26 · T95 · 卡牌肉鸽战斗首屏结构设计
+
+- 候选类型：竞品 UI 拆解 / 战斗首屏信息架构 / 可执行布局方案。
+- 主归属模板：`React Card Game UI Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`docs/design/CHAPTER_ONE_BATTLE_SCREEN_STRUCTURE_T95.md`、`docs/tasks/PROJECT_PLAN.md`、`docs/prd/PRD-changelog.md`。
+- 可复用价值：把“竞品看起来像真实游戏”拆成可执行的首屏判断链：当前危险、当前操作、核心差异、长期状态和回看解释，并把卡牌肉鸽常见结构抽象为中部战场、底部手牌、边缘状态和折叠日志；最新推荐口径是用成熟卡牌肉鸽横向骨架承接可读性，用题材化中轴承接作品调性。
+- 与本作强绑定部分：残榜案面、敌方压案、形、名、问名、正名、来势、异动、三坛、法宝等术语和国风视觉意象属于本作。
+- 去题材化思路：抽象为 combat arena, enemy row, hand rail, resource strip, central ritual axis, corner equipment slots, intent badge, special action badge, timeline slots, relic rail 和 log drawer；示例用中性 fantasy / sci-fi / abstract card battler 内容替代本作题材。
+- 依赖与授权注意：本轮只引用公开商店页和新闻报道做研究，未新增生产依赖或正式素材；模板化时需要移除第三方竞品截图，只保留分析框架和中性 wireframe。
+- 是否值得抽到模板：值得记录，暂不单独抽仓库。
+- 后续动作：T96 若完成可运行重构和三视口截图验收，可与 T94 合并为完整 card battle screen layout kit。
+
+### 2026-05-26 · T96 · 可运行卡牌肉鸽战斗首屏 shell
+
+- 候选类型：React 战斗页布局 / 卡牌手牌操作区 / 自动截图验收流程。
+- 主归属模板：`React Card Game UI Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/ui/App.tsx`、`src/ui/pages/BattleHud.tsx`、`src/ui/styles.css`、`scripts/capture-t96-battle-layout-screenshots.mjs`、`docs/qa/CHAPTER_ONE_T96_BATTLE_LAYOUT_RESTRUCTURE.md`、`docs/tasks/PROJECT_PLAN.md`、`docs/prd/PRD-changelog.md`。
+- 可复用价值：把可玩的卡牌肉鸽战斗页拆成 top risk resource bar、player anchor、enemy stage summary、central mechanic axis、bottom hand rail、command strip、equipment corners 和 compact log drawer，并配套三档视口截图脚本与 manifest 指标，适合复用到其他 deckbuilder / roguelike battle UI。
+- 与本作强绑定部分：残榜审案、形、问名、正名、来势、异动、三坛、法宝、香封、裁定等术语和国风表达属于本作。
+- 去题材化思路：抽象为 battle shell、player anchor、enemy row、intent badge、special action badge、resource rail、timeline slots、equipment slots、hand rail、action buttons、log drawer、screenshot manifest；示例改用 health、energy、block、intent、status、relic、timeline 等中性命名。
+- 依赖与授权注意：本轮未新增生产依赖、第三方素材或 AI 生成正式图；模板化时需要移除本作文案和题材 CSS 命名，只保留结构、状态映射和截图验收思路。
+- 是否值得抽到模板：值得记录，暂不单独抽仓库。
+- 后续动作：等人工审图 / 试玩确认后，可与 T94 表现验收、T95 结构设计合并成完整 card battle screen layout kit。
+
 ### 2026-05-19 · 初始化 · 模板沉淀机制
 
 - 候选类型：开发流程 / 商业化抽象记录机制。

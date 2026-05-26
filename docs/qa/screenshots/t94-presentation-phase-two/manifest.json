@@ -1,0 +1,423 @@
+{
+  "baseURL": "http://127.0.0.1:5173/",
+  "capturedAt": "2026-05-26T00:40:56.922Z",
+  "screenshots": [
+    {
+      "label": "01-title",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 810,
+          "height": 670,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": true,
+        "scrollHeight": 1384,
+        "scrollWidth": 1280,
+        "scrollY": 0,
+        "verdictPageVisible": false
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1280x720-01-title.png"
+    },
+    {
+      "label": "02-first-battle-lianjin",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 810,
+          "height": 670,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": true,
+        "scrollHeight": 1384,
+        "scrollWidth": 1280,
+        "scrollY": 632,
+        "verdictPageVisible": false
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1280x720-02-first-battle-lianjin.png"
+    },
+    {
+      "label": "03-second-battle-action-readability",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 810,
+          "height": 670,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": true,
+        "scrollHeight": 1384,
+        "scrollWidth": 1280,
+        "scrollY": 632,
+        "verdictPageVisible": false
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1280x720-03-second-battle-action-readability.png"
+    },
+    {
+      "label": "04-route-branching-after-tutorial",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 810,
+          "height": 670,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": false,
+        "handListVisible": false,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": false,
+        "scrollHeight": 1384,
+        "scrollWidth": 1280,
+        "scrollY": 633,
+        "verdictPageVisible": false
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1280x720-04-route-branching-after-tutorial.png"
+    },
+    {
+      "label": "05-boss-battle-opening",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 810,
+          "height": 670,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": true,
+        "scrollHeight": 1384,
+        "scrollWidth": 1280,
+        "scrollY": 632,
+        "verdictPageVisible": false
+      },
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1280x720-05-boss-battle-opening.png"
+    },
+    {
+      "label": "06-verdict-page",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 810,
+          "height": 670,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": false,
+        "handListVisible": false,
+        "horizontalOverflow": false,
+        "innerHeight": 720,
+        "innerWidth": 1280,
+        "intentBannerVisible": false,
+        "scrollHeight": 1384,
+        "scrollWidth": 1280,
+        "scrollY": 664,
+        "verdictPageVisible": true
+      },
+      "note": "catalogue verdict page reached with ask-name priority",
+      "viewport": "1280x720",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1280x720-06-verdict-page.png"
+    },
+    {
+      "label": "01-title",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": true,
+        "scrollHeight": 1376,
+        "scrollWidth": 1366,
+        "scrollY": 0,
+        "verdictPageVisible": false
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1366x768-01-title.png"
+    },
+    {
+      "label": "02-first-battle-lianjin",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": true,
+        "scrollHeight": 1376,
+        "scrollWidth": 1366,
+        "scrollY": 608,
+        "verdictPageVisible": false
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1366x768-02-first-battle-lianjin.png"
+    },
+    {
+      "label": "03-second-battle-action-readability",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": true,
+        "scrollHeight": 1376,
+        "scrollWidth": 1366,
+        "scrollY": 608,
+        "verdictPageVisible": false
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1366x768-03-second-battle-action-readability.png"
+    },
+    {
+      "label": "04-route-branching-after-tutorial",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": false,
+        "handListVisible": false,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": false,
+        "scrollHeight": 1376,
+        "scrollWidth": 1366,
+        "scrollY": 608,
+        "verdictPageVisible": false
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1366x768-04-route-branching-after-tutorial.png"
+    },
+    {
+      "label": "05-boss-battle-opening",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": true,
+        "scrollHeight": 1376,
+        "scrollWidth": 1366,
+        "scrollY": 608,
+        "verdictPageVisible": false
+      },
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1366x768-05-boss-battle-opening.png"
+    },
+    {
+      "label": "06-verdict-page",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": false,
+        "handListVisible": false,
+        "horizontalOverflow": false,
+        "innerHeight": 768,
+        "innerWidth": 1366,
+        "intentBannerVisible": false,
+        "scrollHeight": 1376,
+        "scrollWidth": 1366,
+        "scrollY": 608,
+        "verdictPageVisible": true
+      },
+      "note": "catalogue verdict page reached with ask-name priority",
+      "viewport": "1366x768",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1366x768-06-verdict-page.png"
+    },
+    {
+      "label": "01-title",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": true,
+        "scrollHeight": 1376,
+        "scrollWidth": 1920,
+        "scrollY": 0,
+        "verdictPageVisible": false
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1920x1080-01-title.png"
+    },
+    {
+      "label": "02-first-battle-lianjin",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": true,
+        "scrollHeight": 1376,
+        "scrollWidth": 1920,
+        "scrollY": 296,
+        "verdictPageVisible": false
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1920x1080-02-first-battle-lianjin.png"
+    },
+    {
+      "label": "03-second-battle-action-readability",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": true,
+        "scrollHeight": 1376,
+        "scrollWidth": 1920,
+        "scrollY": 296,
+        "verdictPageVisible": false
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1920x1080-03-second-battle-action-readability.png"
+    },
+    {
+      "label": "04-route-branching-after-tutorial",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": false,
+        "handListVisible": false,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": false,
+        "scrollHeight": 1376,
+        "scrollWidth": 1920,
+        "scrollY": 296,
+        "verdictPageVisible": false
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1920x1080-04-route-branching-after-tutorial.png"
+    },
+    {
+      "label": "05-boss-battle-opening",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": true,
+        "handListVisible": true,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": true,
+        "scrollHeight": 1376,
+        "scrollWidth": 1920,
+        "scrollY": 296,
+        "verdictPageVisible": false
+      },
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1920x1080-05-boss-battle-opening.png"
+    },
+    {
+      "label": "06-verdict-page",
+      "metrics": {
+        "canvas": {
+          "present": true,
+          "width": 882,
+          "height": 678,
+          "centerPixelNonBlank": true
+        },
+        "enemyVisualCuesVisible": false,
+        "handListVisible": false,
+        "horizontalOverflow": false,
+        "innerHeight": 1080,
+        "innerWidth": 1920,
+        "intentBannerVisible": false,
+        "scrollHeight": 1376,
+        "scrollWidth": 1920,
+        "scrollY": 296,
+        "verdictPageVisible": true
+      },
+      "note": "catalogue verdict page reached with ask-name priority",
+      "viewport": "1920x1080",
+      "path": "/Users/mac/projects/bangwairen-canbanglu/docs/qa/screenshots/t94-presentation-phase-two/1920x1080-06-verdict-page.png"
+    }
+  ]
+}

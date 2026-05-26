@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "capture:t94": "node scripts/capture-t94-presentation-screenshots.mjs",
+    "capture:t96": "node scripts/capture-t96-battle-layout-screenshots.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
