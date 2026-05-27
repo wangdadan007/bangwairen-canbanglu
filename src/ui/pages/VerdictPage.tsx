@@ -31,7 +31,7 @@ export function VerdictPage({ offer, resources, verdict, t, onChoose }: VerdictP
   }, [offer.id])
 
   return (
-    <section className="verdict-page" aria-label="裁定页">
+    <section className="verdict-page t100-verdict-feedback" aria-label="裁定页">
       <div className="section-title-row">
         <div>
           <p className="panel-kicker">裁定</p>
@@ -179,7 +179,7 @@ function getVerdictImpact(
   }
 
   if (option.id === 'erase_gain_ink') {
-    return '削籍判词：榜裂 +1，墨 +2'
+    return '削籍判词：榜裂 +1，墨 +2；下一次休整 / 事件朱批墨消耗 -1'
   }
 
   if (option.id === 'erase_heavy_split_form') {
@@ -190,7 +190,7 @@ function getVerdictImpact(
   }
 
   if (option.id === 'erase_next_battle_resources') {
-    return '削籍判词：榜裂 +1，下一场开局墨 +1、首回合香火 +2'
+    return '削籍判词：榜裂 +1，下一场开局墨 +1、首回合香火 +1'
   }
 
   return '削籍判词：榜裂 +1，加入裂形符；下一战开局上手'

@@ -4,10 +4,12 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const BASE_URL = process.env.BANGWAIREN_BASE_URL ?? 'http://127.0.0.1:5173/'
+const CAPTURE_TASK = process.env.BANGWAIREN_CAPTURE_TASK ?? 't96'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const OUTPUT_DIR = path.resolve(
   __dirname,
-  '../docs/qa/screenshots/t96-battle-layout-restructure',
+  '..',
+  process.env.BANGWAIREN_CAPTURE_OUTPUT ?? 'docs/qa/screenshots/t96-battle-layout-restructure',
 )
 
 const VIEWPORTS = [
@@ -84,9 +86,12 @@ async function captureBattleLayoutFlow(page, viewportLabel) {
   await capture(page, viewportLabel, '01-title')
 
   await startRoleRun(page, /莲烬\s+己形 78/, '以莲烬开局')
-  await capture(page, viewportLabel, '02-first-battle-t96-layout', {
+  await capture(page, viewportLabel, `02-first-battle-${CAPTURE_TASK}-layout`, {
     focus: page.locator('.battle-screen-shell'),
   })
+  if (CAPTURE_TASK === 't100') {
+    await captureT100FeedbackProbe(page, viewportLabel)
+  }
 
   await completeCurrentBattle(page)
   await resolvePendingChoices(page)
@@ -94,6 +99,9 @@ async function captureBattleLayoutFlow(page, viewportLabel) {
   await capture(page, viewportLabel, '03-second-battle-action-near-enemy', {
     focus: page.locator('.battle-screen-shell'),
   })
+  if (CAPTURE_TASK === 't100') {
+    await captureT100AbnormalProbe(page, viewportLabel)
+  }
 
   const reachedMultiEnemy = await continueUntilMultiEnemyBattle(page)
   await capture(page, viewportLabel, reachedMultiEnemy ? '04-multi-enemy-layout' : '04-multi-enemy-fallback', {
@@ -103,7 +111,7 @@ async function captureBattleLayoutFlow(page, viewportLabel) {
 
   await continueUntilBossBattle(page)
   if (await isVisible(page.locator('.battle-screen-shell'))) {
-    await capture(page, viewportLabel, '05-boss-battle-opening-t96-layout', {
+    await capture(page, viewportLabel, `05-boss-battle-opening-${CAPTURE_TASK}-layout`, {
       focus: page.locator('.battle-screen-shell'),
     })
   }
@@ -187,8 +195,26 @@ async function capture(page, viewportLabel, label, options = {}) {
       battlePlayerAnchorVisible: Boolean(document.querySelector('.battle-player-anchor')),
       battleScreenShellVisible: Boolean(document.querySelector('.battle-screen-shell')),
       canvas: canvasInfo,
+      cardFrameGlyphVisible: Boolean(document.querySelector('.card-frame-glyph')),
+      enemyIdentityCueVisible: Boolean(document.querySelector('.enemy-identity-cue')),
       enemyPanelCount: document.querySelectorAll('.enemy-panel').length,
+      enemyPortraitPressureVisible: Boolean(document.querySelector('.enemy-portrait-pressure')),
+      enemyPortraitRulingVisible: Boolean(document.querySelector('.enemy-portrait-ruling')),
       enemyVisualCuesVisible: Boolean(document.querySelector('.enemy-visual-cues')),
+      feedbackAbnormalEffectActive: Boolean(document.querySelector('.feedback-abnormal-effect')),
+      feedbackAskEffectActive: Boolean(document.querySelector('.feedback-ask-effect')),
+      feedbackBreakEffectActive: Boolean(document.querySelector('.feedback-break-effect')),
+      feedbackBurstVisible: Boolean(document.querySelector('.battle-feedback-burst')),
+      feedbackNamedEffectActive: Boolean(document.querySelector('.feedback-named-effect')),
+      feedbackSealEffectActive: Boolean(document.querySelector('.feedback-seal-effect')),
+      feedbackVerdictEffectActive: Boolean(
+        document.querySelector('.feedback-verdict-effect, .t100-verdict-feedback'),
+      ),
+      handCardCount: document.querySelectorAll('.hand-list .card-button').length,
+      handCardVisibleInViewport: Array.from(document.querySelectorAll('.hand-list .card-button')).some((card) => {
+        const rect = card.getBoundingClientRect()
+        return rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth
+      }),
       handListVisible: Boolean(document.querySelector('.hand-list')),
       horizontalOverflow: document.documentElement.scrollWidth > window.innerWidth,
       innerHeight: window.innerHeight,
@@ -198,6 +224,23 @@ async function capture(page, viewportLabel, label, options = {}) {
       scrollHeight: document.documentElement.scrollHeight,
       scrollWidth: document.documentElement.scrollWidth,
       scrollY: Math.round(window.scrollY),
+      playerAnchorVisualVisible: Boolean(document.querySelector('.player-anchor-visual')),
+      t101ActionLaneVisible: Boolean(document.querySelector('.battle-action-lane')),
+      t101ActionLaneClearOfPersistentState: !document.querySelector(
+        '.battle-action-lane .altar-grid, .battle-action-lane .linzhao-grid',
+      ),
+      t101AltarInPlayerStage: Boolean(document.querySelector('.stage-player-anchor .altar-grid')),
+      t101CentralCasePanelRemoved: !document.querySelector('.battle-case-axis'),
+      t101EnemyStageVisible: Boolean(document.querySelector('.t101-battle-arena .stage-enemy-list-panel')),
+      t101LinzhaoInQuickRow: Boolean(document.querySelector('.battle-quick-row .linzhao-grid')),
+      t101LayoutShellVisible: Boolean(document.querySelector('.t101-layout-shell')),
+      t101PlayerStageVisible: Boolean(document.querySelector('.t101-battle-arena .stage-player-anchor')),
+      t101PlayerNotInBottomCommandZone: !document.querySelector('.battle-command-zone .battle-player-anchor'),
+      t101QuickRowVisible: Boolean(document.querySelector('.battle-quick-row')),
+      t97PresentationShellVisible: Boolean(document.querySelector('.t97-presentation-shell')),
+      t99VisualPlaceholdersVisible: Boolean(document.querySelector('.t99-visual-placeholders')),
+      t100FeedbackEffectsVisible: Boolean(document.querySelector('.t100-feedback-effects')),
+      verdictOptionSealVisible: Boolean(document.querySelector('.verdict-option')),
       verdictPageVisible: Boolean(document.querySelector('.verdict-page')),
     }
   })
@@ -209,6 +252,118 @@ async function capture(page, viewportLabel, label, options = {}) {
     viewport: viewportLabel,
     path: absolutePath,
   })
+}
+
+async function captureT100FeedbackProbe(page, viewportLabel) {
+  await selectFirstAvailableEnemyIfNeeded(page)
+
+  if (await clickFirstCardMatching(page, /破形/)) {
+    await capture(page, viewportLabel, '07-t100-break-feedback', {
+      focus: page.locator('.battle-screen-shell'),
+      note: 'break-form feedback probe',
+    })
+  }
+
+  await advanceUntilCardMatching(page, /封势/, 4)
+  if (await clickFirstCardMatching(page, /封势/)) {
+    await capture(page, viewportLabel, '08-t100-seal-feedback', {
+      focus: page.locator('.battle-screen-shell'),
+      note: 'seal incoming-force feedback probe',
+    })
+  }
+
+  await advanceUntilCardMatching(page, /问名|查名/, 6)
+  if (await clickFirstCardMatching(page, /问名|查名/)) {
+    await capture(page, viewportLabel, '09-t100-ask-feedback', {
+      focus: page.locator('.battle-screen-shell'),
+      note: 'ask-name feedback probe',
+    })
+  }
+
+  await advanceUntilCardMatching(page, /问名|查名/, 4)
+  if (await clickFirstCardMatching(page, /问名|查名/)) {
+    await capture(page, viewportLabel, '10-t100-named-feedback', {
+      focus: page.locator('.battle-screen-shell'),
+      note: 'named feedback probe',
+    })
+  }
+}
+
+async function captureT100AbnormalProbe(page, viewportLabel) {
+  for (let step = 0; step < 5; step += 1) {
+    const abnormalIntent = page.locator('.intent-banner.abnormal').first()
+    if (await isVisible(abnormalIntent)) {
+      const endTurn = page.getByRole('button', { name: '结束回合' })
+      if (await isVisible(endTurn)) {
+        await endTurn.click()
+        await page.waitForTimeout(180)
+        await capture(page, viewportLabel, '11-t100-abnormal-feedback', {
+          focus: page.locator('.battle-screen-shell'),
+          note: 'abnormal-move feedback probe',
+        })
+      }
+      return
+    }
+
+    const endTurn = page.getByRole('button', { name: '结束回合' })
+    if (await isVisible(endTurn)) {
+      await endTurn.click()
+      await page.waitForTimeout(180)
+      continue
+    }
+
+    await page.waitForTimeout(120)
+  }
+}
+
+async function advanceUntilCardMatching(page, pattern, maxSteps) {
+  for (let step = 0; step < maxSteps; step += 1) {
+    if (await hasEnabledCardMatching(page, pattern)) {
+      return true
+    }
+
+    await selectFirstAvailableEnemyIfNeeded(page)
+
+    const endTurn = page.getByRole('button', { name: '结束回合' })
+    if (await isVisible(endTurn)) {
+      await endTurn.click()
+      await page.waitForTimeout(160)
+      continue
+    }
+
+    await page.waitForTimeout(120)
+  }
+
+  return false
+}
+
+async function hasEnabledCardMatching(page, pattern) {
+  const cards = page.locator('.hand-list button:not([disabled])')
+  const count = await cards.count()
+  for (let index = 0; index < count; index += 1) {
+    const text = await cards.nth(index).innerText()
+    if (pattern.test(text)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+async function clickFirstCardMatching(page, pattern) {
+  const cards = page.locator('.hand-list button:not([disabled])')
+  const count = await cards.count()
+  for (let index = 0; index < count; index += 1) {
+    const card = cards.nth(index)
+    const text = await card.innerText()
+    if (pattern.test(text)) {
+      await card.click()
+      await page.waitForTimeout(120)
+      return true
+    }
+  }
+
+  return false
 }
 
 async function completeCurrentBattle(page, options = {}) {

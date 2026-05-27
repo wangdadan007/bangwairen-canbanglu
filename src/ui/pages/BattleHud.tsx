@@ -293,7 +293,9 @@ export function BattleHud({
           t={t}
         />
       ) : null}
-      {runRitualFeedback ? <RitualFeedbackPanel feedback={runRitualFeedback} /> : null}
+      {runRitualFeedback ? (
+        <RitualFeedbackPanel key={runRitualFeedback.id} feedback={runRitualFeedback} />
+      ) : null}
 
       {currentEncounter &&
       battle.result.status === 'victory' &&
@@ -470,13 +472,13 @@ export function BattleHud({
         />
       ) : null}
       {showActiveBattlePanels && pressureFeedback ? (
-        <PressureFeedbackPanel feedback={pressureFeedback} />
+        <PressureFeedbackPanel key={pressureFeedback.id} feedback={pressureFeedback} />
       ) : null}
       {showActiveBattlePanels && ritualFeedback ? (
-        <RitualFeedbackPanel feedback={ritualFeedback} />
+        <RitualFeedbackPanel key={ritualFeedback.id} feedback={ritualFeedback} />
       ) : null}
       {showActiveBattlePanels && bossPressureFeedback ? (
-        <RitualFeedbackPanel feedback={bossPressureFeedback} />
+        <RitualFeedbackPanel key={bossPressureFeedback.id} feedback={bossPressureFeedback} />
       ) : null}
 
       {showActiveBattlePanels ? (
@@ -642,6 +644,13 @@ export function BattleHud({
   )
 }
 
+type BattleFeedbackEffect = {
+  readonly id: string
+  readonly sequence: number
+  readonly shellClassName: string
+  readonly burstClassName: string
+}
+
 function ActiveBattleScreen({
   allCardsByInstanceId,
   battle,
@@ -694,21 +703,48 @@ function ActiveBattleScreen({
   readonly onSpendInkGuardName: () => void
 }) {
   const role = run.roleId ? getPlayableRoleDefinition(run.roleId) : undefined
+  const roleArtifact = role ? artifactDefinitionsById.get(role.starterArtifactId) : undefined
   const visibleLog = latestLog.slice(0, 2)
   const playerFormPercent = Math.max(
     0,
     Math.min(100, (battle.player.currentForm / battle.player.maxForm) * 100),
   )
+  const feedbackEffect = getBattleFeedbackEffect({
+    battle,
+    bossPressureFeedback,
+    pressureFeedback,
+    ritualFeedback,
+  })
+  const shellClassName = [
+    'battle-screen-shell',
+    't101-layout-shell',
+    't97-presentation-shell',
+    't99-visual-placeholders',
+    't100-feedback-effects',
+    feedbackEffect?.shellClassName ?? '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
-    <section className="battle-screen-shell" aria-label="战斗首屏：残榜审案案面">
+    <section
+      className={shellClassName}
+      aria-label="战斗首屏：残榜审案案面"
+    >
       <div className="battle-stage-backdrop" aria-hidden="true">
         <PhaserGame />
       </div>
+      {feedbackEffect ? (
+        <span
+          aria-hidden="true"
+          className={`battle-feedback-burst ${feedbackEffect.burstClassName}`}
+          key={feedbackEffect.id}
+        />
+      ) : null}
 
       <header className="battle-top-bar">
         <div className="battle-heading">
-          <p className="panel-kicker">T96 战斗界面结构重构</p>
+          <p className="panel-kicker">残榜审案</p>
           <h2>{currentHeading}</h2>
           <span>第 {battle.turn} 回合 · {role ? `执簿者 ${t(role.nameKey)}` : '执簿者'}</span>
         </div>
@@ -732,66 +768,27 @@ function ActiveBattleScreen({
         </div>
       </header>
 
-      {firstRunGuidance || pressureFeedback || ritualFeedback || bossPressureFeedback ? (
-        <div className="battle-feedback-strip" aria-label="战斗反馈">
-          {firstRunGuidance ? <FirstRunGuidancePanel guidance={firstRunGuidance} /> : null}
-          {pressureFeedback ? <PressureFeedbackPanel feedback={pressureFeedback} /> : null}
-          {ritualFeedback ? <RitualFeedbackPanel feedback={ritualFeedback} /> : null}
-          {bossPressureFeedback ? <RitualFeedbackPanel feedback={bossPressureFeedback} /> : null}
-        </div>
-      ) : null}
-
-      <section className="battle-arena" aria-label="残榜案面">
-        <StageEnemyListPanel
-          enemies={enemies}
-          selectedEnemyInstanceId={enemy?.instanceId}
-          canSelect={canAct}
-          onSelect={onSelectEnemyTarget}
-        />
-
-        <div className="battle-case-row">
-          <aside className="battle-corner-state left" aria-label="执簿短况">
-            <div className="section-title-row compact">
-              <h3>执簿短况</h3>
-              <span>轻案角</span>
-            </div>
-            <div className="battle-corner-metrics">
-              <Metric label="抽牌堆" value={battle.drawPile.length.toString()} />
-              <Metric label="弃牌堆" value={battle.discardPile.length.toString()} />
-              <Metric label="消耗区" value={battle.exhaustPile.length.toString()} />
-              <Metric label="临诏" tooltip={getTermTooltip('linzhao')} value={`${battle.linzhao.length} / 2`} />
-            </div>
-            <LinzhaoPanel activeLinzhao={battle.linzhao} cardDefinitionsById={cardDefinitionsById} />
-          </aside>
-
-          <CaseAxisPanel
-            altars={battle.altars}
-            cardDefinitionsById={cardDefinitionsById}
-            enemy={enemy}
-          />
-
-          <aside className="battle-corner-state right" aria-label="器物挂位">
-            <ArtifactBar
-              artifacts={run.artifacts}
-              artifactDefinitionsById={artifactDefinitionsById}
-              t={t}
-            />
-            <IncenseSealPanel
-              canAct={canAct}
-              incenseSealDefinitionsById={incenseSealDefinitionsById}
-              seals={battle.incenseSeals.seals}
-              selectedEnemy={enemy}
-              onUse={onActivateIncenseSeal}
-            />
-          </aside>
-        </div>
-      </section>
-
-      <section className="battle-command-zone" aria-label="出牌操作区">
-        <aside className="battle-player-anchor" aria-label="执簿者状态">
+      <section className="battle-arena t101-battle-arena" aria-label="战斗主舞台">
+        <aside
+          className={`battle-player-anchor stage-player-anchor ${getRoleAnchorClassName(role?.id)}`}
+          aria-label="执簿者状态"
+        >
           <div className="battle-player-heading">
             <span>执簿者</span>
             <strong>{role ? t(role.nameKey) : '未定'}</strong>
+          </div>
+          <div className="player-anchor-visual" aria-hidden="true">
+            <span className="player-anchor-halo" />
+            <span className="player-anchor-silhouette" />
+            <span className="player-anchor-prop" />
+            <span className="player-anchor-line" />
+            <span className="player-anchor-visual-label">
+              {role ? t(role.titleKey) : '执簿者'}
+            </span>
+          </div>
+          <div className="player-anchor-artifact" aria-label="起始法宝视觉锚点">
+            <span>{getRoleVisualCue(role?.id)}</span>
+            <strong>{roleArtifact ? t(roleArtifact.nameKey) : '法宝未定'}</strong>
           </div>
           <div className="player-form-meter" aria-label={`己形 ${battle.player.currentForm} / ${battle.player.maxForm}`}>
             <span style={{ width: `${playerFormPercent}%` }} />
@@ -810,9 +807,32 @@ function ActiveBattleScreen({
             <span>弃 {battle.discardPile.length}</span>
             <span>耗 {battle.exhaustPile.length}</span>
           </div>
+          <div className="player-altar-rhythm" aria-label="执簿者三坛节奏">
+            <div className="compact-section-label">
+              <span>三坛</span>
+              <small>战斗节奏</small>
+            </div>
+            <AltarPanel altars={battle.altars} cardDefinitionsById={cardDefinitionsById} />
+          </div>
           <p>目标：{enemy ? getEnemyDefinitionName(enemy.definitionId) : '无'}</p>
         </aside>
 
+        <ActionLanePanel
+          bossPressureFeedback={bossPressureFeedback}
+          firstRunGuidance={firstRunGuidance}
+          pressureFeedback={pressureFeedback}
+          ritualFeedback={ritualFeedback}
+        />
+
+        <StageEnemyListPanel
+          enemies={enemies}
+          selectedEnemyInstanceId={enemy?.instanceId}
+          canSelect={canAct}
+          onSelect={onSelectEnemyTarget}
+        />
+      </section>
+
+      <section className="battle-command-zone t101-command-zone" aria-label="出牌操作区">
         <div className="battle-command-main">
           <div className="battle-command-row">
             <div className="battle-command-metrics" aria-label="操作资源">
@@ -847,8 +867,33 @@ function ActiveBattleScreen({
               {'；'}
               {inkCleanseStatus.canUse
                 ? getInkCleanseReadyText(inkCleanseStatus.cardDefinitionId, cardDefinitionsById)
-                : inkCleanseStatus.reason}
+              : inkCleanseStatus.reason}
             </span>
+          </div>
+
+          <div className="battle-quick-row" aria-label="临诏、法宝与香封快捷">
+            <div className="quick-linzhao-panel" aria-label="临诏快捷状态">
+              <div className="compact-section-label">
+                <span>临诏</span>
+                <small>本场持续</small>
+              </div>
+              <LinzhaoPanel
+                activeLinzhao={battle.linzhao}
+                cardDefinitionsById={cardDefinitionsById}
+              />
+            </div>
+            <ArtifactBar
+              artifacts={run.artifacts}
+              artifactDefinitionsById={artifactDefinitionsById}
+              t={t}
+            />
+            <IncenseSealPanel
+              canAct={canAct}
+              incenseSealDefinitionsById={incenseSealDefinitionsById}
+              seals={battle.incenseSeals.seals}
+              selectedEnemy={enemy}
+              onUse={onActivateIncenseSeal}
+            />
           </div>
 
           <section className="battle-hand-panel" aria-label="玩家手牌">
@@ -885,47 +930,151 @@ function ActiveBattleScreen({
   )
 }
 
-function CaseAxisPanel({
-  altars,
-  cardDefinitionsById,
-  enemy,
+function getBattleFeedbackEffect({
+  battle,
+  bossPressureFeedback,
+  pressureFeedback,
+  ritualFeedback,
 }: {
-  readonly altars: readonly AltarState[]
-  readonly cardDefinitionsById: ReadonlyMap<string, CardDefinition>
-  readonly enemy?: EnemyState
-}) {
-  const activeNamedPhase = enemy?.namedPhase?.isActive ? enemy.namedPhase : undefined
-  const nameCue = enemy ? getNameCue(enemy, activeNamedPhase) : '未选敌形'
+  readonly battle: CombatState
+  readonly bossPressureFeedback?: RitualFeedback
+  readonly pressureFeedback?: PressureFeedback
+  readonly ritualFeedback?: RitualFeedback
+}): BattleFeedbackEffect | undefined {
+  const effects = [
+    getPressureFeedbackEffect(pressureFeedback, battle),
+    getRitualFeedbackEffect(ritualFeedback, battle),
+    getBossFeedbackEffect(bossPressureFeedback, battle),
+  ].filter((effect): effect is BattleFeedbackEffect => Boolean(effect))
 
+  return effects.sort((left, right) => right.sequence - left.sequence)[0]
+}
+
+function getRitualFeedbackEffect(
+  ritualFeedback: RitualFeedback | undefined,
+  battle: CombatState,
+): BattleFeedbackEffect | undefined {
+  if (ritualFeedback?.tone === 'break') {
+    return {
+      id: ritualFeedback.id,
+      sequence: getFeedbackSequence(battle, ritualFeedback.id),
+      shellClassName: 'feedback-break-effect',
+      burstClassName: 'break-burst',
+    }
+  }
+
+  if (ritualFeedback?.tone === 'ask') {
+    return {
+      id: ritualFeedback.id,
+      sequence: getFeedbackSequence(battle, ritualFeedback.id),
+      shellClassName: 'feedback-ask-effect',
+      burstClassName: 'ask-burst',
+    }
+  }
+
+  if (ritualFeedback?.tone === 'named') {
+    return {
+      id: ritualFeedback.id,
+      sequence: getFeedbackSequence(battle, ritualFeedback.id),
+      shellClassName: 'feedback-named-effect',
+      burstClassName: 'named-burst',
+    }
+  }
+
+  if (ritualFeedback?.tone === 'verdict') {
+    return {
+      id: ritualFeedback.id,
+      sequence: getFeedbackSequence(battle, ritualFeedback.id),
+      shellClassName: 'feedback-verdict-effect',
+      burstClassName: 'verdict-burst',
+    }
+  }
+
+  return undefined
+}
+
+function getPressureFeedbackEffect(
+  pressureFeedback: PressureFeedback | undefined,
+  battle: CombatState,
+): BattleFeedbackEffect | undefined {
+  if (pressureFeedback?.tone === 'sealed' || pressureFeedback?.tone === 'countered') {
+    return {
+      id: pressureFeedback.id,
+      sequence: getFeedbackSequence(battle, pressureFeedback.id),
+      shellClassName: 'feedback-seal-effect',
+      burstClassName: 'seal-burst',
+    }
+  }
+
+  if (pressureFeedback?.tone === 'abnormal') {
+    return {
+      id: pressureFeedback.id,
+      sequence: getFeedbackSequence(battle, pressureFeedback.id),
+      shellClassName: 'feedback-abnormal-effect',
+      burstClassName: 'abnormal-burst',
+    }
+  }
+
+  return undefined
+}
+
+function getBossFeedbackEffect(
+  bossPressureFeedback: RitualFeedback | undefined,
+  battle: CombatState,
+): BattleFeedbackEffect | undefined {
+  if (bossPressureFeedback?.tone === 'boss') {
+    return {
+      id: bossPressureFeedback.id,
+      sequence: getFeedbackSequence(battle, bossPressureFeedback.id),
+      shellClassName: 'feedback-abnormal-effect',
+      burstClassName: 'abnormal-burst',
+    }
+  }
+
+  return undefined
+}
+
+function getFeedbackSequence(battle: CombatState, feedbackId: string) {
+  const entry = battle.actionLog.find((candidate) => candidate.id === feedbackId)
+  if (entry) {
+    return entry.sequence
+  }
+
+  return -1
+}
+
+function ActionLanePanel({
+  bossPressureFeedback,
+  firstRunGuidance,
+  pressureFeedback,
+  ritualFeedback,
+}: {
+  readonly bossPressureFeedback?: RitualFeedback
+  readonly firstRunGuidance?: FirstRunGuidance
+  readonly pressureFeedback?: PressureFeedback
+  readonly ritualFeedback?: RitualFeedback
+}) {
   return (
-    <section className="battle-case-axis" aria-label="残榜审案中轴">
-      <div className="case-axis-header">
-        <span>残榜审案中轴</span>
-        <strong>{enemy ? getEnemyDefinitionName(enemy.definitionId) : '未定目标'}</strong>
-        <small>{nameCue}</small>
+    <section className="battle-action-lane" aria-label="出牌飞行与关键反馈通道">
+      <div className="action-lane-surface" aria-hidden="true">
+        <span className="action-lane-scroll" />
+        <span className="action-lane-flight" />
+        <span className="action-lane-seal" />
       </div>
-      <div className="case-name-slots" aria-label="当前目标名格">
-        {enemy && enemy.nameSlots.length > 0 ? (
-          enemy.nameSlots.map((slot) => (
-            <span className={slot.isRevealed ? 'name-slot revealed' : 'name-slot'} key={slot.index}>
-              {slot.isRevealed ? t(slot.nameKey) : '未揭示'}
-            </span>
-          ))
-        ) : (
-          <span className="name-slot revealed">{enemy ? '无名' : '待选目标'}</span>
-        )}
-      </div>
-      <div className={enemy?.isNamed ? 'case-verdict-seal active' : 'case-verdict-seal'}>
-        <span>{enemy?.isNamed ? '正名印已落' : '问名未全'}</span>
-        <strong>
-          {activeNamedPhase
-            ? activeNamedPhase.descriptionKeys.map((key) => t(key)).join('；')
-            : enemy?.isNamed
-              ? '现形反扑可预警'
-              : '揭明名格后触发正名'}
-        </strong>
-      </div>
-      <AltarPanel altars={altars} cardDefinitionsById={cardDefinitionsById} />
+      {firstRunGuidance || pressureFeedback || ritualFeedback || bossPressureFeedback ? (
+        <div className="action-lane-feedback" aria-label="关键反馈">
+          {firstRunGuidance ? <FirstRunGuidancePanel guidance={firstRunGuidance} /> : null}
+          {pressureFeedback ? (
+            <PressureFeedbackPanel key={pressureFeedback.id} feedback={pressureFeedback} />
+          ) : null}
+          {ritualFeedback ? (
+            <RitualFeedbackPanel key={ritualFeedback.id} feedback={ritualFeedback} />
+          ) : null}
+          {bossPressureFeedback ? (
+            <RitualFeedbackPanel key={bossPressureFeedback.id} feedback={bossPressureFeedback} />
+          ) : null}
+        </div>
+      ) : null}
     </section>
   )
 }
@@ -973,6 +1122,7 @@ function HandList({
               type="button"
               onClick={() => onPlayCard(card)}
             >
+              <span className="card-frame-glyph" aria-hidden="true" />
               <span className="card-topline">
                 <strong>{definition ? t(definition.nameKey) : card.definitionId}</strong>
                 <span>{definition?.cost ?? '?'} 香火</span>
@@ -1151,13 +1301,19 @@ function StageEnemyPanel({
           </div>
         </div>
         <div className="enemy-visual-cues" aria-label="敌方表现锚点">
+          <span className="enemy-identity-cue">{getEnemyIdentityCue(enemy.definitionId)}</span>
           <span>{getEnemyAnchorCue(enemy.tier)}</span>
           <span>{getIntentCue(intentKind, isIntentMasked)}</span>
           <span>{getNameCue(enemy, activeNamedPhase)}</span>
         </div>
         <div className={getEnemyPortraitClassName(enemy, intentTone)} aria-hidden="true">
+          <span className="enemy-portrait-shadow" />
+          <span className="enemy-portrait-scroll" />
           <span className="enemy-portrait-core" />
           <span className="enemy-portrait-mark" />
+          <span className="enemy-portrait-pressure" />
+          <span className="enemy-portrait-ruling" />
+          <span className="enemy-portrait-glyph" />
         </div>
       </div>
 
@@ -1840,6 +1996,14 @@ function getEnemyVisualKind(definitionId: string) {
     return 'registry-thief'
   }
 
+  if (definitionId.includes('paper_wraith')) {
+    return 'paper-wraith'
+  }
+
+  if (definitionId.includes('nameless_paper_imp')) {
+    return 'paper-imp'
+  }
+
   if (definitionId.includes('mouse') || definitionId.includes('louse')) {
     return 'small-thief'
   }
@@ -1865,6 +2029,74 @@ function getEnemyVisualKind(definitionId: string) {
   }
 
   return 'paper'
+}
+
+function getRoleAnchorClassName(roleId: string | undefined) {
+  if (roleId === 'role_hengjian') {
+    return 'role-hengjian'
+  }
+
+  if (roleId === 'role_zhaowei') {
+    return 'role-zhaowei'
+  }
+
+  if (roleId === 'role_lianjin') {
+    return 'role-lianjin'
+  }
+
+  return 'role-unknown'
+}
+
+function getRoleVisualCue(roleId: string | undefined) {
+  if (roleId === 'role_hengjian') {
+    return '旧榜执笔'
+  }
+
+  if (roleId === 'role_zhaowei') {
+    return '照影断名'
+  }
+
+  if (roleId === 'role_lianjin') {
+    return '莲骨破形'
+  }
+
+  return '残榜执簿'
+}
+
+function getEnemyIdentityCue(definitionId: string) {
+  if (definitionId.includes('registry_thief')) {
+    return '窃榜终审'
+  }
+
+  if (definitionId.includes('paper_wraith')) {
+    return '残名纸影'
+  }
+
+  if (definitionId.includes('nameless_paper_imp')) {
+    return '无名纸祟'
+  }
+
+  if (definitionId.includes('mouse') || definitionId.includes('louse')) {
+    return '偷香灰影'
+  }
+
+  if (definitionId.includes('bell') || definitionId.includes('dipper')) {
+    return '青铜役影'
+  }
+
+  if (definitionId.includes('fire') || definitionId.includes('plague')) {
+    return '火纸污形'
+  }
+
+  if (definitionId.includes('horse')) {
+    return '逃名纸形'
+  }
+
+  if (definitionId.includes('temple') || definitionId.includes('clerk')) {
+    return '旧役压案'
+  }
+
+  return '案上敌形'
 }
 
 function getEnemyAnchorCue(tier: EnemyState['tier']) {

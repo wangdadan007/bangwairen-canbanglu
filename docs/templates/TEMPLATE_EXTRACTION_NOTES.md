@@ -78,6 +78,45 @@
 
 ## 7. 当前记录
 
+### 2026-05-27 · T101 · 战斗首屏构图、美术落位规格与可运行重排
+
+- 候选类型：combat screen composition / art placement spec / runtime-first visual planning / runnable layout slice。
+- 主归属模板：`React Card Game UI Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`docs/design/CHAPTER_ONE_T101_BATTLE_SCREEN_ART_PLACEMENT.md`、`src/ui/pages/BattleHud.tsx`、`src/ui/styles.css`、`scripts/capture-t96-battle-layout-screenshots.mjs`、`package.json`、`docs/prd/PRD-pages.md`、`docs/assets/ASSET_MANIFEST.md`、`docs/tasks/PROJECT_PLAN.md`、`docs/prd/PRD-changelog.md`。
+- 可复用价值：把卡牌战斗首屏拆成顶部资源、左侧玩家角色、中央动作通道、右侧敌人和底部操作层，并进一步把玩家节奏状态贴左侧角色、持续增益槽贴底部快捷、中央只留动作通道；题材核心物从常驻大面板降为背景、贴对象信息和关键时展开，再落到可运行 React/CSS shell 与截图 manifest 指标，适合复用到信息量较大的战斗 UI 定稿前规格。
+- 与本作强绑定部分：执簿者、残榜审案、名格、问名、正名、裁定、衡简、照微、莲烬、纸面鬼和窃榜使属于本作。
+- 去题材化思路：抽象为 player anchor, enemy anchor, action lane, thematic surface, enemy-attached status, temporary reveal overlay 和 bottom operation layer；示例使用中性 card battler / boss combat / inspect action 命名。
+- 依赖与授权注意：本轮未新增生产依赖、第三方素材、AI 生成图、字体、音频或正式图片；模板化时要保留“先定落位规格，再生产资产”的授权护栏。
+- 是否值得抽到模板：值得记录，暂不单独抽仓库。
+- 后续动作：若 T101 截图审阅成立，可继续补 responsive layout token、screenshot metric 和 art handoff checklist 模板；若审图仍觉得复杂，再围绕敌方贴身信息和底部快捷区继续减法。
+
+### 2026-05-27 · T100 · 关键反馈短动效与 reduced-motion 验收流程
+
+- 候选类型：UI feedback animation / screenshot manifest / reduced-motion QA。
+- 主归属模板：`React Card Game UI Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/ui/pages/BattleHud.tsx`、`src/ui/pages/VerdictPage.tsx`、`src/ui/styles.css`、`scripts/capture-t96-battle-layout-screenshots.mjs`、`package.json`、`docs/qa/CHAPTER_ONE_T100_KEY_FEEDBACK_ANIMATIONS.md`、`docs/assets/ASSET_MANIFEST.md`、`docs/tasks/PROJECT_PLAN.md`、`docs/prd/PRD-changelog.md`。
+- 可复用价值：把 card battler 的关键动作反馈拆成 actionLog 派生、shell class、one-shot burst overlay、页面进入动效、动画关闭兜底和截图 manifest 指标，适合复用到其他卡牌战斗 UI 的可读性 polish。
+- 与本作强绑定部分：破形、问名、正名、封势、异动、裁定、残榜审案和相关中文反馈文案属于本作。
+- 去题材化思路：抽象为 damage feedback、reveal feedback、state change feedback、block feedback、special action feedback、post-combat choice feedback、latest-log-priority 和 reduced-motion guardrail；示例使用中性 combat log / battle shell / result page 命名。
+- 依赖与授权注意：本轮未新增生产依赖、第三方素材、AI 生成图、字体、音频或正式图片；模板化时要声明这些是代码生成的 CSS 动效，不包含特效贴图、序列帧或音频资源。
+- 是否值得抽到模板：值得记录，暂不单独抽仓库。
+- 后续动作：若后续加入正式特效资源或音效，可继续补 asset manifest 状态流转、motion token 和动画强度分级模板。
+
+### 2026-05-27 · T99 · 非正式素材前视觉方向与程序化占位流程
+
+- 候选类型：视觉方向规划 / 程序化占位 / 素材授权护栏 / 自动截图验收流程。
+- 主归属模板：`React Card Game UI Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`docs/design/CHAPTER_ONE_T99_VISUAL_DIRECTION_AND_PLACEHOLDERS.md`、`src/ui/pages/BattleHud.tsx`、`src/ui/styles.css`、`scripts/capture-t96-battle-layout-screenshots.mjs`、`docs/qa/CHAPTER_ONE_T99_VISUAL_PLACEHOLDERS.md`、`docs/assets/ASSET_MANIFEST.md`、`docs/tasks/PROJECT_PLAN.md`、`docs/prd/PRD-changelog.md`。
+- 可复用价值：把“正式美术还没进来，但截图不能再是文字块”拆成角色 / 敌人视觉方向、程序化占位、截图 manifest、素材台账和 AI / 第三方授权边界，适合复用到其他无正式素材的卡牌战斗或游戏原型。
+- 与本作强绑定部分：衡简、照微、莲烬、纸面鬼、窃榜使、残榜审案、问名、正名和裁定等命名与题材表达属于本作。
+- 去题材化思路：抽象为 playable role visual direction, tutorial enemy visual direction, boss visual direction, programmatic placeholder, screenshot visibility metric, asset manifest guardrail；示例使用中性 role_a / role_b / role_c / tutorial_enemy / chapter_boss。
+- 依赖与授权注意：本轮未新增生产依赖、第三方素材、AI 生成图、字体、音频或正式图片；模板化时要明确不包含美术资产，并保留 AI 概念候选不得直接入正式构建的检查项。
+- 是否值得抽到模板：值得记录，暂不单独抽仓库。
+- 后续动作：若后续进入 AI 概念候选或人工正式美术，可继续补 contact sheet、资产状态流转和正式构建授权检查模板。
+
 ### 2026-05-25 · T94 · 游戏画面表现规格与截图验收包
 
 - 候选类型：表现规格 / UI QA / 自动截图验收流程。
@@ -116,6 +155,19 @@
 - 依赖与授权注意：本轮未新增生产依赖、第三方素材或 AI 生成正式图；模板化时需要移除本作文案和题材 CSS 命名，只保留结构、状态映射和截图验收思路。
 - 是否值得抽到模板：值得记录，暂不单独抽仓库。
 - 后续动作：等人工审图 / 试玩确认后，可与 T94 表现验收、T95 结构设计合并成完整 card battle screen layout kit。
+
+### 2026-05-26 · T97 · 新战斗 shell 表现切片与截图验收
+
+- 候选类型：CSS / canvas-style presentation layer / reduced-motion visual QA。
+- 主归属模板：`React Card Game UI Kit`。
+- 也支持：`Phaser React Deckbuilder Roguelike Starter Kit`、`AI Game Development Planning and QA Kit`。
+- 涉及文件：`src/ui/pages/BattleHud.tsx`、`src/ui/styles.css`、`src/game/scenes/BattleScene.ts`、`scripts/capture-t96-battle-layout-screenshots.mjs`、`docs/qa/CHAPTER_ONE_T97_BATTLE_SHELL_PRESENTATION_SLICE.md`、`docs/assets/ASSET_MANIFEST.md`、`docs/tasks/PROJECT_PLAN.md`、`docs/prd/PRD-changelog.md`。
+- 可复用价值：把战斗界面正式素材前的表现工作拆成 enemy silhouette layers、card frame marks、action-state visual cues、boss pressure layers、verdict stamps、reduced-motion fallback 和 screenshot metrics，适合复用到其他无正式美术资产的卡牌战斗原型。
+- 与本作强绑定部分：残榜、敌形、来势、异动、正名、裁定、符诏、判印和 Boss 压案等题材表达属于本作。
+- 去题材化思路：抽象为 enemy portrait layers、intent status overlay、card frame token、choice stamp, boss emphasis, motion preference guardrail 和 screenshot manifest；示例使用中性 enemy / boss / card / choice / effect / relic 命名。
+- 依赖与授权注意：本轮未新增生产依赖、第三方素材、AI 生成正式图、字体或音频；模板化时要声明这些只是 CSS / canvas 程序化占位，不包含正式美术资源。
+- 是否值得抽到模板：值得记录，暂不单独抽仓库。
+- 后续动作：若用户审图认可，可把 T94 / T95 / T96 / T97 合并为 battle screen layout + presentation QA kit；若审图要求改结构，先迁移 T97 层再抽象模板。
 
 ### 2026-05-19 · 初始化 · 模板沉淀机制
 

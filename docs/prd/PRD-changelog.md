@@ -1,8 +1,188 @@
 # PRD-changelog：需求变更记录
 
-版本：v7.9
-日期：2026-05-26
+版本：v8.5
+日期：2026-05-27
 建议路径：`docs/prd/PRD-changelog.md`
+
+## v8.5 · 2026-05-27
+
+### 来源
+
+- 用户打开 T101 战斗页后反馈：底部只看到“手牌”标题，看不到手牌卡面。
+
+### 修改
+
+- 修正 `battle-hand-panel` 的 CSS grid 内部排布，让手牌标题和卡面从底部操作层顶部开始排列，不再被多余高度推到视口下方。
+- `battle-screen-shell .hand-list` 限制纵向溢出，确保首屏优先露出可点击卡面。
+- 截图脚本新增 `handCardCount` 和 `handCardVisibleInViewport` 指标，避免后续只检查到 hand-list 存在、但卡面实际不可见。
+- 重跑 T101 截图包，1280x720、1366x768、1920x1080 的首战 / 第二战 / 多敌 / Boss 聚焦截图均确认手牌卡面在视口内可见。
+
+### 保留
+
+- 不改变抽牌、手牌数量、香火、卡牌效果、出牌规则或任何核心战斗逻辑。
+- 不新增素材、AI 图、第三方资源或生产依赖。
+
+### 验证
+
+- `node --check scripts/capture-t96-battle-layout-screenshots.mjs` 通过。
+- `npm run typecheck` 通过。
+- `npm run capture:t101` 通过；focused battle 截图 12 / 12 均有手牌卡面在视口内可见。
+- `npm run lint` 通过。
+- `npm run test` 通过，35 个测试文件、247 个用例。
+- `npm run build` 通过；Vite 仍保留单 chunk 超过 500 kB 的既有提示。
+- `git diff --check` 通过。
+
+## v8.4 · 2026-05-27
+
+### 来源
+
+- 用户确认 T101 截图里敌我之间的三坛和临诏仍占用动作通道，要求直接在 T101 内调整：三坛放到左侧执簿者信息下方，临诏放到底部快捷区，中央通道常态只留淡残榜纹理和短反馈。
+
+### 修改
+
+- `BattleHud` 的 T101 active battle shell 将三坛从 `battle-action-lane` 移到左侧 `stage-player-anchor`，作为执簿者战斗节奏状态。
+- 临诏从 `battle-action-lane` 移到底部 `battle-quick-row`，与法宝、香封同属底部快捷状态。
+- 中央 `battle-action-lane` 移除常驻三坛 / 临诏状态，只保留残榜淡纹理、出牌飞行暗线和关键反馈。
+- `styles.css` 新增左侧三坛压缩样式和底部临诏快捷样式，降低中央信息密度。
+- 截图脚本新增 T101 指标：中央动作通道不含常驻三坛 / 临诏、三坛位于左侧执簿者、临诏位于底部快捷区。
+- `PRD-pages`、T101 设计稿、T101 QA 和项目计划同步最新落位口径。
+
+### 保留
+
+- 不新增玩法系统、卡牌、敌人、Boss、章节、角色、生产依赖、AI 生成图、第三方素材或正式图片资产。
+- 不改变三坛、临诏、法宝、香封、形、名、问名、正名、伏诛 / 归册、裁定或敌方行动规则。
+
+### 验证
+
+- `node --check scripts/capture-t96-battle-layout-screenshots.mjs` 通过。
+- `npm run typecheck` 通过。
+- `npm run lint` 通过。
+- `npm run test` 通过，35 个测试文件、247 个用例。
+- `npm run build` 通过；Vite 仍保留单 chunk 超过 500 kB 的既有提示。
+- 普通沙箱启动 dev server 因 `listen EPERM 127.0.0.1:5173` 失败；提权后启动成功，本轮截图使用 `http://127.0.0.1:5174/`。
+- 普通沙箱运行 Playwright Chromium 因 macOS MachPort 权限失败；提权后 `npm run capture:t101` 通过，生成 18 张 manifest 截图，0 横向溢出，15 张 active battle 均确认中央动作通道无常驻三坛 / 临诏、三坛在左侧执簿者、临诏在底部快捷区。
+- `git diff --check` 通过。
+
+## v8.3 · 2026-05-27
+
+### 来源
+
+- 用户确认不另开 T102，要求“直接在 101 进行做这个工作”，即把 T101 从构图规格扩展为可运行战斗界面重排。
+
+### 修改
+
+- `BattleHud` active battle shell 改为 T101 结构：顶部极简资源；主舞台左侧执簿者、中央动作通道、右侧敌人；底部只承载香火 / 手牌 / 法宝快捷 / 香封快捷 / 结束回合，日志抽屉不作为首屏常驻信息。
+- 中央常驻残榜案面改为 `battle-action-lane`：保留淡残榜纹理和反馈通道，不再显示“中央残榜信息面板”。
+- 敌方信息继续贴近敌人展示敌形、名格、来势 / 异动、后一动和正名状态；执簿者信息从手牌左下迁入主舞台左侧。
+- `styles.css` 新增 T101 主舞台、动作通道、右侧敌人区、底部快捷行和响应式布局样式；沿用 T99 程序化视觉占位和 T100 关键反馈动效。
+- `package.json` 新增 `capture:t101`；截图脚本新增 T101 manifest 指标，用于检查左侧执簿者、中央动作通道、右侧敌方、底部操作层和中央面板移除。
+- T101 设计稿、素材台账、模板沉淀和项目计划同步从“只定规格”更新为“规格 + 可运行重排”。
+
+### 保留
+
+- 不新增玩法系统、卡牌、敌人、Boss、章节、角色、生产依赖、AI 生成图、第三方素材、正式图片、字体、音频或视频。
+- 不改变形、名、问名、正名、伏诛 / 归册、裁定、来势 / 异动、三坛、法宝、香封、路线或存档规则。
+- 本轮仍是程序化占位和布局重排，不是正式角色立绘、敌人立绘、背景、特效序列帧或宣传素材。
+
+### 验证
+
+- `node --check scripts/capture-t96-battle-layout-screenshots.mjs` 通过。
+- `npm run typecheck` 通过。
+- `npm run lint` 通过。
+- `npm run test` 通过，35 个测试文件、247 个用例。
+- `npm run build` 通过；Vite 仍保留单 chunk 超过 500 kB 的既有提示。
+- 普通沙箱启动 dev server 因 `listen EPERM 127.0.0.1:5173` 失败；提权后启动成功，本轮截图使用 `http://127.0.0.1:5174/`。
+- 普通沙箱运行 Playwright Chromium 因 macOS MachPort 权限失败；提权后 `npm run capture:t101` 通过，生成 18 张 manifest 截图，0 横向溢出，15 张 active battle 均有左侧执簿者、中央动作通道、右侧敌人、底部快捷层且中央常驻案面已移除。
+- `git diff --check` 通过。
+
+## v8.2 · 2026-05-27
+
+### 来源
+
+- 用户复核 T99/T100 截图后确认：当前界面不应作为未来战斗画面，后续战斗首屏应参考成熟卡牌肉鸽的简洁常态，改为“左执簿者 / 中央动作通道 / 右敌人 / 顶部极简资源 / 底部操作层”。
+- 用户明确要求将该方向作为 T101：战斗画面构图定稿 / 美术落位规格。
+
+### 修改
+
+- 新增 `docs/design/CHAPTER_ONE_T101_BATTLE_SCREEN_ART_PLACEMENT.md`，定稿战斗首屏构图、执簿者 / 敌人 / 中央动作通道 / 底部操作层落位、残榜呈现规则和 T100 动效后续落点。
+- `PRD-pages.md` 战斗页布局口径从旧“残榜位于中轴”修正为 T101 结构：残榜不做常驻中央信息面板，只作为背景纹理、敌方贴身信息和问名 / 正名 / 裁定时的临时展开。
+- `PROJECT_PLAN.md` 新增并完成 T101，当前推荐下一步改为先按 T101 审阅构图规格，再单独进入 T102 可运行重排。
+- `ASSET_MANIFEST.md` 新增 T101 美术落位规格登记，明确本轮没有新增图片、AI 图、第三方素材或正式资产。
+- `TEMPLATE_EXTRACTION_NOTES.md` 新增 T101 战斗首屏构图与美术落位规格的模板候选记录。
+
+### 保留
+
+- 不改运行代码；当前 T99/T100 截图仍是旧布局，T101 只定方向和落位规格。
+- 不新增 AI 图、第三方素材、正式图片、字体、音频、视频或生产依赖。
+- 不改变形、名、问名、正名、伏诛 / 归册、裁定、来势 / 异动、三坛、法宝、香封或路线规则。
+- 不把旧 T95/T96/T99/T100 截图视为正式战斗画面定稿；后续可运行重排另开 T102。
+
+### 验证
+
+- `git diff --check` 通过。
+- 本轮只改设计 / PRD / 计划 / 素材台账 / 模板文档，未运行 `npm run typecheck`、`npm run lint`、`npm run test`、`npm run build` 或截图脚本。
+
+## v8.1 · 2026-05-27
+
+### 来源
+
+- 用户要求执行 T100：关键反馈动效一期，覆盖破形、问名、正名、封势、异动、裁定六类短动画，并确认可以开始做。
+
+### 修改
+
+- 战斗页 active battle shell 新增 T100 反馈层：根据最新 actionLog 反馈派生 `feedback-break-effect`、`feedback-ask-effect`、`feedback-named-effect`、`feedback-seal-effect`、`feedback-abnormal-effect` 等 class，并叠加一次性 burst overlay。
+- 反馈优先级改为按 `actionLog.sequence` 选择最新动作，避免封势、异动等压力反馈被上一条破形 / 问名反馈盖掉。
+- 关键反馈 panel 加 `key` 重挂载，使连续同类反馈仍能重播短动效。
+- 裁定页新增 `t100-verdict-feedback` 标记和判印动效，用于裁定页进入时的短反馈。
+- 截图脚本新增 T100 探针、manifest 指标和 `npm run capture:t100`，自动捕捉破形、封势、问名、正名、异动、裁定截图。
+- 新增 T100 QA 记录，并同步素材台账与模板沉淀记录。
+
+### 保留
+
+- 不新增玩法系统、卡牌、敌人、Boss、章节、角色、生产依赖、正式素材、AI 生成图、第三方素材、字体、音频或视频。
+- 不改变形、名、问名、正名、伏诛 / 归册、裁定、来势 / 异动、三坛或法宝规则。
+- 动效仍受现有动画开关与 `prefers-reduced-motion` 兜底约束，关闭动画时保留文字反馈和操作可读性。
+
+### 验证
+
+- `node --check scripts/capture-t96-battle-layout-screenshots.mjs` 通过。
+- `npm run typecheck` 通过。
+- `npm run lint` 通过。
+- `npm run test` 通过，35 个测试文件、247 个用例。
+- `npm run build` 通过；构建仍保留 Vite 单 chunk 超过 500 kB 的既有提示。
+- `npm run capture:t100` 通过，输出 33 张截图；manifest 确认破形、封势、问名、正名、异动、裁定反馈均在三档视口出现对应标记，横向溢出为 0。
+- `git diff --check` 通过。
+
+## v8.0 · 2026-05-27
+
+### 来源
+
+- 用户要求执行 T99：产出衡简、照微、莲烬、纸面鬼、窃榜使的视觉方向草案，并把战斗界面的玩家锚点和敌人压案区替换成真实视觉占位；随后明确本轮先不生成 AI 图。
+
+### 修改
+
+- 新增 `docs/design/CHAPTER_ONE_T99_VISUAL_DIRECTION_AND_PLACEHOLDERS.md`，记录三角色、教学怪纸面鬼和 Boss 窃榜使的视觉方向、程序化占位方式、禁区和验收。
+- 战斗页 active battle shell 新增 T99 程序化占位层：玩家锚点显示角色剪影、起始法宝 cue 和三角色差异；敌方压案区显示敌人身份 cue，纸面鬼 / 无名纸祟强调撕纸残名，窃榜使强调撕榜、红印和终审压案。
+- 截图脚本新增 T99 manifest 指标和 `npm run capture:t99`，用于复核玩家视觉锚点、T99 shell 标记和敌方身份 cue 是否可见。
+- `docs/assets/ASSET_MANIFEST.md` 新增 T99 视觉方向与程序化占位登记，明确本轮没有 AI 生成图片、第三方素材、正式图片资产、字体、音频或视频入库。
+- 新增 T99 QA 记录，跟踪截图范围、验证命令、剩余风险和后续人工审图入口。
+
+### 保留
+
+- 不新增玩法系统、角色、敌人、Boss、卡牌、法宝、章节或生产依赖。
+- 不改变形、名、问名、正名、伏诛 / 归册、裁定、来势 / 异动、三坛或法宝规则。
+- 不把程序化占位称为正式角色立绘、正式敌人立绘、Steam 商店素材或宣传素材。
+- 若后续启用 AI 生图，所有图片仍必须先登记为“概念候选 / 不入正式构建”，授权、可商用和可修改均不得默认视为已确认。
+
+### 验证
+
+- `node --check scripts/capture-t96-battle-layout-screenshots.mjs` 通过。
+- `npm run typecheck` 通过。
+- `npm run lint` 通过。
+- `npm run test` 通过。
+- `npm run build` 通过；构建仍保留 Vite 单 chunk 超过 500 kB 的既有提示。
+- `npm run capture:t99` 通过，输出 18 张截图；active battle 截图中玩家视觉锚点、敌方身份 cue 和 T99 shell 标记均可见，横向溢出为 0。
+- `git diff --check` 通过。
 
 ## v7.9 · 2026-05-26
 
