@@ -137,13 +137,13 @@
     "unlockStage": "stage_three_altars",
     "tags": ["chapter_one", "ask_name", "catalogue", "altar"],
     "baseEffect": {
-      "type": "peek_intent_after_ask_name",
+      "type": "tether_name_after_ask_name",
       "amount": 1,
       "descriptionKey": "artifact.name_tether_spindle.effect.base"
     },
     "boundEffect": {
-      "type": "peek_intent_after_ask_name",
-      "amount": 2,
+      "type": "tether_name_after_ask_name",
+      "amount": 1,
       "descriptionKey": "artifact.name_tether_spindle.effect.bound"
     },
     "bindCondition": {

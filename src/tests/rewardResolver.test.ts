@@ -13,6 +13,13 @@ import {
 } from '../core'
 import { gameData } from '../data'
 
+const ROLE_IDS = [
+  undefined,
+  HENGJIAN_ROLE_ID,
+  ZHAOWEI_ROLE_ID,
+  LIANJIN_ROLE_ID,
+] as const
+
 const getCardTags = (cardDefinitionId: string): readonly string[] => {
   const card = gameData.cards.find((candidate) => candidate.id === cardDefinitionId)
 
@@ -172,6 +179,42 @@ describe('T10 tutorial rewards', () => {
         'card_altar_threefold_sigil',
       ]),
     )
+  })
+
+  it('keeps at least one break-form card visible when the unlocked reward pool has one', () => {
+    for (let index = 0; index < gameData.tutorialUnlocks.length; index += 1) {
+      const unlocks = createUnlockState(
+        gameData.tutorialUnlocks.slice(0, index + 1).map((unlock) => unlock.id),
+        gameData.tutorialUnlocks,
+      )
+      const breakFormRewardIds = getAvailableTutorialRewardCards(gameData.cards, unlocks)
+        .filter((card) => card.tags.includes('break_form'))
+        .map((card) => card.id)
+
+      if (breakFormRewardIds.length === 0) {
+        continue
+      }
+
+      for (const encounter of gameData.encounters) {
+        for (const roleId of ROLE_IDS) {
+          const offer = createTutorialRewardOffer({
+            encounter,
+            settlement: 'catalogue',
+            unlocks,
+            cardDefinitions: gameData.cards,
+            roleId,
+          })
+          const hasBreakFormOption = offer.options.some((option) =>
+            getCardTags(option.cardDefinitionId).includes('break_form'),
+          )
+
+          expect(
+            hasBreakFormOption,
+            `${unlocks.stages[unlocks.stages.length - 1]} ${encounter.id} ${roleId ?? 'default'} should show one of ${breakFormRewardIds.join(', ')}`,
+          ).toBe(true)
+        }
+      }
+    }
   })
 
   it('tilts T65 reward options toward the selected role without changing option count', () => {

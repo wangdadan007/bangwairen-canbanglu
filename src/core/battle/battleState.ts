@@ -7,6 +7,7 @@ import {
 import { createInitialIncenseSealState } from '../run/incenseSealResolver'
 import { createInitialTutorialResourceState } from '../run/resourceResolver'
 import { getIncomingForceBaseAmount, resolveCurrentIncomingForces } from './incomingForceResolver'
+import { shuffleCardInstances } from './shuffleResolver'
 import { startPlayerTurn } from './turnFlow'
 import type {
   ArtifactCollectionState,
@@ -66,6 +67,7 @@ export interface CreateBattleStateInput {
   readonly openingIncenseBonus?: number
   readonly openingIncensePenalty?: number
   readonly openingDrawCount?: number
+  readonly drawPileSeed?: string
   readonly openingAskNamePenalty?: number
   readonly openingRiskLogRecords?: readonly OpeningRiskLogRecord[]
 }
@@ -110,6 +112,9 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     ? createCardInstancesFromRunDeck(deckCards)
     : createCardInstances(deckDefinitionIds)
   const openingHandSelection = takeOpeningHandCards(deck, openingHandDefinitionIds)
+  const initialDrawPileDeck = input.drawPileSeed
+    ? shuffleCardInstances(openingHandSelection.deck, `${input.drawPileSeed}:initial`)
+    : openingHandSelection.deck
   const extraHandCards = createTemporaryCardInstances(extraHandDefinitionIds)
   const fallbackOpeningDrawPileCards = createTemporaryCardInstances(
     openingHandSelection.missingDefinitionIds,
@@ -169,9 +174,11 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
     enemies,
     drawPile: [
       ...fallbackOpeningDrawPileCards,
-      ...openingHandSelection.deck,
+      ...initialDrawPileDeck,
       ...extraDrawPileCards,
     ],
+    drawPileSeed: input.drawPileSeed,
+    shuffleCount: 0,
     hand: [...openingHandSelection.hand, ...extraHandCards],
     discardPile: [],
     exhaustPile: [],
@@ -210,6 +217,7 @@ export function createInitialBattleState(input: CreateBattleStateInput): CombatS
       deckSize: openingHandSelection.deck.length,
       openingHandCount: openingHandSelection.hand.length,
       extraDrawPileCount: extraDrawPileCards.length,
+      initialDrawPileShuffled: Boolean(input.drawPileSeed),
     },
   })
 

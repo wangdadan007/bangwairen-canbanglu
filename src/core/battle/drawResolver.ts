@@ -1,5 +1,6 @@
 import { appendLog } from '../log/actionLog'
-import type { CardInstance, CombatState } from '../../types'
+import type { CombatState } from '../../types'
+import { shuffleCardInstances } from './shuffleResolver'
 
 export function drawCards(state: CombatState, count: number): CombatState {
   let nextState = state
@@ -62,12 +63,16 @@ function ensureDrawablePile(state: CombatState): CombatState {
     return state
   }
 
-  const shuffled = deterministicShuffle(state.discardPile)
+  const shuffleSeed = state.drawPileSeed
+    ? `${state.drawPileSeed}:discard:${state.shuffleCount}`
+    : undefined
+  const shuffled = shuffleCardInstances(state.discardPile, shuffleSeed)
 
   const nextState = {
     ...state,
     drawPile: shuffled,
     discardPile: [],
+    shuffleCount: state.shuffleCount + 1,
   }
 
   return appendLog(nextState, {
@@ -75,10 +80,7 @@ function ensureDrawablePile(state: CombatState): CombatState {
     sourceId: 'system',
     payload: {
       count: shuffled.length,
+      shuffleCount: nextState.shuffleCount,
     },
   })
-}
-
-function deterministicShuffle(cards: readonly CardInstance[]): readonly CardInstance[] {
-  return [...cards].reverse()
 }

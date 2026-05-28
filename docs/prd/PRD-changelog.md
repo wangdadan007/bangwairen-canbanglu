@@ -1,8 +1,101 @@
 # PRD-changelog：需求变更记录
 
-版本：v8.9
+版本：v8.12
 日期：2026-05-28
 建议路径：`docs/prd/PRD-changelog.md`
+
+## v8.12 · 2026-05-28 · T106
+
+### 来源
+
+- 用户游玩一轮 Boss 后反馈：当前破形牌在战斗中不算太多，有时一个回合没有破形牌能出。
+
+### 修改
+
+- 战后奖励 offer 增加破形牌可见性保底：若当前已解锁奖励池中存在 `break_form` 破形牌，3 选 1 至少展示 1 张破形牌。
+- 保底优先从非秘传基础候选中选取破形牌；若基础候选不存在，再回退到当前已解锁的破形候选。
+- 新增奖励测试，覆盖全部累计解锁阶段、遭遇和三角色，确认有破形牌可用时真实 offer 不再出现 0 张破形牌。
+- `PRD-gameplay.md`、`PRD-checklist.md` 和 `PROJECT_PLAN.md` 同步奖励保底口径。
+
+### 保留
+
+- 不新增卡牌、敌人、法宝、事件、章节、生产依赖、正式素材或音频。
+- 不改变伏诛 / 归册同池 3 选 1、不改变奖励数量、不改变角色软倾向头位、不强制玩家选择破形牌。
+- 不改变起始牌组、抽牌顺序、手牌数量、香火、Boss 数值或战斗结算规则。
+
+### 验证
+
+- `npm run test -- --run src/tests/rewardResolver.test.ts src/tests/cardReachability.test.ts` 通过，2 个测试文件、10 个用例。
+- `npm run typecheck` 通过。
+- `npm run lint` 通过。
+- `npm run test` 通过，36 个测试文件、256 个用例。
+- `npm run build` 通过；Vite 仍保留单 chunk 超过 500 kB 的既有提示。
+- `git diff --check` 通过。
+
+## v8.11 · 2026-05-28 · T105 追加：缚名线轴三坛联动小调
+
+### 来源
+
+- 用户复核 Boss 后法宝「缚名线轴」后指出：它虽然写着问名线、三坛线、归册向、认主和过载，但实际只有辨势，强度和构筑指向都偏弱。
+- 用户确认将本轮缚名线轴小调加入 T105。
+
+### 修改
+
+- 「缚名线轴」不再复用纯 `peek_intent_after_ask_name`，改为专属 `tether_name_after_ask_name` 战斗触发。
+- 未认主：每场首次问名后仍辨势；若当前已有坛位，额外墨 +1。
+- 认主后：每场首次问名后辨势并墨 +1；若当前已有坛位，额外封势 1。
+- 战斗日志新增专属展示，能同时显示辨势、研墨和封势结果。
+- 中文法宝规则、效果文案、QA 表和项目计划同步改为 T105 追加口径。
+
+### 保留
+
+- 不改变缚名线轴的法宝栏定位、Boss 后候选定位、问名 10 次认主条件、连续牵引无名目标过载和遮势反噬。
+- 不新增卡牌、敌人、事件、章节、生产依赖、正式素材或音频。
+- 不改变照骨镜、案铃残舌、残榜砚的问名法宝分工。
+
+### 验证
+
+- `npm run test -- --run src/tests/artifactResolver.test.ts src/tests/data.test.ts` 通过，2 个测试文件、35 个用例。
+- `npm run typecheck` 通过。
+- `npm run test` 通过，36 个测试文件、255 个用例。
+- `npm run lint` 通过。
+- `git diff --check` 通过。
+- `npm run build` 通过；Vite 仍保留单 chunk 超过 500 kB 的既有提示。
+
+## v8.10 · 2026-05-28 · T105
+
+### 来源
+
+- 用户试玩发现每次抽牌顺序都一样，并询问肉鸽卡牌入手顺序是否需要随机。
+- 用户确认将本轮抽牌顺序修复写为 T105 任务。
+
+### 修改
+
+- 新增 `src/core/battle/shuffleResolver.ts`，提供 seed-stable 洗牌 helper。
+- `createInitialBattleState` 新增 `drawPileSeed`，每场战斗开局会先取出削籍等奖励要求的强制开局手牌，再对剩余普通抽牌堆按 seed 洗牌。
+- `drawResolver` 将弃牌堆回洗从固定倒序改为按同一战斗 seed 与回洗次数洗牌。
+- `useTutorialRunFlow` 用 route seed、当前路线节点、第几场战斗和遭遇 id 生成战斗洗牌 seed，保证同 seed 可复现，新开不同 run 或不同节点时有变化。
+- `CombatState` 增加 `drawPileSeed` 与 `shuffleCount`，用于记录战斗内回洗序列。
+- `src/tests/battleCore.test.ts` 新增 T105 断言：同 seed 起手稳定、不同 seed 起手不同，且起手不再等于牌组原始前 5 张。
+- `PRD-gameplay.md` 和 `PROJECT_PLAN.md` 已同步 T105 口径。
+
+### 保留
+
+- 不改变默认起手 5 张、每回合默认 3 香火。
+- 不改变削籍短效、风险阈值、法宝反噬等强制开局上手 / 置顶牌逻辑。
+- 不新增卡牌、敌人、法宝、事件、章节、生产依赖、正式素材或音频。
+- 不扩展为完整随机地图、随机事件链或新的肉鸽 meta 系统。
+- 不改变奖励池、商店货架、法宝 offer 或事件 offer 的 seed 规则。
+
+### 验证
+
+- `npm run test -- --run src/tests/battleCore.test.ts src/tests/coreRulesAcceptance.test.ts` 通过，2 个测试文件、19 个用例。
+- `npm run test -- --run src/tests/battleCore.test.ts src/tests/coreRulesAcceptance.test.ts src/tests/types.test.ts` 通过，3 个测试文件、28 个用例。
+- `npm run typecheck` 通过。
+- `npm run lint` 通过。
+- `npm run test` 通过，36 个测试文件、253 个用例。
+- `npm run build` 通过；Vite 仍保留单 chunk 超过 500 kB 的既有提示。
+- `git diff --check` 通过。
 
 ## v8.9 · 2026-05-28 · T104
 

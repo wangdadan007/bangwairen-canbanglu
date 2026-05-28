@@ -19,7 +19,7 @@ import {
   type BattleReducerContext,
 } from '../core'
 import { gameData } from '../data'
-import type { EnemyDefinition } from '../types'
+import type { ArtifactBindingStatus, EnemyDefinition } from '../types'
 
 const battleContext: BattleReducerContext = {
   cardDefinitions: gameData.cards,
@@ -581,9 +581,11 @@ describe('T17 artifact foundation', () => {
 
     expect(nameTetherLog?.payload).toEqual(
       expect.objectContaining({
-        effectType: 'peek_intent_after_ask_name',
+        effectType: 'tether_name_after_ask_name',
         result: 'next_previewed',
         intentKind: 'incoming_force',
+        inkAmount: 0,
+        sealedAmount: 0,
       }),
     )
     expect(
@@ -591,6 +593,119 @@ describe('T17 artifact foundation', () => {
         (artifact) => artifact.definitionId === 'artifact_name_tether_spindle',
       )?.triggerCountThisBattle,
     ).toBe(1)
+  })
+
+  it('lets the name tether spindle convert active altars into ask-name ink', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[0],
+      deckDefinitionIds: ['card_human_altar_name_sigil', 'card_ask_name'],
+      artifacts: createArtifactCollectionWithIds(['artifact_name_tether_spindle']),
+      unlocks: {
+        stages: [
+          'stage_core',
+          'stage_abnormal_boundary',
+          'stage_run_resources',
+          'stage_human_altar',
+          'stage_three_altars',
+        ],
+        keywords: ['break_form', 'ask_name', 'intent', 'seal_momentum', 'ink', 'altar'],
+      },
+    })
+    const altarCard = getHandCard(state, 'card_human_altar_name_sigil')
+    const askName = getHandCard(state, 'card_ask_name')
+    const afterAltar = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: altarCard.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const afterAsk = reduceBattleState(
+      afterAltar,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: askName.instanceId,
+        targetEnemyInstanceId: afterAltar.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const nameTetherLog = afterAsk.actionLog.find(
+      (entry) =>
+        entry.type === 'ARTIFACT_TRIGGERED' &&
+        entry.sourceId === 'artifact_name_tether_spindle',
+    )
+
+    expect(afterAsk.resources.ink).toBe(1)
+    expect(nameTetherLog?.payload).toEqual(
+      expect.objectContaining({
+        effectType: 'tether_name_after_ask_name',
+        hasActiveAltar: true,
+        isBound: false,
+        inkAmount: 1,
+        sealedAmount: 0,
+        currentInk: 1,
+      }),
+    )
+  })
+
+  it('lets the bound name tether spindle seal momentum through active altars', () => {
+    const state = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: gameData.enemies[0],
+      deckDefinitionIds: ['card_human_altar_name_sigil', 'card_ask_name'],
+      artifacts: createArtifactCollectionWithIds(['artifact_name_tether_spindle'], 'bound'),
+      unlocks: {
+        stages: [
+          'stage_core',
+          'stage_abnormal_boundary',
+          'stage_run_resources',
+          'stage_human_altar',
+          'stage_three_altars',
+        ],
+        keywords: ['break_form', 'ask_name', 'intent', 'seal_momentum', 'ink', 'altar'],
+      },
+    })
+    const altarCard = getHandCard(state, 'card_human_altar_name_sigil')
+    const askName = getHandCard(state, 'card_ask_name')
+    const afterAltar = reduceBattleState(
+      state,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: altarCard.instanceId,
+        targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const afterAsk = reduceBattleState(
+      afterAltar,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: askName.instanceId,
+        targetEnemyInstanceId: afterAltar.enemies[0].instanceId,
+      },
+      battleContext,
+    )
+    const nameTetherLog = afterAsk.actionLog.find(
+      (entry) =>
+        entry.type === 'ARTIFACT_TRIGGERED' &&
+        entry.sourceId === 'artifact_name_tether_spindle',
+    )
+
+    expect(afterAsk.resources.ink).toBe(1)
+    expect(afterAsk.enemies[0].incomingForce).toBe(afterAltar.enemies[0].incomingForce - 1)
+    expect(nameTetherLog?.payload).toEqual(
+      expect.objectContaining({
+        effectType: 'tether_name_after_ask_name',
+        hasActiveAltar: true,
+        isBound: true,
+        inkAmount: 1,
+        sealedAmount: 1,
+        requestedSealAmount: 1,
+      }),
+    )
   })
 
   it('resolves intent-hiding backlash into a masked opening intent', () => {
@@ -738,6 +853,22 @@ function getArtifactProgress(run: ReturnType<typeof createInitialTutorialRunStat
   }
 
   return artifact.bindProgress
+}
+
+function createArtifactCollectionWithIds(
+  artifactDefinitionIds: readonly string[],
+  bindingStatus: ArtifactBindingStatus = 'unbound',
+) {
+  const ids = new Set(artifactDefinitionIds)
+
+  return {
+    artifacts: createInitialArtifactCollection(
+      gameData.artifacts.filter((artifact) => ids.has(artifact.id)),
+    ).artifacts.map((artifact) => ({
+      ...artifact,
+      bindingStatus,
+    })),
+  }
 }
 
 function mainRedInkId(cardId: string) {

@@ -162,6 +162,8 @@ export interface CombatState {
   readonly player: PlayerState
   readonly enemies: readonly EnemyState[]
   readonly drawPile: readonly CardInstance[]
+  readonly drawPileSeed?: string
+  readonly shuffleCount: number
   readonly hand: readonly CardInstance[]
   readonly discardPile: readonly CardInstance[]
   readonly exhaustPile: readonly CardInstance[]

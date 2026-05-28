@@ -25,6 +25,7 @@ interface AskNameArtifactTrigger {
     | 'peek_intent_after_ask_name'
     | 'seal_momentum_after_ask_name'
     | 'gain_ink_after_ask_name'
+    | 'tether_name_after_ask_name'
   readonly baseAmount?: number
   readonly boundAmount?: number
   readonly boundBonus: number
@@ -56,8 +57,10 @@ const ASK_NAME_ARTIFACTS: readonly AskNameArtifactTrigger[] = [
   {
     artifactId: NAME_TETHER_SPINDLE_ARTIFACT_ID,
     unlockStage: 'stage_three_altars',
-    effectType: 'peek_intent_after_ask_name',
-    boundBonus: 2,
+    effectType: 'tether_name_after_ask_name',
+    baseAmount: 1,
+    boundAmount: 1,
+    boundBonus: 0,
   },
 ]
 
@@ -165,6 +168,10 @@ function resolveAskNameArtifactTrigger(
     )
   }
 
+  if (trigger.effectType === 'tether_name_after_ask_name') {
+    return resolveNameTetherSpindleTrigger(state, trigger, artifactId, target)
+  }
+
   const discernment = applyEnemyIntentDiscernment(state, target?.instanceId)
 
   return appendLog(discernment.state, {
@@ -178,6 +185,70 @@ function resolveAskNameArtifactTrigger(
       intentKind: discernment.intent?.kind ?? null,
       previewTurnOffset: discernment.previewTurnOffset ?? null,
       boundBonus: getArtifactBindingStatus(state, artifactId) === 'bound' ? trigger.boundBonus : 0,
+    },
+  })
+}
+
+function resolveNameTetherSpindleTrigger(
+  state: CombatState,
+  trigger: AskNameArtifactTrigger,
+  artifactId: ArtifactId,
+  target: CombatState['enemies'][number] | undefined,
+): CombatState {
+  const hasActiveAltar = state.altars.length > 0
+  const isBound = getArtifactBindingStatus(state, artifactId) === 'bound'
+  const inkAmount = hasActiveAltar || isBound ? (trigger.baseAmount ?? 1) : 0
+  const requestedSealAmount = hasActiveAltar && isBound ? (trigger.boundAmount ?? 1) : 0
+  const discernment = applyEnemyIntentDiscernment(state, target?.instanceId)
+  let nextState = discernment.state
+
+  if (inkAmount > 0) {
+    nextState = {
+      ...nextState,
+      resources: applyTutorialResourceDelta(nextState.resources, {
+        ink: inkAmount,
+      }),
+    }
+  }
+
+  const nextTarget = target
+    ? nextState.enemies.find((enemy) => enemy.instanceId === target.instanceId)
+    : undefined
+  const currentIncomingForce = nextTarget?.incomingForce ?? 0
+  const nextIncomingForce = Math.max(0, currentIncomingForce - requestedSealAmount)
+  const sealedAmount = currentIncomingForce - nextIncomingForce
+
+  if (nextTarget && requestedSealAmount > 0) {
+    nextState = {
+      ...nextState,
+      enemies: nextState.enemies.map((enemy) =>
+        enemy.instanceId === nextTarget.instanceId
+          ? {
+              ...enemy,
+              incomingForce: nextIncomingForce,
+            }
+          : enemy,
+      ),
+    }
+  }
+
+  return appendLog(nextState, {
+    type: 'ARTIFACT_TRIGGERED',
+    sourceId: artifactId,
+    targetId: target?.instanceId,
+    payload: {
+      effectType: trigger.effectType,
+      result: discernment.result,
+      intentId: discernment.intent?.id ?? null,
+      intentKind: discernment.intent?.kind ?? null,
+      previewTurnOffset: discernment.previewTurnOffset ?? null,
+      hasActiveAltar,
+      isBound,
+      inkAmount,
+      currentInk: nextState.resources.ink,
+      sealedAmount,
+      requestedSealAmount,
+      remainingIncomingForce: nextIncomingForce,
     },
   })
 }

@@ -784,6 +784,26 @@ export function formatLogEntry(
       }。`
     }
 
+    if (effectType === 'tether_name_after_ask_name') {
+      const inkAmount = getPayloadNumber(entry.payload.inkAmount) ?? 0
+      const sealedAmount = getPayloadNumber(entry.payload.sealedAmount) ?? 0
+      const details = [`${artifactName}${formatIntentDiscernment(entry)}`]
+
+      if (inkAmount > 0) {
+        details.push(`研墨 +${inkAmount}，当前 ${getPayloadNumber(entry.payload.currentInk) ?? 0}`)
+      }
+
+      if (sealedAmount > 0) {
+        details.push(
+          `震住来势 ${sealedAmount}，余 ${
+            getPayloadNumber(entry.payload.remainingIncomingForce) ?? 0
+          }`,
+        )
+      }
+
+      return `${details.join('，')}。`
+    }
+
     if (effectType === 'break_chain_incense_bonus') {
       return `${artifactName}踏火连击：香火 +${
         getPayloadNumber(entry.payload.incenseAmount) ?? 0

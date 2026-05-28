@@ -757,6 +757,7 @@ function createBattle(
   openingDrawCount?: number,
   openingAskNamePenalty = 0,
   openingRiskLogRecords: Parameters<typeof createInitialBattleState>[0]['openingRiskLogRecords'] = [],
+  drawPileSeed?: string,
 ) {
   return createInitialBattleState({
     cardDefinitions: gameData.cards,
@@ -780,6 +781,7 @@ function createBattle(
     openingIncenseBonus,
     openingIncensePenalty,
     openingDrawCount,
+    drawPileSeed,
     openingAskNamePenalty,
     openingRiskLogRecords,
   })
@@ -853,6 +855,12 @@ function createInitialTutorialBattleView(
             route.routeTendencyIds ?? [],
           ),
           run.incenseSeals,
+          0,
+          0,
+          undefined,
+          0,
+          [],
+          createBattleDrawPileSeed(run, route, fallbackEncounter!),
         ),
       }
 
@@ -979,8 +987,23 @@ function createBattleForEncounter(
       riskResolution.openingDrawCount,
       riskResolution.openingAskNamePenalty,
       riskResolution.openingRiskLogRecords,
+      createBattleDrawPileSeed(nextRun, route, encounter),
     ),
   }
+}
+
+function createBattleDrawPileSeed(
+  run: TutorialRunState,
+  route: RouteState,
+  encounter: EncounterDefinition,
+) {
+  return [
+    'battle_draw',
+    getRouteSeedKey(route),
+    route.currentNodeId ?? 'route_complete',
+    run.currentEncounterIndex.toString(),
+    encounter.id,
+  ].join(':')
 }
 
 function getSelectedLivingEnemy(

@@ -162,11 +162,16 @@ function selectRewardOptions({
     ...sortCardsByRolePreference(cards, roleId),
   ])
   const surpriseCards = getSurpriseRewardCandidates(cards, unlocks, encounter)
-  const selectedCards = fillRewardSlots([
-    pickFromSlot(tendencyCards, `${seed}:tendency`, roleId, 1),
-    pickFromSlot(baseCards, `${seed}:base`, roleId, 0),
-    pickFromSlot(surpriseCards, `${seed}:surprise`, roleId, 0),
-  ], tendencyCards)
+  const selectedCards = ensureBreakFormRewardOption({
+    selectedCards: fillRewardSlots([
+      pickFromSlot(tendencyCards, `${seed}:tendency`, roleId, 1),
+      pickFromSlot(baseCards, `${seed}:base`, roleId, 0),
+      pickFromSlot(surpriseCards, `${seed}:surprise`, roleId, 0),
+    ], tendencyCards),
+    breakFormCards: getBreakFormRewardCandidates(baseCards, cards),
+    seed: `${seed}:break_form_floor`,
+    roleId,
+  })
 
   return selectedCards.slice(0, 3).map((card, index) => ({
     id: `${encounter.id}_${quality}_${index + 1}_${card.id}`,
@@ -282,6 +287,52 @@ function isLateArtifactSupportCard(card: CardDefinition, isEliteOrLate: boolean)
     card.tags.includes('artifact') &&
     (card.tags.includes('ink') || card.tags.includes('draw'))
   )
+}
+
+function getBreakFormRewardCandidates(
+  baseCards: readonly CardDefinition[],
+  cards: readonly CardDefinition[],
+): readonly CardDefinition[] {
+  const baseBreakFormCards = baseCards.filter(isBreakFormCard)
+
+  return baseBreakFormCards.length > 0 ? baseBreakFormCards : cards.filter(isBreakFormCard)
+}
+
+function ensureBreakFormRewardOption({
+  selectedCards,
+  breakFormCards,
+  seed,
+  roleId,
+}: {
+  readonly selectedCards: readonly CardDefinition[]
+  readonly breakFormCards: readonly CardDefinition[]
+  readonly seed: string
+  readonly roleId?: PlayableRoleId
+}): readonly CardDefinition[] {
+  if (selectedCards.some(isBreakFormCard) || breakFormCards.length === 0) {
+    return selectedCards
+  }
+
+  const breakFormCard = pickFromSlot(breakFormCards, seed, roleId, 0)
+
+  if (!breakFormCard) {
+    return selectedCards
+  }
+
+  if (selectedCards.length === 0) {
+    return [breakFormCard]
+  }
+
+  const replacementIndex = selectedCards.length > 1 ? 1 : 0
+  const nextCards = selectedCards.map((card, index) =>
+    index === replacementIndex ? breakFormCard : card,
+  )
+
+  return uniqueCards([...nextCards, ...selectedCards]).slice(0, 3)
+}
+
+function isBreakFormCard(card: CardDefinition): boolean {
+  return card.tags.includes('break_form')
 }
 
 function pickFromSlot(

@@ -26,6 +26,7 @@ export type ArtifactEffectType =
   | 'peek_intent_after_ask_name'
   | 'seal_momentum_after_ask_name'
   | 'gain_ink_after_ask_name'
+  | 'tether_name_after_ask_name'
   | 'red_ink_annotation_bonus'
   | 'erase_reward_bonus'
   | 'erase_heavy_verdict_option'

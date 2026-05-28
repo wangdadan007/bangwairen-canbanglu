@@ -34,6 +34,54 @@ describe('battle core loop', () => {
     expect(state.actionLog.filter((entry) => entry.type === 'CARD_DRAWN')).toHaveLength(5)
   })
 
+  it('shuffles the opening draw pile with a stable battle seed', () => {
+    const deckDefinitionIds = [
+      'card_zhu_fu',
+      'card_ask_name',
+      'card_guard_desk_talisman',
+      'card_cut_supply_talisman',
+      'card_mark_forehead',
+      'card_order_scroll',
+      'card_quiet_incense',
+      'card_split_form_talisman',
+      'card_heavy_split_form_talisman',
+      'card_trace_name_slip',
+      'card_thunder_splinter',
+      'card_cinnabar_return_slip',
+    ]
+    const seedA = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: paperWraith,
+      deckDefinitionIds,
+      drawPileSeed: 'route-1:node-1:battle-1',
+    })
+    const seedAAgain = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: paperWraith,
+      deckDefinitionIds,
+      drawPileSeed: 'route-1:node-1:battle-1',
+    })
+    const seedB = createInitialBattleState({
+      cardDefinitions: gameData.cards,
+      enemyDefinition: paperWraith,
+      deckDefinitionIds,
+      drawPileSeed: 'route-2:node-1:battle-1',
+    })
+
+    expect(seedA.hand.map((card) => card.definitionId)).toEqual(
+      seedAAgain.hand.map((card) => card.definitionId),
+    )
+    expect(seedA.hand.map((card) => card.definitionId)).not.toEqual(deckDefinitionIds.slice(0, 5))
+    expect(seedA.hand.map((card) => card.definitionId)).not.toEqual(
+      seedB.hand.map((card) => card.definitionId),
+    )
+    expect(seedA.actionLog.find((entry) => entry.type === 'BATTLE_STARTED')?.payload).toEqual(
+      expect.objectContaining({
+        initialDrawPileShuffled: true,
+      }),
+    )
+  })
+
   it('plays a break-form card, spends incense, moves it to discard, and logs changes', () => {
     const state = createInitialBattleState({
       cardDefinitions: gameData.cards,

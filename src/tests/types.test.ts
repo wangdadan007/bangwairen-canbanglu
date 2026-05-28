@@ -458,6 +458,7 @@ describe('core type contracts', () => {
         },
       ],
       drawPile: [cardInstance],
+      shuffleCount: 0,
       hand: [],
       discardPile: [],
       exhaustPile: [],
