@@ -225,10 +225,10 @@ describe('T20 event resolver', () => {
     )
   })
 
-  it('offers T36 mid and late event pools with readable resource feedback records', () => {
+  it('offers T36 mid and T104 boss-ante event pools with readable resource feedback records', () => {
     const resourceRun = createResourceRun()
     const midEventNode = route.nodes.find((node) => node.id === 'route_node_mid_event')
-    const lateEventNode = route.nodes.find((node) => node.id === 'route_node_late_event')
+    const bossAnteEventNode = route.nodes.find((node) => node.id === 'route_node_catalogue_direct_boss_ante_event')
 
     expect(getRouteEventCandidates(midEventNode, gameData.events, resourceRun).map((event) => event.id)).toEqual([
       'event_mid_ink_pool',
@@ -236,11 +236,10 @@ describe('T20 event resolver', () => {
       'event_lost_altar_bell',
       'event_bound_artifact_case',
     ])
-    expect(getRouteEventCandidates(lateEventNode, gameData.events, resourceRun).map((event) => event.id)).toEqual([
-      'event_cracked_registry_needle',
+    expect(getRouteEventCandidates(bossAnteEventNode, gameData.events, resourceRun).map((event) => event.id)).toEqual([
+      'event_cinnabar_scribe',
       'event_lost_altar_bell',
       'event_bound_artifact_case',
-      'event_fouled_page_bundle',
       'event_covered_name_stable',
     ])
 
@@ -278,10 +277,10 @@ describe('T20 event resolver', () => {
   })
 
   it('can surface the bound artifact event on a seeded real route event node', () => {
-    const seededRouteState = createFractureLateEventRouteState()
-    const lateEventNode = route.nodes.find((node) => node.id === seededRouteState.currentNodeId)
-    const run = createRunAfterRouteBattles(seededRouteState, 5)
-    const event = getCurrentRouteEvent(lateEventNode, gameData.events, run, seededRouteState)
+    const seededRouteState = createCatalogueBossAnteEventRouteState()
+    const bossAnteEventNode = route.nodes.find((node) => node.id === seededRouteState.currentNodeId)
+    const run = createResourceRun()
+    const event = getCurrentRouteEvent(bossAnteEventNode, gameData.events, run, seededRouteState)
 
     if (!event) {
       throw new Error('Missing seeded route event')
@@ -339,44 +338,28 @@ function createResourceRun() {
   )
 }
 
-function createFractureLateEventRouteState() {
+function createCatalogueBossAnteEventRouteState() {
   const firstChoice = completeCurrentRouteNode(
     route,
     completeCurrentRouteNode(
       route,
-      completeCurrentRouteNode(route, createInitialRouteState(route, 7)),
+      completeCurrentRouteNode(route, createInitialRouteState(route, 4)),
     ),
   )
-  const fractureChoice = completeCurrentRouteNode(
+  const catalogueChoice = completeCurrentRouteNode(
     route,
-    selectReachableRouteNode(route, firstChoice, 'route_node_fracture_fortune_breaker'),
+    selectReachableRouteNode(route, firstChoice, 'route_node_first_elite'),
   )
-  const fractureRest = completeCurrentRouteNode(
+  const secondElite = completeCurrentRouteNode(
     route,
     selectReachableRouteNode(
       route,
-      fractureChoice,
-      'route_node_first_event',
+      catalogueChoice,
+      'route_node_second_elite',
     ),
   )
-  const altarPressure = completeCurrentRouteNode(route, fractureRest)
-  const fouledPressure = completeCurrentRouteNode(route, altarPressure)
-  const namePressure = completeCurrentRouteNode(route, fouledPressure)
+  const catalogueRest = completeCurrentRouteNode(route, secondElite)
+  const altarCrosscheck = completeCurrentRouteNode(route, catalogueRest)
 
-  return completeCurrentRouteNode(route, namePressure)
-}
-
-function createRunAfterRouteBattles(routeState: ReturnType<typeof createInitialRouteState>, battleCount: number) {
-  const encounterIds = getRouteBattleEncounterIds(route, routeState)
-
-  return encounterIds.slice(0, battleCount).reduce(
-    (currentRun) =>
-      advanceTutorialRun(
-        currentRun,
-        gameData.encounters,
-        gameData.tutorialUnlocks,
-        'vanquish',
-      ),
-    createInitialTutorialRunState(gameData.tutorialUnlocks, encounterIds),
-  )
+  return completeCurrentRouteNode(route, altarCrosscheck)
 }

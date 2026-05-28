@@ -78,6 +78,19 @@
 
 ## 7. 当前记录
 
+### 2026-05-27 · AI 概念图生产规格 · 视觉候选 prompt 与素材安全流程
+
+- 候选类型：AI art prompt spec / concept art review workflow / asset safety pipeline / contact sheet workflow。
+- 主归属模板：`AI Game Development Planning and QA Kit`。
+- 也支持：`React Card Game UI Kit`、`Phaser React Deckbuilder Roguelike Starter Kit`。
+- 涉及文件：`docs/design/CHAPTER_ONE_AI_CONCEPT_ART_PRODUCTION_SPEC.md`、`docs/assets/ASSET_MANIFEST.md`、`docs/design/CHAPTER_ONE_T101_BATTLE_SCREEN_ART_PLACEMENT.md`。
+- 可复用价值：把 AI 概念图生产拆成对象清单、prompt 模板、禁区、批次命名、contact sheet、ledger 字段、人工审图、一票否决、二轮精修和接入前检查，适合复用到其他游戏项目的“先概念候选、再人工审图、最后小规模接入”流程。
+- 与本作强绑定部分：衡简、照微、莲烬、纸面鬼、窃榜使、残榜、朱砂、封神题材和具体视觉禁区属于本作。
+- 去题材化思路：抽象为 role_a / role_b / role_c / tutorial_enemy / chapter_boss / ui_token，并保留 generic visual pillars、negative prompt、asset ledger、review score 和 build-entry gate。
+- 依赖与授权注意：本轮未生成 AI 图、未新增第三方素材、未新增生产依赖；模板化时必须保留“concept candidate 不得直接入正式构建”的安全门。
+- 是否值得抽到模板：值得记录，暂不单独抽仓库。
+- 后续动作：若后续真正生成 contact sheet，可补一份中性 ledger CSV 模板和 contact sheet 脚本模板。
+
 ### 2026-05-27 · T101 · 战斗首屏构图、美术落位规格与可运行重排
 
 - 候选类型：combat screen composition / art placement spec / runtime-first visual planning / runnable layout slice。

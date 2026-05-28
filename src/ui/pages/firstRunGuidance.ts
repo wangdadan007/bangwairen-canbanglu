@@ -55,8 +55,8 @@ export function createFirstRunGuidance({
     return {
       tone: 'verdict',
       eyebrow: '归册后',
-      title: '裁定是在改本局规则',
-      body: '写入榜册（登簿）偏稳，批改卡牌（朱批）偏构筑，抹去名籍（削籍）收益高但会推高榜裂。',
+      title: '裁定会按归册对象分层',
+      body: '普通怪归册只在朱批和削籍中取舍；精英和 Boss 归册只登簿，把重要对象写入残榜。',
       terms: ['裁定', '登簿', '朱批', '削籍'],
     }
   }
@@ -203,7 +203,7 @@ export function createFirstRunGuidance({
       tone: 'verdict',
       eyebrow: '第三战',
       title: '归册会打开裁定',
-      body: '把真名查全后收束，战后就能在登簿、朱批、削籍中选一种方式改写本局。',
+      body: '把普通怪真名查全后收束，战后会在朱批和削籍中取舍；登簿留给精英和 Boss。',
       terms: ['归册', '裁定', '朱批'],
     }
   }

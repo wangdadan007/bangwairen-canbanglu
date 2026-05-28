@@ -1,8 +1,140 @@
 # PRD-changelog：需求变更记录
 
-版本：v8.5
-日期：2026-05-27
+版本：v8.9
+日期：2026-05-28
 建议路径：`docs/prd/PRD-changelog.md`
+
+## v8.9 · 2026-05-28 · T104
+
+### 来源
+
+- 用户复盘第一章五条具体路线后判断：不需要所有路线节点数完全一样，但归册双精英直压体验偏薄，裂榜两条线全程节点偏长。
+- 用户确认把“设计删减和增加的节点内容”作为 T104。
+
+### 修改
+
+- 新增 `docs/design/CHAPTER_ONE_ROUTE_NODE_REBALANCE_T104.md`，记录 T104 路线节点节奏再平衡方案和落地结果。
+- T104 目标不是五条路线全等，而是把全程节点收敛到 10-12，并保持 T79 已验证的 Boss 前 8 场实际战斗基线。
+- 稳行线保持 10 节点不变，继续作为基准线。
+- 归册双精英直压新增 1 个 Boss 前事件「卷末旁证」，放在「坛位复查」之后、「污牒压案」之前，用遮名马厩、失坛铜铃、认主器匣、朱砂代笔等现有事件池承接护名、三坛、法宝与朱批准备。
+- 归册事件补给分支保持 12 节点不变。
+- 裂榜事件休整分支删去「终审前残页」，让「遮名归裂」直接接「斗部空壳候审」，保留「终审前整册」作为 Boss 前休整。
+- 裂榜塞卷商店分支删去「终审前残页」，让「碎页污案」直接接「残页补香」，保留「残页补香」和「终审前整册」两个修形 / 护名窗口。
+- `src/data/routes.json` 已新增「卷末旁证」运行节点，并移除两条裂榜线旧「终审前残页」运行节点，确保删减节点不再出现在路线页。
+- `src/data/localization/zh-CN.json` 已补齐「卷末旁证」节点名 / 描述，并同步裂榜直连后的节点描述。
+- `src/tests/routeResolver.test.ts` 已新增 T104 具体支线计数测试；`src/tests/data.test.ts` 已同步事件池和旧节点绕开断言；`src/tests/eventResolver.test.ts` 已把 seeded 事件测试锚点迁到「卷末旁证」。
+- `PROJECT_PLAN.md` 已将 T104 标记为已完成，并把当前推荐下一步调整为本地试玩复核路线体感。
+
+### 保留
+
+- 不新增敌人、精英、Boss、卡牌、法宝、事件定义、章节、生产依赖、正式素材或音频。
+- 不改变前三场固定教学、三主线选择、三角色软倾向、角色全路线可走、伏诛 / 归册奖励同池、T102 裁定分层、T103 断名符削籍或法宝认主规则。
+- 不把五条路线硬拉成完全相同节点数；T104 后全程节点分别为稳行商店 10、稳行休整 10、归册双精英直压 11、归册事件商店 12、裂榜事件休整 12、裂榜塞卷商店 12。
+
+### 验证
+
+- `npm run test -- --run src/tests/routeResolver.test.ts src/tests/data.test.ts src/tests/chapterOneLongFlow.test.ts` 通过，3 个测试文件、34 个用例。
+- `npm run test -- --run src/tests/eventResolver.test.ts` 通过，1 个测试文件、6 个用例。
+- `npm run typecheck` 通过。
+- `npm run lint` 通过。
+- `npm run test` 通过，36 个测试文件、252 个用例。
+- `npm run build` 通过；Vite 仍保留单 chunk 超过 500 kB 的既有提示。
+- `git diff --check` 通过。
+
+## v8.8 · 2026-05-28 · T103
+
+### 来源
+
+- 用户试玩讨论后确认：从新增削籍专属牌“断名符”开始，本轮试玩小调统一收为 T103。
+- 用户确认把基础“削籍：裂形符”改为“削籍：断名符”；裂形符继续保留在正常奖励池中。
+- 用户要求把朱批操作里的玩家可见“主朱批”改为“朱批”。
+- 用户要求把法宝认主条件中的“有名敌人”改得更直白，并在法宝栏显示认主进度；打神鞭残节 3 名已正名敌人的门槛先保留观察。
+
+### 修改
+
+- 新增 `card_sever_name_talisman` 断名符：1 香火，破形 5；若目标已有名被揭示，额外破形 3。
+- 基础削籍奖励从裂形符改为断名符，并保持下一场战斗开局置入手牌的短效交付。
+- 裂形符继续保留 `reward` 标签，可作为正常战后奖励、莲烬起始牌和裂榜针额外收益出现。
+- 裂榜针额外收益仍追加裂形符；重裂符仍只作为裂榜针 / 终劫铃等法宝强化削籍候选。
+- 裁定页、actionLog、PRD、计划和测试同步“断名符为基础削籍牌”的口径。
+- 朱批页玩家可见文案从“主朱批 / 定向主朱批 / 新的主朱批”统一改为“朱批 / 定向朱批 / 新的朱批”。
+- 打神鞭残节认主条件文案改为“本局累计归册 3 名已正名敌人后认主”；同类归册认主法宝文案同步使用“已正名敌人”。
+- 法宝栏顶部状态从单纯“未认主”改为直接显示 `认主 当前/需求`，认主后显示“已认主”。
+
+### 保留
+
+- 不新增敌人、Boss、章节、角色、法宝、事件、生产依赖、正式素材或音频。
+- 不改变抄裂得墨、预支香墨、重裂符、朱批 / 削籍二选、精英 / Boss 登簿或伏诛 / 归册奖励同池规则。
+- 不调整打神鞭残节 3 名已正名敌人认主的门槛；先继续通过本地试玩观察是否过早认主。
+
+### 验证
+
+- `npm run test -- --run src/tests/chapterOneLongFlow.test.ts src/tests/redInkResolver.test.ts src/tests/data.test.ts src/tests/verdictResolver.test.ts src/tests/artifactResolver.test.ts src/tests/cardReachability.test.ts src/tests/t102VerdictPressure.test.ts` 通过，7 个测试文件、64 个用例。
+- `npm run test` 通过，36 个测试文件、251 个用例。
+- `npm run typecheck` 通过。
+- `npm run lint` 通过。
+- `npm run build` 通过；Vite 仍保留单 chunk 超过 500 kB 的既有提示。
+- 追加法宝栏进度与认主文案后，`npm run typecheck` 通过；`npm run test -- --run src/tests/data.test.ts src/tests/artifactResolver.test.ts` 通过，2 个测试文件、33 个用例。
+- `git diff --check` 通过。
+
+## v8.7 · 2026-05-27
+
+### 来源
+
+- 用户确认进入 T102 开发，并进一步确认极端普通归册路线不应作为必须通关目标，而应作为压力测试：极端路线可以失败，但不能反而成为最优解，失败原因要来自清楚的机会成本。
+- 用户要求补做实际统计 / 压力测试，确认 T102 后普通归册朱批 / 削籍路线是否出现第一章数值膨胀。
+
+### 修改
+
+- `verdictResolver` 按归册对象分层生成裁定：普通怪归册只展示朱批与基础 / 条件削籍；精英和 Boss 归册只展示登簿。
+- 新局停止生成普通“残名入档”通用登簿；旧存档中已存在的 `register_common_docket` 仍保留战斗触发兼容。
+- 旧 pending 裁定读档时会按 T102 合同归一化：普通怪 pending 裁定移除 `register`，精英 / Boss pending 裁定只保留 `register`。
+- 裁定页提示、首局提示、关键反馈和中文本地化同步新背景：登簿处理重要对象，普通怪归册在朱批 / 削籍中取舍。
+- 长流程测试新增 T102 压力 smoke：覆盖全普通归册 + 优先朱批、全普通归册 + 优先削籍，确认不再生成普通登簿。
+- 新增 `src/tests/t102VerdictPressure.test.ts` 和 `docs/qa/CHAPTER_ONE_T102_VERDICT_PRESSURE.md`：覆盖 3 角色 × 6 路线 × 5 策略共 90 条纯逻辑完整路线样本，记录全朱批、裂形符削籍、抄裂得墨削籍、混合归册和纯伏诛的实际 run 层压力。
+- `PRD-gameplay.md` 与 `PRD-checklist.md` 同步 T102 后裁定口径，并把旧“残名入档”降为旧存档兼容说明。
+- `PROJECT_PLAN.md` 将 T102 标记为已完成，记录静态上限、实际压力统计、验证基线和下一步本地试玩复核建议。
+
+### 保留
+
+- 不新增第四类裁定，不恢复留魂、留名、敌魂卡或 Boss 助战。
+- 不改变伏诛 / 归册卡牌奖励同池 3 选 1，不调整朱批词条、削籍数值或精英 / Boss 专属登簿效果。
+- 不新增卡牌、敌人、Boss、章节、角色、生产依赖、正式素材或音频。
+
+### 验证
+
+- `npm run test -- --run src/tests/verdictResolver.test.ts src/tests/saveSettingsResolver.test.ts src/tests/chapterOneLongFlow.test.ts src/tests/firstRunGuidance.test.ts` 通过。
+- `T102_PRESSURE_REPORT=1 npm run test -- --run src/tests/t102VerdictPressure.test.ts --reporter=verbose` 通过，记录 90 条压力样本：普通通用登簿 0，全归册优先朱批普通朱批裁定 5-7 次，裂形符削籍榜裂 5-8，抄裂得墨墨 9-15。
+- `npm run typecheck` 通过。
+- `npm run test` 通过，36 个测试文件、251 个用例。
+- `npm run lint` 通过。
+- `npm run build` 通过；Vite 仍保留单 chunk 超过 500 kB 的既有提示。
+- `git diff --check` 通过。
+
+## v8.6 · 2026-05-27
+
+### 来源
+
+- 用户确认新的裁定分层方向：登簿只针对精英怪和 Boss，要求把这些重要归册对象写入残榜；普通怪归册不再登簿，只开放朱批或削籍，分别表示给卡牌加词条或削去小怪名籍获得增益。
+- 用户要求先作为 T102 任务计划登记，并特别关注一路归册普通怪时，朱批次数和削籍诱惑是否导致第一章数值膨胀。
+
+### 修改
+
+- `PROJECT_PLAN.md` 新增 T102：归册裁定分层重构计划，作为当前推荐下一步。
+- T102 计划口径为：普通怪归册只展示朱批 / 削籍；精英和 Boss 归册只展示登簿。
+- T102 计划明确旧普通“残名入档”不再由新局生成，但执行时需要兼容旧存档中已存在的通用登簿记录。
+- T102 验收新增数值膨胀检查：全普通归册 + 优先朱批、全普通归册 + 优先削籍、混合归册、纯伏诛四类路径都要有复核记录。
+
+### 保留
+
+- 本轮只登记任务计划，不改运行代码、不改现有裁定实现、不新增卡牌、敌人、Boss、章节、角色、生产依赖、正式素材或音频。
+- 不新增第四类裁定，不恢复留魂、留名、敌魂卡或 Boss 助战。
+- 不改变伏诛 / 归册卡牌奖励同池 3 选 1 的规则。
+
+### 验证
+
+- 本轮为计划登记与 changelog 同步，未运行 `npm run typecheck`、`npm run lint`、`npm run test` 或 `npm run build`。
+- `git diff --check` 通过。
 
 ## v8.5 · 2026-05-27
 

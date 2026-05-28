@@ -162,6 +162,23 @@ const RED_INK_MAIN_OPTION_DEFINITIONS: readonly MainRedInkOptionDefinition[] = [
     preferredRouteTendencyIds: ['fracture'],
   },
   {
+    cardDefinitionId: 'card_sever_name_talisman',
+    unlockStage: 'stage_run_resources',
+    category: 'risk',
+    effects: [
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 2,
+        condition: {
+          type: 'TARGET_IS_NAMED',
+        },
+      },
+    ],
+    preferredRoleIds: ['role_lianjin', 'role_zhaowei'],
+    preferredRouteTendencyIds: ['fracture', 'catalogue'],
+  },
+  {
     cardDefinitionId: 'card_heavy_split_form_talisman',
     unlockStage: 'stage_run_resources',
     category: 'risk',

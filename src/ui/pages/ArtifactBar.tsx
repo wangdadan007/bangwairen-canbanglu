@@ -61,6 +61,10 @@ function ArtifactCard({
 }) {
   const progressLabel = `${artifact.bindProgress} / ${artifact.bindCondition.requiredCount}`
   const effect = artifact.bindingStatus === 'bound' ? definition.boundEffect : definition.baseEffect
+  const statusLabel =
+    artifact.bindingStatus === 'bound'
+      ? '已认主'
+      : `认主 ${artifact.bindProgress}/${artifact.bindCondition.requiredCount}`
 
   return (
     <article
@@ -74,7 +78,7 @@ function ArtifactCard({
     >
       <div className="artifact-card-topline">
         <strong>{t(definition.nameKey)}</strong>
-        <span>{artifact.bindingStatus === 'bound' ? '认主' : '未认主'}</span>
+        <span>{statusLabel}</span>
       </div>
       <p>{t(effect.descriptionKey)}</p>
       <small>{t(definition.bindCondition.descriptionKey)}</small>

@@ -53,11 +53,11 @@ export function RedInkPage({
           <h3>给一张牌写入永久词条</h3>
         </div>
         <span>
-          当前牌组 {deckCards.length} 张 / 主朱批 {visibleOptions.length}
+          当前牌组 {deckCards.length} 张 / 朱批 {visibleOptions.length}
         </span>
       </div>
       <p className="reward-copy">
-        从当前牌组选择一张已有牌，确认它的定向主朱批。未获得的卡牌不会出现在这里，被批改的牌会在后续战斗保留这个词条。
+        从当前牌组选择一张已有牌，确认它的定向朱批。未获得的卡牌不会出现在这里，被批改的牌会在后续战斗保留这个词条。
       </p>
 
       <div className="red-ink-grid">
@@ -93,7 +93,7 @@ export function RedInkPage({
         </div>
 
         <div className="red-ink-column">
-          <h4>主朱批</h4>
+          <h4>朱批</h4>
           <div className="red-ink-option-list">
             {visibleOptions.map((option) => (
               <button
@@ -110,7 +110,7 @@ export function RedInkPage({
               </button>
             ))}
             {visibleOptions.length === 0 ? (
-              <p className="empty-list-copy">这张牌暂时不能写入新的主朱批，换一张牌试试。</p>
+              <p className="empty-list-copy">这张牌暂时不能写入新的朱批，换一张牌试试。</p>
             ) : null}
           </div>
         </div>

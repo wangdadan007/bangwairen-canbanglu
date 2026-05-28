@@ -28,7 +28,8 @@ import { RED_INK_INK_COST_REDUCTION_DELTA } from './redInkCostResolver'
 import { createTutorialRedInkOffer } from './redInkResolver'
 import { applyTutorialResourceDelta } from './resourceResolver'
 
-export const VERDICT_ERASE_REWARD_CARD_ID: CardId = 'card_split_form_talisman'
+export const VERDICT_ERASE_REWARD_CARD_ID: CardId = 'card_sever_name_talisman'
+export const VERDICT_ERASE_ARTIFACT_BONUS_CARD_ID: CardId = 'card_split_form_talisman'
 export const VERDICT_ERASE_HEAVY_REWARD_CARD_ID: CardId = 'card_heavy_split_form_talisman'
 export const VERDICT_ERASE_FRACTURE_DELTA = 1
 export const VERDICT_ERASE_INK_DELTA = 2
@@ -179,9 +180,11 @@ export function normalizeTutorialVerdictOffer(
     return undefined
   }
 
+  const options = normalizeTutorialVerdictOptionsForEnemy(offer)
+
   return {
     ...offer,
-    options: offer.options.filter(isEnabledTutorialVerdictOption),
+    options,
   }
 }
 
@@ -275,17 +278,16 @@ function createTutorialVerdictOptions(input: {
   readonly existingRegisterEntries: readonly TutorialVerdictRegisterEntry[]
   readonly artifacts?: ArtifactCollectionState
 }): readonly TutorialVerdictOption[] {
-  const registerRule = getRegisterRuleForEnemy(input.enemyDefinitionId)
-  const shouldHideDuplicateCommonRegister =
-    registerRule.id === COMMON_REGISTER_RULE.id &&
-    input.existingRegisterEntries.some(
-      (entry) => entry.registerRuleId === COMMON_REGISTER_RULE.id,
-    )
+  const registerRule = getDedicatedRegisterRuleForEnemy(input.enemyDefinitionId)
+
+  if (registerRule) {
+    return TUTORIAL_VERDICT_OPTIONS.filter((option) => option.id === 'register')
+  }
 
   const baseOptions = BASE_TUTORIAL_VERDICT_OPTIONS.filter(
     (option) =>
       (option.id !== 'erase_next_battle_resources' || input.hasNextEncounter) &&
-      !(option.id === 'register' && shouldHideDuplicateCommonRegister),
+      option.id !== 'register',
   )
 
   return [
@@ -301,7 +303,7 @@ function createRegisterEntry(
   run: TutorialRunState,
   offer: TutorialVerdictOffer,
 ): TutorialVerdictRegisterEntry {
-  const registerRule = getRegisterRuleForEnemy(offer.enemyDefinitionId)
+  const registerRule = requireDedicatedRegisterRuleForEnemy(offer.enemyDefinitionId)
   const isCommonDocket = registerRule.id === COMMON_REGISTER_RULE.id
 
   return {
@@ -326,7 +328,9 @@ function createVerdictRecord(
 ): TutorialVerdictRecord {
   const choiceId = option.choiceId
   const registerRule =
-    choiceId === 'register' ? getRegisterRuleForEnemy(offer.enemyDefinitionId) : undefined
+    choiceId === 'register'
+      ? requireDedicatedRegisterRuleForEnemy(offer.enemyDefinitionId)
+      : undefined
   const eraseResult =
     choiceId === 'erase'
       ? resolveEraseVariant(run, option.eraseVariantId ?? 'erase')
@@ -437,8 +441,46 @@ function getCurrentRegisterSegmentIndex(run: TutorialRunState) {
   )
 }
 
-function getRegisterRuleForEnemy(enemyDefinitionId: EnemyId): RegisterRuleDefinition {
-  return REGISTER_RULE_BY_ENEMY_ID[enemyDefinitionId] ?? COMMON_REGISTER_RULE
+function getDedicatedRegisterRuleForEnemy(
+  enemyDefinitionId: EnemyId,
+): RegisterRuleDefinition | undefined {
+  return REGISTER_RULE_BY_ENEMY_ID[enemyDefinitionId]
+}
+
+function requireDedicatedRegisterRuleForEnemy(enemyDefinitionId: EnemyId): RegisterRuleDefinition {
+  const rule = getDedicatedRegisterRuleForEnemy(enemyDefinitionId)
+
+  if (!rule) {
+    throw new Error(`Register verdict is only available for elite or boss enemies: ${enemyDefinitionId}`)
+  }
+
+  return rule
+}
+
+function normalizeTutorialVerdictOptionsForEnemy(
+  offer: TutorialVerdictOffer,
+): readonly TutorialVerdictOption[] {
+  const enabledOptions = offer.options.filter(isEnabledTutorialVerdictOption)
+
+  if (getDedicatedRegisterRuleForEnemy(offer.enemyDefinitionId)) {
+    return [
+      enabledOptions.find((option) => option.id === 'register') ??
+        TUTORIAL_VERDICT_OPTIONS.find((option) => option.id === 'register')!,
+    ]
+  }
+
+  const ordinaryOptions = enabledOptions.filter((option) => option.id !== 'register')
+
+  if (ordinaryOptions.length > 0) {
+    return ordinaryOptions
+  }
+
+  return TUTORIAL_VERDICT_OPTIONS.filter(
+    (option) =>
+      option.id === 'red_ink' ||
+      option.id === 'erase' ||
+      option.id === 'erase_gain_ink',
+  )
 }
 
 interface EraseVariantResult {
@@ -525,7 +567,7 @@ function getAddedEraseRewardCardIds(
 
   return [
     ...eraseResult.addedCardDefinitionIds,
-    ...Array.from({ length: eraseRewardBonusCount }, () => VERDICT_ERASE_REWARD_CARD_ID),
+    ...Array.from({ length: eraseRewardBonusCount }, () => VERDICT_ERASE_ARTIFACT_BONUS_CARD_ID),
   ]
 }
 

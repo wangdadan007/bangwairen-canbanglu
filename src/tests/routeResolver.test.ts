@@ -168,13 +168,6 @@ describe('T64 chapter one branched route closure', () => {
     state = completeCurrentRouteNode(route, state)
     expect(state.currentNodeId).toBe('route_node_fracture_shop_fouled_pressure')
     state = completeCurrentRouteNode(route, state)
-    expect(state.currentNodeId).toBe('route_node_late_event_after_shop')
-
-    const afterShopEvent = getCurrentRouteNode(route, state)
-    expect(afterShopEvent?.eventPoolIds).not.toContain('event_fouled_page_bundle')
-    expect(afterShopEvent?.eventPoolIds).toContain('event_covered_name_stable')
-
-    state = completeCurrentRouteNode(route, state)
     expect(state.currentNodeId).toBe('route_node_fracture_shop_boss_ante_rest')
     expect(getCurrentRouteFlowKind(route, state)).toBe('rest')
 
@@ -274,6 +267,74 @@ describe('T64 chapter one branched route closure', () => {
     }
   })
 
+  it('keeps T104 concrete branch node counts within the target envelope', () => {
+    const paths = collectRoutePaths(route.startNodeId)
+    const metrics = paths.map(getPathMetrics)
+
+    expect(metrics).toEqual([
+      {
+        signature: 'steady-shop',
+        totalNodes: 10,
+        bossPreBattleCount: 8,
+        normalBattles: 7,
+        elites: 1,
+        events: 0,
+        shops: 1,
+        rests: 0,
+      },
+      {
+        signature: 'steady-rest',
+        totalNodes: 10,
+        bossPreBattleCount: 8,
+        normalBattles: 7,
+        elites: 1,
+        events: 0,
+        shops: 0,
+        rests: 1,
+      },
+      {
+        signature: 'catalogue-direct',
+        totalNodes: 11,
+        bossPreBattleCount: 8,
+        normalBattles: 6,
+        elites: 2,
+        events: 1,
+        shops: 0,
+        rests: 1,
+      },
+      {
+        signature: 'catalogue-event-shop',
+        totalNodes: 12,
+        bossPreBattleCount: 8,
+        normalBattles: 6,
+        elites: 2,
+        events: 1,
+        shops: 1,
+        rests: 1,
+      },
+      {
+        signature: 'fracture-event-rest',
+        totalNodes: 12,
+        bossPreBattleCount: 8,
+        normalBattles: 7,
+        elites: 1,
+        events: 1,
+        shops: 0,
+        rests: 2,
+      },
+      {
+        signature: 'fracture-scroll-shop',
+        totalNodes: 12,
+        bossPreBattleCount: 8,
+        normalBattles: 7,
+        elites: 1,
+        events: 0,
+        shops: 1,
+        rests: 2,
+      },
+    ])
+  })
+
   it('rejects route choices that are not currently reachable', () => {
     const firstChoice = advanceToFirstChoice()
 
@@ -308,4 +369,61 @@ function collectRoutePaths(nodeId: string, currentPath: readonly string[] = []):
   }
 
   return node.nextNodeIds.flatMap((nextNodeId) => collectRoutePaths(nextNodeId, nextPath))
+}
+
+function getPathMetrics(path: readonly string[]) {
+  const bossIndex = path.indexOf('route_node_boss_registry_thief')
+  const nodesBeforeBoss = path.slice(0, bossIndex)
+  const nodes = path.map((nodeId) => {
+    const node = route.nodes.find((routeNode) => routeNode.id === nodeId)
+
+    if (!node) {
+      throw new Error(`Missing route node in test path: ${nodeId}`)
+    }
+
+    return node
+  })
+  const nodesBeforeBossDefinitions = nodes.slice(0, bossIndex)
+
+  return {
+    signature: getPathSignature(path),
+    totalNodes: path.length,
+    bossPreBattleCount: nodesBeforeBoss.filter((nodeId) =>
+      isRouteBattleNode(route.nodes.find((node) => node.id === nodeId)),
+    ).length,
+    normalBattles: nodesBeforeBossDefinitions.filter((node) => node.type === 'normal_battle')
+      .length,
+    elites: nodesBeforeBossDefinitions.filter((node) => node.type === 'elite').length,
+    events: nodesBeforeBossDefinitions.filter((node) => node.type === 'event').length,
+    shops: nodesBeforeBossDefinitions.filter((node) => node.type === 'shop').length,
+    rests: nodesBeforeBossDefinitions.filter((node) => node.type === 'rest').length,
+  }
+}
+
+function getPathSignature(path: readonly string[]): string {
+  if (path.includes('route_node_first_shop')) {
+    return 'steady-shop'
+  }
+
+  if (path.includes('route_node_rest_site')) {
+    return 'steady-rest'
+  }
+
+  if (path.includes('route_node_second_elite')) {
+    return 'catalogue-direct'
+  }
+
+  if (path.includes('route_node_mid_event')) {
+    return 'catalogue-event-shop'
+  }
+
+  if (path.includes('route_node_first_event')) {
+    return 'fracture-event-rest'
+  }
+
+  if (path.includes('route_node_late_scroll_stuffer_clerk')) {
+    return 'fracture-scroll-shop'
+  }
+
+  throw new Error(`Unknown route path: ${path.join(' -> ')}`)
 }

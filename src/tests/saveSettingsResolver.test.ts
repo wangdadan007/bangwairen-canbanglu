@@ -118,7 +118,7 @@ describe('T29 settings and local save MVP', () => {
     expect(lastRestoredDeckCard?.id).not.toBe(duplicatedCard.id)
   })
 
-  it('removes legacy ungated heavy split form from saved pending verdicts', () => {
+  it('normalizes legacy ordinary pending verdict options', () => {
     const storage = createMemoryStorage()
     const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
     const legacyRun = {
@@ -130,6 +130,12 @@ describe('T29 settings and local save MVP', () => {
         enemyNameKey: 'enemy.paper_wraith.name',
         revealedNameKeys: [],
         options: [
+          {
+            id: 'register',
+            choiceId: 'register',
+            nameKey: 'verdict.register.name',
+            rulesTextKey: 'verdict.register.rules',
+          },
           {
             id: 'erase',
             choiceId: 'erase',

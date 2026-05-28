@@ -6,7 +6,7 @@ describe('initial game data', () => {
     const data = loadGameData()
 
     expect(data.artifacts).toHaveLength(11)
-    expect(data.cards).toHaveLength(48)
+    expect(data.cards).toHaveLength(49)
     expect(data.enemies).toHaveLength(16)
     expect(data.encounters).toHaveLength(30)
     expect(data.events).toHaveLength(9)
@@ -99,6 +99,22 @@ describe('initial game data', () => {
     expect(getCardDefinition('card_order_scroll', data)?.effects[0].type).toBe('DRAW')
     expect(getCardDefinition('card_quiet_incense', data)?.effects[0].type).toBe('GAIN_INCENSE')
     expect(getCardDefinition('card_split_form_talisman', data)?.tags).toContain('reward')
+    expect(getCardDefinition('card_sever_name_talisman', data)?.tags).not.toContain('reward')
+    expect(getCardDefinition('card_sever_name_talisman', data)?.effects).toEqual([
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 5,
+      },
+      {
+        type: 'BREAK_SHAPE',
+        target: 'selected_enemy',
+        amount: 3,
+        condition: {
+          type: 'TARGET_HAS_REVEALED_NAME_SLOT',
+        },
+      },
+    ])
     expect(getCardDefinition('card_heavy_split_form_talisman', data)?.effects).toEqual([
       {
         type: 'GAIN_DOOM',
@@ -472,18 +488,11 @@ describe('initial game data', () => {
       'event_bound_artifact_case',
       'event_cracked_registry_needle',
     ])
-    expect(nodesById.get('route_node_late_event')?.eventPoolIds).toEqual([
-      'event_fouled_page_bundle',
+    expect(nodesById.get('route_node_catalogue_direct_boss_ante_event')?.eventPoolIds).toEqual([
       'event_covered_name_stable',
-      'event_bound_artifact_case',
       'event_lost_altar_bell',
-      'event_cracked_registry_needle',
-    ])
-    expect(nodesById.get('route_node_late_event_after_shop')?.eventPoolIds).toEqual([
-      'event_covered_name_stable',
       'event_bound_artifact_case',
-      'event_lost_altar_bell',
-      'event_cracked_registry_needle',
+      'event_cinnabar_scribe',
     ])
     expect(nodesById.get('route_node_first_shop')?.nextNodeIds).toEqual([
       'route_node_steady_mid_altar_check',
@@ -510,7 +519,10 @@ describe('initial game data', () => {
       'encounter_pool_offering_table_afterimage_return',
       'encounter_multi_offering_table_mouse',
     ])
-    expect(nodesById.get('route_node_late_event_after_shop')?.nextNodeIds).toEqual([
+    expect(nodesById.get('route_node_fracture_event_name_pressure')?.nextNodeIds).toEqual([
+      'route_node_third_elite',
+    ])
+    expect(nodesById.get('route_node_fracture_shop_fouled_pressure')?.nextNodeIds).toEqual([
       'route_node_fracture_shop_boss_ante_rest',
     ])
     expect(nodesById.get('route_node_fracture_shop_boss_ante_rest')?.routeTendencyIds).toEqual([
@@ -550,7 +562,7 @@ describe('initial game data', () => {
     ])
     expect(
       route.nodes.filter((node) => node.type === 'event').map((node) => node.eventPoolIds?.length),
-    ).toEqual([4, 5, 5, 4])
+    ).toEqual([4, 4, 5])
     expect(nodesById.get('route_node_steady_mid_altar_check')?.nodeVariantPool?.map((variant) => variant.id)).toEqual([
       'variant_steady_mid_altar_gray',
       'variant_steady_mid_altar_bell',
@@ -558,10 +570,6 @@ describe('initial game data', () => {
     expect(nodesById.get('route_node_fracture_shop')?.nodeVariantPool?.map((variant) => variant.id)).toEqual([
       'variant_fracture_shop_incense_seal',
       'variant_fracture_shop_cleanse',
-    ])
-    expect(nodesById.get('route_node_late_event_after_shop')?.nodeVariantPool?.map((variant) => variant.id)).toEqual([
-      'variant_late_event_after_shop_guard_name',
-      'variant_late_event_after_shop_artifact',
     ])
     expect(nodesById.get('route_node_fracture_shop_boss_ante_rest')?.nodeVariantPool?.map((variant) => variant.id)).toEqual([
       'variant_fracture_rest_repair_form',
@@ -606,7 +614,7 @@ describe('initial game data', () => {
       sealMomentum: data.cards.filter((card) => card.tags.includes('seal_momentum')),
     }
 
-    expect(cardsByDirection.breakForm).toHaveLength(18)
+    expect(cardsByDirection.breakForm).toHaveLength(19)
     expect(cardsByDirection.askName).toHaveLength(10)
     expect(cardsByDirection.sealMomentum).toHaveLength(10)
     expect(data.cards.filter((card) => card.tags.includes('reward'))).toHaveLength(38)
@@ -615,7 +623,7 @@ describe('initial game data', () => {
     ).toHaveLength(7)
     expect(data.cards.filter((card) => card.rarity === 'rare')).toHaveLength(5)
     expect(data.cards.filter((card) => card.rarity === 'uncommon')).toHaveLength(21)
-    expect(data.cards.filter((card) => card.rarity === 'common')).toHaveLength(22)
+    expect(data.cards.filter((card) => card.rarity === 'common')).toHaveLength(23)
     expect(
       data.cards.filter((card) =>
         card.effects.some(

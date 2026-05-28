@@ -193,7 +193,7 @@ function getVerdictImpact(
     return '削籍判词：榜裂 +1，下一场开局墨 +1、首回合香火 +1'
   }
 
-  return '削籍判词：榜裂 +1，加入裂形符；下一战开局上手'
+  return '削籍判词：榜裂 +1，加入断名符；下一战开局上手'
 }
 
 function getDoomRiskHint(currentDoom: number) {
@@ -215,7 +215,7 @@ function getRegisterImpact(offer: TutorialVerdictOffer, t: VerdictPageProps['t']
 
   return specialRule
     ? `专属登簿：${t(specialRule.nameKey)}`
-    : '通用登簿：本幕段最多 3 次，每场首次正名墨 +1'
+    : '专属登簿：写入残榜，当前对象不会生成普通登簿'
 }
 
 function getSpecialRegisterRule(enemyDefinitionId: string) {

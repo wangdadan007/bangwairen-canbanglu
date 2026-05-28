@@ -242,6 +242,20 @@
           "encounter_pool_unlit_temple_warden_return"
         ],
         "routeTendencyIds": ["catalogue"],
+        "nextNodeIds": ["route_node_catalogue_direct_boss_ante_event"]
+      },
+      {
+        "id": "route_node_catalogue_direct_boss_ante_event",
+        "type": "event",
+        "nameKey": "route.node.catalogue_direct_boss_ante_event.name",
+        "descriptionKey": "route.node.catalogue_direct_boss_ante_event.description",
+        "eventPoolIds": [
+          "event_covered_name_stable",
+          "event_lost_altar_bell",
+          "event_bound_artifact_case",
+          "event_cinnabar_scribe"
+        ],
+        "routeTendencyIds": ["catalogue", "supply"],
         "nextNodeIds": ["route_node_catalogue_final_pollution"]
       },
       {
@@ -432,7 +446,7 @@
           "encounter_multi_fleeing_horse_louse"
         ],
         "routeTendencyIds": ["fracture"],
-        "nextNodeIds": ["route_node_late_event"]
+        "nextNodeIds": ["route_node_third_elite"]
       },
       {
         "id": "route_node_fracture_shop_fouled_pressure",
@@ -447,49 +461,6 @@
           "encounter_multi_offering_table_mouse"
         ],
         "routeTendencyIds": ["fracture", "high_pressure"],
-        "nextNodeIds": ["route_node_late_event_after_shop"]
-      },
-      {
-        "id": "route_node_late_event",
-        "type": "event",
-        "nameKey": "route.node.late_event.name",
-        "descriptionKey": "route.node.late_event.description",
-        "eventPoolIds": [
-          "event_fouled_page_bundle",
-          "event_covered_name_stable",
-          "event_bound_artifact_case",
-          "event_lost_altar_bell",
-          "event_cracked_registry_needle"
-        ],
-        "routeTendencyIds": ["fracture", "supply"],
-        "nextNodeIds": ["route_node_third_elite"]
-      },
-      {
-        "id": "route_node_late_event_after_shop",
-        "type": "event",
-        "nameKey": "route.node.late_event_after_shop.name",
-        "descriptionKey": "route.node.late_event_after_shop.description",
-        "nodeVariantPool": [
-          {
-            "id": "variant_late_event_after_shop_guard_name",
-            "labelKey": "route.variant.late_event_after_shop.guard_name.label",
-            "descriptionKey": "route.variant.late_event_after_shop.guard_name.description",
-            "routeTendencyIds": ["fracture", "supply"]
-          },
-          {
-            "id": "variant_late_event_after_shop_artifact",
-            "labelKey": "route.variant.late_event_after_shop.artifact.label",
-            "descriptionKey": "route.variant.late_event_after_shop.artifact.description",
-            "routeTendencyIds": ["fracture", "supply"]
-          }
-        ],
-        "eventPoolIds": [
-          "event_covered_name_stable",
-          "event_bound_artifact_case",
-          "event_lost_altar_bell",
-          "event_cracked_registry_needle"
-        ],
-        "routeTendencyIds": ["fracture", "supply"],
         "nextNodeIds": ["route_node_fracture_shop_boss_ante_rest"]
       },
       {

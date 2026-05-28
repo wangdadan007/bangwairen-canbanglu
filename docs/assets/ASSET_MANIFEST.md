@@ -109,7 +109,7 @@ T99 按用户要求不生成 AI 图片，未新增第三方素材、字体、音
 
 | ID | 类别 | 对象 | 资产需求 | 优先级 | 当前替代 | 授权要求 |
 |---|---|---|---|---|---|---|
-| VIS-T99-ROLE-ANCHORS | 角色 / UI | 衡简 / 照微 / 莲烬 | 三角色半身方向、起始法宝符号、玩家锚点姿态差异 | P1 | CSS 程序化剪影、色彩与法宝 cue | 项目自有；当前不是正式立绘 |
+| VIS-T99-ROLE-ANCHORS | 角色 / UI | 衡简 / 照微 / 莲烬 | 三角色程序化锚点方向、起始法宝符号、玩家锚点姿态差异；后续 AI 源图规格见 4.6 | P1 | CSS 程序化剪影、色彩与法宝 cue | 项目自有；当前不是正式立绘 |
 | VIS-T99-PAPER-WRAITH-PLACEHOLDER | 敌人 | 纸面鬼 / 无名纸祟 | 撕纸、残名、低压案影和教学怪低威胁轮廓 | P1 | CSS 敌人压案区撕纸层 | 项目自有；当前不是正式敌人图 |
 | VIS-T99-REGISTRY-THIEF-PLACEHOLDER | Boss | 窃榜使 | 高体量剪影、撕榜竖带、双重红印、终审压案环 | P1 | CSS Boss 压案层 + Phaser 程序化案面 | 项目自有；当前不是正式 Boss 图 |
 | VIS-T99-VISUAL-DIRECTION-SPEC | 规格 | 第一章角色 / 敌人方向 | 视觉方向草案、禁区、程序化占位说明和后续正式资产边界 | P1 | `docs/design/CHAPTER_ONE_T99_VISUAL_DIRECTION_AND_PLACEHOLDERS.md` | 项目自有文档；不含图片资产 |
@@ -144,7 +144,7 @@ T101 定稿战斗首屏构图和后续美术落位，并把 active battle shell 
 
 | ID | 类别 | 对象 | 资产需求 | 优先级 | 当前替代 | 授权要求 |
 |---|---|---|---|---|---|---|
-| VIS-T101-ROLE-LEFT-STAGE-SPEC | 规格 / 角色 | 衡简 / 照微 / 莲烬 | 左侧执簿者半身或 3/4 身落位，含己形条、少量状态和起始法宝身份 cue | P1 | `docs/design/CHAPTER_ONE_T101_BATTLE_SCREEN_ART_PLACEMENT.md` | 当前仅文档规格；后续 AI 或人工图必须另行登记授权 |
+| VIS-T101-ROLE-LEFT-STAGE-SPEC | 规格 / 角色 | 衡简 / 照微 / 莲烬 | 左侧执簿者战斗图落位；源图优先全身 / 近全身，接入时按主舞台缩放或少量裁切，含己形条、少量状态和起始法宝身份 cue | P1 | `docs/design/CHAPTER_ONE_T101_BATTLE_SCREEN_ART_PLACEMENT.md` | 当前仅文档规格；后续 AI 或人工图必须另行登记授权 |
 | VIS-T101-ENEMY-RIGHT-STAGE-SPEC | 规格 / 敌人 | 纸面鬼 / 窃榜使 / 第一章敌人 | 右侧敌人主体、敌形条、来势 / 异动、名格和正名状态贴身信息规格 | P1 | `docs/design/CHAPTER_ONE_T101_BATTLE_SCREEN_ART_PLACEMENT.md` | 当前仅文档规格；后续 AI 或人工图必须另行登记授权 |
 | VIS-T101-ACTION-LANE-FEEDBACK-SPEC | 规格 / 表现 | 破形 / 问名 / 正名 / 封势 / 异动 / 裁定 | 中央动作通道与 T100 六类反馈新落点规格 | P1 | `docs/design/CHAPTER_ONE_T101_BATTLE_SCREEN_ART_PLACEMENT.md` | 当前仅文档规格；后续特效贴图、序列帧或参考图必须另行登记授权 |
 | VIS-T101-RESIDUAL-REGISTRY-SURFACE-SPEC | 规格 / UI 背景 | 残榜 | 残榜背景纹理、敌方名格 / 名札、问名 / 正名 / 裁定临时展开规格 | P1 | `docs/design/CHAPTER_ONE_T101_BATTLE_SCREEN_ART_PLACEMENT.md` | 当前仅文档规格；后续图片资产必须另行登记授权 |
@@ -155,6 +155,22 @@ T101 授权口径：
 - 本轮没有第三方素材，因此不登记任何外部来源或许可证。
 - 本轮新增的是美术落位规格和程序化 UI 重排，不是正式角色立绘、正式敌人立绘、正式背景、正式 UI 图标、正式特效或宣传素材。
 - 若后续启用 AI 概念候选，所有图片仍必须先标记为“概念候选 / 不入正式构建”，并补齐模型 / 平台、生成日期、提示词摘要、参考图授权、人工审核和是否进入构建字段。
+
+### 4.6 AI 概念图生产规格与安全流程
+
+本节登记 AI 概念候选生产规格入口。当前只新增提示词、安全流程、命名规则和人工筛选标准；未生成 AI 图片，未新增第三方素材、字体、音频、视频或正式图片文件，当前没有任何新素材进入构建。
+
+| ID | 类别 | 对象 | 资产需求 | 优先级 | 当前替代 | 授权要求 |
+|---|---|---|---|---|---|---|
+| VIS-AI-CONCEPT-PROMPT-SPEC | 规格 / AI 概念候选 | 衡简 / 照微 / 莲烬 / 纸面鬼 / 窃榜使 / UI token | 第一轮 AI 概念图 prompt、禁区、构图、尺寸、批次、命名、contact sheet 和审图标准 | P1 | `docs/design/CHAPTER_ONE_AI_CONCEPT_ART_PRODUCTION_SPEC.md` | 当前仅文档规格；后续生成图必须按本台账补齐授权与人工审核 |
+
+AI 概念候选安全口径：
+
+- 所有输出默认只进入“概念候选 / 不入正式构建”。
+- 默认不视为可商用、可修改或项目自有正式素材，直到模型 / 平台条款、参考图授权和人工审核全部补齐。
+- 第一轮源图优先全身或近全身战斗 sprite，实际战斗页接入时再按 T101 落位缩放、裁切和截图复核。
+- 候选图不得从 `src` 引用，不得进入 Steam 页面、README 宣传位、商店图或正式构建资源。
+- 若使用参考图，必须先登记参考图来源和授权；授权不清不得使用。
 
 ## 5. 新素材登记表
 

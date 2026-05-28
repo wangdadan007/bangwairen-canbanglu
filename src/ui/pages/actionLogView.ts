@@ -438,7 +438,7 @@ export function createRunRitualFeedback(run: TutorialRunState): RitualFeedback |
       tone: 'verdict',
       label: '裁定反馈',
       title: `${t(run.pendingVerdict.enemyNameKey)}待裁定`,
-      detail: '归册对象已入案，下一步只能在登簿、朱批、削籍中选择。',
+      detail: '归册对象已入案；普通怪裁定朱批 / 削籍，精英与 Boss 裁定登簿。',
       audioCue: 'verdict',
     }
   }
@@ -1740,7 +1740,7 @@ function getVerdictRecordDetail(record: TutorialRunState['verdict']['records'][n
   if (openingCards?.length) {
     return `榜裂 +${record.fractureDelta}${
       record.doomDelta ? `，劫数 +${record.doomDelta}` : ''
-    }，削籍符已入牌组，下一战开局上手。`
+    }，断名符已入牌组，下一战开局上手。`
   }
 
   return `榜裂 +${record.fractureDelta}，强收益已经写入牌组。`

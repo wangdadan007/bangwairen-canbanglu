@@ -37,6 +37,7 @@ import type {
   RouteNodeId,
   RouteState,
   TutorialRunState,
+  TutorialVerdictOptionId,
   VictorySettlement,
 } from '../types'
 
@@ -47,7 +48,7 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
       (encounter) => (encounter.enemySlots?.length ?? 1) > 1,
     )
 
-    expect(gameData.cards).toHaveLength(48)
+    expect(gameData.cards).toHaveLength(49)
     expect(rewardCards).toHaveLength(38)
     expect(gameData.artifacts).toHaveLength(11)
     expect(gameData.events).toHaveLength(9)
@@ -106,7 +107,14 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
 
     expect(result.run.status).toBe('complete')
     expect(summary.catalogueCount).toBeGreaterThan(0)
-    expect(summary.verdictRegisterCount).toBeGreaterThan(0)
+    expect(summary.verdictRedInkCount + summary.verdictEraseCount).toBeGreaterThan(0)
+    expect(result.run.verdict.registerEntries).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          registerRuleId: 'register_common_docket',
+        }),
+      ]),
+    )
     expect(
       summary.verdictRegisterCount + summary.verdictRedInkCount + summary.verdictEraseCount,
     ).toBe(summary.catalogueCount)
@@ -117,6 +125,53 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
     expect(result.run.pendingArtifactOffer).toBeUndefined()
     expect(result.run.artifacts.artifacts).toHaveLength(3)
     expect(result.run.deckCards.length).toBeGreaterThan(0)
+  })
+
+  it('keeps T102 ordinary catalogue pressure on red ink or erase instead of common register', () => {
+    const redInkResult = completeRouteSmoke({
+      route: gameData.routes[0],
+      seed: 73,
+      chooseSettlement: () => 'catalogue',
+      chooseVerdictOption: (offer) =>
+        offer.options.find((option) => option.id === 'register')?.id ??
+        offer.options.find((option) => option.id === 'red_ink')?.id ??
+        offer.options[0]?.id,
+    })
+    const eraseResult = completeRouteSmoke({
+      route: gameData.routes[0],
+      seed: 79,
+      chooseSettlement: () => 'catalogue',
+      chooseVerdictOption: (offer) =>
+        offer.options.find((option) => option.id === 'register')?.id ??
+        offer.options.find((option) => option.id === 'erase_gain_ink')?.id ??
+        offer.options.find((option) => option.id === 'erase')?.id ??
+        offer.options[0]?.id,
+    })
+    const redInkSummary = createTutorialRunSummary(redInkResult.run)
+    const eraseSummary = createTutorialRunSummary(eraseResult.run)
+
+    expect(redInkResult.run.status).toBe('complete')
+    expect(eraseResult.run.status).toBe('complete')
+    expect(redInkResult.run.verdict.registerEntries).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          registerRuleId: 'register_common_docket',
+        }),
+      ]),
+    )
+    expect(eraseResult.run.verdict.registerEntries).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          registerRuleId: 'register_common_docket',
+        }),
+      ]),
+    )
+    expect(redInkSummary.verdictRedInkCount).toBeGreaterThan(0)
+    expect(redInkSummary.verdictEraseCount).toBe(0)
+    expect(redInkSummary.verdictRedInkCount).toBeLessThanOrEqual(7)
+    expect(eraseSummary.verdictEraseCount).toBeGreaterThan(0)
+    expect(eraseSummary.verdictRedInkCount).toBe(0)
+    expect(eraseSummary.fracture).toBeGreaterThanOrEqual(eraseSummary.verdictEraseCount)
   })
 
   it('can complete all three T64 main routes with each T62 playable role', () => {
@@ -254,12 +309,17 @@ function completeRouteSmoke({
   roleId,
   chooseRouteNode,
   chooseSettlement,
+  chooseVerdictOption,
 }: {
   readonly route: RouteDefinition
   readonly seed: number
   readonly roleId?: PlayableRoleId
   readonly chooseRouteNode?: (nodes: readonly RouteNodeDefinition[], context: RouteChoiceContext) => RouteNodeId
   readonly chooseSettlement: (encounterId: string, battleIndex: number) => VictorySettlement
+  readonly chooseVerdictOption?: (
+    offer: NonNullable<TutorialRunState['pendingVerdict']>,
+    run: TutorialRunState,
+  ) => TutorialVerdictOptionId | undefined
 }) {
   let routeState = createInitialRouteState(route, seed)
   const initialRoute = routeState
@@ -270,7 +330,7 @@ function completeRouteSmoke({
     gameData.artifacts,
     roleId,
   )
-  run = resolvePendingRunChoices(run, routeState)
+  run = resolvePendingRunChoices(run, routeState, chooseVerdictOption)
   let battleIndex = 0
   let routeChoiceIndex = 0
 
@@ -323,7 +383,7 @@ function completeRouteSmoke({
         run.resources,
       )
       routeState = completeCurrentRouteNode(route, routeState)
-      run = resolvePendingRunChoices(run, routeState)
+      run = resolvePendingRunChoices(run, routeState, chooseVerdictOption)
       battleIndex += 1
       continue
     }
@@ -342,7 +402,7 @@ function completeRouteSmoke({
       }
 
       routeState = completeCurrentRouteNode(route, routeState)
-      run = resolvePendingRunChoices(run, routeState)
+      run = resolvePendingRunChoices(run, routeState, chooseVerdictOption)
       continue
     }
 
@@ -365,7 +425,7 @@ function completeRouteSmoke({
         routeNodeId: node?.id,
       })
       routeState = completeCurrentRouteNode(route, routeState)
-      run = resolvePendingRunChoices(run, routeState)
+      run = resolvePendingRunChoices(run, routeState, chooseVerdictOption)
       continue
     }
 
@@ -410,6 +470,10 @@ function createRouteSequenceChooser(routeNodeIds: readonly RouteNodeId[]) {
 function resolvePendingRunChoices(
   run: TutorialRunState,
   routeState?: RouteState,
+  chooseVerdictOption?: (
+    offer: NonNullable<TutorialRunState['pendingVerdict']>,
+    run: TutorialRunState,
+  ) => TutorialVerdictOptionId | undefined,
 ): TutorialRunState {
   let nextRun = createTutorialArtifactOfferIfNeeded(run, gameData.artifacts, {
     routeTendencyIds: routeState?.routeTendencyIds ?? [],
@@ -418,15 +482,16 @@ function resolvePendingRunChoices(
   for (let index = 0; index < 10; index += 1) {
     if (nextRun.pendingVerdict) {
       const preferredVerdictOption =
-        nextRun.pendingVerdict.options.find((option) => option.id === 'register') ??
-        nextRun.pendingVerdict.options.find((option) => option.id === 'red_ink') ??
-        nextRun.pendingVerdict.options[0]
+        chooseVerdictOption?.(nextRun.pendingVerdict, nextRun) ??
+        nextRun.pendingVerdict.options.find((option) => option.id === 'register')?.id ??
+        nextRun.pendingVerdict.options.find((option) => option.id === 'red_ink')?.id ??
+        nextRun.pendingVerdict.options[0]?.id
 
       if (!preferredVerdictOption) {
         throw new Error(`No verdict option available: ${nextRun.pendingVerdict.id}`)
       }
 
-      nextRun = resolveTutorialVerdict(nextRun, preferredVerdictOption.id)
+      nextRun = resolveTutorialVerdict(nextRun, preferredVerdictOption)
       continue
     }
 

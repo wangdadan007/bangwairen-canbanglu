@@ -193,6 +193,37 @@
     "rarity": "common"
   },
   {
+    "id": "card_sever_name_talisman",
+    "nameKey": "card.sever_name_talisman.name",
+    "descriptionKey": "card.sever_name_talisman.description",
+    "rulesTextKey": "card.sever_name_talisman.rules",
+    "cost": 1,
+    "type": "talisman",
+    "unlockStage": "stage_run_resources",
+    "tags": [
+      "verdict",
+      "erase",
+      "fracture",
+      "break_form"
+    ],
+    "effects": [
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 5
+      },
+      {
+        "type": "BREAK_SHAPE",
+        "target": "selected_enemy",
+        "amount": 3,
+        "condition": {
+          "type": "TARGET_HAS_REVEALED_NAME_SLOT"
+        }
+      }
+    ],
+    "rarity": "common"
+  },
+  {
     "id": "card_heavy_split_form_talisman",
     "nameKey": "card.heavy_split_form_talisman.name",
     "descriptionKey": "card.heavy_split_form_talisman.description",

@@ -12,7 +12,7 @@ import { gameData } from '../data'
 import type { ArtifactBindingStatus, ArtifactId, EnemyDefinition } from '../types'
 
 describe('T12 verdict MVP', () => {
-  it('creates a verdict offer only after catalogue settlement with a named target', () => {
+  it('creates an ordinary verdict offer only after catalogue settlement with a named target', () => {
     const run = createInitialTutorialRunState(gameData.tutorialUnlocks)
     const paperWraith = gameData.enemies[0]
     const catalogueRun = advanceTutorialRun(
@@ -39,7 +39,6 @@ describe('T12 verdict MVP', () => {
         encounterId: 'encounter_tutorial_paper_wraith',
         enemyDefinitionId: 'enemy_paper_wraith',
         options: expect.arrayContaining([
-          expect.objectContaining({ id: 'register', choiceId: 'register' }),
           expect.objectContaining({ id: 'red_ink', choiceId: 'red_ink' }),
           expect.objectContaining({ id: 'erase', choiceId: 'erase' }),
           expect.objectContaining({ id: 'erase_gain_ink', choiceId: 'erase' }),
@@ -47,12 +46,29 @@ describe('T12 verdict MVP', () => {
         ]),
       }),
     )
+    expect(catalogueOptionIds).not.toContain('register')
     expect(catalogueOptionIds).not.toContain('erase_heavy_split_form')
     expect(catalogueRun.pendingVerdict?.revealedNameKeys).toEqual([
       'enemy.paper_wraith.name_slot.0',
       'enemy.paper_wraith.name_slot.1',
     ])
     expect(vanquishRun.pendingVerdict).toBeUndefined()
+  })
+
+  it('offers only dedicated register for elite and boss catalogue verdicts', () => {
+    const eliteRun = createVerdictRun(
+      gameData.enemies.find((enemy) => enemy.id === 'enemy_incense_clerk')!,
+    )
+    const bossRun = createVerdictRun(
+      gameData.enemies.find((enemy) => enemy.id === 'enemy_registry_thief')!,
+    )
+
+    expect(eliteRun.pendingVerdict?.options).toEqual([
+      expect.objectContaining({ id: 'register', choiceId: 'register' }),
+    ])
+    expect(bossRun.pendingVerdict?.options).toEqual([
+      expect.objectContaining({ id: 'register', choiceId: 'register' }),
+    ])
   })
 
   it('does not offer next-battle erase payoff after the final encounter', () => {
@@ -80,7 +96,7 @@ describe('T12 verdict MVP', () => {
     )
   })
 
-  it('does not offer duplicate ordinary register in the same segment', () => {
+  it('does not offer ordinary register even when a legacy common docket exists', () => {
     const initialRun = createInitialTutorialRunState(gameData.tutorialUnlocks)
     const runWithCommonDocket = {
       ...initialRun,
@@ -110,9 +126,29 @@ describe('T12 verdict MVP', () => {
     expect(optionIds).toContain('red_ink')
   })
 
-  it('resolves ordinary register as a common narrow trigger instead of stat growth', () => {
+  it('rejects ordinary register verdicts after T102', () => {
     const run = createVerdictRun()
-    const nextRun = resolveTutorialVerdict(run, 'register')
+
+    expect(() => resolveTutorialVerdict(run, 'register')).toThrow(
+      'Tutorial verdict option is not available: register',
+    )
+  })
+
+  it('keeps legacy common docket triggers compatible instead of generating new ones', () => {
+    const initialRun = createInitialTutorialRunState(gameData.tutorialUnlocks)
+    const nextRun = {
+      ...initialRun,
+      verdict: {
+        ...initialRun.verdict,
+        registerEntries: [
+          {
+            ...createRegisterEntry('register_common_docket'),
+            maxTriggerCount: 3,
+            remainingTriggerCount: 3,
+          },
+        ],
+      },
+    }
     const state = createInitialBattleState({
       cardDefinitions: gameData.cards,
       enemyDefinition: gameData.enemies[1],
@@ -124,7 +160,6 @@ describe('T12 verdict MVP', () => {
       registerEntries: nextRun.verdict.registerEntries,
     })
 
-    expect(nextRun.pendingVerdict).toBeUndefined()
     expect(nextRun.verdict.maxIncenseBonus).toBe(0)
     expect(nextRun.resources.fracture).toBe(0)
     expect(nextRun.verdict.registerEntries).toEqual([
@@ -132,19 +167,11 @@ describe('T12 verdict MVP', () => {
         encounterId: 'encounter_tutorial_paper_wraith',
         enemyDefinitionId: 'enemy_paper_wraith',
         registerRuleId: 'register_common_docket',
-        ruleNameKey: 'verdict.register.rule.common_docket.name',
         maxTriggerCount: 3,
         remainingTriggerCount: 3,
       }),
     ])
-    expect(nextRun.verdict.records[0]).toEqual(
-      expect.objectContaining({
-        choiceId: 'register',
-        registerRuleId: 'register_common_docket',
-        maxIncenseBonusDelta: 0,
-        maxFormBonusDelta: 0,
-      }),
-    )
+    expect(nextRun.verdict.records).toHaveLength(0)
     expect(nextRun.playerForm).toEqual({
       current: 72,
       max: 72,
@@ -221,25 +248,25 @@ describe('T12 verdict MVP', () => {
     )
   })
 
-  it('resolves erase by adding fracture and a minimal card reward', () => {
+  it('resolves erase by adding fracture and a sever-name card reward', () => {
     const run = createVerdictRun()
     const nextRun = resolveTutorialVerdict(run, 'erase')
 
     expect(nextRun.pendingVerdict).toBeUndefined()
     expect(nextRun.resources.fracture).toBe(1)
-    expect(nextRun.deckDefinitionIds.slice(-1)).toEqual(['card_split_form_talisman'])
+    expect(nextRun.deckDefinitionIds.slice(-1)).toEqual(['card_sever_name_talisman'])
     expect(nextRun.deckCards[nextRun.deckCards.length - 1]?.definitionId).toBe(
-      'card_split_form_talisman',
+      'card_sever_name_talisman',
     )
     expect(nextRun.verdict.records[0]).toEqual(
       expect.objectContaining({
         choiceId: 'erase',
         fractureDelta: 1,
-        addedCardDefinitionId: 'card_split_form_talisman',
+        addedCardDefinitionId: 'card_sever_name_talisman',
         nextBattleStartBonus: {
           ink: 0,
           incense: 0,
-          openingHandCardDefinitionIds: ['card_split_form_talisman'],
+          openingHandCardDefinitionIds: ['card_sever_name_talisman'],
         },
       }),
     )
@@ -251,7 +278,7 @@ describe('T12 verdict MVP', () => {
       openingHandDefinitionIds: nextRun.nextBattleStartBonus?.openingHandCardDefinitionIds,
     })
 
-    expect(nextBattle.hand.map((card) => card.definitionId)).toContain('card_split_form_talisman')
+    expect(nextBattle.hand.map((card) => card.definitionId)).toContain('card_sever_name_talisman')
   })
 
   it('resolves the first chapter erase payoff variants', () => {
@@ -263,7 +290,7 @@ describe('T12 verdict MVP', () => {
       doom: 0,
       fracture: 1,
     })
-    expect(inkRun.deckDefinitionIds).not.toContain('card_split_form_talisman')
+    expect(inkRun.deckDefinitionIds).not.toContain('card_sever_name_talisman')
     expect(inkRun.verdict.records[0]).toEqual(
       expect.objectContaining({
         choiceId: 'erase',

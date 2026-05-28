@@ -614,15 +614,15 @@ describe('T17 artifact foundation', () => {
     const afterErase = resolveTutorialVerdict(afterBattle, 'erase')
 
     expect(afterErase.deckDefinitionIds.slice(-2)).toEqual([
-      'card_split_form_talisman',
+      'card_sever_name_talisman',
       'card_split_form_talisman',
     ])
     expect(afterErase.deckCards.slice(-2).map((card) => card.definitionId)).toEqual([
-      'card_split_form_talisman',
+      'card_sever_name_talisman',
       'card_split_form_talisman',
     ])
     expect(afterErase.verdict.records[0]?.addedCardDefinitionIds).toEqual([
-      'card_split_form_talisman',
+      'card_sever_name_talisman',
       'card_split_form_talisman',
     ])
   })
