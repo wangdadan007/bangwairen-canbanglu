@@ -156,6 +156,18 @@
     "id": "encounter_pool_offering_table_afterimage_return",
     "nameKey": "encounter.pool.offering_table_afterimage_return.name",
     "enemyDefinitionId": "enemy_offering_table_afterimage",
+    "enemySlots": [
+      {
+        "id": "offering_table",
+        "enemyDefinitionId": "enemy_offering_table_afterimage",
+        "role": "primary"
+      },
+      {
+        "id": "ash_louse",
+        "enemyDefinitionId": "enemy_incense_ash_louse",
+        "role": "support"
+      }
+    ],
     "tutorialOrder": 19,
     "lessonKey": "encounter.pool.offering_table_afterimage_return.lesson",
     "completionKey": "encounter.pool.offering_table_afterimage_return.completion",

@@ -62,6 +62,7 @@ describe('initial game data', () => {
     expect(getArtifactDefinition('artifact_whip_fragment', data)?.triggerType).toBe(
       'battle_trigger',
     )
+    expect(getArtifactDefinition('artifact_whip_fragment', data)?.bindCondition.requiredCount).toBe(5)
     expect(getArtifactDefinition('artifact_cinnabar_dou', data)?.chargesPerBattle).toBe(1)
     expect(getArtifactDefinition('artifact_fracture_needle', data)?.triggerType).toBe(
       'verdict_modifier',
@@ -394,6 +395,14 @@ describe('initial game data', () => {
       'enemy_fire_fleeing_name',
       'enemy_dipper_empty_shell',
       'enemy_registry_thief',
+    ])
+    expect(
+      data.encounters
+        .find((encounter) => encounter.id === 'encounter_pool_offering_table_afterimage_return')
+        ?.enemySlots?.map((slot) => slot.enemyDefinitionId),
+    ).toEqual([
+      'enemy_offering_table_afterimage',
+      'enemy_incense_ash_louse',
     ])
   })
 

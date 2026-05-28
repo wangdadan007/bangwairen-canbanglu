@@ -86,7 +86,7 @@ describe('core type contracts', () => {
       },
       bindCondition: {
         kind: 'catalogue_named_enemy',
-        requiredCount: 3,
+        requiredCount: 5,
         descriptionKey: 'artifact.whip_fragment.bind',
       },
       overloadCondition: {

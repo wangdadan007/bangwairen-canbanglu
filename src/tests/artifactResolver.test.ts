@@ -293,16 +293,38 @@ describe('T17 artifact foundation', () => {
         amount: 8,
       },
     ])
+    const earlyCatalogueProgressed = advanceArtifactProgress(artifacts, [
+      {
+        kind: 'catalogue_named_enemy',
+        amount: 3,
+      },
+    ])
+    const catalogueProgressed = advanceArtifactProgress(artifacts, [
+      {
+        kind: 'catalogue_named_enemy',
+        amount: 5,
+      },
+    ])
     const mirror = progressed.artifacts.find(
       (artifact) => artifact.definitionId === 'artifact_bone_mirror',
     )
     const whip = progressed.artifacts.find(
       (artifact) => artifact.definitionId === 'artifact_whip_fragment',
     )
+    const earlyCatalogueWhip = earlyCatalogueProgressed.artifacts.find(
+      (artifact) => artifact.definitionId === 'artifact_whip_fragment',
+    )
+    const catalogueWhip = catalogueProgressed.artifacts.find(
+      (artifact) => artifact.definitionId === 'artifact_whip_fragment',
+    )
 
     expect(mirror?.bindingStatus).toBe('bound')
     expect(mirror?.bindProgress).toBe(8)
     expect(whip?.bindingStatus).toBe('unbound')
+    expect(earlyCatalogueWhip?.bindingStatus).toBe('unbound')
+    expect(earlyCatalogueWhip?.bindProgress).toBe(3)
+    expect(catalogueWhip?.bindingStatus).toBe('bound')
+    expect(catalogueWhip?.bindProgress).toBe(5)
   })
 
   it('records overload windows without resolving full backlash yet', () => {

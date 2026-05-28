@@ -56,6 +56,7 @@ describe('T42 chapter-one long-flow smoke and coverage', () => {
     expect(gameData.enemies.filter((enemy) => enemy.tier === 'elite')).toHaveLength(3)
     expect(gameData.enemies.filter((enemy) => enemy.tier === 'boss')).toHaveLength(1)
     expect(multiEnemyEncounters.map((encounter) => encounter.id)).toEqual([
+      'encounter_pool_offering_table_afterimage_return',
       'encounter_multi_paper_wraith_imp',
       'encounter_multi_thief_mouse_louse',
       'encounter_multi_offering_table_mouse',

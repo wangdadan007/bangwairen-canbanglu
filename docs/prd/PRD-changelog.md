@@ -10,6 +10,8 @@
 
 - 用户复盘第一章五条具体路线后判断：不需要所有路线节点数完全一样，但归册双精英直压体验偏薄，裂榜两条线全程节点偏长。
 - 用户确认把“设计删减和增加的节点内容”作为 T104。
+- 用户试玩复盘后判断：打神鞭残节“本局累计归册 3 名已正名敌人后认主”偏快，纳入 T104 统一调到 5 名敌人。
+- 用户试玩发现第 5 场可能抽到“池战：供桌残像再审”，但该遭遇只有 12 形供桌残像一个敌人，作为第五场战斗太弱，纳入 T104 一并优化。
 
 ### 修改
 
@@ -23,18 +25,23 @@
 - `src/data/routes.json` 已新增「卷末旁证」运行节点，并移除两条裂榜线旧「终审前残页」运行节点，确保删减节点不再出现在路线页。
 - `src/data/localization/zh-CN.json` 已补齐「卷末旁证」节点名 / 描述，并同步裂榜直连后的节点描述。
 - `src/tests/routeResolver.test.ts` 已新增 T104 具体支线计数测试；`src/tests/data.test.ts` 已同步事件池和旧节点绕开断言；`src/tests/eventResolver.test.ts` 已把 seeded 事件测试锚点迁到「卷末旁证」。
-- `PROJECT_PLAN.md` 已将 T104 标记为已完成，并把当前推荐下一步调整为本地试玩复核路线体感。
+- `artifact_whip_fragment` 打神鞭残节认主条件从累计归册 3 名已正名敌人提高到 5 名；中文文案、`demo_design_v0.4.md` 和测试同步 5 名门槛。
+- `encounter_pool_offering_table_afterimage_return` 从单敌人供桌残像改为供桌残像 + 香灰虱的两敌组合；中文遭遇说明同步为回形拖延与香火压力。
+- `PROJECT_PLAN.md` 已将 T104 标记为已完成，并把路线节点、打神鞭认主门槛和供桌残像再审压力小调统一收在 T104。
 
 ### 保留
 
 - 不新增敌人、精英、Boss、卡牌、法宝、事件定义、章节、生产依赖、正式素材或音频。
-- 不改变前三场固定教学、三主线选择、三角色软倾向、角色全路线可走、伏诛 / 归册奖励同池、T102 裁定分层、T103 断名符削籍或法宝认主规则。
+- 不改变前三场固定教学、三主线选择、三角色软倾向、角色全路线可走、伏诛 / 归册奖励同池、T102 裁定分层、T103 断名符削籍、法宝获得次数或其他法宝认主规则。
+- 不提高供桌残像自身形值，不改变供桌残像回形异动；只通过搭配香灰虱提高第五场后的池战压力。
 - 不把五条路线硬拉成完全相同节点数；T104 后全程节点分别为稳行商店 10、稳行休整 10、归册双精英直压 11、归册事件商店 12、裂榜事件休整 12、裂榜塞卷商店 12。
 
 ### 验证
 
 - `npm run test -- --run src/tests/routeResolver.test.ts src/tests/data.test.ts src/tests/chapterOneLongFlow.test.ts` 通过，3 个测试文件、34 个用例。
 - `npm run test -- --run src/tests/eventResolver.test.ts` 通过，1 个测试文件、6 个用例。
+- `npm run test -- --run src/tests/data.test.ts src/tests/artifactResolver.test.ts src/tests/types.test.ts` 通过，3 个测试文件、42 个用例。
+- `npm run test -- --run src/tests/data.test.ts src/tests/routeResolver.test.ts src/tests/chapterOneLongFlow.test.ts src/tests/multiEnemyEncounter.test.ts` 通过，4 个测试文件、40 个用例。
 - `npm run typecheck` 通过。
 - `npm run lint` 通过。
 - `npm run test` 通过，36 个测试文件、252 个用例。
