@@ -1,5 +1,8 @@
 import { appendLog } from '../log/actionLog'
+import { extendNextAltarForDiscernment } from './altarExtensionResolver'
 import type {
+  AltarId,
+  AltarSlot,
   CombatState,
   EnemyInstanceId,
   EnemyIntentDefinition,
@@ -8,7 +11,8 @@ import type {
 
 export type IntentDiscernResult =
   | 'current_revealed'
-  | 'next_previewed'
+  | 'altar_extended'
+  | 'no_altar'
   | 'no_target'
   | 'no_intent'
 
@@ -16,7 +20,10 @@ export interface IntentDiscernment {
   readonly state: CombatState
   readonly result: IntentDiscernResult
   readonly intent?: EnemyIntentDefinition
-  readonly previewTurnOffset?: 0 | 1
+  readonly previewTurnOffset?: 0
+  readonly altarId?: AltarId
+  readonly altarSlot?: AltarSlot
+  readonly remainingAltarTriggers?: number
 }
 
 export interface DiscernEnemyIntentInput {
@@ -29,7 +36,11 @@ export function discernEnemyIntent(
   state: CombatState,
   input: DiscernEnemyIntentInput,
 ): CombatState {
-  const discernment = applyEnemyIntentDiscernment(state, input.targetEnemyInstanceId)
+  const discernment = applyEnemyIntentDiscernment(
+    state,
+    input.targetEnemyInstanceId,
+    input.sourceId,
+  )
 
   return appendLog(discernment.state, {
     type: 'INTENT_DISCERNED',
@@ -41,6 +52,9 @@ export function discernEnemyIntent(
       intentId: discernment.intent?.id ?? null,
       intentKind: discernment.intent?.kind ?? null,
       previewTurnOffset: discernment.previewTurnOffset ?? null,
+      altarId: discernment.altarId ?? null,
+      altarSlot: discernment.altarSlot ?? null,
+      remainingAltarTriggers: discernment.remainingAltarTriggers ?? null,
     },
   })
 }
@@ -48,6 +62,7 @@ export function discernEnemyIntent(
 export function applyEnemyIntentDiscernment(
   state: CombatState,
   targetEnemyInstanceId?: EnemyInstanceId,
+  sourceId: GameEntityId = 'player',
 ): IntentDiscernment {
   const target = selectIntentTarget(state, targetEnemyInstanceId)
 
@@ -81,21 +96,15 @@ export function applyEnemyIntentDiscernment(
     }
   }
 
-  if (!target.nextIntent) {
-    return {
-      state,
-      result: 'no_intent',
-    }
-  }
+  const extension = extendNextAltarForDiscernment(state, sourceId)
 
   return {
-    state: replaceIntentTarget(state, {
-      ...target,
-      nextIntentPreview: target.nextIntent,
-    }),
-    result: 'next_previewed',
-    intent: target.nextIntent,
-    previewTurnOffset: 1,
+    state: extension.state,
+    result: extension.altarId ? 'altar_extended' : 'no_altar',
+    intent: target.currentIntent,
+    altarId: extension.altarId,
+    altarSlot: extension.altarSlot,
+    remainingAltarTriggers: extension.remainingTriggers,
   }
 }
 

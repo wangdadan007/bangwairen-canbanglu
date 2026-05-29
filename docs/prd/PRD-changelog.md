@@ -1,8 +1,39 @@
 # PRD-changelog：需求变更记录
 
-版本：v8.12
+版本：v8.13
 日期：2026-05-28
 建议路径：`docs/prd/PRD-changelog.md`
+
+## v8.13 · 2026-05-28 · T107
+
+### 来源
+
+- 用户试玩反馈：常规“后一动”信息存在感弱，玩家既不容易看到，也很难影响当回合操作。
+- 用户确认删除常规玩家侧后一动展示，保留敌人内部行动队列；同时希望把辨势和三坛联系起来。
+
+### 修改
+
+- 玩家侧不再展示常规后一动预告槽，战斗 HUD 只把敌人本次行动作为主要决策信息。
+- 辨势仍优先揭开当前遮蔽行动；若本次行动已经明牌，则改为让下一个已布置坛位多保留 1 次触发，同一坛位同一回合最多续住一次。
+- 三坛状态新增剩余触发次数，续坛、续后触发和无坛可续均写入 actionLog / 战斗反馈。
+- 问名、照骨镜、缚名线轴等复用辨势的入口同步吃新规则。
+- T107 追加三坛适配口径：三坛是共享机制，不做角色锁；三坛增强首先加强阵法流，照微通过辨势续坛受益最大，衡简通过人坛 / 归册 / 朱批稳定收益受益次之，莲烬只吃通用收益，不改成三坛角色。
+- `PRD-gameplay.md`、`PRD-pages.md`、`PRD-checklist.md`、`PRD-content-scope.md` 和 `PROJECT_PLAN.md` 同步新口径。
+
+### 保留
+
+- 不改变敌人内部 `nextIntent` 行动队列和回合推进逻辑。
+- 不新增卡牌、敌人、法宝、事件、章节、生产依赖、正式素材或音频。
+- 不改变三坛触发窗口、同坛位替换规则、遮势揭示当前行动规则或问名基础收益。
+
+### 验证
+
+- `npm run test -- --run src/tests/nameResolver.test.ts src/tests/artifactResolver.test.ts src/tests/altarResolver.test.ts src/tests/enemyIntent.test.ts src/tests/actionLogView.test.ts src/tests/firstRunGuidance.test.ts src/tests/data.test.ts` 通过，7 个测试文件、95 个用例。
+- `npm run typecheck` 通过。
+- `npm run lint` 通过。
+- `npm run test` 通过，36 个测试文件、256 个用例。
+- `npm run build` 通过；Vite 仍保留单 chunk 超过 500 kB 的既有提示。
+- `git diff --check` 通过。
 
 ## v8.12 · 2026-05-28 · T106
 

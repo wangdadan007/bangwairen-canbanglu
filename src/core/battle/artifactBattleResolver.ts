@@ -172,7 +172,7 @@ function resolveAskNameArtifactTrigger(
     return resolveNameTetherSpindleTrigger(state, trigger, artifactId, target)
   }
 
-  const discernment = applyEnemyIntentDiscernment(state, target?.instanceId)
+  const discernment = applyEnemyIntentDiscernment(state, target?.instanceId, artifactId)
 
   return appendLog(discernment.state, {
     type: 'ARTIFACT_TRIGGERED',
@@ -184,6 +184,9 @@ function resolveAskNameArtifactTrigger(
       intentId: discernment.intent?.id ?? null,
       intentKind: discernment.intent?.kind ?? null,
       previewTurnOffset: discernment.previewTurnOffset ?? null,
+      altarId: discernment.altarId ?? null,
+      altarSlot: discernment.altarSlot ?? null,
+      remainingAltarTriggers: discernment.remainingAltarTriggers ?? null,
       boundBonus: getArtifactBindingStatus(state, artifactId) === 'bound' ? trigger.boundBonus : 0,
     },
   })
@@ -199,7 +202,7 @@ function resolveNameTetherSpindleTrigger(
   const isBound = getArtifactBindingStatus(state, artifactId) === 'bound'
   const inkAmount = hasActiveAltar || isBound ? (trigger.baseAmount ?? 1) : 0
   const requestedSealAmount = hasActiveAltar && isBound ? (trigger.boundAmount ?? 1) : 0
-  const discernment = applyEnemyIntentDiscernment(state, target?.instanceId)
+  const discernment = applyEnemyIntentDiscernment(state, target?.instanceId, artifactId)
   let nextState = discernment.state
 
   if (inkAmount > 0) {
@@ -242,6 +245,9 @@ function resolveNameTetherSpindleTrigger(
       intentId: discernment.intent?.id ?? null,
       intentKind: discernment.intent?.kind ?? null,
       previewTurnOffset: discernment.previewTurnOffset ?? null,
+      altarId: discernment.altarId ?? null,
+      altarSlot: discernment.altarSlot ?? null,
+      remainingAltarTriggers: discernment.remainingAltarTriggers ?? null,
       hasActiveAltar,
       isBound,
       inkAmount,

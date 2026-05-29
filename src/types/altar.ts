@@ -23,4 +23,5 @@ export interface AltarState {
   readonly targetEnemyInstanceId?: EnemyInstanceId
   readonly effect: AltarEffectDefinition
   readonly placedTurn: number
+  readonly remainingTriggers?: number
 }

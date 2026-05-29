@@ -3083,22 +3083,6 @@ button:disabled {
   text-align: right;
 }
 
-.stage-enemy-panel .intent-next-preview {
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 7px;
-  align-items: center;
-  margin-top: 0;
-  padding: 7px;
-}
-
-.stage-enemy-panel .intent-next-preview strong {
-  font-size: 12px;
-}
-
-.stage-enemy-panel .intent-next-preview small {
-  text-align: right;
-}
-
 .t101-battle-arena .stage-enemy-list-panel {
   align-content: stretch;
   overflow: hidden;
@@ -3156,13 +3140,11 @@ button:disabled {
   grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
 }
 
-.t101-battle-arena .stage-enemy-panel .intent-banner,
-.t101-battle-arena .stage-enemy-panel .intent-next-preview {
+.t101-battle-arena .stage-enemy-panel .intent-banner {
   grid-template-columns: auto minmax(0, 1fr);
 }
 
-.t101-battle-arena .stage-enemy-panel .intent-banner small,
-.t101-battle-arena .stage-enemy-panel .intent-next-preview small {
+.t101-battle-arena .stage-enemy-panel .intent-banner small {
   grid-column: 1 / -1;
   text-align: left;
 }
@@ -3825,48 +3807,6 @@ button:disabled {
 .intent-banner small {
   color: #d8c2a0;
   font-size: 12px;
-}
-
-.intent-next-preview {
-  display: grid;
-  gap: 3px;
-  margin-top: 8px;
-  border: 1px dashed rgba(178, 139, 82, 0.32);
-  border-radius: 6px;
-  padding: 8px;
-  background: rgba(14, 20, 19, 0.3);
-}
-
-.intent-next-preview.incoming {
-  border-color: rgba(224, 180, 93, 0.42);
-  background: rgba(90, 66, 35, 0.2);
-}
-
-.intent-next-preview.abnormal {
-  border-color: rgba(201, 79, 61, 0.5);
-  background: rgba(91, 33, 30, 0.28);
-}
-
-.intent-next-preview.hidden {
-  color: #ad9c82;
-}
-
-.intent-next-preview span {
-  color: #ad9c82;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.intent-next-preview strong {
-  color: #d9ccb8;
-  font-size: 13px;
-  line-height: 1.25;
-}
-
-.intent-next-preview small {
-  color: #c7b492;
-  font-size: 11px;
-  line-height: 1.35;
 }
 
 .intent-detail-grid {

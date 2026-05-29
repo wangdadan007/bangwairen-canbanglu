@@ -1,5 +1,6 @@
 import { appendLog } from '../log/actionLog'
 import { applyTutorialResourceDelta } from '../run/resourceResolver'
+import { consumeAltarTrigger } from './altarExtensionResolver'
 import { drawCards } from './drawResolver'
 import { resolveAskName } from './nameResolver'
 import { refreshUnsealedCurrentIncomingForceBonuses } from './incomingForceResolver'
@@ -36,6 +37,7 @@ export function placeAltar(state: CombatState, input: PlaceAltarInput): CombatSt
     targetEnemyInstanceId,
     effect: input.effect.altarEffect,
     placedTurn: state.turn,
+    remainingTriggers: 1,
   }
   const replacedAltars = state.altars.filter((candidate) => candidate.slot === altar.slot)
   let nextState: CombatState = {
@@ -105,7 +107,7 @@ export function triggerHumanAltars(state: CombatState): CombatState {
       })
     }
 
-    nextState = expireAltar(nextState, altar, 'triggered')
+    nextState = consumeOrExpireAltar(nextState, altar, 'triggered')
   }
 
   return nextState
@@ -152,7 +154,7 @@ export function triggerEarthAltars(state: CombatState): CombatState {
       nextState = gainInkFromAltar(nextState, altar, 'no_abnormal_move')
     }
 
-    nextState = expireAltar(nextState, altar, 'triggered')
+    nextState = consumeOrExpireAltar(nextState, altar, 'triggered')
   }
 
   return nextState
@@ -183,7 +185,7 @@ export function triggerHeavenAltars(state: CombatState): CombatState {
           reason: 'no_target',
         },
       })
-      nextState = expireAltar(nextState, altar, 'triggered')
+      nextState = consumeOrExpireAltar(nextState, altar, 'triggered')
       continue
     }
 
@@ -204,7 +206,7 @@ export function triggerHeavenAltars(state: CombatState): CombatState {
       amount: getAltarAmount(altar),
     })
     nextState = gainInkFromAltar(nextState, altar, 'heaven_altar')
-    nextState = expireAltar(nextState, altar, 'triggered')
+    nextState = consumeOrExpireAltar(nextState, altar, 'triggered')
   }
 
   return nextState
@@ -319,6 +321,14 @@ function expireAltar(state: CombatState, altar: AltarState, reason: string): Com
       reason,
     },
   })
+}
+
+function consumeOrExpireAltar(
+  state: CombatState,
+  altar: AltarState,
+  reason: string,
+): CombatState {
+  return consumeAltarTrigger(state, altar.id, reason) ?? expireAltar(state, altar, reason)
 }
 
 function hasNameProgressThisTurn(state: CombatState) {

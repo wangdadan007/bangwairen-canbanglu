@@ -449,11 +449,11 @@ describe('T17 artifact foundation', () => {
     expect(mirrorLog?.payload).toEqual(
       expect.objectContaining({
         effectType: 'peek_intent_after_ask_name',
-        result: 'next_previewed',
+        result: 'no_altar',
         intentId: 'intent_paper_wraith_scrape',
       }),
     )
-    expect(afterAsk.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
+    expect(afterAsk.enemies[0].nextIntentPreview).toBeUndefined()
     expect(
       afterAsk.artifacts.artifacts.find(
         (artifact) => artifact.definitionId === 'artifact_bone_mirror',
@@ -582,7 +582,7 @@ describe('T17 artifact foundation', () => {
     expect(nameTetherLog?.payload).toEqual(
       expect.objectContaining({
         effectType: 'tether_name_after_ask_name',
-        result: 'next_previewed',
+        result: 'no_altar',
         intentKind: 'incoming_force',
         inkAmount: 0,
         sealedAmount: 0,
@@ -642,6 +642,8 @@ describe('T17 artifact foundation', () => {
     expect(nameTetherLog?.payload).toEqual(
       expect.objectContaining({
         effectType: 'tether_name_after_ask_name',
+        result: 'altar_extended',
+        altarSlot: 'human',
         hasActiveAltar: true,
         isBound: false,
         inkAmount: 1,
@@ -699,6 +701,8 @@ describe('T17 artifact foundation', () => {
     expect(nameTetherLog?.payload).toEqual(
       expect.objectContaining({
         effectType: 'tether_name_after_ask_name',
+        result: 'altar_extended',
+        altarSlot: 'human',
         hasActiveAltar: true,
         isBound: true,
         inkAmount: 1,

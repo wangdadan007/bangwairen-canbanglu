@@ -82,7 +82,7 @@ describe('name resolver', () => {
     expect(afterSecondAsk.enemies[0].currentForm).toBe(12)
     expect(afterSecondAsk.enemies[0].nextIntentPreview).toBeUndefined()
     expect(afterThirdAsk.enemies[0].currentForm).toBe(11)
-    expect(afterThirdAsk.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
+    expect(afterThirdAsk.enemies[0].nextIntentPreview).toBeUndefined()
     expect(afterThirdAsk.actionLog.filter((entry) => entry.type === 'NAME_BREAK_TRIGGERED')).toHaveLength(1)
     expect(
       afterThirdAsk.actionLog.filter(
@@ -91,7 +91,7 @@ describe('name resolver', () => {
     ).toHaveLength(1)
     expect(
       afterThirdAsk.actionLog.filter(
-        (entry) => entry.type === 'INTENT_DISCERNED' && entry.payload.result === 'next_previewed',
+        (entry) => entry.type === 'INTENT_DISCERNED' && entry.payload.result === 'no_altar',
       ),
     ).toHaveLength(1)
     expect(
@@ -185,29 +185,42 @@ describe('name resolver', () => {
     const askLog = nextState.actionLog.find((entry) => entry.type === 'NAME_ASKED')
     const discernLog = nextState.actionLog.find((entry) => entry.type === 'INTENT_DISCERNED')
     expect(askLog?.payload.result).toBe('discern_intent')
-    expect(discernLog?.payload.result).toBe('next_previewed')
+    expect(discernLog?.payload.result).toBe('no_altar')
     expect(nextState.enemies[0].currentForm).toBe(17)
-    expect(nextState.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
+    expect(nextState.enemies[0].nextIntentPreview).toBeUndefined()
     expect(nextState.enemies[0].isNamed).toBe(false)
   })
 
-  it('keeps discerned repeated next intent visible after enemy action advances', () => {
-    const state = createInitialBattleState({
-      cardDefinitions: gameData.cards,
-      enemyDefinition: paperWraith,
-      deckDefinitionIds: [
-        'card_ask_name',
-        'card_ask_name',
-        'card_ask_name',
-      ],
-    })
-    const [firstAsk, secondAsk, thirdAsk] = state.hand
-    const afterFirstAsk = reduceBattleState(
+  it('extends the next prepared altar when discernment sees an already revealed action', () => {
+    const state = withPlayerIncense(
+      createInitialBattleState({
+        cardDefinitions: gameData.cards,
+        enemyDefinition: paperWraith,
+        deckDefinitionIds: [
+          'card_human_altar_name_sigil',
+          'card_ask_name',
+          'card_ask_name',
+          'card_ask_name',
+        ],
+      }),
+      4,
+    )
+    const [humanAltar, firstAsk, secondAsk, thirdAsk] = state.hand
+    const afterAltar = reduceBattleState(
       state,
       {
         type: 'PLAY_CARD',
-        cardInstanceId: firstAsk.instanceId,
+        cardInstanceId: humanAltar.instanceId,
         targetEnemyInstanceId: state.enemies[0].instanceId,
+      },
+      context,
+    )
+    const afterFirstAsk = reduceBattleState(
+      afterAltar,
+      {
+        type: 'PLAY_CARD',
+        cardInstanceId: firstAsk.instanceId,
+        targetEnemyInstanceId: afterAltar.enemies[0].instanceId,
       },
       context,
     )
@@ -230,13 +243,35 @@ describe('name resolver', () => {
       context,
     )
     const nextTurn = reduceBattleState(afterThirdAsk, { type: 'END_TURN' }, context)
+    const altarExtensionLog = afterThirdAsk.actionLog.find(
+      (entry) => entry.type === 'ALTAR_EXTENDED' && entry.payload.result === 'discerned_current_intent',
+    )
+    const continuedExtensionLog = nextTurn.actionLog.find(
+      (entry) => entry.type === 'ALTAR_EXTENDED' && entry.payload.result === 'continued_after_trigger',
+    )
 
-    expect(afterSecondAsk.enemies[0].nextIntentPreview).toBeUndefined()
-    expect(afterThirdAsk.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
+    expect(afterThirdAsk.enemies[0].nextIntentPreview).toBeUndefined()
+    expect(afterThirdAsk.altars[0]?.slot).toBe('human')
+    expect(afterThirdAsk.altars[0]?.remainingTriggers).toBe(2)
+    expect(altarExtensionLog?.payload).toEqual(
+      expect.objectContaining({
+        slot: 'human',
+        result: 'discerned_current_intent',
+        remainingTriggers: 2,
+      }),
+    )
     expect(nextTurn.turn).toBe(2)
     expect(nextTurn.enemies[0].currentIntent?.id).toBe('intent_paper_wraith_scrape')
     expect(nextTurn.enemies[0].currentIntentVisibility).toBe('revealed')
-    expect(nextTurn.enemies[0].nextIntentPreview?.id).toBe('intent_paper_wraith_scrape')
+    expect(nextTurn.altars[0]?.slot).toBe('human')
+    expect(nextTurn.altars[0]?.remainingTriggers).toBe(1)
+    expect(continuedExtensionLog?.payload).toEqual(
+      expect.objectContaining({
+        slot: 'human',
+        result: 'continued_after_trigger',
+        remainingTriggers: 1,
+      }),
+    )
   })
 
   it('lets bone mirror reveal a masked elite intent before previewing later moves', () => {
@@ -365,5 +400,15 @@ function withEnemyCurrentForm(state: CombatState, currentForm: number): CombatSt
           }
         : enemy,
     ),
+  }
+}
+
+function withPlayerIncense(state: CombatState, incense: number): CombatState {
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      incense,
+    },
   }
 }

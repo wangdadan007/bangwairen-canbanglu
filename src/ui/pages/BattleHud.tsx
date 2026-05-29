@@ -1250,17 +1250,7 @@ function StageEnemyPanel({
       : enemy.incomingForce > 0
         ? 'incoming'
         : 'quiet'
-  const nextIntentTone =
-    enemy.nextIntentPreview?.kind === 'abnormal_move'
-      ? 'abnormal'
-      : enemy.nextIntentPreview?.kind === 'incoming_force'
-        ? 'incoming'
-        : 'hidden'
-  const nextIntentLabel = enemy.nextIntentPreview
-    ? getPreviewIntentLabel(enemy.nextIntentPreview)
-    : '未辨'
   const activeNamedPhase = enemy.namedPhase?.isActive ? enemy.namedPhase : undefined
-  const visibleIncomingForce = isIntentMasked ? null : enemy.incomingForce
 
   return (
     <article
@@ -1338,7 +1328,7 @@ function StageEnemyPanel({
             <span className="name-slot revealed">无名</span>
           )}
         </div>
-        <div className={`intent-banner ${intentTone}`} aria-label="敌人下一次行动">
+        <div className={`intent-banner ${intentTone}`} aria-label="敌人本次行动">
           <span
             title={
               intentKind === '来势'
@@ -1361,13 +1351,6 @@ function StageEnemyPanel({
               : enemy.incomingForce > 0
                 ? `可封 ${enemy.incomingForce} 点`
                 : '暂无直接来势'}
-          </small>
-        </div>
-        <div className={`intent-next-preview ${nextIntentTone}`} aria-label="后一动预告">
-          <span>后一动</span>
-          <strong>{nextIntentLabel}</strong>
-          <small>
-            当前来势 {visibleIncomingForce ?? '未辨'}；{activeNamedPhase ? '现形反扑' : getNameCue(enemy, activeNamedPhase)}
           </small>
         </div>
       </div>
@@ -1580,18 +1563,6 @@ function EnemyPanel({
       : enemy.incomingForce > 0
         ? 'incoming'
         : 'quiet'
-  const nextIntentTone =
-    enemy.nextIntentPreview?.kind === 'abnormal_move'
-      ? 'abnormal'
-      : enemy.nextIntentPreview?.kind === 'incoming_force'
-        ? 'incoming'
-        : 'hidden'
-  const nextIntentLabel = enemy.nextIntentPreview
-    ? getPreviewIntentLabel(enemy.nextIntentPreview)
-    : '未辨'
-  const nextIntentDetail = enemy.nextIntentPreview
-    ? getPreviewIntentDetail(enemy.nextIntentPreview)
-    : '辨势后显示，用于规划下回合。'
   const visibleIncomingForce = isIntentMasked ? null : enemy.incomingForce
   const incomingForceAttachment = isIntentMasked
     ? undefined
@@ -1674,7 +1645,7 @@ function EnemyPanel({
         </div>
       ) : null}
 
-      <div className={`intent-banner ${intentTone}`} aria-label="敌人下一次行动">
+      <div className={`intent-banner ${intentTone}`} aria-label="敌人本次行动">
         <span
           title={
             intentKind === '来势'
@@ -1698,11 +1669,6 @@ function EnemyPanel({
               ? '可被封势降低'
               : '暂无直接来势'}
         </small>
-      </div>
-      <div className={`intent-next-preview ${nextIntentTone}`} aria-label="后一动预告">
-        <span>后一动</span>
-        <strong>{nextIntentLabel}</strong>
-        <small>{nextIntentDetail}</small>
       </div>
       <div className="intent-detail-grid" aria-label="敌人意图详情">
         <div>
@@ -1794,30 +1760,6 @@ function getCurrentIntentLabel(
   }
 
   return '异动：影迹不明'
-}
-
-function getPreviewIntentLabel(intent: EnemyIntentDefinition) {
-  const prefix = intent.kind === 'incoming_force' ? '来势' : '异动'
-
-  return `${prefix}：${t(intent.nameKey)}`
-}
-
-function getPreviewIntentDetail(intent: EnemyIntentDefinition) {
-  const incomingForce = intent.effects.reduce(
-    (total, effect) => total + (effect.type === 'INCOMING_FORCE' ? effect.amount : 0),
-    0,
-  )
-  const abnormalMove = intent.effects.find((effect) => effect.type === 'ABNORMAL_MOVE')?.move
-
-  if (incomingForce > 0) {
-    return `预计来势 ${incomingForce}，可提前规划封势或抢收束。`
-  }
-
-  if (abnormalMove) {
-    return `${getMoveLabel(abnormalMove.type)}，可提前准备断异动、地坛或问名节奏。`
-  }
-
-  return '已照见后一动。'
 }
 
 function getIncomingForceAttachmentText(intent: EnemyIntentDefinition | undefined) {
@@ -2214,6 +2156,7 @@ function AltarPanel({
       {altarSlots.map((slot) => {
         const altar = altars.find((candidate) => candidate.slot === slot)
         const sourceCard = altar ? cardDefinitionsById.get(altar.sourceCardDefinitionId) : undefined
+        const remainingTriggers = altar?.remainingTriggers ?? 1
 
         return (
           <div
@@ -2224,7 +2167,15 @@ function AltarPanel({
           >
             <span>{getAltarSlotLabel(slot)}</span>
             <strong>{altar ? getAltarEffectLabel(altar) : '未奉坛'}</strong>
-            <small>{sourceCard ? t(sourceCard.nameKey) : getAltarSlotWindowLabel(slot)}</small>
+            <small>
+              {sourceCard
+                ? `${t(sourceCard.nameKey)}${
+                    remainingTriggers > 1
+                      ? ` · 可触发 ${remainingTriggers} 次`
+                      : ''
+                  }`
+                : getAltarSlotWindowLabel(slot)}
+            </small>
           </div>
         )
       })}

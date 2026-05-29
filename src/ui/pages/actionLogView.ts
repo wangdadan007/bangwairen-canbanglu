@@ -339,16 +339,28 @@ export function createRitualFeedback(
   if (entry.type === 'INTENT_DISCERNED') {
     const result = getPayloadString(entry.payload.result)
     const intentKind = getIntentKindLabel(getPayloadString(entry.payload.intentKind))
+    const altarSlot = getPayloadString(entry.payload.altarSlot)
 
     return {
       id: entry.id,
       tone: 'ask',
       label: '辨势反馈',
-      title: result === 'current_revealed' ? `照见本次${intentKind}` : `照见后一动${intentKind}`,
+      title:
+        result === 'current_revealed'
+          ? `照见本次${intentKind}`
+          : result === 'altar_extended'
+          ? `辨势续坛：${getAltarSlotLabel(altarSlot)}`
+          : result === 'no_altar'
+            ? '本次行动已明'
+            : '辨势未照见目标',
       detail:
         result === 'current_revealed'
           ? '遮蔽的行动已揭开，可以据此决定封势、断异动或抢收束。'
-          : '后一动已显影，可用于规划下回合与三坛窗口。',
+          : result === 'altar_extended'
+            ? '当前行动已明，下一处已布置坛位会多持续一回合。'
+            : result === 'no_altar'
+              ? '当前行动已经可见，但场上没有已布置坛位可续。'
+              : '未找到可辨势目标。',
       audioCue: 'preview',
     }
   }
@@ -507,7 +519,7 @@ export function createBossPressureFeedback(battle: CombatState): RitualFeedback 
       tone: 'boss',
       label: 'Boss 压力',
       title: `${bossName}势影遮蔽`,
-      detail: '本次行动仍可被辨势揭开；若已明牌，辨势会照见后一动。',
+      detail: '本次行动仍可被辨势揭开；若已明牌，辨势会延续下一个已布置坛位。',
       audioCue: 'pressure',
     }
   }
@@ -755,6 +767,19 @@ export function formatLogEntry(
       slot,
       getPayloadString(entry.payload.reason),
     )}。`
+  }
+
+  if (entry.type === 'ALTAR_EXTENDED') {
+    const slot = getPayloadString(entry.payload.slot)
+    const slotLabel = getAltarSlotLabel(slot)
+    const result = getPayloadString(entry.payload.result)
+    const remainingTriggers = getPayloadNumber(entry.payload.remainingTriggers) ?? 1
+
+    if (result === 'discerned_current_intent') {
+      return `${slotLabel}续坛：辨势照定当前行动，坛位效果多持续一回合。`
+    }
+
+    return `${slotLabel}续坛：本次窗口已结算，仍可再触发 ${remainingTriggers} 次。`
   }
 
   if (entry.type === 'ALTAR_EXPIRED') {
@@ -1140,6 +1165,7 @@ export function getLogEntryClassName(entry: ActionLogEntry) {
     entry.type === 'RISK_THRESHOLD_APPLIED' ||
     entry.type === 'ALTAR_PLACED' ||
     entry.type === 'ALTAR_TRIGGERED' ||
+    entry.type === 'ALTAR_EXTENDED' ||
     entry.type === 'ALTAR_EXPIRED' ||
     entry.type === 'LINZHAO_PLACED' ||
     entry.type === 'LINZHAO_TRIGGERED' ||
@@ -1449,7 +1475,7 @@ function getIncomingForceAftereffectDetail(entry: ActionLogEntry) {
   }
 
   if (aftereffectType === 'mask_next_intent') {
-    return '后一动重新遮势。'
+    return '下一次行动重新遮势。'
   }
 
   if (aftereffectType === 'add_fouled_scroll') {
@@ -1651,8 +1677,15 @@ function formatIntentDiscernment(entry: ActionLogEntry) {
     return `揭开本次${intentKindLabel}`
   }
 
-  if (result === 'next_previewed') {
-    return `照见后一动：${intentKindLabel}`
+  if (result === 'altar_extended') {
+    const slot = getPayloadString(entry.payload.altarSlot)
+    const remainingTriggers = getPayloadNumber(entry.payload.remainingAltarTriggers) ?? 1
+
+    return `续住${getAltarSlotLabel(slot)}：可触发 ${remainingTriggers} 次`
+  }
+
+  if (result === 'no_altar') {
+    return '本次行动已明，但无坛可续'
   }
 
   if (result === 'no_target') {
