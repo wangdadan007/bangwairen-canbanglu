@@ -1,7 +1,8 @@
 # 第一章 AI 概念图生产规格
 
 日期：2026-05-27
-性质：AI 概念候选提示词规格、安全流程、命名与审图标准；不生成图片，不入正式构建
+更新：2026-05-30
+性质：AI 概念候选提示词规格、安全流程、命名与审图标准；已登记 T108 美术方向锚点，不入正式构建
 
 ## 1. 目标
 
@@ -16,11 +17,13 @@
 
 本轮不做：
 
-- 不生成 AI 图片。
+- 不在仓库内批量生成 AI 图片。
 - 不提交第三方图片、字体、音频、视频或素材包。
 - 不把任何 AI 图直接作为正式角色立绘、敌人立绘、UI 图标、特效序列帧或宣传素材。
 - 不改变玩法机制、角色机制、敌人机制、卡牌、路线、数值或 UI 布局基准。
 - 不新增生产依赖。
+
+2026-05-30 追加：用户已在 GPT 中按本规格生成并人工筛选出 T108 美术方向锚点，包含衡简标准图、纸面鬼标准图、普通战背景图和普通战合成审图。四张图仍只作为概念候选 / 审图参考，图片文件已归档到 `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/`，不进入正式构建。
 
 ## 2. 模型与输出口径
 
@@ -116,17 +119,95 @@ UI token：
 用途：旧榜执笔，稳健、旧吏、裁定入口。战斗页左侧执簿者源图。
 
 ```text
-Original full-body 2D battle sprite concept for a Chinese mythic deckbuilder roguelike game.
-Hengjian, an original ledger-keeper outside the Fengshen roster, standing before an old ritual desk, facing right.
-Calm and upright posture, restrained silhouette, sleeves and scrolls flowing downward, one hand holding an old ledger brush, the other near a broken whip fragment.
-Old paper, dark wood brush handle, cinnabar square seal, oxidized bronze details, muted ink green and old gold, small cinnabar accents.
-The broken whip fragment should feel like a ritual object on the desk, not a complete divine weapon.
-Full body visible, feet visible, complete readable silhouette, clean plain old-paper background, generous margins.
-Painterly stylized 2D game art, readable at small in-game size.
-No text, no logo, no UI frame, no watermark.
-Avoid collectible mobile gacha hero illustration style.
-Avoid direct resemblance to Jiang Ziya or any named Fengshen character.
-Avoid blue-purple xianxia glow, oversized magical aura, futuristic elements, modern clothing.
+[Global style base]
+Original 2D game battle sprite concept for a Chinese mythic ritual ledger deckbuilder.
+Eastern ritual judgment atmosphere: old paper, cinnabar seals, oxidized bronze, dark wood, temple ash, restrained dark gold.
+Hand-drawn low-detail 2D game sprite for an indie card roguelike.
+Bold simple shapes, clear silhouette, readable at small battle-screen size.
+Slightly mature cartoon-stylized, but not cute, not chibi, not anime.
+Simple flat-to-soft shading, limited value groups, clean visible edges.
+Costume and props should be simplified into iconic shapes, not detailed illustration.
+Rough, charming, functional game art with strong identity, closer to readable battle sprites than polished character concept art.
+
+Keep the general direction of the previous best candidate: large readable robe blocks, sparse accessories, short writing brush, broken whip fragment, ledger page, restrained cinnabar verdict seal.
+Do not redesign into a highly detailed fantasy character.
+Only refine the identity, pose, and broken-registry feeling.
+
+[Object-specific description]
+Hengjian, an original ledger-keeper outside the Fengshen roster.
+A calm old-registry scribe and verdict officer, steady and upright, facing right.
+Middle-aged or mature adult, not an elderly sage, not a high-ranking imperial minister.
+He should feel like an outsider clerk of a broken divine registry, weighing names before writing a verdict.
+
+His silhouette should feel composed, narrow, disciplined, and slightly severe.
+Use long sleeves, a few large robe panels, one damaged residual ledger-page shape, and a short ritual writing brush as the main identity cue.
+The costume should remain iconic and sparse, built from large readable blocks instead of many ornaments.
+
+Use tied hair or a small low ledger-keeper headpiece, not a tall official crown.
+The ritual brush should be short, clearly a writing brush for verdicts, held close to the body.
+The brush should be in a "verdict about to be written" pose: his hand is slightly raised or angled downward, as if the brush tip is just about to touch the broken ledger page.
+This should feel like writing a judgment, not attacking.
+
+Replace the large plain paper-board feeling with a smaller broken residual ledger page.
+The ledger page should be cracked, torn, scorched, or chipped at the edges, like a fragment torn from a damaged divine roster.
+It should not block the character's body too much.
+The page can be held lower, closer to the torso, or slightly to the side, leaving the body posture readable.
+The page should contain no readable writing.
+Use one rough, uneven cinnabar verdict seal or broken seal mark, not a perfect modern red UI circle.
+
+Add a subtle "outside the roster" strangeness without adding detail: the robe hem or one side panel can resemble old torn ledger fragments, with a few large jagged paper-like shapes integrated into the clothing silhouette.
+These fragments should be simple, readable, and not covered in text.
+
+A small broken whip fragment should hang near his belt or rest close to his side.
+Make it clearer than a normal waist ornament: a short segmented dark cord or broken ritual whip piece with one simple bronze ring and a frayed end.
+It should feel like a restrained registry object tied to old authority, not a main weapon.
+
+Make the ledger motif, cinnabar verdict seal, and broken registry identity clear with only a few big shapes.
+Use very few accessories: one seal token, one ledger strap, one short brush, one broken whip fragment.
+No dense ornaments.
+No heroic combat pose.
+No court-official grandeur.
+He should read as a quiet, severe, original verdict clerk from a broken divine registry.
+
+[Pose and action]
+Standing full-body or near full-body, facing right.
+Calm but active enough for battle UI.
+One hand holds or steadies the smaller broken ledger page.
+The other hand holds the short brush close to the page, about to write a verdict.
+The pose should suggest "执笔将落判" rather than simply standing and displaying a document.
+Keep the motion restrained, precise, ritualistic, and clerical.
+
+[Composition]
+Full-body or near full-body, complete figure visible, facing right, generous margins.
+Clean plain old-paper background.
+3:4 portrait aspect ratio.
+Battle sprite concept for a left-side player character in a card roguelike battle UI.
+Readable as a small on-screen character, with no need to zoom in to understand the role.
+Leave clear space around the silhouette for later cutout and UI placement.
+
+[Color and material]
+Muted black, ash gray, old parchment beige, dark wood brown, oxidized bronze, restrained dark gold, and limited cinnabar red.
+The cinnabar red should appear as one or two strong identity accents only.
+The robe should be mostly large dark and parchment color blocks.
+The broken ledger page should feel old, dry, damaged, and ceremonial.
+Avoid glossy fabric, bright magic colors, or polished fantasy armor materials.
+
+[Negative]
+No text, no readable calligraphy, no logo, no watermark.
+Not gacha, not anime, not Chinese donghua character art, not cute, not chibi, not children's cartoon.
+Not blue-purple xianxia glow, not modern, not sci-fi, not western fantasy armor.
+Avoid realistic Chinese historical costume illustration.
+Avoid high-detail fantasy concept art, polished character design sheet, cinematic key art, oil-painting realism.
+Avoid photorealistic face, realistic skin rendering, complex facial details, dramatic cinematic lighting.
+Avoid ornate robe embroidery, dense fabric texture, tiny belts, tiny metal accessories, dangling trinkets, readable plaques, bamboo-slip text patterns, readable seal symbols.
+Avoid direct resemblance to named Fengshen characters, especially Jiang Ziya, Wen Zhong, or any famous sage / minister figure.
+No tall imperial crown, no emperor robe, no court-official cosplay.
+No oversized magical aura, no excessive floating scrolls.
+No spear-like brush, no staff-like brush, no weaponized brush.
+No large file board blocking the body.
+No clean modern red circle icon.
+No perfectly round UI-like seal symbol.
+No highly refined donghua protagonist face, no handsome fantasy hero styling.
 ```
 
 关键审图点：
@@ -134,6 +215,7 @@ Avoid blue-purple xianxia glow, oversized magical aura, futuristic elements, mod
 - 是否像旧榜执笔者，而不是姜子牙本人。
 - 打神鞭残节是否只是身份物，不像完整神兵。
 - 轮廓是否稳、直、收束。
+- 2026-05-30 人工筛选结论：`HJ_T108_standard` 替换旧 `HJ_B01_anchor`，作为衡简当前标准图和后续最小动作包风格锚点；保留低细节手绘 sprite、大袖、短笔、残榜页、腰侧断鞭和旧纸朱砂气质。后续小调优先观察脸、发冠、腰间红印、断鞭长度、衣摆破损和手持纸张一致性，不把该候选直接接入正式构建。
 
 ### 5.2 照微
 
