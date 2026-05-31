@@ -1,8 +1,35 @@
 # PRD-changelog：需求变更记录
 
-版本：v8.13
-日期：2026-05-28
+版本：v8.14
+日期：2026-05-31
 建议路径：`docs/prd/PRD-changelog.md`
+
+## v8.14 · 2026-05-31 · T109
+
+### 来源
+
+- 用户已完成照微标准图与 5 张动作图的筛选、透明底处理和 Krita 统一规格，并要求把 6 张 PNG 与 Krita 源文件保存到本地项目。
+- 用户要求将本轮照微动作包归档写为 T109。
+
+### 修改
+
+- 新增 `docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/roles/zhaowei/`，归档照微待机、问名 / 辨势、破形、正名 / 归册、受击 / 承压、胜利 / 收镜 6 张透明底 PNG 与 `ZW_action_master.kra`。
+- 新增 `docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/ledger.csv`，记录模型 / 平台、生成日期、prompt 摘要、参考图、后处理、人工审核结论和“不入正式构建”状态。
+- `docs/assets/ASSET_MANIFEST.md` 补充 T109 照微动作包资产、AI 生成素材补充字段和 contact sheet 工作流记录。
+- `docs/design/CHAPTER_ONE_AI_CONCEPT_ART_PRODUCTION_SPEC.md` 补充照微动作包筛选结论和后续接入前检查点。
+- `docs/tasks/PROJECT_PLAN.md` 同步 T109 完成记录、验证基线、风险和下一步建议。
+
+### 保留
+
+- 不把当前照微动作包直接视为正式入库素材；授权、可商用、可修改字段仍为待复核 / 待确认。
+- 不从 `src` 引用图片，不接入 React / Phaser，不改变战斗布局、角色数值、卡牌、法宝、路线或任何玩法机制。
+- 不新增生产依赖、第三方素材、字体、音频、视频或宣传素材。
+
+### 验证
+
+- `file docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/roles/zhaowei/ZW_idle.png docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/roles/zhaowei/ZW_ask_name.png docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/roles/zhaowei/ZW_break_form.png docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/roles/zhaowei/ZW_register.png docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/roles/zhaowei/ZW_hit.png docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/roles/zhaowei/ZW_victory.png docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/roles/zhaowei/ZW_action_master.kra` 确认 6 张 PNG 均为 1200 x 1448 RGBA，Krita 源文件为 `.kra`。
+- `git diff --check` 通过。
+- 未运行代码测试，因为本轮只归档概念候选图片和文档记录，未改运行代码。
 
 ## v8.13 · 2026-05-28 · T107
 

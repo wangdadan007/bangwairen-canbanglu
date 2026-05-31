@@ -158,12 +158,13 @@ T101 授权口径：
 
 ### 4.6 AI 概念图生产规格与安全流程
 
-本节登记 AI 概念候选生产规格入口。当前已新增提示词、安全流程、命名规则和人工筛选标准；2026-05-30 已登记用户在 GPT 中生成并人工筛选的 T108 概念候选：纸面鬼标准图、普通战背景图、普通战合成审图，以及后续统一规格的衡简 6 张动作包。图片文件已归档到概念候选目录，未新增第三方素材、字体、音频、视频或正式构建图片文件，当前没有任何新素材进入构建。
+本节登记 AI 概念候选生产规格入口。当前已新增提示词、安全流程、命名规则和人工筛选标准；2026-05-30 已登记用户在 GPT 中生成并人工筛选的 T108 概念候选：纸面鬼标准图、普通战背景图、普通战合成审图，以及后续统一规格的衡简 6 张动作包。2026-05-31 已登记 T109 照微 6 张动作包和 Krita 源文件。图片文件已归档到概念候选目录，未新增第三方素材、字体、音频、视频或正式构建图片文件，当前没有任何新素材进入构建。
 
 | ID | 类别 | 对象 | 资产需求 | 优先级 | 当前替代 | 授权要求 |
 |---|---|---|---|---|---|---|
 | VIS-AI-CONCEPT-PROMPT-SPEC | 规格 / AI 概念候选 | 衡简 / 照微 / 莲烬 / 纸面鬼 / 窃榜使 / UI token | 第一轮 AI 概念图 prompt、禁区、构图、尺寸、批次、命名、contact sheet 和审图标准 | P1 | `docs/design/CHAPTER_ONE_AI_CONCEPT_ART_PRODUCTION_SPEC.md` | 当前仅文档规格；后续生成图必须按本台账补齐授权与人工审核 |
 | VIS-HJ-ACTION-PACK-B02 | AI 概念候选 | 衡简 | 衡简统一规格动作包：待机 / 问名 / 破形 / 正名 / 受击 / 胜利 + Krita 源文件 | P1 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b02/roles/hengjian/`；台账见 `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b02/ledger.csv` | 概念候选；不入正式构建；旧单张标准图已删除 |
+| VIS-ZW-ACTION-PACK-B03 | AI 概念候选 | 照微 | 照微统一规格动作包：待机 / 问名 / 破形 / 正名 / 受击 / 胜利 + Krita 源文件 | P1 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/roles/zhaowei/`；台账见 `docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/ledger.csv` | 概念候选；不入正式构建；后续需合成复核、清边和授权检查 |
 | VIS-PW-T108-STANDARD | AI 概念候选 | 纸面鬼 | 纸面鬼标准图：纸片折面、红绳、旧符印、破纸边缘，首战教学怪方向 | P1 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/enemies/PW_T108_standard.png`；台账见 `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/ledger.csv` | 概念候选；不入正式构建 |
 | VIS-NORMAL-BATTLE-T108-BG | AI 概念候选 | 普通战背景 | 普通怪战斗背景：旧木案场、残榜纸卷、暗金线、朱砂与阴翳光源，预留中间动作通道 | P1 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/backgrounds/NORMAL_BATTLE_T108_bg.png`；台账见 `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/ledger.csv` | 概念候选；不入正式构建 |
 | VIS-NORMAL-BATTLE-T108-REVIEW | 合成审图 | 普通战合成审图 | 普通战背景 + 衡简 + 纸面鬼 + 4 张手牌占位，用于比例、亮度和动作通道判断 | P1 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/composites/NORMAL_BATTLE_T108_review.png`；台账见 `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/ledger.csv` | 审图参考；不入正式构建 |
@@ -175,7 +176,7 @@ AI 概念候选安全口径：
 - 第一轮源图优先全身或近全身战斗 sprite，实际战斗页接入时再按 T101 落位缩放、裁切和截图复核。
 - 候选图不得从 `src` 引用，不得进入 Steam 页面、README 宣传位、商店图或正式构建资源。
 - 若使用参考图，必须先登记参考图来源和授权；授权不清不得使用。
-- T108 概念候选与衡简 b02 动作包当前只作为后续生图、修图和审图的概念候选；图片已保存为概念候选，后续接入前仍必须补 contact sheet 路径、授权复核和正式入库审核。
+- T108 概念候选、衡简 b02 动作包与 T109 照微 b03 动作包当前只作为后续生图、修图和审图的概念候选；图片已保存为概念候选，后续接入前仍必须补 contact sheet 路径、授权复核和正式入库审核。
 
 ## 5. 新素材登记表
 
@@ -183,6 +184,7 @@ AI 概念候选安全口径：
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 待填 | 待填 | 图片 / 音频 / 字体 / 视频 / 图标 / 其他 | 待填 | 待填 | 待填 | 待填 | 待确认 | 待确认 | 待填 | 候选 / 已入库 / 已弃用 | 待填 |
 | HJ_action_pack_b02 | 衡简统一规格动作包 | AI 概念图 / Krita 源文件 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b02/roles/hengjian/` | 用户通过 GPT 生成并在 Krita 中统一规格 | ChatGPT / GPT 图像生成 + Krita | 待复核 | 待确认 | 待确认 | 衡简待机、问名、破形、正名、受击、胜利动作候选和后续合成复核源文件 | 候选 | 不入正式构建；旧单张 `HJ_T108_standard.png` 已删除 |
+| ZW_action_pack_b03 | 照微统一规格动作包 | AI 概念图 / Krita 源文件 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/roles/zhaowei/` | 用户通过 GPT 生成并在 Krita 中统一规格 | ChatGPT / GPT 图像生成 + Krita | 待复核 | 待确认 | 待确认 | 照微待机、问名 / 辨势、破形、正名 / 归册、受击 / 承压、胜利 / 收镜动作候选和后续合成复核源文件 | 候选 | 不入正式构建；后续需检查角色体量、白边、镜光和碎屑特效分层 |
 | PW_T108_standard | 纸面鬼标准图 | AI 概念图 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/enemies/PW_T108_standard.png` | 用户通过 GPT 生成 | ChatGPT / GPT 图像生成 | 待复核 | 待确认 | 待确认 | 纸面鬼敌人概念方向、后续静态表现 / 漂浮动效参考 | 候选 | 不入正式构建；后续需清边和合成复核 |
 | NORMAL_BATTLE_T108_bg | 普通战背景图 | AI 概念图 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/backgrounds/NORMAL_BATTLE_T108_bg.png` | 用户通过 GPT 生成 | ChatGPT / GPT 图像生成 | 待复核 | 待确认 | 待确认 | 普通怪战斗背景概念方向、后续合成审图参考 | 候选 | 不入正式构建；后续需复核亮度和 UI 遮挡 |
 | NORMAL_BATTLE_T108_review | 普通战合成审图 | 合成审图 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/composites/NORMAL_BATTLE_T108_review.png` | 用户在 Krita 中合成 | Krita + 本批 AI 概念候选 | 待复核 | 待确认 | 待确认 | 衡简、纸面鬼、普通战背景和 4 张手牌占位的比例 / 亮度审图 | 候选 | 不入正式构建；手牌占位不是正式 UI |
@@ -195,6 +197,7 @@ AI 生成素材除登记到上表外，还应补充：
 |---|---|---|---|---|---|---|---|---|
 | 待填 | 待填 | 待填 | 待填 | 是 / 否 | 待填 | 抠图 / 裁剪 / 调色 / 其他 | 待填 | 否 / 是 |
 | HJ_action_pack_b02 | ChatGPT / GPT 图像生成；精确模型待用户侧确认；Krita 统一规格 | 2026-05-30 | 衡简 6 张统一规格透明底动作包，含待机 / 问名 / 破形 / 正名 / 受击 / 胜利；Krita 源文件留存 | 是 | 本项目 T108 衡简概念候选；授权待复核 | 用户抠透明底、Krita 统一画布 / 脚底线 / 导出 | 通过概念候选筛选；后续需放回普通战背景复核比例、亮度、边缘和 UI 遮挡 | 否 |
+| ZW_action_pack_b03 | ChatGPT / GPT 图像生成；精确模型待用户侧确认；Krita 统一规格 | 2026-05-31 | 照微 6 张统一规格透明底动作包，含待机 / 问名 / 破形 / 正名 / 受击 / 胜利；Krita 源文件留存 | 是 | 本项目照微标准候选与动作参考；授权待复核 | 用户抠透明底、Krita 统一画布 / 脚底线 / 导出 | 通过概念候选筛选；后续需放回普通战背景复核比例、亮度、角色体量、白边和 UI 遮挡 | 否 |
 | PW_T108_standard | ChatGPT / GPT 图像生成；精确模型待用户侧确认 | 2026-05-30 | 纸面鬼标准图，纸片折面、红绳、旧符印、破纸边缘；作为首战教学怪方向 | 否 | 无 | 用户抠图 / 导出后原图复制归档 | 通过概念候选筛选；后续需清边、保留大形、避免纸片过碎 | 否 |
 | NORMAL_BATTLE_T108_bg | ChatGPT / GPT 图像生成；精确模型待用户侧确认 | 2026-05-30 | 普通怪战斗背景，旧木案场、残榜纸卷、暗金线、朱砂与阴翳光源，中间留动作通道 | 否 | 无 | 原图复制归档 | 通过概念候选筛选；后续需复核亮度、角色边缘对比和 UI 遮挡 | 否 |
 | NORMAL_BATTLE_T108_review | Krita 合成；素材源来自本批 AI 概念候选 | 2026-05-30 | 普通战背景 + 衡简 + 纸面鬼 + 4 张手牌占位的低保真合成审图 | 是 | 本批 AI 概念候选；授权待复核 | Krita 合成审图后原图复制归档 | 通过方向审图；用于后续衡简动作包比例和背景合成复核 | 否 |
@@ -216,6 +219,7 @@ AI 生成素材入库前检查：
 | 待填 | 待填 | 待填 | 待填 | 敌人 / 法宝 / UI / 事件 / 音频 | 待填 | 待确认 | 入库 / 重生成 / 弃用 |
 | ch1-ai-concept-20260530-b01 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b01/` | 待生成 | 2026-05-30 | 纸面鬼 / 普通战背景 / 合成审图 | T108 首批概念候选中保留纸面鬼、普通战背景和合成审图；旧衡简单张标准图已由 b02 动作包替代 | 待确认 | 继续作为普通战背景与纸面鬼方向参考；不得入构建 |
 | ch1-ai-concept-20260530-b02 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260530-b02/` | 待生成 | 2026-05-30 | 衡简 6 张动作包 + Krita 源文件 | 已按统一画布 1200x1448、透明底和脚底基准导出；后续需合成复核和授权检查 | 待确认 | 先做普通战背景合成复核；不得入构建 |
+| ch1-ai-concept-20260531-b03 | `docs/assets/concept_ai/ch1/ch1-ai-concept-20260531-b03/` | 待生成 | 2026-05-31 | 照微 6 张动作包 + Krita 源文件 | 已按统一画布 1200x1448、透明底和脚底基准导出；后续需合成复核、白边清理和授权检查 | 待确认 | 先做普通战背景合成复核；不得入构建 |
 
 ## 8. 音频占位记录
 
